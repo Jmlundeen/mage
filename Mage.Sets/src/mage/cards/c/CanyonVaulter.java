@@ -51,7 +51,7 @@ public final class CanyonVaulter extends CardImpl {
 
 class CanyonVaulterWatcher extends Watcher {
     // watch for game event SADDLED_MOUNT and CREWED_VEHICLE and save MageObjectReference of the creature or vehicle
-    // MOR -> saddled or crewed during main phase
+    // MOR (vaulter) -> MOR (saddled or crewed vehicle/mount during main phase)
     private final Map<MageObjectReference, MageObjectReference> crewedOrSaddledDuringMainPhase = new HashMap<>();
 
     CanyonVaulterWatcher() {
