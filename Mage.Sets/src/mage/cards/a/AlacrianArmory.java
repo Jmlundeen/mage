@@ -100,18 +100,10 @@ class AlacrianArmoryAnimateEffect extends OneShotEffect {
             return false;
         }
         if (target.hasSubtype(SubType.MOUNT, game)) {
-            target.getAbilities().stream().filter(
-                ability -> ability instanceof SaddleAbility)
-                .findFirst()
-                .ifPresent(ability -> game.fireEvent(GameEvent.getEvent(
-                    GameEvent.EventType.MOUNT_SADDLED,
-                    ability.getSourceId(),
-                    ability, source.getControllerId()))
-                );
+            SaddleAbility.applySaddle(target, game);
         }
         if (target.hasSubtype(SubType.VEHICLE, game)) {
-            game.addEffect(new AddCardTypeTargetEffect(Duration.EndOfTurn, CardType.CREATURE, CardType.ARTIFACT)
-                               .setTargetPointer(new FixedTarget(target, game)), source);
+            game.addEffect(new AddCardTypeTargetEffect(Duration.EndOfTurn, CardType.CREATURE, CardType.ARTIFACT), source);
         }
         return true;
     }
