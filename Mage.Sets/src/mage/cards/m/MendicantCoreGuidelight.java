@@ -10,6 +10,7 @@ import mage.abilities.common.delayed.CopyNextSpellDelayedTriggeredAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.CopyStackObjectEffect;
 import mage.abilities.effects.common.CopyTargetStackObjectEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
@@ -45,18 +46,15 @@ public final class MendicantCoreGuidelight extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Mendicant Core's power is equal to the number of artifacts you control.
-        this.addAbility(new SimpleStaticAbility(
-                Zone.BATTLEFIELD, new SetBasePowerSourceEffect(xValue)
-        ));
+        this.addAbility(new SimpleStaticAbility(Zone.BATTLEFIELD, new SetBasePowerSourceEffect(xValue)));
         // Start your engines!
         this.addAbility(new StartYourEnginesAbility());
 
         // Max speed -- Whenever you cast an artifact spell, you may pay {1}. If you do, copy it.
-        Ability ability = new SpellCastControllerTriggeredAbility(
-                new DoIfCostPaid(new CopyTargetStackObjectEffect(true)
-                                .setText("copy it. <i>(The copy becomes a token.)</i>"),
-                        new ManaCostsImpl<>("{1}")),
-                filter, false, SetTargetPointer.SPELL);
+        Effect copyEffect = new CopyTargetStackObjectEffect(true)
+                .setText("copy it. <i>(The copy becomes a token.)</i>");
+        Effect doIfEffect = new DoIfCostPaid(copyEffect,new ManaCostsImpl<>("{1}"));
+        Ability ability = new SpellCastControllerTriggeredAbility(doIfEffect, filter, false, SetTargetPointer.SPELL);
         this.addAbility(new MaxSpeedAbility(ability));
     }
 
