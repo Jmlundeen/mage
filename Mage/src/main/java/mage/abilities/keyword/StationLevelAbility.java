@@ -45,7 +45,7 @@ public class StationLevelAbility extends StaticAbility {
 
     @Override
     public String getRule() {
-        return "STATION " + level + "+" + this
+        return "STATION " + level + "+<br>" + this
                 .getEffects()
                 .stream()
                 .map(effect -> effect.getText(this.getModes().getMode()))
@@ -127,7 +127,7 @@ class StationLevelCreatureEffect extends ContinuousEffectImpl {
         }
         switch (layer) {
             case TypeChangingEffects_4:
-                permanent.addCardType(game, CardType.ARTIFACT, CardType.CREATURE);
+                permanent.addCardType(game, CardType.CREATURE);
                 return true;
             case PTChangingEffects_7:
                 if (sublayer != SubLayer.SetPT_7b) {

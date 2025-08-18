@@ -109,6 +109,7 @@ public enum SubType {
     BEHOLDER("Beholder", SubTypeSet.CreatureType),
     BERSERKER("Berserker", SubTypeSet.CreatureType),
     BIRD("Bird", SubTypeSet.CreatureType),
+    BISON("Bison", SubTypeSet.CreatureType),
     BITH("Bith", SubTypeSet.CreatureType, true), // Star Wars
     BLINKMOTH("Blinkmoth", SubTypeSet.CreatureType),
     BOAR("Boar", SubTypeSet.CreatureType),
@@ -160,6 +161,7 @@ public enum SubType {
     DRAGON("Dragon", SubTypeSet.CreatureType),
     DRAKE("Drake", SubTypeSet.CreatureType),
     DREADNOUGHT("Dreadnought", SubTypeSet.CreatureType),
+    DRIX("Drix", SubTypeSet.CreatureType),
     DROID("Droid", SubTypeSet.CreatureType, true), // Star Wars
     DRONE("Drone", SubTypeSet.CreatureType),
     DRUID("Druid", SubTypeSet.CreatureType),
@@ -244,6 +246,7 @@ public enum SubType {
     JUGGERNAUT("Juggernaut", SubTypeSet.CreatureType),
     // K
     KALEESH("Kaleesh", SubTypeSet.CreatureType, true), // Star Wars
+    KANGAROO("Kangaroo", SubTypeSet.CreatureType),
     KAVU("Kavu", SubTypeSet.CreatureType),
     KELDOR("KelDor", SubTypeSet.CreatureType, true),
     KILLBOT("Killbot", SubTypeSet.CreatureType, true), // Unstable
@@ -259,12 +262,13 @@ public enum SubType {
     LAMIA("Lamia", SubTypeSet.CreatureType),
     LAMMASU("Lammasu", SubTypeSet.CreatureType),
     LEECH("Leech", SubTypeSet.CreatureType),
+    LEMUR("Lemur", SubTypeSet.CreatureType),
     LEVIATHAN("Leviathan", SubTypeSet.CreatureType),
     LHURGOYF("Lhurgoyf", SubTypeSet.CreatureType),
     LICID("Licid", SubTypeSet.CreatureType),
     LIZARD("Lizard", SubTypeSet.CreatureType),
     LLAMA("Llama", SubTypeSet.CreatureType),
-    LOBSTER("Lobster", SubTypeSet.CreatureType, true), // Unglued
+    LOBSTER("Lobster", SubTypeSet.CreatureType),
     // M
     MANTELLIAN("Mantellian", SubTypeSet.CreatureType, true), // Star Wars
     MANTICORE("Manticore", SubTypeSet.CreatureType),

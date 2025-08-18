@@ -106,14 +106,14 @@ class DarkImpostorContinuousEffect extends ContinuousEffectImpl {
 
         for (MageItem object : affectedObjects) {
             Permanent permanent = (Permanent) object;
-            ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source, permanent.getZoneChangeCounter(game)));
+            ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source, 1));
             if (exileZone == null || exileZone.isEmpty()) {
                 continue;
             }
             for (Card card : exileZone.getCards(StaticFilters.FILTER_CARD_CREATURE, game)) {
                 for (Ability ability : card.getAbilities(game)) {
                     if (ability.isActivatedAbility()) {
-                        permanent.addAbility(ability, source.getSourceId(), game);
+                        permanent.addAbility(ability, source.getSourceId(), game, true);
                     }
                 }
             }

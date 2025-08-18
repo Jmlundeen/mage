@@ -28,6 +28,8 @@ public class ScryfallImageSupportCards {
             add("2ED"); // Unlimited Edition
             //add("CEI"); // Intl. Collectors’ Edition
             //add("CED"); // Collectors’ Edition
+            add("RIN"); // Rinascimento
+            add("REN"); // Renaissance
             add("ARN"); // Arabian Nights
             add("ATQ"); // Antiquities
             //add("FBB"); // Foreign Black Border
@@ -515,6 +517,7 @@ public class ScryfallImageSupportCards {
             add("SLX"); // Universes Within
             add("CLB"); // Commander Legends: Battle for Baldur's Gate
             add("2X2"); // Double Masters 2022
+            add("SCH"); // Store Championships
             add("DMU"); // Dominaria United
             add("DMC"); // Dominaria United Commander
             add("YDMU"); // Alchemy: Dominaria
@@ -569,9 +572,11 @@ public class ScryfallImageSupportCards {
             add("BIG"); // The Big Score
             add("MH3"); // Modern Horizons 3
             add("M3C"); // Modern Horizons 3 Commander
+            add("H2R"); // Modern Horizons 2 Timeshifts
             add("ACR"); // Assassin's Creed
             add("BLB"); // Bloomburrow
             add("BLC"); // Bloomburrow Commander
+            add("PCBB"); // Cowboy Bebop
             add("MB2"); // Mystery Booster 2
             add("DSK"); // Duskmourn: House of Horror
             add("DSC"); // Duskmourn: House of Horror Commander
@@ -579,19 +584,25 @@ public class ScryfallImageSupportCards {
             add("J25"); // Foundations Jumpstart
             add("PIO"); // Pioneer Masters
             add("PW25"); // Wizards Play Network 2025
+            add("PSPL"); // Spotlight Series
             add("INR"); // Innistrad Remastered
             add("PF25"); // MagicFest 2025
             add("DFT"); // Aetherdrift
             add("DRC"); // Aetherdrift Commander
+            add("PLG25"); // Love Your LGS 2025
             add("TDM"); // Tarkir: Dragonstorm
             add("TDC"); // Tarkir: Dragonstorm Commander
             add("FIN"); // Final Fantasy
             add("FIC"); // Final Fantasy Commander
             add("FCA"); // Final Fantasy: Through the Ages
+            add("PSS5"); // FIN Standard Showdown
             add("EOE"); // Edge of Eternities
             add("EOC"); // Edge of Eternities Commander
+            add("EOS"); // Edge of Eternities: Stellar Sights
+            add("SPM"); // Marvel's Spider-Man
             add("SPE"); // Marvel's Spider-Man Eternal
             add("TLA"); // Avatar: The Last Airbender
+            add("TLE"); // Avatar: The Last Airbender Eternal
 
             // Custom sets using Scryfall images - must provide a direct link for each card in directDownloadLinks
             add("CALC"); // Custom Alchemized versions of existing cards

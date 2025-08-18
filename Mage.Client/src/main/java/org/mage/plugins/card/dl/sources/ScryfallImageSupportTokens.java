@@ -1,9 +1,9 @@
 package org.mage.plugins.card.dl.sources;
 
-import mage.cards.repository.TokenRepository;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import mage.cards.repository.TokenRepository;
 
 /**
  * @author JayDi85
@@ -837,6 +837,8 @@ public class ScryfallImageSupportTokens {
             put("SLD/Hydra", "https://api.scryfall.com/cards/sld/1334?format=image");
             put("SLD/Icingdeath, Frost Tongue", "https://api.scryfall.com/cards/sld/1018?format=image");
             put("SLD/Marit Lage", "https://api.scryfall.com/cards/sld/1681?format=image");
+            put("SLD/Mechtitan/1", "https://api.scryfall.com/cards/sld/1969?format=image");
+            put("SLD/Mechtitan/2", "https://api.scryfall.com/cards/sld/1969/en?format=image&face=back");
             put("SLD/Mechtitan", "https://api.scryfall.com/cards/sld/1969?format=image");
             put("SLD/Myr", "https://api.scryfall.com/cards/sld/2101?format=image");
             put("SLD/Saproling", "https://api.scryfall.com/cards/sld/1139?format=image");
@@ -2784,6 +2786,37 @@ public class ScryfallImageSupportTokens {
             put("FIC/Rebel", "https://api.scryfall.com/cards/tfic/7/en?format=image");
             put("FIC/The Blackjack", "https://api.scryfall.com/cards/tfic/8/en?format=image");
             put("FIC/Clue", "https://api.scryfall.com/cards/tfic/9/en?format=image");
+
+            // EOE
+            put("EOE/Drone", "https://api.scryfall.com/cards/teoe/3?format=image");
+            put("EOE/Emblem Tezzeret", "https://api.scryfall.com/cards/teoe/11?format=image");
+            put("EOE/Human Soldier", "https://api.scryfall.com/cards/teoe/2?format=image");
+            put("EOE/Lander/1", "https://api.scryfall.com/cards/teoe/4?format=image");
+            put("EOE/Lander/2", "https://api.scryfall.com/cards/teoe/5?format=image");
+            put("EOE/Lander/3", "https://api.scryfall.com/cards/teoe/6?format=image");
+            put("EOE/Lander/4", "https://api.scryfall.com/cards/teoe/7?format=image");
+            put("EOE/Lander/5", "https://api.scryfall.com/cards/teoe/8?format=image");
+            put("EOE/Munitions", "https://api.scryfall.com/cards/teoe/9?format=image");
+            put("EOE/Robot", "https://api.scryfall.com/cards/teoe/10?format=image");
+            put("EOE/Sliver", "https://api.scryfall.com/cards/teoe/1?format=image");
+
+            // EOC
+            put("EOC/Beast/1", "https://api.scryfall.com/cards/teoc/5/en?format=image");
+            put("EOC/Beast/2", "https://api.scryfall.com/cards/teoc/6/en?format=image");
+            put("EOC/Bird", "https://api.scryfall.com/cards/teoc/3/en?format=image");
+            put("EOC/Clue", "https://api.scryfall.com/cards/teoc/10/en?format=image");
+            put("EOC/Elemental/1", "https://api.scryfall.com/cards/teoc/7/en?format=image");
+            put("EOC/Elemental/2", "https://api.scryfall.com/cards/teoc/8/en?format=image");
+            put("EOC/Gnome", "https://api.scryfall.com/cards/teoc/11/en?format=image");
+            put("EOC/Golem/1", "https://api.scryfall.com/cards/teoc/12/en?format=image");
+            put("EOC/Golem/2", "https://api.scryfall.com/cards/teoc/13/en?format=image");
+            put("EOC/Golem/3", "https://api.scryfall.com/cards/teoc/14/en?format=image");
+            put("EOC/Incubator", "https://api.scryfall.com/cards/teoc/15/en?format=image&face=front");
+            put("EOC/Insect", "https://api.scryfall.com/cards/teoc/4/en?format=image");
+            put("EOC/Pest", "https://api.scryfall.com/cards/teoc/9/en?format=image");
+            put("EOC/Phyrexian", "https://api.scryfall.com/cards/teoc/15/en?format=image&face=back");
+            put("EOC/Shapeshifter", "https://api.scryfall.com/cards/teoc/2/en?format=image");
+            put("EOC/Thopter", "https://api.scryfall.com/cards/teoc/16/en?format=image");
 
             // JVC
             put("JVC/Elemental Shaman", "https://api.scryfall.com/cards/tjvc/4?format=image");
