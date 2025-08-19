@@ -1,5 +1,6 @@
 package mage.cards.e;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -12,7 +13,9 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPlayer;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -72,12 +75,20 @@ class EgoErasureEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
-            Permanent permanent = it.next().getPermanent(game);
-            if (permanent == null) {
-                it.remove();
-                continue;
+        if (hasLayer(layer)) {
+            ArrayList<MageItem> affectedObjects = new ArrayList<>();
+            if (queryAffectedObjects(layer, source, game, affectedObjects)) {
+                applyToObjects(layer, sublayer, source, game, affectedObjects);
+                return true;
             }
+        }
+        return false;
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     permanent.removeAllCreatureTypes(game);
@@ -89,16 +100,23 @@ class EgoErasureEffect extends ContinuousEffectImpl {
                     break;
             }
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+            Permanent permanent = it.next().getPermanent(game);
+            if (permanent == null) {
+                it.remove();
+                continue;
+            }
+            affectedObjects.add(permanent);
+        }
         if (affectedObjectList.isEmpty()) {
             discard();
             return false;
         }
-        return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

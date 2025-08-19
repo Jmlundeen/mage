@@ -1,5 +1,6 @@
 package mage.cards.e;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -20,6 +21,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -129,17 +131,11 @@ class ElsewhereFlaskContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + "_ElsewhereFlask"));
-        if (choice == null) {
-            return false;
-        }
-        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
-            Permanent land = it.next().getPermanent(game);
-            if (land == null) {
-                it.remove();
-                continue;
-            }
+        assert choice != null;
+        for (MageItem object : affectedObjects) {
+            Permanent land = (Permanent) object;
             land.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
             land.addSubType(game, choice);
             land.removeAllAbilities(source.getSourceId(), game);
@@ -161,6 +157,26 @@ class ElsewhereFlaskContinuousEffect extends ContinuousEffectImpl {
                     break;
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + "_ElsewhereFlask"));
+        if (choice == null) {
+            return false;
+        }
+        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+            Permanent land = it.next().getPermanent(game);
+            if (land == null) {
+                it.remove();
+                continue;
+            }
+            affectedObjects.add(land);
+        }
+        if (affectedObjectList.isEmpty()) {
+            discard();
+            return false;
+        }
+        return !affectedObjects.isEmpty();
     }
 }

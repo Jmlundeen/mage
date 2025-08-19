@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +16,7 @@ import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,15 +57,22 @@ public class EachSpellYouCastHasReplicateEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Spell spell = (Spell) object;
+            Cost cost = fixedNewCost != null ? fixedNewCost.copy() : spell.getSpellAbility().getManaCosts().copy();
+            ReplicateAbility replicateAbility = replicateAbilities.computeIfAbsent(spell.getId(), k -> new ReplicateAbility(cost));
+            game.getState().addOtherAbility(spell.getCard(), replicateAbility, false); // Do not copy because paid and # of activations state is handled in the baility
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent == null
                 || !permanent.isControlledBy(source.getControllerId())) { // Verify that the controller of the permanent is the one who cast the spell
             return false;
         }
-
-        boolean applied = false;
-
         for (StackObject stackObject : game.getStack()) {
             if (!(stackObject instanceof Spell)
                     || stackObject.isCopy()
@@ -73,17 +82,13 @@ public class EachSpellYouCastHasReplicateEffect extends ContinuousEffectImpl {
             }
             Spell spell = (Spell) stackObject;
             if (filter.match(stackObject, game)) {
-                Cost cost = fixedNewCost != null ? fixedNewCost.copy() : spell.getSpellAbility().getManaCosts().copy();
-                ReplicateAbility replicateAbility = replicateAbilities.computeIfAbsent(spell.getId(), k -> new ReplicateAbility(cost));
-                game.getState().addOtherAbility(spell.getCard(), replicateAbility, false); // Do not copy because paid and # of activations state is handled in the baility
-                applied = true;
+                affectedObjects.add(spell);
             }
         }
         if (game.getStack().isEmpty()) {
             replicateAbilities.clear();
         }
-
-        return applied;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

@@ -1,9 +1,7 @@
 
 package mage.cards.e;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -18,6 +16,11 @@ import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -63,20 +66,28 @@ class EarnestFellowshipEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game)) {
-            if (permanent.getColor(game).hasColor()) {
-                List<ColorPredicate> colorPredicates = new ArrayList<>();
-                for (ObjectColor color : permanent.getColor(game).getColors()) {
-                    colorPredicates.add(new ColorPredicate(color));
-                }
-                FilterCard filterColors = new FilterCard("its colors");
-                filterColors.add(Predicates.or(colorPredicates));
-                Ability ability = new ProtectionAbility(filterColors);
-                permanent.addAbility(ability, source.getSourceId(), game);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            List<ColorPredicate> colorPredicates = new ArrayList<>();
+            for (ObjectColor color : permanent.getColor(game).getColors()) {
+                colorPredicates.add(new ColorPredicate(color));
             }
-       }
-        return true;
+            FilterCard filterColors = new FilterCard("its colors");
+            filterColors.add(Predicates.or(colorPredicates));
+            Ability ability = new ProtectionAbility(filterColors);
+            permanent.addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(filter, source.getControllerId(), game)) {
+            if (permanent.getColor(game).hasColor()) {
+                affectedObjects.add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
 }

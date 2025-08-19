@@ -1,5 +1,6 @@
 package mage.cards.e;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -10,6 +11,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -32,37 +34,39 @@ public final class EnchantedEvening extends CardImpl {
     public EnchantedEvening copy() {
         return new EnchantedEvening(this);
     }
+}
 
-    // need to be enclosed class for dependent check of continuous effects
-    private static class EnchangedEveningEffect extends ContinuousEffectImpl {
+class EnchangedEveningEffect extends ContinuousEffectImpl {
+    // TODO: Change to AddSubTypeAllEffect after dependency update
+    EnchangedEveningEffect() {
+        super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
+        this.dependencyTypes.add(DependencyType.EnchantmentAddingRemoving);
+        this.dependencyTypes.add(DependencyType.AuraAddingRemoving);
+        this.staticText = "All permanents are enchantments in addition to their other types";
+    }
 
-        private EnchangedEveningEffect() {
-            super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
-            this.dependencyTypes.add(DependencyType.EnchantmentAddingRemoving);
-            this.dependencyTypes.add(DependencyType.AuraAddingRemoving);
-            this.staticText = "All permanents are enchantments in addition to their other types";
+    private EnchangedEveningEffect(final EnchangedEveningEffect effect) {
+        super(effect);
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addCardType(game, CardType.ENCHANTMENT);
         }
+    }
 
-        private EnchangedEveningEffect(final EnchangedEveningEffect effect) {
-            super(effect);
-        }
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_PERMANENT, source.getControllerId(),
+                source, game
+        ));
+        return !affectedObjects.isEmpty();
+    }
 
-        @Override
-        public boolean apply(Game game, Ability source) {
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                    StaticFilters.FILTER_PERMANENT, source.getControllerId(),
-                    source, game
-            )) {
-                if (permanent != null) {
-                    permanent.addCardType(game, CardType.ENCHANTMENT);
-                }
-            }
-            return true;
-        }
-
-        @Override
-        public EnchangedEveningEffect copy() {
-            return new EnchangedEveningEffect(this);
-        }
+    @Override
+    public EnchangedEveningEffect copy() {
+        return new EnchangedEveningEffect(this);
     }
 }

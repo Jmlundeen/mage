@@ -1,7 +1,6 @@
 
 package mage.cards.e;
 
-import java.util.UUID;
 import mage.abilities.Abilities;
 import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
@@ -17,8 +16,9 @@ import mage.constants.*;
 import mage.filter.common.FilterControlledLandPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
-import mage.target.common.TargetControlledPermanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -78,6 +78,7 @@ class ExcavatorEffect extends ContinuousEffectImpl {
             if(cost instanceof SacrificeTargetCost) {
                 SacrificeTargetCost sacrificeCost = (SacrificeTargetCost) cost;
                 for(Permanent permanent : sacrificeCost.getPermanents()) {
+                    game.getPermanentOrLKIBattlefield(permanent.getId()).getSubtype(game);
                     if(permanent.hasSubtype(SubType.FOREST, game))
                     {
                         abilities.add(new ForestwalkAbility());
