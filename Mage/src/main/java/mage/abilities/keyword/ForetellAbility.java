@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
@@ -28,6 +29,7 @@ import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 import mage.watchers.common.ForetoldWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -293,9 +295,9 @@ class ForetellAddCostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = mor.getCard(game);
-        if (card != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
             UUID mainCardId = card.getMainCard().getId();
             if (game.getState().getZone(mainCardId) == Zone.EXILED) {
                 String foretellCost = (String) game.getState().getValue(mainCardId.toString() + "Foretell Cost");
@@ -371,8 +373,16 @@ class ForetellAddCostEffect extends ContinuousEffectImpl {
                     ability.setAbilityName(card.getName());
                     game.getState().addOtherAbility(card, ability);
                 }
-                return true;
             }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = mor.getCard(game);
+        if (card != null) {
+            affectedObjects.add(card);
+            return true;
         }
         discard();
         return true;
@@ -574,12 +584,9 @@ class ForetellAddAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        for (Card card : controller.getHand().getCards(filter, game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
             ForetellAbility foretellAbility = null;
             if (card instanceof SplitCard) {
                 String leftHalfCost = CardUtil.reduceCost(((SplitCard) card).getLeftHalfCard().getManaCost(), 2).getText();
@@ -613,6 +620,15 @@ class ForetellAddAbilityEffect extends ContinuousEffectImpl {
                 game.getState().addOtherAbility(card, foretellAbility);
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        affectedObjects.addAll(controller.getHand().getCards(filter, game));
+        return !affectedObjects.isEmpty();
     }
 }

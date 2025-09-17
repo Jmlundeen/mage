@@ -1,5 +1,6 @@
 package mage.cards.f;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -25,6 +26,7 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.FishNoAbilityToken;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -111,7 +113,23 @@ class FishingPoleEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
+            Ability ability = new SimpleActivatedAbility(
+                    new AddCountersTargetEffect(CounterType.BAIT.createInstance())
+                            .setTargetPointer(new FixedTarget(source.getSourceId(), game))
+                            .setText("put a bait counter on " + game.getPermanent(source.getSourceId()).getName()),
+                    new GenericManaCost(1)
+            );
+            ability.addCost(new TapSourceCost());
+            ability.addCost(new TapAttachmentCost().setMageObjectReference(source, game));
+            creature.addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent fishingPole = source.getSourcePermanentIfItStillExists(game);
         if (fishingPole == null) {
             return false;
@@ -120,15 +138,7 @@ class FishingPoleEffect extends ContinuousEffectImpl {
         if (creature == null) {
             return false;
         }
-        Ability ability = new SimpleActivatedAbility(
-                new AddCountersTargetEffect(CounterType.BAIT.createInstance())
-                        .setTargetPointer(new FixedTarget(fishingPole, game))
-                        .setText("put a bait counter on " + fishingPole.getName()),
-                new GenericManaCost(1)
-        );
-        ability.addCost(new TapSourceCost());
-        ability.addCost(new TapAttachmentCost().setMageObjectReference(source, game));
-        creature.addAbility(ability, source.getSourceId(), game);
+        affectedObjects.add(creature);
         return true;
     }
 }

@@ -1,5 +1,6 @@
 package mage.cards.f;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -18,6 +19,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -77,7 +79,14 @@ class FealtyToTheRealmEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).changeControllerId(game.getMonarchId(), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent enchantment = source.getSourcePermanentIfItStillExists(game);
         if (enchantment == null || game.getMonarchId() == null) {
             return false;
@@ -86,7 +95,7 @@ class FealtyToTheRealmEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        permanent.changeControllerId(game.getMonarchId(), game, source);
+        affectedObjects.add(permanent);
         return true;
     }
 }

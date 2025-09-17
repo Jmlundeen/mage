@@ -1,6 +1,7 @@
 package mage.cards.f;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -15,6 +16,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,17 +72,25 @@ class FblthpLostOnTheRangePlotGivingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility((Card) object, new PlotAbility(((Card) object).getManaCost().getText()));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
         Card card = controller.getLibrary().getFromTop(game);
-        if (card == null) {
+        if (card != null) {
+            affectedObjects.add(card);
+            return true;
+        } else {
             return false;
         }
-        game.getState().addOtherAbility(card, new PlotAbility(card.getManaCost().getText()));
-        return true;
     }
 }
 
@@ -105,10 +115,17 @@ class FblthpLostOnTheRangePermissionEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Player) object).setPlotFromTopOfLibrary(true);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            controller.setPlotFromTopOfLibrary(true);
+            affectedObjects.add(controller);
             return true;
         }
         return false;

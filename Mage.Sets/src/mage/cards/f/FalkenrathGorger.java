@@ -2,6 +2,7 @@
 package mage.cards.f;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,8 +16,10 @@ import mage.game.Game;
 import mage.players.Player;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -83,28 +86,33 @@ class FalkenrathGorgerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Map<UUID, MadnessAbility> usedMadnessAbilities = new HashMap<>();
+        for (MageItem object : affectedObjects) {
+            addMadnessToCard(game, (Card) object, usedMadnessAbilities);
+        }
+        madnessAbilities.clear();
+        madnessAbilities.putAll(usedMadnessAbilities);
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
-        Map<UUID, MadnessAbility> usedMadnessAbilities = new HashMap<>();
         // hand
-        for (Card card : controller.getHand().getCards(filter, game)) {
-            addMadnessToCard(game, card, usedMadnessAbilities);
-        }
+        affectedObjects.addAll(controller.getHand().getCards(filter, game));
         // graveyard
-        for (Card card : controller.getGraveyard().getCards(filter, game)) {
-            addMadnessToCard(game, card, usedMadnessAbilities);
-        }
+        affectedObjects.addAll(controller.getGraveyard().getCards(filter, game));
         // Exile
-        for (Card card : game.getExile().getCardsOwned(filter, controller.getId(), source, game)) {
-            addMadnessToCard(game, card, usedMadnessAbilities);
-        }
-        madnessAbilities.clear();
-        madnessAbilities.putAll(usedMadnessAbilities);
-        return true;
-
+        affectedObjects.addAll(game.getExile().getCardsOwned(filter, controller.getId(), source, game));
+        // Library
+        affectedObjects.addAll(controller.getLibrary().getCards(game).stream()
+                .filter(card -> filter.match(card, controller.getId(), source, game))
+                .collect(Collectors.toList())
+        );
+        return !affectedObjects.isEmpty();
     }
 
     private void addMadnessToCard(Game game, Card card, Map<UUID, MadnessAbility> usedMadnessAbilities) {

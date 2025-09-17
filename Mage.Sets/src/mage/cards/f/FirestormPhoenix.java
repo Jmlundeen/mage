@@ -1,6 +1,7 @@
 package mage.cards.f;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +21,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -136,17 +138,29 @@ class FirestormPhoenixRevealEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Player player = game.getPlayer(card.getOwnerId());
+            player.revealCards(card.getIdName(), new CardsImpl(card), game, false);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Card card = game.getCard(getTargetPointer().getFirst(game, source));
         if (card == null) {
             discard();
             return false;
         }
         Player player = game.getPlayer(card.getOwnerId());
-        if (player != null) {
-            player.revealCards(card.getIdName(), new CardsImpl(card), game, false);
+        if (player == null) {
+            discard();
+            return false;
+        } else {
+            affectedObjects.add(player);
+            return true;
         }
-        return true;
     }
 }
 

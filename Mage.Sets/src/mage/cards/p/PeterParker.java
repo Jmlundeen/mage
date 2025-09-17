@@ -1,5 +1,6 @@
 package mage.cards.p;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -23,10 +24,7 @@ import mage.game.permanent.token.Spider21Token;
 import mage.game.stack.Spell;
 import mage.players.Player;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  *
@@ -95,12 +93,23 @@ class AmazingSpiderManEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Ability ability = new WebSlingingAbility(card, "{G}{W}{U}");
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getControllerOrOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Set<Card> cardsToGainAbility = new HashSet<>();
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
-        Set<Card> cardsToGainAbility = new HashSet<>();
         cardsToGainAbility.addAll(controller.getHand().getCards(filter, game));
         cardsToGainAbility.addAll(controller.getGraveyard().getCards(filter, game));
         controller.getLibrary().getCards(game).stream()
@@ -119,12 +128,7 @@ class AmazingSpiderManEffect extends ContinuousEffectImpl {
                 .map(s -> game.getCard(s.getSourceId()))
                 .filter(Objects::nonNull)
                 .forEach(cardsToGainAbility::add);
-        for (Card card : cardsToGainAbility) {
-            Ability ability = new WebSlingingAbility(card, "{G}{W}{U}");
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getControllerOrOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-        return true;
+        affectedObjects.addAll(cardsToGainAbility);
+        return !affectedObjects.isEmpty();
     }
 }
