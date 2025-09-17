@@ -106,7 +106,7 @@ public final class Conspiracy extends CardImpl {
                 }
             }
             // in Exile
-            for (Card card : game.getState().getExile().getAllCards(game, controller.getId())) {
+            for (Card card : game.getState().getExile().getCardsOwned(game, controller.getId())) {
                 if (card.isOwnedBy(controller.getId()) && card.isCreature(game)) {
                     affectedObjects.add(card);
                 }
@@ -155,5 +155,4 @@ public final class Conspiracy extends CardImpl {
             subTypes.add(subtype);
         }
     }
-
 }

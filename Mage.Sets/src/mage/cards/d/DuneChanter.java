@@ -7,6 +7,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.GainLifeEffect;
@@ -46,10 +47,12 @@ public final class DuneChanter extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new DuneChanterContinuousEffect()));
 
         // Lands you control have "{T}: Add one mana of any color."
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
+        ContinuousEffect effect = new GainAbilityControlledEffect(
                 new AnyColorManaAbility(), Duration.WhileOnBattlefield,
                 StaticFilters.FILTER_LANDS, false
-        )));
+        );
+        effect.getDependedToTypes().add(DependencyType.BecomeNonbasicLand);
+        this.addAbility(new SimpleStaticAbility(effect));
 
         // {T}: Mill two cards. You gain 1 life for each land card milled this way.
         this.addAbility(new SimpleActivatedAbility(new DuneChanterEffect(), new TapSourceCost()));
@@ -77,6 +80,7 @@ class DuneChanterContinuousEffect extends ContinuousEffectImpl {
     public DuneChanterContinuousEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
         staticText = "Lands you control and land cards you own that aren't on the battlefield are Deserts in addition to their other types";
+        dependendToTypes.add(DependencyType.BecomeNonbasicLand);
     }
 
     private DuneChanterContinuousEffect(final DuneChanterContinuousEffect effect) {
@@ -118,7 +122,7 @@ class DuneChanterContinuousEffect extends ContinuousEffectImpl {
             }
         }
         // in exile
-        for (Card card : game.getState().getExile().getAllCards(game, controllerId)) {
+        for (Card card : game.getState().getExile().getCardsOwned(game, controllerId)) {
             if (filterCard.match(card, controllerId, source, game) && !card.hasSubtype(subType, game)) {
                 affectedObjects.add(card);
             }
@@ -173,5 +177,3 @@ class DuneChanterEffect extends OneShotEffect {
         return true;
     }
 }
-
-

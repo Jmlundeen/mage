@@ -100,7 +100,7 @@ public class AddCreatureSubTypeAllMultiZoneEffect extends ContinuousEffectImpl {
             }
         }
         // in Exile
-        for (Card card : game.getState().getExile().getAllCards(game, controllerId)) {
+        for (Card card : game.getState().getExile().getCardsOwned(game, controllerId)) {
             if (filterCard.match(card, controllerId, source, game) && !card.hasSubtype(subType, game)) {
                 affectedObjects.add(card);
             }

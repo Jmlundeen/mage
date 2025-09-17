@@ -55,6 +55,12 @@ public final class Conversion extends CardImpl {
         ConversionEffect() {
             super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
             this.staticText = "All Mountains are Plains";
+            this.dependendToTypes.add(DependencyType.BecomeForest);
+            this.dependendToTypes.add(DependencyType.BecomeIsland);
+            this.dependendToTypes.add(DependencyType.BecomeMountain);
+            this.dependendToTypes.add(DependencyType.BecomePlains);
+            this.dependendToTypes.add(DependencyType.BecomeSwamp);
+            this.dependencyTypes.add(DependencyType.BecomePlains);
         }
 
         private ConversionEffect(final ConversionEffect effect) {

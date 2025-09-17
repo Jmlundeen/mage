@@ -97,7 +97,7 @@ class BiotransferenceEffect extends ContinuousEffectImpl {
             }
         }
         // in Exile
-        for (Card card : game.getState().getExile().getAllCards(game, source.getControllerId())) {
+        for (Card card : game.getState().getExile().getCardsOwned(game, source.getControllerId())) {
             if (card.isCreature(game) && !card.isArtifact(game)) {
                 affectedObjects.add(card);
             }

@@ -512,6 +512,8 @@ public final class FinalFantasy extends ExpansionSet {
         cards.add(new SetCardInfo("Summon: Anima", 364, Rarity.UNCOMMON, mage.cards.s.SummonAnima.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Summon: Bahamut", 1, Rarity.MYTHIC, mage.cards.s.SummonBahamut.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Summon: Bahamut", 356, Rarity.MYTHIC, mage.cards.s.SummonBahamut.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Summon: Brynhildr", 160, Rarity.RARE, mage.cards.s.SummonBrynhildr.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Summon: Brynhildr", 366, Rarity.RARE, mage.cards.s.SummonBrynhildr.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Summon: Choco/Mog", 35, Rarity.COMMON, mage.cards.s.SummonChocoMog.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Summon: Choco/Mog", 358, Rarity.COMMON, mage.cards.s.SummonChocoMog.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Summon: Esper Maduin", 185, Rarity.RARE, mage.cards.s.SummonEsperMaduin.class, NON_FULL_USE_VARIOUS));
@@ -601,7 +603,7 @@ public final class FinalFantasy extends ExpansionSet {
         cards.add(new SetCardInfo("Traveling Chocobo", "551b", Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Traveling Chocobo", "551c", Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Traveling Chocobo", "551d", Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, NON_FULL_USE_VARIOUS));
-        cards.add(new SetCardInfo("Traveling Chocobo", "551f", Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Traveling Chocobo", "551f", Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, FULL_ART_USE_VARIOUS));
         cards.add(new SetCardInfo("Traveling Chocobo", 210, Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Traveling Chocobo", 406, Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Traveling Chocobo", 551, Rarity.MYTHIC, mage.cards.t.TravelingChocobo.class, NON_FULL_USE_VARIOUS));

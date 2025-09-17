@@ -2871,6 +2871,14 @@
 |Generate|TOK:EOC|Shapeshifter|||ShapeshifterDeathtouchToken|
 |Generate|TOK:EOC|Thopter|||ThopterColorlessToken|
 
+#SPM
+|Generate|TOK:SPM|Food|||FoodToken|
+|Generate|TOK:SPM|Human|||HumanCitizenToken|
+|Generate|TOK:SPM|Illusion|||IllusionVillainToken|
+|Generate|TOK:SPM|Robot|||RobotFlyingToken|
+|Generate|TOK:SPM|Spider|||Spider21Token|
+|Generate|TOK:SPM|Treasure|||TreasureToken|
+
 # JVC
 |Generate|TOK:JVC|Elemental Shaman|||ElementalShamanToken|
 
@@ -2943,3 +2951,9 @@
 
 # PL23
 |Generate|TOK:PL23|Food|||FoodToken|
+
+# PL24
+|Generate|TOK:PL24|Dragon|||DragonToken|
+
+# PL25
+|Generate|TOK:PL25|Snake|||SnakeToken|

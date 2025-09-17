@@ -27,6 +27,7 @@ public class BecomesAllBasicsControlledEffect extends ContinuousEffectImpl {
     public BecomesAllBasicsControlledEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         this.staticText = "Lands you control are every basic land type in addition to their other types";
+        dependendToTypes.add(DependencyType.BecomeNonbasicLand);
         dependencyTypes.add(DependencyType.BecomeMountain);
         dependencyTypes.add(DependencyType.BecomeForest);
         dependencyTypes.add(DependencyType.BecomeSwamp);

@@ -66,6 +66,7 @@ class AshayaSoulOfTheWildEffect extends ContinuousEffectImpl {
         staticText = "Nontoken creatures you control are Forest lands in addition to their other types";
         this.dependendToTypes.add(DependencyType.BecomeCreature);
         this.dependencyTypes.add(DependencyType.BecomeForest);
+        this.dependencyTypes.add(DependencyType.BecomeNonbasicLand);
     }
 
     private AshayaSoulOfTheWildEffect(final AshayaSoulOfTheWildEffect effect) {
