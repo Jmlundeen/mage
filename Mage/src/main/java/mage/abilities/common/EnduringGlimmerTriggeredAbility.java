@@ -90,7 +90,11 @@ class EnduringGlimmerTypeEffect extends ContinuousEffectImpl {
         if (permanent != null) {
             affectedObjects.add(permanent);
         }
-        return !affectedObjects.isEmpty();
+        if (affectedObjects.isEmpty()) {
+            discard();
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -101,17 +105,5 @@ class EnduringGlimmerTypeEffect extends ContinuousEffectImpl {
             permanent.removeAllCardTypes(game);
             permanent.addCardType(game, CardType.ENCHANTMENT);
         }
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        if (this.layer != layer && this.sublayer != sublayer) {
-            return false;
-        }
-        if (!super.apply(layer, sublayer, source, game)) {
-            discard();
-            return false;
-        }
-        return true;
     }
 }

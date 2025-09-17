@@ -54,7 +54,7 @@ public final class Excavator extends CardImpl {
 
 class ExcavatorEffect extends ContinuousEffectImpl {
 
-    private Abilities<Ability> abilities = new AbilitiesImpl();
+    private Abilities<Ability> abilities = new AbilitiesImpl<>();
 
     public ExcavatorEffect() {
         super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
@@ -78,7 +78,6 @@ class ExcavatorEffect extends ContinuousEffectImpl {
             if(cost instanceof SacrificeTargetCost) {
                 SacrificeTargetCost sacrificeCost = (SacrificeTargetCost) cost;
                 for(Permanent permanent : sacrificeCost.getPermanents()) {
-                    game.getPermanentOrLKIBattlefield(permanent.getId()).getSubtype(game);
                     if(permanent.hasSubtype(SubType.FOREST, game))
                     {
                         abilities.add(new ForestwalkAbility());

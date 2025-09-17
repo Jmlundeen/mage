@@ -1,5 +1,6 @@
 package mage.abilities.common;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.ContinuousRuleModifyingEffectImpl;
@@ -10,6 +11,7 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -88,12 +90,9 @@ class CantPayLifeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (UUID playerId : game.getState().getPlayersInRange(source.getControllerId(), game)) {
-            Player player = game.getPlayer(playerId);
-            if (player == null) {
-                return false;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
             player.addPayLifeCostRestriction(Player.PayLifeCostRestriction.CAST_SPELLS);
             if (this.onlyNonManaAbilities) {
                 player.addPayLifeCostRestriction(Player.PayLifeCostRestriction.ACTIVATE_NON_MANA_ABILITIES);
@@ -102,7 +101,17 @@ class CantPayLifeEffect extends ContinuousEffectImpl {
                 player.addPayLifeCostRestriction(Player.PayLifeCostRestriction.ACTIVATE_NON_MANA_ABILITIES);
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (UUID playerId : game.getState().getPlayersInRange(source.getControllerId(), game)) {
+            Player player = game.getPlayer(playerId);
+            if (player != null) {
+                affectedObjects.add(player);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 }
 
