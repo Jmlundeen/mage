@@ -1,6 +1,7 @@
 package mage.cards.h;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldOrAttacksSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,10 +21,7 @@ import mage.game.permanent.token.FoodToken;
 import mage.target.common.TargetCardInGraveyard;
 import mage.util.CardUtil;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * @author PurpleCrowbar
@@ -73,29 +71,40 @@ class HazelsBrewmasterAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : getAbilities(game, source)) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Set<Ability> abilities = getAbilities(game, source);
+        if (abilities.isEmpty()) {
+            return false;
+        }
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
+        return !affectedObjects.isEmpty();
+    }
+
+    private static Set<Ability> getAbilities(Game game, Ability source) {
+        Set<Ability> abilities = new HashSet<>();
+                ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
                 game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())
         ));
         if (exileZone == null || exileZone.isEmpty()) {
-            return false;
+            return abilities;
         }
-        Set<Ability> abilities = exileZone
+        exileZone
                 .getCards(StaticFilters.FILTER_CARD_CREATURE, game)
                 .stream()
                 .map(card -> card.getAbilities(game))
                 .flatMap(Collection::stream)
                 .filter(Ability::isActivatedAbility)
-                .collect(Collectors.toSet());
-        if (abilities.isEmpty()) {
-            return false;
-        }
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-            for (Ability ability : abilities) {
-                permanent.addAbility(ability, source.getSourceId(), game, true);
-            }
-        }
-        return true;
+                .forEach(abilities::add);
+        return abilities;
     }
 
     @Override

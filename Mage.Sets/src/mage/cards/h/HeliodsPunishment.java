@@ -1,5 +1,6 @@
 package mage.cards.h;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -20,6 +21,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -75,18 +77,27 @@ class HeliodsPunishmentLoseAllAbilitiesEnchantedEffect extends ContinuousEffectI
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent sourceEnchantment = game.getPermanentOrLKIBattlefield(source.getSourceId());
-        if (sourceEnchantment != null && sourceEnchantment.getAttachedTo() != null) {
-            Permanent attachedTo = game.getPermanent(sourceEnchantment.getAttachedTo());
-            if (attachedTo != null) {
-                attachedTo.removeAllAbilities(source.getSourceId(), game);
-                HeliodsPunishmentEffect effect = new HeliodsPunishmentEffect(sourceEnchantment.getName());
-                Ability ability = new SimpleActivatedAbility(effect, new TapSourceCost());
-                effect.setSourceEnchantment(sourceEnchantment.getId());
-                attachedTo.addAbility(ability, source.getSourceId(), game);
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeAllAbilities(source.getSourceId(), game);
+            HeliodsPunishmentEffect effect = new HeliodsPunishmentEffect(source.getSourceObject(game).getName());
+            Ability ability = new SimpleActivatedAbility(effect, new TapSourceCost());
+            effect.setSourceEnchantment(source.getSourceId());
+            ((Permanent) object).addAbility(ability, source.getSourceId(), game);
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent sourceEnchantment = game.getPermanent(source.getSourceId());
+        if (sourceEnchantment == null || sourceEnchantment.getAttachedTo() == null) {
+            return false;
+        }
+        Permanent attachedTo = game.getPermanent(sourceEnchantment.getAttachedTo());
+        if (attachedTo == null) {
+            return false;
+        }
+        affectedObjects.add(attachedTo);
         return true;
     }
 

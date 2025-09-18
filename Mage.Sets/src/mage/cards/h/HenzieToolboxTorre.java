@@ -1,6 +1,7 @@
 package mage.cards.h;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -18,10 +19,7 @@ import mage.players.Player;
 import mage.util.CardUtil;
 import mage.watchers.common.CommanderPlaysCountWatcher;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author xenohedron
@@ -76,7 +74,18 @@ class HenzieToolboxTorreGainBlitzEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Ability ability = new BlitzAbility(card, card.getManaCost().getText());
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getControllerOrOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
@@ -105,12 +114,9 @@ class HenzieToolboxTorreGainBlitzEffect extends ContinuousEffectImpl {
             if (card.getManaCost().getText().isEmpty()) {
                 continue; // card must have a mana cost
             }
-            Ability ability = new BlitzAbility(card, card.getManaCost().getText());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getControllerOrOwnerId());
-            game.getState().addOtherAbility(card, ability);
+            affectedObjects.add(card);
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

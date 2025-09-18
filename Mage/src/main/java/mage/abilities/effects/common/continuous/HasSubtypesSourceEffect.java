@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -38,15 +39,22 @@ public final class HasSubtypesSourceEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            for (SubType subType : subtypes) {
+                ((MageObject) object).addSubType(game, subType);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         MageObject sourceObject = game.getObject(source);
-        if (sourceObject == null) {
-            return false;
+        if (sourceObject != null) {
+            affectedObjects.add(sourceObject);
+            return true;
         }
-        for (SubType subType : subtypes) {
-            sourceObject.addSubType(game, subType);
-        }
-        return true;
+        return false;
     }
 
     @Override
