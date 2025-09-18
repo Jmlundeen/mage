@@ -1,7 +1,9 @@
 package mage.cards.i;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -21,9 +23,7 @@ import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -113,7 +113,42 @@ class IdrisSoulOfTheTARDISGainEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
+                game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())
+        ));
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case AbilityAddingRemovingEffects_6:
+                    Set<Ability> abilities = exileZone
+                            .getCards(game)
+                            .stream()
+                            .map(card -> card.getAbilities(game))
+                            .flatMap(Collection::stream)
+                            .filter(ability -> ability.isActivatedAbility() || ability.isTriggeredAbility())
+                            .collect(Collectors.toSet());
+                    for (Ability ability : abilities) {
+                        permanent.addAbility(ability, source.getSourceId(), game);
+                    }
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer != SubLayer.ModifyPT_7c) {
+                        break;
+                    }
+                    int boost = exileZone
+                            .getCards(game)
+                            .stream()
+                            .mapToInt(MageObject::getManaValue)
+                            .sum();
+                    permanent.addPower(boost);
+                    permanent.addToughness(boost);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
                 game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())
@@ -121,36 +156,29 @@ class IdrisSoulOfTheTARDISGainEffect extends ContinuousEffectImpl {
         if (permanent == null || exileZone == null || exileZone.isEmpty()) {
             return false;
         }
-        switch (layer) {
-            case AbilityAddingRemovingEffects_6:
-                Set<Ability> abilities = exileZone
-                        .getCards(game)
-                        .stream()
-                        .map(card -> card.getAbilities(game))
-                        .flatMap(Collection::stream)
-                        .filter(ability -> ability.isActivatedAbility() || ability.isTriggeredAbility())
-                        .collect(Collectors.toSet());
-                for (Ability ability : abilities) {
-                    permanent.addAbility(ability, source.getSourceId(), game);
+        if (layer == Layer.AbilityAddingRemovingEffects_6) {
+            affectedObjectList.clear();
+            affectedObjectList.add(new MageObjectReference(permanent, game));
+            affectedObjects.add(permanent);
+            return true;
+        } else {
+            for (MageObjectReference mor : affectedObjectList) {
+                Permanent morPermanent = mor.getPermanent(game);
+                if (morPermanent != null) {
+                    affectedObjects.add(morPermanent);
                 }
-                break;
-            case PTChangingEffects_7:
-                if (sublayer != SubLayer.ModifyPT_7c) {
-                    break;
-                }
-                int boost = exileZone
-                        .getCards(game)
-                        .stream()
-                        .mapToInt(MageObject::getManaValue)
-                        .sum();
-                permanent.addPower(boost);
-                permanent.addToughness(boost);
+            }
         }
         return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
+            applyToObjects(layer, sublayer, source, game, affectedObjects);
+            return true;
+        }
         return false;
     }
 

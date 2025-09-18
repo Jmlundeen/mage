@@ -1,5 +1,7 @@
 package mage.cards.i;
 
+import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +17,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,48 +73,60 @@ class ImprisonedInTheMoonEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
     public ImprisonedInTheMoonEffect copy() {
         return new ImprisonedInTheMoonEffect(this);
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.addCardType(game, CardType.LAND);
+                    permanent.retainAllLandSubTypes(game);
+                    break;
+                case ColorChangingEffects_5:
+                    permanent.getColor(game).setWhite(false);
+                    permanent.getColor(game).setBlue(false);
+                    permanent.getColor(game).setBlack(false);
+                    permanent.getColor(game).setRed(false);
+                    permanent.getColor(game).setGreen(false);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    permanent.addAbility(new ColorlessManaAbility(), source.getSourceId(), game);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent enchantment = source.getSourcePermanentIfItStillExists(game);
         if (enchantment == null
                 || enchantment.getAttachedTo() == null) {
             return false;
         }
-        Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
-        if (permanent == null) {
-            return false;
+        if (layer == Layer.TypeChangingEffects_4) {
+            affectedObjectList.clear();
+            Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
+            if (permanent == null) {
+                return false;
+            }
+            affectedObjectList.add(new MageObjectReference(permanent, game));
+            affectedObjects.add(permanent);
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                // 305.7 Note that this doesn't remove any abilities that were granted to the land by other effects
-                // So the ability removing has to be done before Layer 6
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.LAND);
-                permanent.retainAllLandSubTypes(game);
-                break;
-            case ColorChangingEffects_5:
-                permanent.getColor(game).setWhite(false);
-                permanent.getColor(game).setBlue(false);
-                permanent.getColor(game).setBlack(false);
-                permanent.getColor(game).setRed(false);
-                permanent.getColor(game).setGreen(false);
-                break;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                permanent.addAbility(new ColorlessManaAbility(), source.getSourceId(), game);
-                break;
+        else {
+            for (MageObjectReference mor : affectedObjectList) {
+                Permanent permanent = mor.getPermanent(game);
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                }
+            }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

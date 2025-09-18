@@ -1,7 +1,7 @@
 
 package mage.cards.i;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,18 +13,14 @@ import mage.abilities.keyword.EnchantAbility;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AttachmentType;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -65,7 +61,7 @@ public final class IonasBlessing extends CardImpl {
 class IonasBlessingEffect extends ContinuousEffectImpl {
 
     IonasBlessingEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = ", and can block an additional creature each combat";
     }
 
@@ -79,33 +75,24 @@ class IonasBlessingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.setMaxBlocks(permanent.getMaxBlocks() + 1);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm != null && perm.getAttachedTo() != null) {
-            Permanent enchanted = game.getPermanent(perm.getAttachedTo());
-            if (enchanted != null) {
-                switch (layer) {
-                    case RulesEffects:
-                        // maxBlocks = 0 equals to "can block any number of creatures"
-                        if (enchanted.getMaxBlocks() > 0) {
-                            enchanted.setMaxBlocks(enchanted.getMaxBlocks() + 1);
-                        }
-                        break;
-                }
-                return true;
-            }
+        if (perm == null || perm.getAttachedTo() == null) {
+            return false;
+        }
+        Permanent enchanted = game.getPermanent(perm.getAttachedTo());
+        if (enchanted != null && enchanted.getMaxBlocks() > 0) {
+            affectedObjects.add(enchanted);
+            return true;
         }
         return false;
     }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
-    }
-
 }
