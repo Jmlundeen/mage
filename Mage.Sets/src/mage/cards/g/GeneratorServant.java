@@ -1,9 +1,7 @@
 package mage.cards.g;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
@@ -21,6 +19,10 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.watchers.Watcher;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -117,17 +119,23 @@ class GeneratorServantHasteEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(HasteAbility.getInstance(), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         GeneratorServantWatcher watcher = game.getState().getWatcher(GeneratorServantWatcher.class, source.getSourceId());
         if (watcher == null) {
             return false;
         }
-
         for (Permanent perm : game.getBattlefield().getAllActivePermanents()) {
             if (watcher.creatureCastWithServantsMana(perm.getId())) {
-                perm.addAbility(HasteAbility.getInstance(), source.getSourceId(), game);
+                affectedObjects.add(perm);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

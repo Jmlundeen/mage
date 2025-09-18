@@ -1,6 +1,7 @@
 package mage.cards.o;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.common.combat.CantAttackBlockTargetEffect;
@@ -9,16 +10,14 @@ import mage.abilities.effects.common.continuous.LoseAllAbilitiesTargetEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
-import mage.constants.TargetController;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -83,12 +82,12 @@ class OpportunisticDragonControlEffect extends GainControlTargetEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (source.getSourcePermanentIfItStillExists(game) == null) {
             discard();
             return false;
         }
-        return super.apply(game, source);
+        return super.queryAffectedObjects(layer, source, game, affectedObjects);
     }
 }
 
@@ -109,12 +108,12 @@ class OpportunisticDragonLoseAbilitiesEffect extends LoseAllAbilitiesTargetEffec
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (source.getSourcePermanentIfItStillExists(game) == null) {
             discard();
             return false;
         }
-        return super.apply(game, source);
+        return super.queryAffectedObjects(layer, source, game, affectedObjects);
     }
 }
 

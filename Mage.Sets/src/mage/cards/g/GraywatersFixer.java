@@ -1,6 +1,7 @@
 package mage.cards.g;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
@@ -13,6 +14,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,21 +55,28 @@ class GraywatersFixerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        for (Card card : controller.getGraveyard().getCards(game)) {
-            if (!card.isCreature(game) || !card.isOutlaw(game)) {
-                continue;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
             Ability ability = new EncoreAbility(new GenericManaCost(card.getManaValue()));
             ability.setSourceId(card.getId());
             ability.setControllerId(card.getOwnerId());
             game.getState().addOtherAbility(card, ability);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        for (Card card : controller.getGraveyard().getCards(game)) {
+            if (card.isCreature(game) && card.isOutlaw(game)) {
+                affectedObjects.add(card);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

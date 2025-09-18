@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -12,6 +13,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author TheElk801
@@ -47,7 +49,15 @@ public class GainControlAllOwnedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.changeControllerId(permanent.getOwnerId(), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
             Permanent permanent = it.next().getPermanent(game);
             if (permanent == null) {
@@ -55,12 +65,12 @@ public class GainControlAllOwnedEffect extends ContinuousEffectImpl {
                 continue;
             }
             if (!permanent.isControlledBy(permanent.getOwnerId())) {
-                permanent.changeControllerId(permanent.getOwnerId(), game, source);
+                affectedObjects.add(permanent);
             }
         }
         if (affectedObjectList.isEmpty()) {
             this.discard();
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

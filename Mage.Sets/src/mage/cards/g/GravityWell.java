@@ -1,7 +1,7 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -12,9 +12,11 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
 import mage.game.permanent.Permanent;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -76,7 +78,7 @@ class GravityWellTriggeredAbility extends TriggeredAbilityImpl {
 class GravityWellEffect extends ContinuousEffectImpl {
 
     GravityWellEffect() {
-        super(Duration.EndOfTurn, Outcome.LoseAbility);
+        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.LoseAbility);
         staticText = "it loses flying until end of turn";
     }
 
@@ -90,29 +92,19 @@ class GravityWellEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent != null) {
-            switch (layer) {
-                case AbilityAddingRemovingEffects_6:
-                    if (sublayer == SubLayer.NA) {
-                        permanent.removeAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
-                    }
-                    break;
-            }
+            affectedObjects.add(permanent);
             return true;
         }
         return false;
     }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.AbilityAddingRemovingEffects_6;
-    }
-
 }

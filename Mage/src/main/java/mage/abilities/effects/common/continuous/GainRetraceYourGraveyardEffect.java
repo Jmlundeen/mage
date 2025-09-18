@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.keyword.RetraceAbility;
@@ -13,6 +14,7 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,24 +42,29 @@ public class GainRetraceYourGraveyardEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Ability ability = new RetraceAbility(card);
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
         for (UUID cardId : controller.getGraveyard()) {
             Card card = game.getCard(cardId);
-            if (card == null) {
-                continue;
-            }
-            for (Card faceCard : CardUtil.getCastableComponents(card, filter, source, controller, game, null, false)) {
-                Ability ability = new RetraceAbility(faceCard);
-                ability.setSourceId(cardId);
-                ability.setControllerId(faceCard.getOwnerId());
-                game.getState().addOtherAbility(faceCard, ability);
+            if (card != null) {
+                affectedObjects.addAll(CardUtil.getCastableComponents(card, filter, source, controller, game, null, false));
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

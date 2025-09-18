@@ -1,5 +1,6 @@
 package mage.cards.n;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
@@ -9,7 +10,11 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
 import mage.abilities.effects.keyword.ConniveSourceEffect;
-import mage.abilities.keyword.*;
+import mage.abilities.keyword.CantBeBlockedSourceAbility;
+import mage.abilities.keyword.FlyingAbility;
+import mage.abilities.keyword.MayhemAbility;
+import mage.abilities.keyword.MenaceAbility;
+import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.ModalDoubleFacedCard;
 import mage.constants.*;
@@ -18,6 +23,7 @@ import mage.filter.predicate.card.CastFromZonePredicate;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -89,7 +95,18 @@ class GreenGoblinEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Ability ability = new MayhemAbility(card, card.getManaCost().getText());
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
@@ -101,13 +118,8 @@ class GreenGoblinEffect extends ContinuousEffectImpl {
                 .filter(Objects::nonNull)
                 .filter(card -> !card.getManaCost().getText().isEmpty()) // card must have a mana cost
                 .filter(card -> !card.isLand(game))
-                .forEach(card -> {
-                    Ability ability = new MayhemAbility(card, card.getManaCost().getText());
-                    ability.setSourceId(card.getId());
-                    ability.setControllerId(card.getOwnerId());
-                    game.getState().addOtherAbility(card, ability);
-                });
-        return true;
+                .forEach(affectedObjects::add);
+        return !affectedObjects.isEmpty();
     }
 
     @Override

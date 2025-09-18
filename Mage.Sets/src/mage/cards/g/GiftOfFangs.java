@@ -1,5 +1,6 @@
 package mage.cards.g;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -14,6 +15,7 @@ import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -78,21 +80,9 @@ class GiftOfFangsEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = null;
-        if (getAffectedObjectsSet()) {
-            permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-            if (permanent == null) {
-                discard();
-                return true;
-            }
-        } else {
-            Permanent equipment = game.getPermanent(source.getSourceId());
-            if (equipment != null && equipment.getAttachedTo() != null) {
-                permanent = game.getPermanent(equipment.getAttachedTo());
-            }
-        }
-        if (permanent != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             if (permanent.hasSubtype(SubType.VAMPIRE, game)) {
                 permanent.addPower(2);
                 permanent.addToughness(2);
@@ -101,6 +91,27 @@ class GiftOfFangsEffect extends ContinuousEffectImpl {
                 permanent.addToughness(-2);
             }
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = null;
+        if (getAffectedObjectsSet()) {
+            permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
+            if (permanent == null) {
+                discard();
+                return false;
+            }
+        } else {
+            Permanent equipment = game.getPermanent(source.getSourceId());
+            if (equipment != null && equipment.getAttachedTo() != null) {
+                permanent = game.getPermanent(equipment.getAttachedTo());
+            }
+        }
+        if (permanent == null) {
+            return false;
+        }
+        affectedObjects.add(permanent);
         return true;
     }
 }

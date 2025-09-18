@@ -1,6 +1,7 @@
 package mage.cards.g;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -19,6 +20,7 @@ import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -115,22 +117,29 @@ class GhostArkEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            UnearthAbility ability = new UnearthAbility(new ManaCostsImpl<>("{3}"));
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
         for (MageObjectReference mor : this.affectedObjectList) {
             Card card = mor.getCard(game);
-            if (card == null) {
-                continue;
+            if (card != null) {
+                affectedObjects.add(card);
             }
-            UnearthAbility ability = new UnearthAbility(new ManaCostsImpl<>("{3}"));
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

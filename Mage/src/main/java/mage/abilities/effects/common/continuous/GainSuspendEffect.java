@@ -1,6 +1,7 @@
 
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -12,6 +13,8 @@ import mage.constants.Outcome;
 import mage.constants.SubLayer;
 import mage.constants.Zone;
 import mage.game.Game;
+
+import java.util.List;
 
 /**
  * @author LevelX2
@@ -38,12 +41,20 @@ public class GainSuspendEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            SuspendAbility.addSuspendTemporaryToCard((Card) object, source, game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Card card = game.getCard(mor.getSourceId());
         if (card != null && mor.refersTo(card, game) && game.getState().getZone(card.getId()) == Zone.EXILED) {
-            SuspendAbility.addSuspendTemporaryToCard(card, source, game);
+            affectedObjects.add(card);
         } else {
             discard();
+            return false;
         }
         return true;
     }

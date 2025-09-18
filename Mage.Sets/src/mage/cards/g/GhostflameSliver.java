@@ -1,8 +1,8 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -13,6 +13,9 @@ import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -50,13 +53,16 @@ class GhostflameSliverEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent perm : game.getBattlefield().getActivePermanents(source.getControllerId(), game)) {
-            if (filter.match(perm, game)) {
-                perm.getColor(game).setColor(ObjectColor.COLORLESS);
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).getColor(game).setColor(ObjectColor.COLORLESS);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 
     @Override

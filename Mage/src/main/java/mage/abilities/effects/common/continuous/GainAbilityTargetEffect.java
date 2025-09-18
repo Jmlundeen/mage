@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -91,8 +92,18 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        int affectedTargets = 0;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+            } else if (object instanceof Card) {
+                game.getState().addOtherAbility((Card) object, ability);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
             // STATIC TARGETS
             List<MageObjectReference> newWaitingPermanents = new ArrayList<>();
@@ -103,8 +114,7 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
                 Permanent permanent = mor.getPermanent(game);
                 if (permanent != null) {
                     this.waitingCardPermanent = false;
-                    permanent.addAbility(ability, source.getSourceId(), game);
-                    affectedTargets++;
+                    affectedObjects.add(permanent);
                     continue;
                 }
 
@@ -112,15 +122,13 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
                 if (this.useOnCard) {
                     Card card = mor.getCard(game);
                     if (card != null) {
-                        game.getState().addOtherAbility(card, ability);
-                        affectedTargets++;
+                        affectedObjects.add(card);
                         continue;
                     } else {
                         // start waiting a spell's permanent (example: Tyvar Kell's emblem)
                         Permanent perm = game.getPermanent(mor.getSourceId());
                         if (perm != null) {
-                            perm.addAbility(ability, source.getSourceId(), game);
-                            affectedTargets++;
+                            affectedObjects.add(perm);
                             newWaitingPermanents.add(new MageObjectReference(perm, game));
                             this.waitingCardPermanent = false;
                         }
@@ -133,7 +141,7 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
             // add new linked permanents to targets
             if (!newWaitingPermanents.isEmpty()) {
                 this.affectedObjectList.addAll(newWaitingPermanents);
-                return affectedTargets > 0;
+                return !affectedObjects.isEmpty();
             }
 
             // no more valid targets
@@ -142,7 +150,7 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
             }
 
             // no more valid permanents (card was countered without new permanent)
-            if (duration == Duration.Custom && affectedTargets == 0 && !this.waitingCardPermanent) {
+            if (duration == Duration.Custom && affectedObjects.isEmpty() && !this.waitingCardPermanent) {
                 discard();
             }
         } else {
@@ -150,20 +158,18 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
             for (UUID objectId : getTargetPointer().getTargets(game, source)) {
                 Permanent permanent = game.getPermanent(objectId);
                 if (permanent != null) {
-                    permanent.addAbility(ability, source.getSourceId(), game);
-                    affectedTargets++;
+                    affectedObjects.add(permanent);
                     continue;
                 }
                 if (this.useOnCard) {
                     Card card = game.getCard(objectId);
                     if (card != null) {
-                        game.getState().addOtherAbility(card, ability);
-                        affectedTargets++;
+                        affectedObjects.add(card);
                     }
                 }
             }
         }
-        return affectedTargets > 0;
+        return !affectedObjects.isEmpty();
     }
 
     /**

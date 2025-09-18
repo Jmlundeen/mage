@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -26,6 +27,7 @@ import mage.target.targetadjustment.ForEachPlayerTargetsAdjuster;
 import mage.target.targetpointer.EachTargetPointer;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -95,6 +97,15 @@ class TheHorusHeresyControlEffect extends GainControlTargetEffect {
     @Override
     public TheHorusHeresyControlEffect copy() {
         return new TheHorusHeresyControlEffect(this);
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (source.getSourcePermanentIfItStillExists(game) == null) {
+            discard();
+            return false;
+        }
+        return super.queryAffectedObjects(layer, source, game, affectedObjects);
     }
 
     @Override

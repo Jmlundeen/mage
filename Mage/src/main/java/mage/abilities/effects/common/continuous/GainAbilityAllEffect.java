@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -17,6 +18,7 @@ import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -76,28 +78,37 @@ public class GainAbilityAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
             for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) { // filter may not be used again, because object can have changed filter relevant attributes but still geets boost
                 Permanent permanent = it.next().getPermanentOrLKIBattlefield(game); //LKI is neccessary for "dies triggered abilities" to work given to permanets  (e.g. Showstopper)
                 if (permanent != null) {
-                    permanent.addAbility(ability, source.getSourceId(), game);
+                    affectedObjects.add(permanent);
                 } else {
                     it.remove(); // no longer on the battlefield, remove reference to object
-                    if (affectedObjectList.isEmpty()) {
-                        discard();
-                    }
                 }
             }
+            if (affectedObjects.isEmpty()) {
+                this.discard();
+                return false;
+            }
+            return true;
         } else {
             setRuntimeData(source, game);
             for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
                 if (!(excludeSource && perm.getId().equals(source.getSourceId())) && selectedByRuntimeData(perm, source, game)) {
-                    perm.addAbility(ability, source.getSourceId(), game);
+                    affectedObjects.add(perm);
                 }
             }
+            return !affectedObjects.isEmpty();
         }
-        return true;
     }
 
     /**

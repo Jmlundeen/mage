@@ -25,6 +25,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -89,19 +90,26 @@ class GrandArchitectEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getFirstTarget());
-        if (permanent != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             permanent.getColor(game).setRed(false);
             permanent.getColor(game).setWhite(false);
             permanent.getColor(game).setGreen(false);
             permanent.getColor(game).setBlue(true);
             permanent.getColor(game).setBlack(false);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getFirstTarget());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
             return true;
         }
         return false;
     }
-
 }
 
 class GrandArchitectManaAbility extends ActivatedManaAbilityImpl {

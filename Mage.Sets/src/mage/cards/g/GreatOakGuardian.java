@@ -2,6 +2,7 @@
 package mage.cards.g;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -84,17 +85,28 @@ class GreatOakGuardianEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addPower(2);
+            permanent.addToughness(2);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
             Permanent permanent = it.next().getPermanent(game);
             if (permanent != null) {
-                permanent.addPower(2);
-                permanent.addToughness(2);
+                affectedObjects.add(permanent);
             } else {
                 it.remove();
             }
         }
-        return true;
+        if (affectedObjectList.isEmpty()) {
+            discard();
+        }
+        return !affectedObjects.isEmpty();
     }
 }
 

@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.combat;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -11,6 +12,8 @@ import mage.constants.SubLayer;
 import mage.filter.FilterPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author TheElk801
@@ -57,7 +60,14 @@ public class GoadAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addGoadingPlayer(source.getControllerId());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
             this.affectedObjectList.removeIf(mor -> !mor.zoneCounterIsCurrent(game)
                     || mor.getPermanent(game) == null);
@@ -66,14 +76,12 @@ public class GoadAllEffect extends ContinuousEffectImpl {
                 return false;
             }
             for (MageObjectReference mor : this.affectedObjectList) {
-                mor.getPermanent(game).addGoadingPlayer(source.getControllerId());
+                affectedObjects.add(mor.getPermanent(game));
             }
-            return true;
+        } else {
+            affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
         }
-        for (Permanent creature : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-            creature.addGoadingPlayer(source.getControllerId());
-        }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -18,6 +19,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -60,7 +62,7 @@ public final class SolidFooting extends CardImpl {
 class GauntletsOfLightEffect extends ContinuousEffectImpl {
 
     GauntletsOfLightEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = "As long as enchanted creature has vigilance, " +
                 "it assigns combat damage equal to its toughness rather than its power";
     }
@@ -75,12 +77,17 @@ class GauntletsOfLightEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            FilterCreaturePermanent filter = new FilterCreaturePermanent();
+            filter.add(new PermanentIdPredicate(object.getId()));
+            game.getCombat().setUseToughnessForDamage(true);
+            game.getCombat().addUseToughnessForDamageFilter(filter);
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent == null || permanent.getAttachedTo() == null) {
             return false;
@@ -89,15 +96,7 @@ class GauntletsOfLightEffect extends ContinuousEffectImpl {
         if (attachedTo == null || !attachedTo.getAbilities().containsKey(VigilanceAbility.getInstance().getId())) {
             return false;
         }
-        FilterCreaturePermanent filter = new FilterCreaturePermanent();
-        filter.add(new PermanentIdPredicate(permanent.getAttachedTo()));
-        game.getCombat().setUseToughnessForDamage(true);
-        game.getCombat().addUseToughnessForDamageFilter(filter);
+        affectedObjects.add(attachedTo);
         return true;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }

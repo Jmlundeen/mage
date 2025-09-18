@@ -1,6 +1,7 @@
 package mage.abilities.keyword;
 
 import mage.MageIdentifier;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.SpecialAction;
@@ -29,6 +30,7 @@ import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -410,14 +412,21 @@ class GainHasteEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(HasteAbility.getInstance(), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (suspendController == null) {
             suspendController = source.getControllerId();
         }
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent != null) {
             if (suspendController.equals(source.getControllerId())) {
-                permanent.addAbility(HasteAbility.getInstance(), source.getSourceId(), game);
+                affectedObjects.add(permanent);
             } else {
                 this.discard();
             }
@@ -429,7 +438,6 @@ class GainHasteEffect extends ContinuousEffectImpl {
         }
         return false;
     }
-
 }
 
 class SuspendUpkeepAbility extends BeginningOfUpkeepTriggeredAbility {

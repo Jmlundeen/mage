@@ -1,7 +1,6 @@
 
 package mage.abilities.effects.common.continuous;
 
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.keyword.ProtectionAbility;
@@ -10,7 +9,6 @@ import mage.constants.Duration;
 import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 
 /**
@@ -51,18 +49,6 @@ public class GainProtectionFromColorSourceEffect extends GainAbilitySourceEffect
             }
         }
         discard();
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent != null && new MageObjectReference(permanent, game).refersTo(source.getSourceObject(game), game)) {
-            permanent.addAbility(ability, source.getSourceId(), game);
-        } else {
-            // the source permanent is no longer on the battlefield, effect can be discarded
-            discard();
-        }
-        return true;
     }
 
     @Override

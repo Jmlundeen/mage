@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.combat;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -11,6 +12,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -59,14 +61,21 @@ public class GoadTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addGoadingPlayer(source.getControllerId());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (UUID targetId : getTargetPointer().getTargets(game, source)) {
             Permanent targetCreature = game.getPermanent(targetId);
             if (targetCreature != null) {
-                targetCreature.addGoadingPlayer(source.getControllerId());
+                affectedObjects.add(targetCreature);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

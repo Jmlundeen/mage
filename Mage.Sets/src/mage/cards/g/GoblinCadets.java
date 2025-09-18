@@ -1,7 +1,7 @@
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.BlocksOrBlockedSourceTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -11,6 +11,9 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetOpponent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -59,13 +62,21 @@ class GoblinCadetsChangeControlEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).changeControllerId(source.getFirstTarget(), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent != null) {
-            return permanent.changeControllerId(source.getFirstTarget(), game, source);
+            affectedObjects.add(permanent);
+            return true;
         } else {
             discard();
+            return false;
         }
-        return false;
     }
 }

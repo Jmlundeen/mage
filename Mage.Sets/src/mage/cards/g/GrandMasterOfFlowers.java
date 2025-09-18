@@ -1,5 +1,6 @@
 package mage.cards.g;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -22,6 +23,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -94,35 +97,48 @@ class GrandMasterOfFlowersEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null || permanent.getCounters(game).getCount(CounterType.LOYALTY) < 7) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.addCardType(game, CardType.CREATURE);
+                    permanent.removeAllSubTypes(game);
+                    permanent.addSubType(game, SubType.DRAGON);
+                    permanent.addSubType(game, SubType.GOD);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
+                    permanent.addAbility(IndestructibleAbility.getInstance(), source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(7);
+                        permanent.getToughness().setModifiedBaseValue(7);
+                    }
+                    break;
+            }
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.CREATURE);
-                permanent.removeAllSubTypes(game);
-                permanent.addSubType(game, SubType.DRAGON);
-                permanent.addSubType(game, SubType.GOD);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
-                permanent.addAbility(IndestructibleAbility.getInstance(), source.getSourceId(), game);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(7);
-                    permanent.getToughness().setModifiedBaseValue(7);
-                    return true;
-                }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent != null && permanent.getCounters(game).getCount(CounterType.LOYALTY) >= 7) {
+            affectedObjects.add(permanent);
+            return true;
         }
         return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (this.queryAffectedObjects(layer, source, game, affectedObjects)) {
+            this.applyToObjects(layer, sublayer, source, game, affectedObjects);
+            return true;
+        }
         return false;
     }
 

@@ -130,7 +130,7 @@ class CelestialDawnToWhiteEffect extends ContinuousEffectImpl {
             }
         }
         // Exile
-        affectedObjects.addAll(game.getExile().getAllCards(game, controller.getId()));
+        affectedObjects.addAll(game.getExile().getCardsOwned(game, controller.getId()));
         // Command
         for (CommandObject commandObject : game.getState().getCommand()) {
             if (commandObject instanceof Commander && commandObject.isControlledBy(controller.getId())) {
