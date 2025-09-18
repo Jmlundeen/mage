@@ -2,6 +2,7 @@
 package mage.abilities.effects.common;
 
 import mage.MageObject;
+import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.choices.ChoiceColor;
@@ -12,6 +13,7 @@ import mage.players.Player;
 import mage.util.CardUtil;
 
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * @author Plopman
@@ -62,4 +64,11 @@ public class ChooseColorEffect extends OneShotEffect {
         return new ChooseColorEffect(this);
     }
 
+    public static ObjectColor getChosenColor(UUID objectId, Game game) {
+        return getChosenColor(objectId, game, "_color");
+    }
+
+    public static ObjectColor getChosenColor(UUID objectId, Game game, String colorPostfix) {
+        return (ObjectColor) game.getState().getValue(objectId + colorPostfix);
+    }
 }

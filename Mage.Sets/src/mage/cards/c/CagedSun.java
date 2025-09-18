@@ -1,19 +1,17 @@
 package mage.cards.c;
 
-import mage.MageItem;
 import mage.Mana;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ChooseColorEffect;
+import mage.abilities.effects.common.continuous.BoostAllOfChosenColorEffect;
 import mage.abilities.effects.mana.ManaEffect;
 import mage.abilities.mana.TriggeredManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -34,7 +32,7 @@ public final class CagedSun extends CardImpl {
         this.addAbility(new AsEntersBattlefieldAbility(new ChooseColorEffect(Outcome.Benefit)));
 
         // Creatures you control of the chosen color get +1/+1.
-        this.addAbility(new SimpleStaticAbility(new CagedSunEffect2()));
+        this.addAbility(new SimpleStaticAbility(new BoostAllOfChosenColorEffect(1, 1, Duration.WhileOnBattlefield, false)));
 
         // Whenever a land's ability adds one or more mana of the chosen color, add one additional mana of that color.
         this.addAbility(new CagedSunTriggeredAbility());
@@ -47,51 +45,6 @@ public final class CagedSun extends CardImpl {
     @Override
     public CagedSun copy() {
         return new CagedSun(this);
-    }
-}
-
-class CagedSunEffect2 extends ContinuousEffectImpl {
-
-    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent();
-
-    public CagedSunEffect2() {
-        super(Duration.WhileOnBattlefield, Layer.PTChangingEffects_7, SubLayer.ModifyPT_7c, Outcome.BoostCreature);
-        staticText = "Creatures you control of the chosen color get +1/+1";
-    }
-
-    private CagedSunEffect2(final CagedSunEffect2 effect) {
-        super(effect);
-    }
-
-    @Override
-    public CagedSunEffect2 copy() {
-        return new CagedSunEffect2(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        ObjectColor color = (ObjectColor) game.getState().getValue(source.getSourceId() + "_color");
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            if (permanent.getColor(game).contains(color)) {
-                permanent.addPower(1);
-                permanent.addToughness(1);
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent == null) {
-            return false;
-        }
-        ObjectColor color = (ObjectColor) game.getState().getValue(permanent.getId() + "_color");
-        if (color == null) {
-            return false;
-        }
-        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(filter, source.getControllerId(), game));
-        return !affectedObjects.isEmpty();
     }
 }
 
