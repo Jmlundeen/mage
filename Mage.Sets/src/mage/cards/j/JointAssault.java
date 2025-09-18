@@ -1,20 +1,19 @@
 
 package mage.cards.j;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author noxx
@@ -56,6 +55,7 @@ class JointAssaultBoostTargetEffect extends ContinuousEffectImpl {
         super(effect);
         this.power = effect.power;
         this.toughness = effect.toughness;
+        this.paired = effect.paired;
     }
 
     @Override
@@ -76,26 +76,26 @@ class JointAssaultBoostTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        int affectedTargets = 0;
-        UUID permanentId = getTargetPointer().getFirst(game, source);
-
-        Permanent target = game.getPermanent(permanentId);
-        if (target != null) {
-            target.addPower(power);
-            target.addToughness(toughness);
-            affectedTargets++;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addPower(power);
+            permanent.addToughness(toughness);
         }
+    }
 
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent target = game.getPermanent(getTargetPointer().getFirst(game, source));
+        if (target != null) {
+            affectedObjects.add(target);
+        }
         if (this.paired != null) {
             Permanent pairedPermanent = this.paired.getPermanent(game);
             if (pairedPermanent != null) {
-                pairedPermanent.addPower(power);
-                pairedPermanent.addToughness(toughness);
-                affectedTargets++;
+                affectedObjects.add(pairedPermanent);
             }
         }
-
-        return affectedTargets > 0;
+        return !affectedObjects.isEmpty();
     }
 }

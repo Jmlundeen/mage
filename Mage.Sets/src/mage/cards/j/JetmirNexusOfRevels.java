@@ -1,6 +1,8 @@
 package mage.cards.j;
 
 import mage.MageInt;
+import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -14,6 +16,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,18 +69,10 @@ class JetmirNexusOfRevelsEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<Permanent> permanents = game
-                .getBattlefield()
-                .getActivePermanents(
-                        StaticFilters.FILTER_CONTROLLED_CREATURE,
-                        source.getControllerId(), source, game
-                );
-        int level = Math.min(permanents.size() / 3, 3);
-        if (level < 1) {
-            return false;
-        }
-        for (Permanent permanent : permanents) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            int level = Math.min(affectedObjects.size() / 3, 3);
             switch (layer) {
                 case AbilityAddingRemovingEffects_6:
                     permanent.addAbility(VigilanceAbility.getInstance(), source.getSourceId(), game);
@@ -87,20 +82,50 @@ class JetmirNexusOfRevelsEffect extends ContinuousEffectImpl {
                     if (level > 2) {
                         permanent.addAbility(DoubleStrikeAbility.getInstance(), source.getSourceId(), game);
                     }
-                    continue;
+                    break;
                 case PTChangingEffects_7:
                     if (sublayer == SubLayer.ModifyPT_7c) {
                         permanent.addPower(level);
                     }
-                    continue;
+                    break;
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (layer == Layer.AbilityAddingRemovingEffects_6) {
+            List<Permanent> permanents = game
+                    .getBattlefield()
+                    .getActivePermanents(
+                            StaticFilters.FILTER_CONTROLLED_CREATURE,
+                            source.getControllerId(), source, game
+                    );
+            int level = Math.min(permanents.size() / 3, 3);
+            if (level < 1) {
+                return false;
+            }
+            affectedObjects.addAll(permanents);
+            permanents.forEach(perm -> affectedObjectList.add(new MageObjectReference(perm, game)));
+        } else {
+            for (MageObjectReference mor : affectedObjectList) {
+                Permanent permanent = mor.getPermanent(game);
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                }
+            }
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
+            applyToObjects(layer, sublayer, source, game, affectedObjects);
+            return true;
+        }
+        return false;
     }
 
     @Override

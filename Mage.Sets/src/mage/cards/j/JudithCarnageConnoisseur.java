@@ -1,7 +1,7 @@
 package mage.cards.j;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
@@ -10,20 +10,16 @@ import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.keyword.DeathtouchAbility;
 import mage.abilities.keyword.LifelinkAbility;
 import mage.cards.Card;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SetTargetPointer;
-import mage.constants.SubLayer;
-import mage.constants.SubType;
-import mage.constants.SuperType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.token.ImpToken;
 import mage.game.stack.Spell;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -80,16 +76,23 @@ class JudithCarnageConnoisseurEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, DeathtouchAbility.getInstance());
+            game.getState().addOtherAbility(card, LifelinkAbility.getInstance());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Spell spell = game.getSpell(getTargetPointer().getFirst(game, source));
         if (spell == null) {
             discard();
             return false;
         }
 
-        Card card = spell.getCard();
-        game.getState().addOtherAbility(card, DeathtouchAbility.getInstance());
-        game.getState().addOtherAbility(card, LifelinkAbility.getInstance());
+        affectedObjects.add(spell.getCard());
         return true;
     }
 }

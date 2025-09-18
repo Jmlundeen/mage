@@ -1,8 +1,6 @@
 package mage.cards.j;
 
-import java.util.Objects;
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -12,13 +10,18 @@ import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.EscapeAbility;
 import mage.abilities.mana.DynamicManaAbility;
-import mage.constants.*;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  *
@@ -79,7 +82,18 @@ class JurassicParkEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Ability ability = new EscapeAbility(card, card.getManaCost().getText(), 3);
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
@@ -91,13 +105,8 @@ class JurassicParkEffect extends ContinuousEffectImpl {
                 .filter(Objects::nonNull)
                 .filter(card -> !card.getManaCost().getText().isEmpty()) // card must have a mana cost
                 .filter(card -> card.hasSubtype(SubType.DINOSAUR, game))
-                .forEach(card -> {
-                    Ability ability = new EscapeAbility(card, card.getManaCost().getText(), 3);
-                    ability.setSourceId(card.getId());
-                    ability.setControllerId(card.getOwnerId());
-                    game.getState().addOtherAbility(card, ability);
-                });
-        return true;
+                .forEach(affectedObjects::add);
+        return !affectedObjects.isEmpty();
     }
 
     @Override

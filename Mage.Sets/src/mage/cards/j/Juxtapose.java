@@ -1,5 +1,6 @@
 package mage.cards.j;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -109,7 +110,15 @@ class JuxtaposeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.changeControllerId(lockedControllers.get(permanent.getId()), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Set<UUID> toDelete = new HashSet<>();
         for (Map.Entry<UUID, Integer> entry : zoneChangeCounter.entrySet()) {
             Permanent permanent = game.getPermanent(entry.getKey());
@@ -118,7 +127,7 @@ class JuxtaposeEffect extends ContinuousEffectImpl {
                 toDelete.add(entry.getKey());
                 continue;
             }
-            permanent.changeControllerId(lockedControllers.get(permanent.getId()), game, source);
+            affectedObjects.add(permanent);
         }
         if (!toDelete.isEmpty()) {
             for (UUID uuid : toDelete) {
@@ -129,7 +138,7 @@ class JuxtaposeEffect extends ContinuousEffectImpl {
                 return false;
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     private Permanent chooseOnePermanentsWithTheHighestCMC(Player player, FilterPermanent filter, Ability source, Game game) {

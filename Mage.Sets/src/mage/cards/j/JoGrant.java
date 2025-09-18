@@ -1,6 +1,7 @@
 package mage.cards.j;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.CycleControllerTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -19,6 +20,7 @@ import mage.filter.predicate.mageobject.HistoricPredicate;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -79,14 +81,19 @@ class JoGrantEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility((Card) object, new CyclingAbility(new ManaCostsImpl<>("{2}{W}")));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
-        for (Card card : controller.getHand().getCards(filter, game)) {
-            game.getState().addOtherAbility(card, new CyclingAbility(new ManaCostsImpl<>("{2}{W}")));
-        }
-        return true;
+        affectedObjects.addAll(controller.getHand().getCards(filter, game));
+        return !affectedObjects.isEmpty();
     }
 }
