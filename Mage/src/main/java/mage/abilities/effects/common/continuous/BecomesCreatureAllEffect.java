@@ -13,6 +13,8 @@ import mage.game.permanent.token.Token;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author LevelX2
@@ -79,8 +81,16 @@ public class BecomesCreatureAllEffect extends ContinuousEffectImpl {
                     affectedObjects.add(permanent);
                 }
             }
+        } else if (layer == Layer.TypeChangingEffects_4) {
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                affectedObjects.add(permanent);
+                affectedObjectList.add(new MageObjectReference(permanent, game));
+            }
         } else {
-            affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
+            affectedObjects.addAll(affectedObjectList.stream()
+                    .map(mor -> mor.getPermanent(game))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList()));
         }
         return !affectedObjects.isEmpty();
     }

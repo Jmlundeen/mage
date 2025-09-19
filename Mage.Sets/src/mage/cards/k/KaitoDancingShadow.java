@@ -1,5 +1,6 @@
 package mage.cards.k;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.OneOrMoreCombatDamagePlayerTriggeredAbility;
@@ -23,6 +24,7 @@ import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.watchers.common.DamagedPlayerThisCombatWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -128,13 +130,20 @@ class KaitoDancingShadowIncreaseLoyaltyUseEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).setLoyaltyActivationsAvailable(2);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent kaito = source.getSourcePermanentIfItStillExists(game);
         if (kaito == null) {
             discard();
             return false;
         }
-        kaito.setLoyaltyActivationsAvailable(2);
+        affectedObjects.add(kaito);
         return true;
     }
 

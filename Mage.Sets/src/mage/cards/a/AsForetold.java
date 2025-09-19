@@ -122,7 +122,7 @@ class AsForetoldAlternativeCost extends AlternativeCostSourceAbility {
 class AsForetoldAddAltCostEffect extends ContinuousEffectImpl {
 
     AsForetoldAddAltCostEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = "Once each turn, you may pay {0} rather than pay the mana cost for a spell you cast with mana value X or less, where X is the number of time counters on {this}.";
     }
 
@@ -166,21 +166,5 @@ class AsForetoldAddAltCostEffect extends ContinuousEffectImpl {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            // Return true even if we didn't add the alt cost. We still applied the effect
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }

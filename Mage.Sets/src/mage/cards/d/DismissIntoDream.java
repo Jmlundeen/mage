@@ -2,11 +2,13 @@
 package mage.cards.d;
 
 import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.BecomesTargetSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.SacrificeSourceEffect;
 import mage.abilities.effects.common.continuous.CreaturesBecomeOtherTypeEffect;
+import mage.abilities.effects.common.continuous.GainAbilityAllEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -34,7 +36,12 @@ public final class DismissIntoDream extends CardImpl {
 
         // Each creature your opponents control is an Illusion in addition to its other types 
         // and has "When this creature becomes the target of a spell or ability, sacrifice it."
-        this.addAbility(new SimpleStaticAbility(new DismissIntoDreamEffect(filter)));
+        Ability ability = new SimpleStaticAbility(new CreaturesBecomeOtherTypeEffect(filter, SubType.ILLUSION, Duration.WhileOnBattlefield));
+        ability.addEffect(new GainAbilityAllEffect(
+                new BecomesTargetSourceTriggeredAbility(new SacrificeSourceEffect()),
+                Duration.WhileOnBattlefield, filter, "and has \"When this creature becomes the target of a spell or ability, sacrifice it.\""
+        ));
+        this.addAbility(ability);
     }
 
     private DismissIntoDream(final DismissIntoDream card) {
@@ -44,43 +51,5 @@ public final class DismissIntoDream extends CardImpl {
     @Override
     public DismissIntoDream copy() {
         return new DismissIntoDream(this);
-    }
-}
-
-class DismissIntoDreamEffect extends CreaturesBecomeOtherTypeEffect {
-
-    DismissIntoDreamEffect(FilterPermanent filter) {
-        super(filter, SubType.ILLUSION, Duration.WhileOnBattlefield);
-        this.outcome = Outcome.Detriment;
-        this.staticText = this.staticText + " and has \"When this creature becomes the target of a spell or ability, sacrifice it.\"";
-    }
-
-    private DismissIntoDreamEffect(final DismissIntoDreamEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public DismissIntoDreamEffect copy() {
-        return new DismissIntoDreamEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            switch (layer) {
-                case TypeChangingEffects_4:
-                    permanent.addSubType(game, this.subType);
-                    break;
-                case AbilityAddingRemovingEffects_6:
-                    permanent.addAbility(new BecomesTargetSourceTriggeredAbility(new SacrificeSourceEffect()), source.getSourceId(), game);
-                    break;
-            }
-        }
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return super.hasLayer(layer) || layer == Layer.AbilityAddingRemovingEffects_6;
     }
 }

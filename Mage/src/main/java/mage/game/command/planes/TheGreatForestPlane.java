@@ -1,5 +1,6 @@
 package mage.game.command.planes;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -67,7 +68,7 @@ public class TheGreatForestPlane extends Plane {
 class TheGreatForestCombatDamageRuleEffect extends ContinuousEffectImpl {
 
     public TheGreatForestCombatDamageRuleEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Detriment);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Detriment);
         staticText = "Each creature assigns combat damage equal to its toughness rather than its power";
     }
 
@@ -81,28 +82,18 @@ class TheGreatForestCombatDamageRuleEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        // Change the rule
+        game.getCombat().setUseToughnessForDamage(true);
+        game.getCombat().addUseToughnessForDamageFilter(StaticFilters.FILTER_PERMANENT_CREATURES);
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Plane cPlane = game.getState().getCurrentPlane();
         if (cPlane == null) {
             return false;
         }
-        if (!cPlane.getPlaneType().equals(Planes.PLANE_THE_GREAT_FOREST)) {
-            return false;
-        }
-
-        // Change the rule
-        game.getCombat().setUseToughnessForDamage(true);
-        game.getCombat().addUseToughnessForDamageFilter(StaticFilters.FILTER_PERMANENT_CREATURES);
-        return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
+        return cPlane.getPlaneType().equals(Planes.PLANE_THE_GREAT_FOREST);
     }
 }

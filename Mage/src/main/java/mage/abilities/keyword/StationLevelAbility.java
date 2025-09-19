@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.StaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -9,6 +10,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -120,30 +122,33 @@ class StationLevelCreatureEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null || permanent.getCounters(game).getCount(CounterType.CHARGE) < level) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.addCardType(game, CardType.CREATURE);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer != SubLayer.SetPT_7b) {
-                    return false;
-                }
-                permanent.getPower().setModifiedBaseValue(power);
-                permanent.getToughness().setModifiedBaseValue(toughness);
-                return true;
-            default:
-                return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    if (sublayer == SubLayer.NA) {
+                        if (!permanent.isCreature(game)) {
+                            permanent.addCardType(game, CardType.CREATURE);
+                        }
+                    }
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(power);
+                        permanent.getToughness().setModifiedBaseValue(toughness);
+                    }
+            }
         }
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

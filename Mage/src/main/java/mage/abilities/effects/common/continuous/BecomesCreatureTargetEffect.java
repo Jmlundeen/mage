@@ -1,6 +1,7 @@
 package mage.abilities.effects.common.continuous;
 
 import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -83,10 +84,20 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (UUID targetId : getTargetPointer().getTargets(game, source)) {
-            Permanent permanent = game.getPermanent(targetId);
-            if (permanent != null) {
-                affectedObjects.add(permanent);
+        if (layer == Layer.TextChangingEffects_3){
+            for (UUID targetId : getTargetPointer().getTargets(game, source)) {
+                Permanent permanent = game.getPermanent(targetId);
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                    affectedObjectList.add(new MageObjectReference(permanent, game));
+                }
+            }
+        } else {
+            for (MageObjectReference mor : affectedObjectList) {
+                Permanent permanent = mor.getPermanent(game);
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                }
             }
         }
         return !affectedObjects.isEmpty();

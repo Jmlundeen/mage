@@ -17,7 +17,7 @@ public class CreaturesBecomeOtherTypeEffect extends ContinuousEffectImpl {
     protected final SubType subType;
 
     public CreaturesBecomeOtherTypeEffect(FilterPermanent filter, SubType subType, Duration duration) {
-        super(duration, Outcome.Neutral);
+        super(duration, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
         this.filter = filter;
         this.subType = subType;
 
@@ -58,10 +58,5 @@ public class CreaturesBecomeOtherTypeEffect extends ContinuousEffectImpl {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.TypeChangingEffects_4;
     }
 }

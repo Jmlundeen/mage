@@ -1,6 +1,7 @@
 package mage.abilities.effects.common.continuous;
 
 import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
@@ -46,17 +47,20 @@ public class AddCreatureTypeAdditionEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent creature;
-        if (source.getTargets().getFirstTarget() == null) {
-            creature = game.getPermanent(getTargetPointer().getFirst(game, source));
-        } else {
-            creature = game.getPermanent(source.getTargets().getFirstTarget());
-            if (creature == null) {
-                creature = game.getPermanentEntering(source.getTargets().getFirstTarget());
+        if (layer == Layer.TypeChangingEffects_4){
+            Permanent creature;
+            if (source.getTargets().getFirstTarget() == null) {
+                creature = game.getPermanent(getTargetPointer().getFirst(game, source));
+            } else {
+                creature = game.getPermanent(source.getTargets().getFirstTarget());
+                if (creature == null) {
+                    creature = game.getPermanentEntering(source.getTargets().getFirstTarget());
+                }
             }
-        }
-        if (creature != null) {
-            affectedObjects.add(creature);
+            if (creature != null) {
+                affectedObjects.add(creature);
+                affectedObjectList.add(new MageObjectReference(creature, game));
+            }
         }
         return !affectedObjects.isEmpty();
     }
