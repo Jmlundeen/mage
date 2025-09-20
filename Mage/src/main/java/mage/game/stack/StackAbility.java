@@ -1,9 +1,6 @@
 package mage.game.stack;
 
-import mage.MageIdentifier;
-import mage.MageInt;
-import mage.MageObject;
-import mage.ObjectColor;
+import mage.*;
 import mage.abilities.*;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostAdjuster;
@@ -893,6 +890,11 @@ public class StackAbility extends StackObjectImpl implements Ability {
     @Override
     public AbilityImpl setIdentifier(MageIdentifier identifier) {
         throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public List<MageItem> getAffectedObjects() {
+        return this.ability.getAffectedObjects();
     }
 
     @Override

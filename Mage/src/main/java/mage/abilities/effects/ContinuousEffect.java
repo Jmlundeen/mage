@@ -47,6 +47,8 @@ public interface ContinuousEffect extends Effect {
 
     boolean hasLayer(Layer layer);
 
+    boolean hasSubLayer(SubLayer sublayer);
+
     boolean isInactive(Ability source, Game game);
 
     /**

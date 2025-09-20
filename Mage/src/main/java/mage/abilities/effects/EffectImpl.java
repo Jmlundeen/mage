@@ -1,13 +1,19 @@
 package mage.abilities.effects;
 
+import mage.MageItem;
+import mage.abilities.Ability;
 import mage.abilities.MageSingleton;
 import mage.abilities.Mode;
 import mage.constants.EffectType;
+import mage.constants.Layer;
 import mage.constants.Outcome;
+import mage.constants.SubLayer;
+import mage.game.Game;
 import mage.target.targetpointer.FirstTargetPointer;
 import mage.target.targetpointer.TargetPointer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -144,6 +150,17 @@ public abstract class EffectImpl implements Effect {
     @Override
     public String getConcatPrefix() {
         return this.concatPrefix;
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        // TODO: placeholder until effects are converted, then can be removed
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        // TODO: placeholder until effects are converted, then can be removed
+        return false;
     }
 
 }

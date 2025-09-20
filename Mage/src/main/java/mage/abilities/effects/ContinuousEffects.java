@@ -193,6 +193,10 @@ public class ContinuousEffects implements Serializable {
                     Set<Ability> abilities = layeredEffects.getAbility(effect.getId());
                     if (!abilities.isEmpty()) {
                         for (Ability ability : abilities) {
+                            if (timestampGroupName.equals("main")) {
+                                // reset ability affected objects on first call
+                                ability.getAffectedObjects().clear();
+                            }
                             // If e.g. triggerd abilities (non static) created the effect, the ability must not be in usable zone (e.g. Unearth giving Haste effect)
                             if (!(ability instanceof StaticAbility) || ability.isInUseableZone(game, null, null)) {
                                 layerEffects.add(effect);

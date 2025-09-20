@@ -1,6 +1,7 @@
 package mage.abilities;
 
 import mage.MageIdentifier;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostAdjuster;
@@ -626,4 +627,11 @@ public interface Ability extends Controllable, Serializable {
     MageIdentifier getIdentifier();
 
     AbilityImpl setIdentifier(MageIdentifier mageIdentifier);
+
+    /**
+     * Returns list of affected objects (permanents, players, etc.) for the ability.
+     * Used to share actually affected objects between one shot / continuous effects from abilities that use {@link #resolve(Game)}.
+     * For static abilities, this is unused, as the affected objects are gathered dynamically.
+     */
+    List<MageItem> getAffectedObjects();
 }

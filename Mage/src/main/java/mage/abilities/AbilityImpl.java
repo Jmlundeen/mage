@@ -1,8 +1,6 @@
 package mage.abilities;
 
-import mage.MageIdentifier;
-import mage.MageObject;
-import mage.Mana;
+import mage.*;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.*;
@@ -93,6 +91,7 @@ public abstract class AbilityImpl implements Ability {
     private String appendToRule = null;
     private int sourcePermanentTransformCount = 0;
     private Map<String, Object> costsTagMap = null;
+    protected List<MageItem> affectedObjectsList = new ArrayList<>();
 
     protected AbilityImpl(AbilityType abilityType, Zone zone) {
         this.id = UUID.randomUUID();
@@ -141,6 +140,7 @@ public abstract class AbilityImpl implements Ability {
         this.appendToRule = ability.appendToRule;
         this.sourcePermanentTransformCount = ability.sourcePermanentTransformCount;
         this.costsTagMap = CardUtil.deepCopyObject(ability.costsTagMap);
+        this.affectedObjectsList = CardUtil.deepCopyObject(ability.affectedObjectsList);
     }
 
     @Override
@@ -1891,6 +1891,11 @@ public abstract class AbilityImpl implements Ability {
     public AbilityImpl setIdentifier(MageIdentifier identifier) {
         this.identifier = identifier;
         return this;
+    }
+
+    @Override
+    public List<MageItem> getAffectedObjects() {
+        return affectedObjectsList;
     }
 
     /**
