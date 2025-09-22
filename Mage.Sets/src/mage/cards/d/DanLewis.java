@@ -2,7 +2,6 @@ package mage.cards.d;
 
 import mage.MageInt;
 import mage.MageItem;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -89,18 +88,12 @@ class DanLewisEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        if (layer == Layer.TypeChangingEffects_4) {
-            affectedObjectList.clear();
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                affectedObjectList.add(new MageObjectReference(permanent, game));
-                affectedObjects.add(permanent);
-            }
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
         } else {
-            for (MageObjectReference mor : affectedObjectList) {
-                Permanent permanent = mor.getPermanent(game);
-                if (permanent != null) {
-                    affectedObjects.add(permanent);
-                }
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
             }
         }
         return !affectedObjects.isEmpty();

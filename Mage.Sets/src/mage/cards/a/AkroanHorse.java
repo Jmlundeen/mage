@@ -1,12 +1,11 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
+import mage.abilities.effects.common.continuous.GainControlTargetEffect;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenAllEffect;
 import mage.abilities.keyword.DefenderAbility;
@@ -14,14 +13,12 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.game.permanent.token.SoldierToken;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetOpponent;
 import mage.target.targetpointer.FixedTarget;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -84,50 +81,9 @@ class AkroanHorseChangeControlEffect extends OneShotEffect {
         Target target = new TargetOpponent();
         target.withNotTarget(true);
         controller.chooseTarget(outcome, target, source, game);
-        ContinuousEffect effect = new AkroanHorseGainControlEffect(Duration.Custom, target.getFirstTarget());
+        ContinuousEffect effect = new GainControlTargetEffect(Duration.Custom, target.getFirstTarget());
         effect.setTargetPointer(new FixedTarget(source.getSourceId(), game));
         game.addEffect(effect, source);
-        return true;
-    }
-}
-
-class AkroanHorseGainControlEffect extends ContinuousEffectImpl {
-
-    private final UUID controller;
-
-    public AkroanHorseGainControlEffect(Duration duration, UUID controller) {
-        super(duration, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        this.controller = controller;
-        this.staticText = "Gain control of Akroan Horse";
-    }
-
-    private AkroanHorseGainControlEffect(final AkroanHorseGainControlEffect effect) {
-        super(effect);
-        this.controller = effect.controller;
-    }
-
-    @Override
-    public AkroanHorseGainControlEffect copy() {
-        return new AkroanHorseGainControlEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            ((Permanent) object).changeControllerId(controller, game, source);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent == null) {
-            permanent = game.getPermanent(source.getFirstTarget());
-        }
-        if (permanent == null) {
-            return false;
-        }
-        affectedObjects.add(permanent);
         return true;
     }
 }

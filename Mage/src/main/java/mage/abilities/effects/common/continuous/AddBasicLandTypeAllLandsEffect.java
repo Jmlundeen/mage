@@ -91,9 +91,15 @@ public class AddBasicLandTypeAllLandsEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_LAND, source.getControllerId(), source, game
-        ));
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            List<Permanent> lands = game.getBattlefield().getActivePermanents(
+                    StaticFilters.FILTER_LAND, source.getControllerId(), source, game
+            );
+            affectedObjects.addAll(lands);
+            source.getAffectedObjects().addAll(lands);
+        }
         return !affectedObjects.isEmpty();
     }
 }

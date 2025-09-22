@@ -2,31 +2,34 @@
 package mage.cards.g;
 
 import mage.MageInt;
-import mage.MageItem;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.BoostAllEffect;
 import mage.abilities.keyword.FlashAbility;
 import mage.abilities.keyword.ReachAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
+import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 /**
  * @author fireshoes
  */
 public final class GreatOakGuardian extends CardImpl {
+
+    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("creatures target player controls");
+
+    static {
+        filter.add(TargetController.SOURCE_TARGETS.getControllerPredicate());
+    }
 
     public GreatOakGuardian(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{5}{G}");
@@ -41,7 +44,8 @@ public final class GreatOakGuardian extends CardImpl {
         this.addAbility(ReachAbility.getInstance());
 
         // When Great Oak Guardian enters the battlefield, creatures target player controls get +2/+2 until end of turn. Untap them.
-        Ability ability = new EntersBattlefieldTriggeredAbility(new GreatOakGuardianEffect(), false);
+        Ability ability = new EntersBattlefieldTriggeredAbility(
+                new BoostAllEffect(2, 2, Duration.EndOfTurn, filter, false), false);
         ability.addEffect(new GreatOakGuardianUntapEffect());
         ability.addTarget(new TargetPlayer());
         this.addAbility(ability);
@@ -54,59 +58,6 @@ public final class GreatOakGuardian extends CardImpl {
     @Override
     public GreatOakGuardian copy() {
         return new GreatOakGuardian(this);
-    }
-}
-
-class GreatOakGuardianEffect extends ContinuousEffectImpl {
-
-    GreatOakGuardianEffect() {
-        super(Duration.EndOfTurn, Layer.PTChangingEffects_7, SubLayer.ModifyPT_7c, Outcome.BoostCreature);
-        staticText = "creatures target player controls get +2/+2 until end of turn";
-    }
-
-    private GreatOakGuardianEffect(final GreatOakGuardianEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public GreatOakGuardianEffect copy() {
-        return new GreatOakGuardianEffect(this);
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        if (getAffectedObjectsSet()) {
-            List<Permanent> creatures = game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getFirstTarget(), game);
-            for (Permanent creature : creatures) {
-                affectedObjectList.add(new MageObjectReference(creature, game));
-            }
-        }
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            permanent.addPower(2);
-            permanent.addToughness(2);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
-            Permanent permanent = it.next().getPermanent(game);
-            if (permanent != null) {
-                affectedObjects.add(permanent);
-            } else {
-                it.remove();
-            }
-        }
-        if (affectedObjectList.isEmpty()) {
-            discard();
-        }
-        return !affectedObjects.isEmpty();
     }
 }
 

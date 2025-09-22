@@ -1,14 +1,12 @@
 package mage.abilities.effects.common.continuous;
 
 import mage.MageItem;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,7 +45,9 @@ public class AddCreatureTypeAdditionEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        if (layer == Layer.TypeChangingEffects_4){
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
             Permanent creature;
             if (source.getTargets().getFirstTarget() == null) {
                 creature = game.getPermanent(getTargetPointer().getFirst(game, source));
@@ -59,7 +59,7 @@ public class AddCreatureTypeAdditionEffect extends ContinuousEffectImpl {
             }
             if (creature != null) {
                 affectedObjects.add(creature);
-                affectedObjectList.add(new MageObjectReference(creature, game));
+                source.getAffectedObjects().add(creature);
             }
         }
         return !affectedObjects.isEmpty();
@@ -80,17 +80,6 @@ public class AddCreatureTypeAdditionEffect extends ContinuousEffectImpl {
                     break;
             }
         }
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        this.used = true;
-        return false;
     }
 
     @Override

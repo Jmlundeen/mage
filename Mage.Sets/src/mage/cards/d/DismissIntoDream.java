@@ -1,8 +1,6 @@
 
 package mage.cards.d;
 
-import mage.MageItem;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.BecomesTargetSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -12,12 +10,8 @@ import mage.abilities.effects.common.continuous.GainAbilityAllEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.FilterPermanent;
 import mage.filter.common.FilterCreaturePermanent;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 
-import java.util.List;
 import java.util.UUID;
 
 /**

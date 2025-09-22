@@ -11,7 +11,6 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.Token;
 import mage.util.CardUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,9 +83,13 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        if (layer == Layer.TextChangingEffects_3){
+        if (layer == Layer.TextChangingEffects_3) {
+            affectedObjectList.clear();
             for (UUID targetId : getTargetPointer().getTargets(game, source)) {
                 Permanent permanent = game.getPermanent(targetId);
+                if (permanent == null) {
+                    permanent = game.getPermanentEntering(targetId);
+                }
                 if (permanent != null) {
                     affectedObjects.add(permanent);
                     affectedObjectList.add(new MageObjectReference(permanent, game));
@@ -95,6 +98,9 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
         } else {
             for (MageObjectReference mor : affectedObjectList) {
                 Permanent permanent = mor.getPermanent(game);
+                if (permanent == null) {
+                    permanent = game.getPermanentEntering(mor.getSourceId());
+                }
                 if (permanent != null) {
                     affectedObjects.add(permanent);
                 }
@@ -170,19 +176,6 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
         }
     }
 
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        if (duration == Duration.Custom) {
-            this.discard();
-        }
-        return false;
-    }
-
     public BecomesCreatureTargetEffect setRemoveSubtypes(boolean removeSubtypes) {
         this.removeSubtypes = removeSubtypes;
         return this;
@@ -195,6 +188,11 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
                 || layer == Layer.ColorChangingEffects_5
                 || layer == Layer.TypeChangingEffects_4
                 || layer == Layer.TextChangingEffects_3;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 
     public BecomesCreatureTargetEffect withDurationRuleAtStart(boolean durationRuleAtStart) {

@@ -1,7 +1,6 @@
 package mage.cards.a;
 
 import mage.MageItem;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -18,7 +17,6 @@ import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,8 +95,9 @@ class AlpineMoonEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        if (layer == Layer.TypeChangingEffects_4) {
-            affectedObjectList.clear();
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
             String cardName = (String) game.getState().getValue(source.getSourceId().toString() + ChooseACardNameEffect.INFO_KEY);
             if (cardName == null) {
                 return false;
@@ -107,27 +106,10 @@ class AlpineMoonEffect extends ContinuousEffectImpl {
             filter2.add(new NamePredicate(cardName));
             for (Permanent permanent : game.getBattlefield().getActivePermanents(filter2, source.getControllerId(), game)) {
                 affectedObjects.add(permanent);
-                affectedObjectList.add(new MageObjectReference(permanent, game));
-            }
-        } else {
-            for (MageObjectReference mor : affectedObjectList) {
-                Permanent permanent = mor.getPermanent(game);
-                if (permanent != null) {
-                    affectedObjects.add(permanent);
-                }
+                source.getAffectedObjects().add(permanent);
             }
         }
         return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        ArrayList<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
     }
 
     @Override

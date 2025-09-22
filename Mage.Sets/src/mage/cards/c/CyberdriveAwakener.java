@@ -89,6 +89,7 @@ class CyberdriveAwakenerEffect extends ContinuousEffectImpl {
                 .map(permanent -> new MageObjectReference(permanent, game))
                 .forEach(affectedObjectList::add);
     }
+
     @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageItem object : affectedObjects) {

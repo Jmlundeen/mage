@@ -3,7 +3,6 @@ package mage.cards.i;
 import mage.MageInt;
 import mage.MageItem;
 import mage.MageObject;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -156,18 +155,11 @@ class IdrisSoulOfTheTARDISGainEffect extends ContinuousEffectImpl {
         if (permanent == null || exileZone == null || exileZone.isEmpty()) {
             return false;
         }
-        if (layer == Layer.AbilityAddingRemovingEffects_6) {
-            affectedObjectList.clear();
-            affectedObjectList.add(new MageObjectReference(permanent, game));
-            affectedObjects.add(permanent);
-            return true;
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
         } else {
-            for (MageObjectReference mor : affectedObjectList) {
-                Permanent morPermanent = mor.getPermanent(game);
-                if (morPermanent != null) {
-                    affectedObjects.add(morPermanent);
-                }
-            }
+            affectedObjects.add(permanent);
+            source.getAffectedObjects().add(permanent);
         }
         return true;
     }

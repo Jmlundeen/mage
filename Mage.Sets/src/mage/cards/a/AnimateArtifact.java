@@ -100,16 +100,21 @@ class AnimateArtifactContinuousEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent enchantment = game.getPermanent(source.getSourceId());
-        if (enchantment == null) {
-            return false;
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            Permanent enchantment = game.getPermanent(source.getSourceId());
+            if (enchantment == null) {
+                return false;
+            }
+            Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
+            if (permanent == null || (permanent.isCreature(game) && !this.addedCreatureType)) {
+                return false;
+            }
+            affectedObjects.add(permanent);
+            source.getAffectedObjects().add(permanent);
         }
-        Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
-        if (permanent == null || (permanent.isCreature(game) && !this.addedCreatureType)) {
-            return false;
-        }
-        affectedObjects.add(permanent);
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

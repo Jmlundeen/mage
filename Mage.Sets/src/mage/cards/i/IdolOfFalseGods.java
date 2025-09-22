@@ -1,7 +1,6 @@
 package mage.cards.i;
 
 import mage.MageItem;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -115,17 +114,11 @@ class IdolOfFalseGodsEffect extends ContinuousEffectImpl {
         if (permanent == null || permanent.getCounters(game).getCount(CounterType.P1P1) < 8) {
             return false;
         }
-        if (layer == Layer.TypeChangingEffects_4) {
-            affectedObjectList.clear();
-            affectedObjectList.add(new MageObjectReference(permanent, game));
-            affectedObjects.add(permanent);
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
         } else {
-            for (MageObjectReference mor : affectedObjectList) {
-                Permanent perm = mor.getPermanent(game);
-                if (perm != null) {
-                    affectedObjects.add(perm);
-                }
-            }
+            affectedObjects.add(permanent);
+            source.getAffectedObjects().add(permanent);
         }
         return true;
     }

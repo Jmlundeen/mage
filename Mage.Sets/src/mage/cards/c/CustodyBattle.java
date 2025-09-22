@@ -1,16 +1,15 @@
 
 package mage.cards.c;
 
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
+import mage.abilities.effects.common.continuous.GainControlTargetEffect;
 import mage.abilities.keyword.EnchantAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
@@ -27,7 +26,6 @@ import mage.target.common.TargetOpponent;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -67,42 +65,6 @@ public final class CustodyBattle extends CardImpl {
     }
 }
 
-class GiveControlEffect extends ContinuousEffectImpl {
-
-    GiveControlEffect() {
-        super(Duration.Custom, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        staticText = "Target opponent gains control of {this}";
-    }
-
-    private GiveControlEffect(final GiveControlEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public GiveControlEffect copy() {
-        return new GiveControlEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            ((Permanent) object).changeControllerId(source.getFirstTarget(), game, source);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        Player target = game.getPlayer(source.getFirstTarget());
-        if (permanent != null && target != null) {
-            affectedObjects.add(permanent);
-            return true;
-        }
-        discard();
-        return false;
-    }
-}
-
 class CustodyBattleUnlessPaysEffect extends OneShotEffect {
 
     protected Cost cost;
@@ -135,8 +97,8 @@ class CustodyBattleUnlessPaysEffect extends OneShotEffect {
             }
             if (source.getStackMomentSourceZCC() == game.getState().getZoneChangeCounter(source.getSourceId())
                     && game.getState().getZone(source.getSourceId()) == Zone.BATTLEFIELD) {
-                ContinuousEffect effect = new GiveControlEffect();
-                effect.setTargetPointer(new FixedTarget(source.getFirstTarget(), game));
+                ContinuousEffect effect = new GainControlTargetEffect(Duration.Custom, source.getFirstTarget());
+                effect.setTargetPointer(new FixedTarget(source.getSourceId(), game));
                 game.addEffect(effect, source);
                 game.informPlayers(game.getPlayer(source.getFirstTarget()).getLogName() + " gains control of " + sourcePermanent.getIdName());
             }

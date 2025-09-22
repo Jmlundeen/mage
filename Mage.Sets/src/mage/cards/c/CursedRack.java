@@ -60,7 +60,6 @@ class CursedRackHandSizeEffect extends ContinuousEffectImpl {
 
     @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        UUID playerId = (UUID) game.getState().getValue(source.getSourceId() + ChooseOpponentEffect.VALUE_KEY);
         for (MageItem object : affectedObjects) {
             ((Player) object).setMaxHandSize(4);
         }

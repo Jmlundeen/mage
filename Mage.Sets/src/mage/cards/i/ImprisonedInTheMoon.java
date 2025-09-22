@@ -1,7 +1,6 @@
 package mage.cards.i;
 
 import mage.MageItem;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -109,22 +108,15 @@ class ImprisonedInTheMoonEffect extends ContinuousEffectImpl {
                 || enchantment.getAttachedTo() == null) {
             return false;
         }
-        if (layer == Layer.TypeChangingEffects_4) {
-            affectedObjectList.clear();
-            Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
-            if (permanent == null) {
-                return false;
-            }
-            affectedObjectList.add(new MageObjectReference(permanent, game));
-            affectedObjects.add(permanent);
+        Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
+        if (permanent == null) {
+            return false;
         }
-        else {
-            for (MageObjectReference mor : affectedObjectList) {
-                Permanent permanent = mor.getPermanent(game);
-                if (permanent != null) {
-                    affectedObjects.add(permanent);
-                }
-            }
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            affectedObjects.add(permanent);
+            source.getAffectedObjects().add(permanent);
         }
         return !affectedObjects.isEmpty();
     }

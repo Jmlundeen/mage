@@ -1,10 +1,11 @@
 package mage.abilities.common;
 
 import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
+import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.SourceContinuousEffect;
 import mage.abilities.effects.common.SacrificeTargetEffect;
 import mage.abilities.keyword.EnchantAbility;
 import mage.cards.Card;
@@ -58,7 +59,7 @@ public class AnimateDeadTriggeredAbility extends EntersBattlefieldTriggeredAbili
     }
 }
 
-class AnimateDeadReplaceAbilityEffect extends SourceContinuousEffect {
+class AnimateDeadReplaceAbilityEffect extends ContinuousEffectImpl {
 
     private final boolean becomesAura;
     private Ability newAbility;
@@ -90,6 +91,7 @@ class AnimateDeadReplaceAbilityEffect extends SourceContinuousEffect {
     @Override
     public void init(Ability source, Game game) {
         super.init(source, game);
+        affectedObjectList.add(new MageObjectReference(source.getSourceId(), game));
 
         FilterCreaturePermanent filter = new FilterCreaturePermanent("creature put onto the battlefield with {this}");
         filter.add(new AnimateDeadPredicate(source.getSourceId()));
@@ -98,29 +100,39 @@ class AnimateDeadReplaceAbilityEffect extends SourceContinuousEffect {
     }
 
     @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (getAffectedObjectsSet()){
+            for (MageObjectReference mor : affectedObjectList) {
+                if (mor.refersTo(source, game) && mor.getPermanent(game) != null) {
+                    affectedObjects.add(mor.getPermanent(game));
+                }
+            }
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageItem object : affectedObjects) {
-            if (object instanceof Permanent) {
-                Permanent permanent = (Permanent) object;
-                if (permanent.getId().equals(source.getSourceId())) {
-                    if (layer == Layer.TypeChangingEffects_4 && becomesAura) {
-                        permanent.addSubType(game, SubType.AURA);
-                    }
-                    if (layer == Layer.AbilityAddingRemovingEffects_6) {
-                        if (!becomesAura) {
-                            List<Ability> toRemove = new ArrayList<>();
-                            for (Ability ability : permanent.getAbilities(game)) {
-                                if (ability instanceof EnchantAbility &&
-                                        ability.getRule().equals("Enchant creature card in a graveyard")) {
-                                    toRemove.add(ability);
-                                }
+            Permanent permanent = (Permanent) object;
+            if (permanent.getId().equals(source.getSourceId())) {
+                if (layer == Layer.TypeChangingEffects_4 && becomesAura) {
+                    permanent.addSubType(game, SubType.AURA);
+                }
+                if (layer == Layer.AbilityAddingRemovingEffects_6) {
+                    if (!becomesAura) {
+                        List<Ability> toRemove = new ArrayList<>();
+                        for (Ability ability : permanent.getAbilities(game)) {
+                            if (ability instanceof EnchantAbility &&
+                                    ability.getRule().equals("Enchant creature card in a graveyard")) {
+                                toRemove.add(ability);
                             }
-                            permanent.removeAbilities(toRemove, source.getSourceId(), game);
                         }
-                        permanent.addAbility(newAbility, source.getSourceId(), game);
-                        permanent.getSpellAbility().getTargets().clear();
-                        permanent.getSpellAbility().getTargets().add(newTarget);
+                        permanent.removeAbilities(toRemove, source.getSourceId(), game);
                     }
+                    permanent.addAbility(newAbility, source.getSourceId(), game);
+                    permanent.getSpellAbility().getTargets().clear();
+                    permanent.getSpellAbility().getTargets().add(newTarget);
                 }
             }
         }

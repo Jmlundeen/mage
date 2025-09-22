@@ -89,12 +89,17 @@ class AvenEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent target = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (target == null || target.getCounters(game).getCount(CounterType.FEATHER) < 1) {
-            this.discard();
-            return false;
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            Permanent target = game.getPermanent(getTargetPointer().getFirst(game, source));
+            if (target == null || target.getCounters(game).getCount(CounterType.FEATHER) < 1) {
+                this.discard();
+                return false;
+            }
+            affectedObjects.add(target);
+            source.getAffectedObjects().add(target);
         }
-        affectedObjects.add(target);
         return true;
     }
 

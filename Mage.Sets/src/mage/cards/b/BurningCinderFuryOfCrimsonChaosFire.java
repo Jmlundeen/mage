@@ -1,13 +1,12 @@
 package mage.cards.b;
 
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
+import mage.abilities.effects.common.continuous.GainControlTargetEffect;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DamageTargetEffect;
 import mage.cards.CardImpl;
@@ -129,7 +128,7 @@ class BurningCinderFuryOfCrimsonChaosFireEffect extends OneShotEffect {
                 Player chosenOpponent = game.getPlayer(target.getFirstTarget());
                 if (chosenOpponent != null) {
                     game.informPlayers(tappingPlayer.getLogName() + " chose " + chosenOpponent.getLogName() + " to gain control of " + permanentToControl.getLogName() + " at the beginning of the next end step");
-                    ContinuousEffect effect = new BurningCinderFuryOfCrimsonChaosFireCreatureGainControlEffect(Duration.Custom, chosenOpponent.getId());
+                    ContinuousEffect effect = new GainControlTargetEffect(Duration.Custom, chosenOpponent.getId());
                     effect.setTargetPointer(new FixedTarget(permanentToControl.getId(), game));
                     game.addDelayedTriggeredAbility(new AtTheBeginOfNextEndStepDelayedTriggeredAbility(effect), source);
                     return true;
@@ -137,43 +136,6 @@ class BurningCinderFuryOfCrimsonChaosFireEffect extends OneShotEffect {
             }
         }
         return false;
-    }
-}
-
-class BurningCinderFuryOfCrimsonChaosFireCreatureGainControlEffect extends ContinuousEffectImpl {
-
-    private final UUID controller;
-
-    public BurningCinderFuryOfCrimsonChaosFireCreatureGainControlEffect(Duration duration, UUID controller) {
-        super(duration, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        this.controller = controller;
-        this.staticText = "the chosen player gains control of that permanent";
-    }
-
-    private BurningCinderFuryOfCrimsonChaosFireCreatureGainControlEffect(final BurningCinderFuryOfCrimsonChaosFireCreatureGainControlEffect effect) {
-        super(effect);
-        this.controller = effect.controller;
-    }
-
-    @Override
-    public BurningCinderFuryOfCrimsonChaosFireCreatureGainControlEffect copy() {
-        return new BurningCinderFuryOfCrimsonChaosFireCreatureGainControlEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            ((Permanent) object).changeControllerId(controller, game, source);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent != null) {
-            affectedObjects.add(permanent);
-        }
-        return !affectedObjects.isEmpty();
     }
 }
 

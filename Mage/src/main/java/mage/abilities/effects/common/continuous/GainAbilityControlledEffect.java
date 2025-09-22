@@ -101,10 +101,20 @@ public class GainAbilityControlledEffect extends ContinuousEffectImpl {
                 discard();
             }
         } else {
-            for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                if (perm.isControlledBy(source.getControllerId())
-                        && !(excludeSource && perm.getId().equals(source.getSourceId()))) {
-                    affectedObjects.add(perm);
+            if (!source.getAffectedObjects().isEmpty()) {
+                for (MageItem object : source.getAffectedObjects()) {
+                    if (excludeSource && object.getId().equals(source.getSourceId())) {
+                        continue;
+                    }
+                    affectedObjects.add(object);
+                }
+            } else {
+                for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                    if (excludeSource && permanent.getId().equals(source.getSourceId())) {
+                        continue;
+                    }
+                    affectedObjects.add(permanent);
+                    source.getAffectedObjects().add(permanent);
                 }
             }
         }

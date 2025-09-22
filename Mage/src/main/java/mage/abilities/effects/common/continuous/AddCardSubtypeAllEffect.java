@@ -45,9 +45,14 @@ public class AddCardSubtypeAllEffect extends ContinuousEffectImpl {
 
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
-                filter, source.getControllerId(), source, game
-        ));
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            for (Permanent permanent : game.getBattlefield().getAllActivePermanents(filter, source.getControllerId(), game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
+            }
+        }
         return !affectedObjects.isEmpty();
     }
 
