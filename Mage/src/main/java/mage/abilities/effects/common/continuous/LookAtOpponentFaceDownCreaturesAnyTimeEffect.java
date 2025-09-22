@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.Cards;
@@ -9,6 +10,8 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.card.FaceDownPredicate;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
 
 /**
  * @author notgreat
@@ -38,9 +41,16 @@ public class LookAtOpponentFaceDownCreaturesAnyTimeEffect extends ContinuousEffe
         this.filter = effect.filter.copy();
     }
 
-    //Based on LookAtTopCardOfLibraryAnyTimeEffect
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Cards cards = new CardsImpl(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
+        for (MageItem object : affectedObjects) {
+            ((Player) object).lookAtCards(source, "Face Down Creatures", cards, game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (game.inCheckPlayableState()) { // Ignored - see https://github.com/magefree/mage/issues/6994
             return false;
         }
@@ -48,11 +58,7 @@ public class LookAtOpponentFaceDownCreaturesAnyTimeEffect extends ContinuousEffe
         if (controller == null) {
             return false;
         }
-        Cards cards = new CardsImpl(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
-        if (cards.isEmpty()) {
-            return false;
-        }
-        controller.lookAtCards(source, "Face Down Creatures", cards, game);
+        affectedObjects.add(controller);
         return true;
     }
 

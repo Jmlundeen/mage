@@ -1,9 +1,7 @@
 package mage.cards.c;
 
-import java.util.*;
-import java.util.List;
-
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -19,6 +17,10 @@ import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -80,9 +82,9 @@ class CephalidSnitchEffect extends LoseAbilityTargetEffect{
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent targetCreature = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (targetCreature != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent targetCreature = (Permanent) object;
             List<Ability> toRemove = new ArrayList<>();
             //Go through protection abilities and sort out any containing black
             for (ProtectionAbility a: targetCreature.getAbilities().getProtectionAbilities()) {
@@ -108,8 +110,6 @@ class CephalidSnitchEffect extends LoseAbilityTargetEffect{
                 }
             }
             targetCreature.removeAbilities(toRemove, source.getSourceId(), game);
-            return true;
         }
-        return false;
     }
 }

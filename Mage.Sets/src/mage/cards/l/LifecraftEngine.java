@@ -1,6 +1,7 @@
 package mage.cards.l;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,7 +15,6 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 
 import java.util.List;
@@ -81,21 +81,14 @@ class LifecraftEngineAddSubTypeAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         UUID controllerId = source.getControllerId();
         Player controller = game.getPlayer(controllerId);
         SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
         if (controller == null || subType == null) {
             return false;
         }
-
-        List<Permanent> creatures = game.getBattlefield().getAllActivePermanents(
-                filter, controllerId, game);
-        for (Permanent creature : creatures) {
-            if (creature != null) {
-                creature.addSubType(game, subType);
-            }
-        }
-        return true;
+        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(filter, controllerId, game));
+        return !affectedObjects.isEmpty();
     }
 }

@@ -12,6 +12,7 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.Token;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -73,10 +74,17 @@ public class BecomesCreatureAllEffect extends ContinuousEffectImpl {
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
-            for (MageObjectReference mor : affectedObjectList) {
+            for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+                MageObjectReference mor = it.next();
                 Permanent permanent = mor.getPermanent(game);
-                if (permanent != null) {
+                if (permanent == null || !filter.match(permanent, source.getControllerId(), source, game)) {
+                    it.remove();
+                    continue;
+                }
+                if (filter.match(permanent, source.getControllerId(), source, game)) {
                     affectedObjects.add(permanent);
+                } else {
+                    it.remove();
                 }
             }
         } else if (!source.getAffectedObjects().isEmpty()) {

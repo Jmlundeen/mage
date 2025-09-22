@@ -7,7 +7,6 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DamageTargetEffect;
 import mage.abilities.effects.common.continuous.YouDontLoseManaEffect;
@@ -50,42 +49,6 @@ public final class LeylineTyrant extends CardImpl {
     @Override
     public LeylineTyrant copy() {
         return new LeylineTyrant(this);
-    }
-}
-
-class LeylineTyrantManaEffect extends ContinuousEffectImpl {
-
-    LeylineTyrantManaEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Detriment);
-        staticText = "You don't lose unspent red mana as steps and phases end";
-    }
-
-    private LeylineTyrantManaEffect(final LeylineTyrantManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public LeylineTyrantManaEffect copy() {
-        return new LeylineTyrantManaEffect(this);
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player != null) {
-            player.getManaPool().addDoNotEmptyManaType(ManaType.RED);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }
 
