@@ -1,6 +1,7 @@
 package mage.cards.k;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -9,6 +10,7 @@ import mage.abilities.costs.common.ExileFromGraveCost;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -17,6 +19,7 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -94,7 +97,20 @@ class KethisTheHiddenHandEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Ability ability = new SimpleStaticAbility(
+                    Zone.GRAVEYARD, new KethisTheHiddenHandGraveyardEffect()
+            );
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
@@ -105,15 +121,8 @@ class KethisTheHiddenHandEffect extends ContinuousEffectImpl {
                 .filter(card -> affectedObjectList
                         .stream()
                         .anyMatch(mor -> mor.refersTo(card, game))
-                ).forEach(card -> {
-                    Ability ability = new SimpleStaticAbility(
-                            Zone.GRAVEYARD, new KethisTheHiddenHandGraveyardEffect()
-                    );
-                    ability.setSourceId(card.getId());
-                    ability.setControllerId(card.getOwnerId());
-                    game.getState().addOtherAbility(card, ability);
-                });
-        return true;
+                ).forEach(affectedObjects::add);
+        return !affectedObjects.isEmpty();
     }
 
     @Override

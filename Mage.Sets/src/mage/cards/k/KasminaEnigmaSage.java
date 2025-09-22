@@ -1,6 +1,7 @@
 package mage.cards.k;
 
 import mage.ApprovingObject;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -75,28 +76,31 @@ class KasminaEnigmaSageGainAbilitiesEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = source.getSourcePermanentIfItStillExists(game);
-        if (perm == null) {
-            return true;
-        }
-        List<Ability> loyaltyAbilities = perm
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        List<Ability> loyaltyAbilities = source.getSourcePermanentIfItStillExists(game)
                 .getAbilities(game)
                 .stream()
                 .filter(LoyaltyAbility.class::isInstance)
                 .collect(Collectors.toList());
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER,
-                source.getControllerId(), source, game
-        )) {
-            if (permanent == null || permanent == perm) {
-                continue;
-            }
+        for (MageItem object : affectedObjects) {
             for (Ability ability : loyaltyAbilities) {
-                permanent.addAbility(ability, source.getSourceId(), game, true);
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent perm = source.getSourcePermanentIfItStillExists(game);
+        if (perm == null) {
+            return false;
+        }
+        for (Permanent permanent : game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER, source.getControllerId(), source, game)) {
+            affectedObjects.add(permanent);
+            source.getAffectedObjects().add(permanent);
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

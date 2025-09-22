@@ -1,7 +1,7 @@
 
 package mage.cards.k;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.CardImpl;
@@ -12,6 +12,9 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -61,36 +64,44 @@ class KarnsTouchEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent artifact = game.getPermanent(this.getTargetPointer().getFirst(game, source));
         if (artifact == null) {
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                if (sublayer == SubLayer.NA) {
-                    if (!artifact.isArtifact(game)) {
-                        artifact.addCardType(game, CardType.ARTIFACT);
-                    }
-                    if (!artifact.isCreature(game)) {
-                        artifact.addCardType(game, CardType.CREATURE);
-                    }
-                }
-                break;
-
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    int cmc = artifact.getManaValue();
-                    artifact.getPower().setModifiedBaseValue(cmc);
-                    artifact.getToughness().setModifiedBaseValue(cmc);
-                }
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            affectedObjects.add(artifact);
+            source.getAffectedObjects().add(artifact);
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent artifact = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    if (sublayer == SubLayer.NA) {
+                        if (!artifact.isArtifact(game)) {
+                            artifact.addCardType(game, CardType.ARTIFACT);
+                        }
+                        if (!artifact.isCreature(game)) {
+                            artifact.addCardType(game, CardType.CREATURE);
+                        }
+                    }
+                    break;
+
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        int cmc = artifact.getManaValue();
+                        artifact.getPower().setModifiedBaseValue(cmc);
+                        artifact.getToughness().setModifiedBaseValue(cmc);
+                    }
+            }
+        }
     }
 
     @Override

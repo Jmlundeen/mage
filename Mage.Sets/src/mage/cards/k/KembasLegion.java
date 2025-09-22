@@ -2,6 +2,7 @@
 package mage.cards.k;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -47,7 +48,7 @@ public final class KembasLegion extends CardImpl {
 class KembasLegionEffect extends ContinuousEffectImpl {
 
     KembasLegionEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = "{this} can block an additional creature each combat for each Equipment attached to {this}";
     }
 
@@ -61,35 +62,32 @@ class KembasLegionEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent != null && !permanent.getAttachments().isEmpty()) {
-            if (layer == Layer.RulesEffects) {
-                // maxBlocks = 0 equals to "can block any number of creatures"
-                if (permanent.getMaxBlocks() > 0) {
-                    List<UUID> attachments = permanent.getAttachments();
-                    int count = 0;
-                    for (UUID attachmentId : attachments) {
-                        Permanent attachment = game.getPermanent(attachmentId);
-                        if (attachment != null && attachment.hasSubtype(SubType.EQUIPMENT, game)) {
-                            count++;
-                        }
-                    }
-                    permanent.setMaxBlocks(permanent.getMaxBlocks() + count);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            List<UUID> attachments = permanent.getAttachments();
+            int count = 0;
+            for (UUID attachmentId : attachments) {
+                Permanent attachment = game.getPermanent(attachmentId);
+                if (attachment != null && attachment.hasSubtype(SubType.EQUIPMENT, game)) {
+                    count++;
                 }
             }
-            return true;
+            permanent.setMaxBlocks(permanent.getMaxBlocks() + count);
         }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent == null || permanent.getAttachments().isEmpty()) {
+            return false;
+        }
+        if (permanent.getMaxBlocks() == 0) {
+            // can block any number of creatures
+            return false;
+        }
+        affectedObjects.add(permanent);
+        return true;
     }
 }
