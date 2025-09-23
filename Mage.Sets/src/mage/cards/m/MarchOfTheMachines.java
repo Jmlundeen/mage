@@ -101,4 +101,8 @@ class MarchOfTheMachinesEffect extends ContinuousEffectImpl {
         return layer == Layer.PTChangingEffects_7 || layer == Layer.TypeChangingEffects_4;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
+    }
 }

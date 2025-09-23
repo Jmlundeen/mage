@@ -108,4 +108,9 @@ class KarnsTouchEffect extends ContinuousEffectImpl {
     public boolean hasLayer(Layer layer) {
         return layer == Layer.PTChangingEffects_7 || layer == Layer.TypeChangingEffects_4;
     }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
+    }
 }

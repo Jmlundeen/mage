@@ -12,7 +12,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +43,7 @@ public final class Humility extends CardImpl {
 
         public HumilityEffect(Duration duration) {
             super(duration, Outcome.LoseAbility);
+            addDependedToType(DependencyType.BecomeCreature);
             staticText = "All creatures lose all abilities and have base power and toughness 1/1";
         }
 
@@ -75,30 +75,31 @@ public final class Humility extends CardImpl {
 
         @Override
         public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-            Player player = game.getPlayer(source.getControllerId());
-            if (player == null) {
-                return false;
+            if (!source.getAffectedObjects().isEmpty()) {
+                affectedObjects.addAll(source.getAffectedObjects());
+            } else {
+                    Player player = game.getPlayer(source.getControllerId());
+                    if (player == null) {
+                        return false;
+                    }
+                    for (Permanent permanent : game.getBattlefield().getActivePermanents(
+                            StaticFilters.FILTER_PERMANENT_CREATURE, player.getId(), source, game)) {
+                        affectedObjects.add(permanent);
+                        source.getAffectedObjects().add(permanent);
+                    }
             }
-            affectedObjects.addAll(game.getBattlefield().getActivePermanents(
-                    StaticFilters.FILTER_PERMANENT_CREATURE, player.getId(), source, game)
-            );
             return !affectedObjects.isEmpty();
-        }
-
-        @Override
-        public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-            List<MageItem> affectedObjects = new ArrayList<>();
-            if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-                applyToObjects(layer, sublayer, source, game, affectedObjects);
-                return true;
-            }
-            return false;
         }
 
         @Override
         public boolean hasLayer(Layer layer) {
             return layer == Layer.AbilityAddingRemovingEffects_6
                     || layer == Layer.PTChangingEffects_7;
+        }
+
+        @Override
+        public boolean hasSubLayer(SubLayer sublayer) {
+            return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
         }
     }
 }

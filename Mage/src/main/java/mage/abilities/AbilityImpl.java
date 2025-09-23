@@ -140,7 +140,6 @@ public abstract class AbilityImpl implements Ability {
         this.appendToRule = ability.appendToRule;
         this.sourcePermanentTransformCount = ability.sourcePermanentTransformCount;
         this.costsTagMap = CardUtil.deepCopyObject(ability.costsTagMap);
-        this.affectedObjectsList = CardUtil.deepCopyObject(ability.affectedObjectsList);
     }
 
     @Override

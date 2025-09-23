@@ -57,16 +57,8 @@ public class CopyEffect extends ContinuousEffectImpl {
         }
 
         Permanent permanent = game.getPermanent(copyToObjectId);
-        if (permanent == null) {
-            permanent = game.getPermanentEntering(copyToObjectId);
-        }
         if (permanent != null) {
-            int ZCCDiff = 1;
-            if ((permanent instanceof PermanentToken)) {
-                // Tokens already have battlefield ZCC when they are created
-                ZCCDiff = 0;
-            }
-            MageObjectReference mor = new MageObjectReference(permanent.getId(), game.getState().getZoneChangeCounter(copyToObjectId) + ZCCDiff, game);
+            MageObjectReference mor = new MageObjectReference(permanent.getId(), game);
             if (!affectedObjectList.contains(mor)) {
                 affectedObjectList.add(mor);
             }
@@ -85,6 +77,17 @@ public class CopyEffect extends ContinuousEffectImpl {
                 if (!affectedObjectList.contains(mor)) {
                     affectedObjectList.add(mor);
                 }
+            }
+        } else {
+            permanent = game.getPermanentEntering(copyToObjectId);
+            int ZCCDiff = 1;
+            if ((permanent instanceof PermanentToken)) {
+                // Tokens already have battlefield ZCC when they are created
+                ZCCDiff = 0;
+            }
+            MageObjectReference mor = new MageObjectReference(permanent.getId(), game.getState().getZoneChangeCounter(copyToObjectId) + ZCCDiff, game);
+            if (!affectedObjectList.contains(mor)) {
+                affectedObjectList.add(mor);
             }
         }
     }

@@ -110,7 +110,7 @@ public class GainAbilityControlledEffect extends ContinuousEffectImpl {
                 }
             } else {
                 for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                    if (excludeSource && permanent.getId().equals(source.getSourceId())) {
+                    if (!permanent.isControlledBy(source.getControllerId()) || excludeSource && permanent.getId().equals(source.getSourceId())) {
                         continue;
                     }
                     affectedObjects.add(permanent);

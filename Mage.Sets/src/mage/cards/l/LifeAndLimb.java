@@ -107,7 +107,7 @@ class LifeAndLimbEffect extends ContinuousEffectImpl {
             if (player == null) {
                 return false;
             }
-            for (Permanent permanent : game.getBattlefield().getAllActivePermanents(filter, player.getId(), game)) {
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, player.getId(), source, game)) {
                 affectedObjects.add(permanent);
                 source.getAffectedObjects().add(permanent);
             }

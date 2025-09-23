@@ -145,10 +145,11 @@ class StationLevelCreatureEffect extends ContinuousEffectImpl {
     @Override
     public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent != null) {
-            affectedObjects.add(permanent);
+        if (permanent == null || permanent.getCounters(game).getCount(CounterType.CHARGE) < level) {
+            return false;
         }
-        return !affectedObjects.isEmpty();
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override
@@ -160,5 +161,10 @@ class StationLevelCreatureEffect extends ContinuousEffectImpl {
             default:
                 return false;
         }
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }
