@@ -1,6 +1,7 @@
 package mage.cards.o;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SkipUntapOptionalAbility;
@@ -17,6 +18,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -71,7 +73,7 @@ enum OldManOfTheSeaPredicate implements ObjectSourcePlayerPredicate<Permanent> {
 class OldManOfTheSeaEffect extends ContinuousEffectImpl {
 
     OldManOfTheSeaEffect() {
-        super(Duration.Custom, Outcome.GainControl);
+        super(Duration.Custom, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
         staticText = "gain control of target creature with power less than or equal to {this}'s power for as long as {this} remains tapped and that creature's power remains less than or equal to {this}'s power";
     }
 
@@ -85,33 +87,21 @@ class OldManOfTheSeaEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).changeControllerId(source.getControllerId(), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent sourcePermanent = source.getSourcePermanentIfItStillExists(game);
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (sourcePermanent == null || permanent == null || !sourcePermanent.isTapped()) {
+        if (sourcePermanent == null || permanent == null || !sourcePermanent.isTapped() || permanent.getPower().getValue() > sourcePermanent.getPower().getValue()) {
             discard();
             return false;
         }
-        switch (layer) {
-            case ControlChangingEffects_2:
-                permanent.changeControllerId(source.getControllerId(), game, source);
-                return true;
-            case RulesEffects:
-                if (permanent.getPower().getValue() > sourcePermanent.getPower().getValue()) {
-                    discard();
-                    return false;
-                }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
+        affectedObjects.add(permanent);
         return true;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.ControlChangingEffects_2 || layer == Layer.RulesEffects;
     }
 }

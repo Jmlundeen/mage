@@ -1,7 +1,7 @@
 package mage.cards.o;
 
 import mage.MageInt;
-import mage.MageObject;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
@@ -21,6 +21,7 @@ import mage.game.Game;
 import mage.game.stack.Spell;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -87,25 +88,29 @@ class OjerPakpatiqDeepestEpochGainReboundEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            addReboundAbility((Card) object, game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return false;
         }
-
         Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
         if (spell == null) {
-            discard();
             return false;
         }
-
         Card card = spell.getCard();
-        if (card == null) {
-            return false;
+        if (card != null) {
+            affectedObjects.add(card);
+            return true;
         }
-
-        addReboundAbility(card, game);
-        return true;
+        discard();
+        return false;
     }
 
     private void addReboundAbility(Card card, Game game) {

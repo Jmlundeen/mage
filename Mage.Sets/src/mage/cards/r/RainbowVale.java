@@ -1,7 +1,7 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +15,9 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetOpponent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -111,14 +114,23 @@ class OpponentGainControlEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.changeControllerId(opponentId, game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player targetOpponent = game.getPlayer(opponentId);
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent != null && targetOpponent != null) {
-            permanent.changeControllerId(opponentId, game, source);
+            affectedObjects.add(permanent);
         } else {
             // no valid target exists, effect can be discarded
             discard();
+            return false;
         }
         return true;
     }

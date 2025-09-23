@@ -1,6 +1,7 @@
 package mage.cards.o;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldOrAttacksSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +21,7 @@ import mage.target.common.TargetCreaturePermanent;
 import mage.target.common.TargetLandPermanent;
 import mage.target.targetpointer.EachTargetPointer;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -98,8 +100,9 @@ class OmoQueenOfVesuvaLandEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             permanent.addSubType(
                     game,
                     SubType.PLAINS,
@@ -123,7 +126,12 @@ class OmoQueenOfVesuvaLandEffect extends ContinuousEffectImpl {
                 permanent.addAbility(ability, source.getSourceId(), game);
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 }
 
@@ -153,10 +161,16 @@ class OmoQueenOfVesuvaCreatureEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             permanent.setIsAllCreatureTypes(game, true);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 }

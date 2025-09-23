@@ -1,5 +1,6 @@
 package mage.cards.o;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -17,6 +18,7 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.Spider21Token;
 import mage.target.common.TargetControlledCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -79,15 +81,23 @@ class OriginOfSpiderManEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addSuperType(game, SuperType.LEGENDARY);
+            permanent.addSubType(game, SubType.SPIDER);
+            permanent.addSubType(game, SubType.HERO);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent == null) {
             discard();
             return false;
         }
-        permanent.addSuperType(game, SuperType.LEGENDARY);
-        permanent.addSubType(game, SubType.SPIDER);
-        permanent.addSubType(game, SubType.HERO);
+        affectedObjects.add(permanent);
         return true;
     }
 }

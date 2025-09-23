@@ -1,5 +1,6 @@
 package mage.cards.o;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
@@ -18,6 +19,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -72,16 +74,9 @@ class OverwhelmingSplendorLoseAbilitiesEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent enchantment = source.getSourcePermanentOrLKI(game);
-        if (enchantment == null) {
-            return false;
-        }
-        Player player = game.getPlayer(enchantment.getAttachedTo());
-        if (player == null) {
-            return false;
-        }
-        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, player.getId(), game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case AbilityAddingRemovingEffects_6:
                     permanent.removeAllAbilities(source.getSourceId(), game);
@@ -93,12 +88,27 @@ class OverwhelmingSplendorLoseAbilitiesEffect extends ContinuousEffectImpl {
                     }
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            Permanent enchantment = source.getSourcePermanentOrLKI(game);
+            if (enchantment == null) {
+                return false;
+            }
+            Player player = game.getPlayer(enchantment.getAttachedTo());
+            if (player == null) {
+                return false;
+            }
+            for (Permanent permanent : game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, player.getId(), game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
+            }
+            }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -106,6 +116,10 @@ class OverwhelmingSplendorLoseAbilitiesEffect extends ContinuousEffectImpl {
         return layer == Layer.AbilityAddingRemovingEffects_6 || layer == Layer.PTChangingEffects_7;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
+    }
 }
 
 class OverwhelmingSplendorCantActivateEffect extends ContinuousRuleModifyingEffectImpl {
