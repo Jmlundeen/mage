@@ -1,5 +1,6 @@
 package mage.cards.n;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
@@ -25,6 +26,7 @@ import mage.target.common.TargetControlledPermanent;
 import mage.target.common.TargetCreatureOrPlaneswalker;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -81,20 +83,26 @@ class NicolBolasDragonGodGainAbilitiesEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Set<Ability> abilities = game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)
+                .stream()
+                .flatMap(permanent -> permanent.getAbilities().stream())
+                .filter(ability -> ability instanceof LoyaltyAbility)
+                .collect(Collectors.toSet());
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : abilities) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent perm = game.getPermanent(source.getSourceId());
         if (perm == null) {
             return true;
         }
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                filter, source.getControllerId(), source, game
-        )) {
-            for (Ability ability : permanent.getAbilities()) {
-                if (ability instanceof LoyaltyAbility) {
-                    perm.addAbility(ability, source.getSourceId(), game, true);
-                }
-            }
-        }
+        affectedObjects.add(perm);
         return true;
     }
 

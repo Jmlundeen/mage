@@ -1,5 +1,6 @@
 package mage.cards.n;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTappedAbility;
@@ -15,6 +16,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -83,32 +85,36 @@ class NearbyPlanetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject sourceObject = game.getObject(source);
-        if (sourceObject == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                Permanent permanent = (Permanent) object;
+                // Optimization: Remove basic mana abilities since they are redundant with AnyColorManaAbility
+                //               and keeping them will only produce too many combinations inside ManaOptions
+                for (Ability basicManaAbility : basicManaAbilities) {
+                    if (permanent.getAbilities(game).containsRule(basicManaAbility)) {
+                        permanent.removeAbility(basicManaAbility, source.getSourceId(), game);
+                    }
+                }
+                // Add the {T}: Add one mana of any color ability
+                // This is functionally equivalent to having five "{T}: Add {COLOR}" for each COLOR in {W}{U}{B}{R}{G}
+                AnyColorManaAbility ability = new AnyColorManaAbility();
+                if (!permanent.getAbilities(game).containsRule(ability)) {
+                    permanent.addAbility(ability, source.getSourceId(), game);
+                }
+            }
+            ((MageObject) object).addSubType(game, SubType.PLAINS, SubType.ISLAND, SubType.SWAMP, SubType.MOUNTAIN, SubType.FOREST);
+            ((MageObject) object).setIsAllNonbasicLandTypes(game, true);
         }
-        sourceObject.addSubType(game, SubType.PLAINS, SubType.ISLAND, SubType.SWAMP, SubType.MOUNTAIN, SubType.FOREST);
-        sourceObject.setIsAllNonbasicLandTypes(game, true);
-        // subtypes apply in all zones ^
-        // mana abilities apply to permanent
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        MageObject sourceObject = game.getObject(source);
+        if (sourceObject != null) {
+            affectedObjects.add(sourceObject);
             return true;
         }
-        // Optimization: Remove basic mana abilities since they are redundant with AnyColorManaAbility
-        //               and keeping them will only produce too many combinations inside ManaOptions
-        for (Ability basicManaAbility : basicManaAbilities) {
-            if (permanent.getAbilities(game).containsRule(basicManaAbility)) {
-                permanent.removeAbility(basicManaAbility, source.getSourceId(), game);
-            }
-        }
-        // Add the {T}: Add one mana of any color ability
-        // This is functionally equivalent to having five "{T}: Add {COLOR}" for each COLOR in {W}{U}{B}{R}{G}
-        AnyColorManaAbility ability = new AnyColorManaAbility();
-        if (!permanent.getAbilities(game).containsRule(ability)) {
-            permanent.addAbility(ability, source.getSourceId(), game);
-        }
-        return true;
+        return false;
     }
 }

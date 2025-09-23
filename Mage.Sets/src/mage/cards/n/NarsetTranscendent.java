@@ -1,6 +1,6 @@
 package mage.cards.n;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
@@ -15,20 +15,16 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.CardsImpl;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.command.emblems.NarsetTranscendentEmblem;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -158,20 +154,28 @@ class NarsetTranscendentGainReboundEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            addReboundAbility((Card) object, game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
-        if (player != null) {
-            Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
-            if (spell != null) {
-                Card card = spell.getCard();
-                if (card != null) {
-                    addReboundAbility(card, game);
-                }
-            } else {
-                discard();
-            }
+        if (player == null) {
+            return false;
+        }
+        Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
+        if (spell == null) {
+            return false;
+        }
+        Card card = spell.getCard();
+        if (card != null) {
+            affectedObjects.add(card);
             return true;
         }
+        discard();
         return false;
     }
 

@@ -1,6 +1,7 @@
 package mage.cards.n;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.LandfallAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -16,6 +17,7 @@ import mage.filter.common.FilterPermanentCard;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -58,7 +60,7 @@ class NissaWorldsoulSpeakerEffect extends ContinuousEffectImpl {
     );
 
     public NissaWorldsoulSpeakerEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Detriment);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Detriment);
         staticText = "You may pay eight {E} rather than pay the mana cost for permanent spells you cast";
     }
 
@@ -78,22 +80,19 @@ class NissaWorldsoulSpeakerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Player) object).getAlternativeSourceCosts().add(alternativeCastingCostAbility);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            controller.getAlternativeSourceCosts().add(alternativeCastingCostAbility);
+            affectedObjects.add(controller);
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }
