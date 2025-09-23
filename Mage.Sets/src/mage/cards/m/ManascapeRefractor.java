@@ -1,5 +1,8 @@
 package mage.cards.m;
 
+import mage.MageItem;
+import mage.abilities.Abilities;
+import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTappedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -19,9 +22,9 @@ import mage.players.ManaPoolItem;
 import mage.util.CardUtil;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author AsterAether
@@ -70,28 +73,38 @@ class ManascapeRefractorGainAbilitiesEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm == null) {
-            return false;
-        }
-        for (Ability ability : game.getBattlefield()
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Abilities<Ability> abilities = new AbilitiesImpl<>();
+        game.getBattlefield()
                 .getActivePermanents(filter, source.getControllerId(), source, game)
                 .stream()
                 .map(permanent -> permanent.getAbilities(game))
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
                 .filter(Ability::isActivatedAbility)
-                .collect(Collectors.toList())) {
-            // optimization to disallow the adding of duplicate, unnecessary basic mana abilities
-            if (!(ability instanceof BasicManaAbility)
-                    || perm.getAbilities(game)
-                    .stream()
-                    .noneMatch(ability.getClass()::isInstance)) {
-                perm.addAbility(ability, source.getSourceId(), game, true);
+                .forEach(abilities::add);
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability ability : abilities) {
+                // optimization to disallow the adding of duplicate, unnecessary basic mana abilities
+                if (!(ability instanceof BasicManaAbility)
+                        || permanent.getAbilities(game)
+                        .stream()
+                        .noneMatch(ability.getClass()::isInstance)) {
+                    permanent.addAbility(ability, source.getSourceId(), game, true);
+                }
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -17,6 +18,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetOpponentsCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -77,13 +79,20 @@ class MathasFiendSeekerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent creature = game.getPermanent(this.getTargetPointer().getFirst(game, source));
         if (creature == null || !creature.getCounters(game).containsKey(CounterType.BOUNTY)) {
             discard();
             return false;
         }
-        creature.addAbility(ability, source.getSourceId(), game);
+        affectedObjects.add(creature);
         return true;
     }
 }

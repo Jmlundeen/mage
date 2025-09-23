@@ -1,5 +1,6 @@
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -14,6 +15,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -67,7 +69,26 @@ class MinimusContainmentEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.retainAllArtifactSubTypes(game);
+                    permanent.removeAllCardTypes(game);
+                    permanent.addCardType(game, CardType.ARTIFACT);
+                    permanent.addSubType(game, SubType.TREASURE);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    permanent.addAbility(ability, source.getSourceId(), game);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent aura = source.getSourcePermanentIfItStillExists(game);
         if (aura == null) {
             return false;
@@ -76,24 +97,8 @@ class MinimusContainmentEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.retainAllArtifactSubTypes(game);
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.ARTIFACT);
-                permanent.addSubType(game, SubType.TREASURE);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                permanent.addAbility(ability, source.getSourceId(), game);
-                return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override

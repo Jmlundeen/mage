@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +16,7 @@ import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -127,7 +129,7 @@ class MeliraSylvokOutcastEffect2 extends ReplacementEffectImpl {
 
 class MeliraSylvokOutcastEffect3 extends ContinuousEffectImpl {
 
-    private static FilterCreaturePermanent filter = new FilterCreaturePermanent();
+    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent();
 
     public MeliraSylvokOutcastEffect3() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.LoseAbility);
@@ -144,14 +146,20 @@ class MeliraSylvokOutcastEffect3 extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeAbility(InfectAbility.getInstance(), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Set<UUID> opponents = game.getOpponents(source.getControllerId());
         for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game)) {
             if (opponents.contains(perm.getControllerId())) {
-                perm.removeAbility(InfectAbility.getInstance(), source.getSourceId(), game);
+                affectedObjects.add(perm);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
-
 }

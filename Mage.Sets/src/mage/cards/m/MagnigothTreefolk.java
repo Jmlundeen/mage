@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -60,11 +61,7 @@ class MagnigothTreefolkEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
-            return false;
-        }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         List<SubType> landTypes = game
                 .getBattlefield()
                 .getActivePermanents(
@@ -79,28 +76,37 @@ class MagnigothTreefolkEffect extends ContinuousEffectImpl {
                 .flatMap(Collection::stream)
                 .distinct()
                 .collect(Collectors.toList());
-        if (landTypes.isEmpty()) {
-            return false;
-        }
-        for (SubType subType : landTypes) {
-            switch (subType) {
-                case PLAINS:
-                    permanent.addAbility(new PlainswalkAbility(), source.getSourceId(), game);
-                    break;
-                case ISLAND:
-                    permanent.addAbility(new IslandwalkAbility(), source.getSourceId(), game);
-                    break;
-                case SWAMP:
-                    permanent.addAbility(new SwampwalkAbility(), source.getSourceId(), game);
-                    break;
-                case MOUNTAIN:
-                    permanent.addAbility(new MountainwalkAbility(), source.getSourceId(), game);
-                    break;
-                case FOREST:
-                    permanent.addAbility(new ForestwalkAbility(), source.getSourceId(), game);
-                    break;
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (SubType subType : landTypes) {
+                switch (subType) {
+                    case PLAINS:
+                        permanent.addAbility(new PlainswalkAbility(), source.getSourceId(), game);
+                        break;
+                    case ISLAND:
+                        permanent.addAbility(new IslandwalkAbility(), source.getSourceId(), game);
+                        break;
+                    case SWAMP:
+                        permanent.addAbility(new SwampwalkAbility(), source.getSourceId(), game);
+                        break;
+                    case MOUNTAIN:
+                        permanent.addAbility(new MountainwalkAbility(), source.getSourceId(), game);
+                        break;
+                    case FOREST:
+                        permanent.addAbility(new ForestwalkAbility(), source.getSourceId(), game);
+                        break;
+                }
             }
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent == null) {
+            return false;
+        }
+        affectedObjects.add(permanent);
         return true;
     }
 }

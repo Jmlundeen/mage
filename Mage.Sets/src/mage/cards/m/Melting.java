@@ -1,5 +1,6 @@
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -10,6 +11,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -52,10 +54,15 @@ class MeltingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_LAND, source.getControllerId(), source, game)) {
-            permanent.removeSuperType(game, SuperType.SNOW);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeSuperType(game, SuperType.SNOW);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(StaticFilters.FILTER_LAND, source.getControllerId(), source, game));
+        return !affectedObjects.isEmpty();
     }
 }

@@ -57,8 +57,16 @@ public class CopyEffect extends ContinuousEffectImpl {
         }
 
         Permanent permanent = game.getPermanent(copyToObjectId);
+        if (permanent == null) {
+            permanent = game.getPermanentEntering(copyToObjectId);
+        }
         if (permanent != null) {
-            MageObjectReference mor = new MageObjectReference(permanent, game);
+            int ZCCDiff = 1;
+            if ((permanent instanceof PermanentToken)) {
+                // Tokens already have battlefield ZCC when they are created
+                ZCCDiff = 0;
+            }
+            MageObjectReference mor = new MageObjectReference(permanent.getId(), game.getState().getZoneChangeCounter(copyToObjectId) + ZCCDiff, game);
             if (!affectedObjectList.contains(mor)) {
                 affectedObjectList.add(mor);
             }
@@ -86,10 +94,14 @@ public class CopyEffect extends ContinuousEffectImpl {
         for (MageObjectReference mor : affectedObjectList) {
             Permanent permanent = mor.getPermanent(game);
             if (permanent == null) {
+                permanent = game.getPermanentEntering(mor.getSourceId());
+            }
+            if (permanent == null) {
                 if (!game.checkShortLivingLKI(getSourceId(), Zone.BATTLEFIELD)) {
                     this.discard();
                     return false;
                 }
+
                 // As long as the permanent is still in the short living LKI continue to copy to get triggered abilities to TriggeredAbilities for dies events.
                 permanent = (Permanent) game.getLastKnownInformation(getSourceId(), Zone.BATTLEFIELD, source.getStackMomentSourceZCC());
                 if (permanent == null) {

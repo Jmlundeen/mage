@@ -1,5 +1,6 @@
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -73,19 +74,25 @@ class MirrorBoxBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         List<Permanent> permanents = game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_CONTROLLED_CREATURE,
                 source.getControllerId(), source, game
         );
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_CREATURE_NON_TOKEN, source.getControllerId(), source, game
-        )) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             int amount = getAmount(permanents, permanent, game);
             permanent.addPower(amount);
             permanent.addToughness(amount);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_CONTROLLED_CREATURE_NON_TOKEN, source.getControllerId(), source, game
+        ));
+        return !affectedObjects.isEmpty();
     }
 
     private int getAmount(List<Permanent> permanents, Permanent target, Game game) {

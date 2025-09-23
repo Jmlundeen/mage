@@ -1,5 +1,6 @@
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -11,10 +12,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -53,11 +51,7 @@ class MirranSafehouseEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
-            return false;
-        }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         Set<Ability> abilities = game
                 .getState()
                 .getPlayersInRange(source.getControllerId(), game)
@@ -71,9 +65,20 @@ class MirranSafehouseEffect extends ContinuousEffectImpl {
                 .flatMap(Collection::stream)
                 .filter(Ability::isActivatedAbility)
                 .collect(Collectors.toSet());
-        for (Ability ability : abilities) {
-            permanent.addAbility(ability, source.getSourceId(), game, true);
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : abilities) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
+            }
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent == null) {
+            return false;
+        }
+        affectedObjects.add(permanent);
         return true;
     }
 

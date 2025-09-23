@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -16,6 +17,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -94,9 +96,9 @@ class MyrWelderContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent perm = (Permanent) object;
             for (UUID imprintedId : perm.getImprinted()) {
                 Card card = game.getCard(imprintedId);
                 if (card != null) {
@@ -108,7 +110,16 @@ class MyrWelderContinuousEffect extends ContinuousEffectImpl {
                 }
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        return false;
     }
 
     @Override

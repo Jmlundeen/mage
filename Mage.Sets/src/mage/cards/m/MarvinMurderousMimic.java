@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,7 +16,6 @@ import mage.util.CardUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -62,26 +62,31 @@ class MarvinMurderousMimicEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            game.getBattlefield()
+                    .getActivePermanents(
+                            StaticFilters.FILTER_CONTROLLED_CREATURE,
+                            source.getControllerId(), source, game
+                    )
+                    .stream()
+                    .filter(p -> !CardUtil.haveSameNames(p, permanent))
+                    .map(p -> p.getAbilities(game))
+                    .flatMap(Collection::stream)
+                    .filter(Ability::isActivatedAbility)
+                    .forEach(ability -> permanent.addAbility(ability, source.getSourceId(), game, true));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             return false;
         }
-        List<Ability> abilities = game
-                .getBattlefield()
-                .getActivePermanents(
-                        StaticFilters.FILTER_CONTROLLED_CREATURE,
-                        source.getControllerId(), source, game
-                )
-                .stream()
-                .filter(p -> !CardUtil.haveSameNames(p, permanent))
-                .map(p -> p.getAbilities(game))
-                .flatMap(Collection::stream)
-                .filter(Ability::isActivatedAbility)
-                .collect(Collectors.toList());
-        for (Ability ability : abilities) {
-            permanent.addAbility(ability, source.getSourceId(), game);
-        }
+        affectedObjects.add(permanent);
         return true;
     }
 }

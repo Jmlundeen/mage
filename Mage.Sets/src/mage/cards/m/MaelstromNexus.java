@@ -1,6 +1,7 @@
 
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -14,6 +15,7 @@ import mage.game.stack.StackObject;
 import mage.players.Player;
 import mage.watchers.common.FirstSpellCastThisTurnWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -58,21 +60,28 @@ class MaelstromNexusGainCascadeFirstSpellEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility(((Spell) object).getCard(), cascadeAbility);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            for (StackObject stackObject : game.getStack()) {
-                // only spells cast, so no copies of spells
-                if ((stackObject instanceof Spell) && !stackObject.isCopy() && stackObject.isControlledBy(source.getControllerId())) {
-                    Spell spell = (Spell) stackObject;
-                    FirstSpellCastThisTurnWatcher watcher = game.getState().getWatcher(FirstSpellCastThisTurnWatcher.class);
-                    if (watcher != null && spell.getId().equals(watcher.getIdOfFirstCastSpell(source.getControllerId()))) {
-                        game.getState().addOtherAbility(spell.getCard(), cascadeAbility);
-                    }
+        if (controller == null) {
+            return false;
+        }
+        for (StackObject stackObject : game.getStack()) {
+            // only spells cast, so no copies of spells
+            if ((stackObject instanceof Spell) && !stackObject.isCopy() && stackObject.isControlledBy(source.getControllerId())) {
+                Spell spell = (Spell) stackObject;
+                FirstSpellCastThisTurnWatcher watcher = game.getState().getWatcher(FirstSpellCastThisTurnWatcher.class);
+                if (watcher != null && spell.getId().equals(watcher.getIdOfFirstCastSpell(source.getControllerId()))) {
+                    affectedObjects.add(spell);
                 }
             }
-            return true;
         }
-        return false;
+        return !affectedObjects.isEmpty();
     }
 }

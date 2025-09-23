@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.DiscardCardCost;
@@ -15,6 +16,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -71,13 +73,18 @@ class MahaItsFeathersNightEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).getToughness().setModifiedBaseValue(1);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_OPPONENTS_PERMANENT_CREATURE,
                 source.getControllerId(), source, game
-        )) {
-            permanent.getToughness().setModifiedBaseValue(1);
-        }
-        return true;
+        ));
+        return !affectedObjects.isEmpty();
     }
 }

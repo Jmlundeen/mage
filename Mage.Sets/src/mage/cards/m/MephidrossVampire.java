@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.DealsDamageToACreatureTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,6 +16,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -62,18 +64,14 @@ class MephidrossVampireEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
     public MephidrossVampireEffect copy() {
         return new MephidrossVampireEffect(this);
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Permanent creature : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_CONTROLLED_CREATURES, source.getControllerId(), game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
             switch (layer) {
                 case AbilityAddingRemovingEffects_6:
                     creature.addAbility(new DealsDamageToACreatureTriggeredAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance()), false, false, false), source.getSourceId(), game);
@@ -83,7 +81,19 @@ class MephidrossVampireEffect extends ContinuousEffectImpl {
                     break;
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            for (Permanent creature : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_CONTROLLED_CREATURES, source.getControllerId(), game)) {
+                affectedObjects.add(creature);
+                source.getAffectedObjects().add(creature);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

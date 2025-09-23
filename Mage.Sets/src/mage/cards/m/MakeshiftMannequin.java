@@ -1,6 +1,6 @@
 package mage.cards.m;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.BecomesTargetSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -11,12 +11,7 @@ import mage.abilities.effects.common.SacrificeSourceEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.StaticFilters;
@@ -25,6 +20,9 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.util.CardUtil;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -113,13 +111,17 @@ class MakeshiftMannequinGainAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(new BecomesTargetSourceTriggeredAbility(new SacrificeSourceEffect()), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(this.getTargetPointer().getFirst(game, source));
         if (permanent != null) {
-            permanent.addAbility(
-                    new BecomesTargetSourceTriggeredAbility(
-                            new SacrificeSourceEffect()),
-                    source.getSourceId(), game);
+            affectedObjects.add(permanent);
             return true;
         }
         return false;
