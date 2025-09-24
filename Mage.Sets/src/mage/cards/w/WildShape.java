@@ -1,5 +1,6 @@
 package mage.cards.w;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,6 +14,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -90,33 +92,36 @@ class WildShapeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllCreatureTypes(game);
+                    permanent.addSubType(game, SubType.HUMAN);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.addAbility(ability, source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(power);
+                        permanent.getToughness().setModifiedBaseValue(toughness);
+                        break;
+                    }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent == null) {
             discard();
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllCreatureTypes(game);
-                permanent.addSubType(game, SubType.HUMAN);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.addAbility(ability, source.getSourceId(), game);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(power);
-                    permanent.getToughness().setModifiedBaseValue(toughness);
-                    return true;
-                }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override
@@ -128,5 +133,10 @@ class WildShapeEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

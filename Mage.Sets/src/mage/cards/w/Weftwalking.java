@@ -1,5 +1,6 @@
 package mage.cards.w;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -17,6 +18,7 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.watchers.common.SpellsCastWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -83,13 +85,19 @@ class WeftwalkingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(game.getActivePlayerId());
-        if (player == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
+            player.getAlternativeSourceCosts().add(alternativeCastingCostAbility);
         }
-        alternativeCastingCostAbility.setSourceId(source.getSourceId());
-        player.getAlternativeSourceCosts().add(alternativeCastingCostAbility);
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player player = game.getPlayer(game.getActivePlayerId());
+        if (player != null) {
+            affectedObjects.add(player);
+        }
+        return !affectedObjects.isEmpty();
     }
 }

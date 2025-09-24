@@ -1,8 +1,8 @@
 
 package mage.cards.w;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -20,6 +20,9 @@ import mage.filter.StaticFilters;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -76,7 +79,15 @@ class WardSliverGainAbilityControlledEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addAbility(new ProtectionAbility(protectionFilter), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (protectionFilter == null) {
             Permanent permanent = game.getPermanent(source.getSourceId());
             if (permanent != null) {
@@ -88,12 +99,8 @@ class WardSliverGainAbilityControlledEffect extends ContinuousEffectImpl {
             }
         }
         if (protectionFilter != null) {
-            for (Permanent perm: game.getBattlefield().getActivePermanents(StaticFilters.FILTER_PERMANENT_ALL_SLIVERS, source.getControllerId(), source, game)) {
-                perm.addAbility(new ProtectionAbility(protectionFilter), source.getSourceId(), game);
-            }
-            return true;
+            affectedObjects.addAll(game.getBattlefield().getActivePermanents(StaticFilters.FILTER_PERMANENT_ALL_SLIVERS, source.getControllerId(), source, game));
         }
-        return false;
+        return !affectedObjects.isEmpty();
     }
-
 }

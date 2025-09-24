@@ -1,6 +1,7 @@
 package mage.cards.w;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +21,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -84,13 +86,21 @@ class WeatherlightCompleatedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addCardType(game, CardType.CREATURE);
+            permanent.addSubType(game, SubType.PHYREXIAN);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null || permanent.getCounters(game).getCount(CounterType.PHYRESIS) < 4) {
             return false;
         }
-        permanent.addCardType(game, CardType.CREATURE);
-        permanent.addSubType(game, SubType.PHYREXIAN);
+        affectedObjects.add(permanent);
         return true;
     }
 }

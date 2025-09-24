@@ -24,7 +24,7 @@ public abstract class WhileConditionContinuousEffect extends ContinuousEffectImp
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
         if (condition.apply(game, source)) {
             return applyEffect(game, source);
         }

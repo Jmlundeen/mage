@@ -1,6 +1,7 @@
 package mage.cards.w;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -8,6 +9,7 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.keyword.ConspireAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -19,6 +21,7 @@ import mage.game.permanent.token.GoblinWarriorToken;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -80,7 +83,15 @@ class WortGainConspireEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, conspireAbility.setAddedById(source.getSourceId()));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (StackObject stackObject : game.getStack()) {
             // only spells cast, so no copies of spells
             if (!(stackObject instanceof Spell) || stackObject.isCopy()
@@ -89,9 +100,9 @@ class WortGainConspireEffect extends ContinuousEffectImpl {
             }
             Spell spell = (Spell) stackObject;
             if (filter.match(stackObject, game)) {
-                game.getState().addOtherAbility(spell.getCard(), conspireAbility.setAddedById(source.getSourceId()));
+                affectedObjects.add(spell.getCard());
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

@@ -1,25 +1,28 @@
 package mage.cards.w;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastOpponentTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.PreventionEffectImpl;
-import mage.cards.Card;
-import mage.constants.*;
-import mage.abilities.keyword.FlashAbility;
 import mage.abilities.keyword.FirstStrikeAbility;
+import mage.abilities.keyword.FlashAbility;
 import mage.abilities.keyword.VigilanceAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.events.DamagePermanentEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -93,18 +96,26 @@ class WeepingAngelMarbleizeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeCardType(game, CardType.CREATURE);
+            if (!permanent.isKindred(game)) {
+                permanent.removeAllCreatureTypes(game);
+            }
+            if (permanent.isAttacking() || permanent.getBlocking() > 0) {
+                permanent.removeFromCombat(game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent == null) {
             return false;
         }
-        permanent.removeCardType(game, CardType.CREATURE);
-        if (!permanent.isKindred(game)) {
-            permanent.removeAllCreatureTypes(game);
-        }
-        if (permanent.isAttacking() || permanent.getBlocking() > 0) {
-            permanent.removeFromCombat(game);
-        }
+        affectedObjects.add(permanent);
         return true;
     }
 }

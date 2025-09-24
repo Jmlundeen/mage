@@ -1,6 +1,7 @@
 package mage.cards.w;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -12,6 +13,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -61,26 +63,29 @@ class WishfulMerfolkEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAbility(DefenderAbility.getInstance(), source.getSourceId(), game);
+                    break;
+                case TypeChangingEffects_4:
+                    permanent.removeAllCreatureTypes(game);
+                    permanent.addSubType(game, SubType.HUMAN);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent == null) {
             return false;
         }
-        switch (layer) {
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAbility(DefenderAbility.getInstance(), source.getSourceId(), game);
-                break;
-            case TypeChangingEffects_4:
-                permanent.removeAllCreatureTypes(game);
-                permanent.addSubType(game, SubType.HUMAN);
-                break;
-        }
+        affectedObjects.add(permanent);
         return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 
     @Override

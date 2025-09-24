@@ -1,10 +1,6 @@
 package mage.cards.w;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -18,6 +14,11 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  *
@@ -125,7 +126,16 @@ class WillOfTheJeskaiFlashbackEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return false;
@@ -133,16 +143,9 @@ class WillOfTheJeskaiFlashbackEffect extends ContinuousEffectImpl {
         player.getGraveyard()
                 .stream()
                 .filter(cardId -> affectedObjectList.contains(new MageObjectReference(cardId, game)))
-                .forEachOrdered(cardId -> {
-                    Card card = game.getCard(cardId);
-                    if (card == null) {
-                        return;
-                    }
-                    FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-                    ability.setSourceId(cardId);
-                    ability.setControllerId(card.getOwnerId());
-                    game.getState().addOtherAbility(card, ability);
-                });
-        return true;
+                .map(game::getCard)
+                .filter(Objects::nonNull)
+                .forEachOrdered(affectedObjects::add);
+        return !affectedObjects.isEmpty();
     }
 }
