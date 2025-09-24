@@ -1,6 +1,7 @@
 package mage.cards.u;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldOrAttacksSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -18,8 +19,8 @@ import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInGraveyard;
 import mage.util.CardUtil;
 
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -55,6 +56,21 @@ public final class UrborgScavengers extends CardImpl {
 
 class UrborgScavengersEffect extends ContinuousEffectImpl {
 
+    private static final Set<Class<? extends Ability>> KEYWORD_ABILITIES = new HashSet<>(Arrays.asList(
+            FlyingAbility.class,
+            FirstStrikeAbility.class,
+            DoubleStrikeAbility.class,
+            DeathtouchAbility.class,
+            HasteAbility.class,
+            HexproofBaseAbility.class,
+            IndestructibleAbility.class,
+            LifelinkAbility.class,
+            MenaceAbility.class,
+            ReachAbility.class,
+            TrampleAbility.class,
+            VigilanceAbility.class
+    ));
+
     UrborgScavengersEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
         staticText = "{this} has flying as long as a card exiled with it has flying. " +
@@ -72,40 +88,35 @@ class UrborgScavengersEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
-        if (sourcePermanent == null){
-            return false;
-        }
-        ExileZone exileZone = game
-                .getExile()
-                .getExileZone(CardUtil.getExileZoneId(
-                        game, source.getSourceId(), sourcePermanent.getZoneChangeCounter(game)
-                ));
-        if (exileZone == null || exileZone.isEmpty()) {
-            return false;
-        }
-        exileZone
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Set<Ability> abilities = game.getExile()
+                .getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())))
                 .getCards(game)
                 .stream()
                 .map(card -> card.getAbilities(game))
                 .flatMap(Collection::stream)
-                .forEach(ability -> {
-                    if (ability instanceof FlyingAbility
-                            || ability instanceof FirstStrikeAbility
-                            || ability instanceof DoubleStrikeAbility
-                            || ability instanceof DeathtouchAbility
-                            || ability instanceof HasteAbility
-                            || ability instanceof HexproofBaseAbility
-                            || ability instanceof IndestructibleAbility
-                            || ability instanceof LifelinkAbility
-                            || ability instanceof MenaceAbility
-                            || ability instanceof ReachAbility
-                            || ability instanceof TrampleAbility
-                            || ability instanceof VigilanceAbility) {
-                        sourcePermanent.addAbility(ability, source.getSourceId(), game);
-                    }
-                });
+                .filter(ability -> KEYWORD_ABILITIES.stream()
+                        .anyMatch(aClass -> aClass.isAssignableFrom(ability.getClass())))
+                .collect(Collectors.toSet());
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : abilities) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
+        if (sourcePermanent == null) {
+            return false;
+        }
+        ExileZone exileZone = game.getExile()
+                .getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), sourcePermanent.getZoneChangeCounter(game)));
+        if (exileZone == null) {
+            return false;
+        }
+        affectedObjects.add(sourcePermanent);
         return true;
     }
 }

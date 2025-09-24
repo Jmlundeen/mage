@@ -1,6 +1,7 @@
 package mage.cards.u;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.LimitedTimesPerTurnActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -12,6 +13,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -47,31 +49,42 @@ public final class UrsineChampion extends CardImpl {
         return new UrsineChampion(this);
     }
 
-    private static class UrsineChampionEffect extends ContinuousEffectImpl {
 
-        private UrsineChampionEffect() {
-            super(Duration.EndOfTurn, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.BecomeCreature);
-            staticText = "and becomes a Bear Berserker until end of turn";
-        }
+}
 
-        private UrsineChampionEffect(final UrsineChampionEffect effect) {
-            super(effect);
-        }
+class UrsineChampionEffect extends ContinuousEffectImpl {
 
-        @Override
-        public UrsineChampionEffect copy() {
-            return new UrsineChampionEffect(this);
-        }
+    UrsineChampionEffect() {
+        super(Duration.EndOfTurn, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.BecomeCreature);
+        staticText = "and becomes a Bear Berserker until end of turn";
+    }
 
-        @Override
-        public boolean apply(Game game, Ability source) {
-            Permanent permanent = game.getPermanent(source.getSourceId());
-            if (permanent == null) {
-                return false;
-            }
+    private UrsineChampionEffect(final UrsineChampionEffect effect) {
+        super(effect);
+    }
+
+    @Override
+    public UrsineChampionEffect copy() {
+        return new UrsineChampionEffect(this);
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             permanent.removeAllCreatureTypes(game);
             permanent.addSubType(game, SubType.BEAR, SubType.BERSERKER);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
             return true;
+        } else {
+            return false;
         }
     }
 }

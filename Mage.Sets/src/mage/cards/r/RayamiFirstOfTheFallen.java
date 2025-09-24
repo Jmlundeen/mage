@@ -93,7 +93,7 @@ class RayamiFirstOfTheFallenEffect extends ContinuousEffectImpl {
                 .map(card -> card.getAbilities(game))
                 .flatMap(Collection::stream)
                 .filter(ability -> KEYWORD_ABILITIES.stream()
-                        .anyMatch(aClass -> ability.getClass().isAssignableFrom(aClass)))
+                        .anyMatch(aClass -> aClass.isAssignableFrom(ability.getClass())))
                 .collect(Collectors.toSet());
         for (MageItem object : affectedObjects) {
             for (Ability ability : abilities) {

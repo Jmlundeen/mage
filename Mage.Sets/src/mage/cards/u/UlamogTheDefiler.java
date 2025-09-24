@@ -1,6 +1,7 @@
 package mage.cards.u;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
@@ -27,6 +28,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -174,14 +176,9 @@ class UlamogTheDefilerContinuousAbility extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent;
-        if (getAffectedObjectsSet()) {
-            permanent = affectedObjectList.get(0).getPermanent(game);
-        } else {
-            permanent = game.getPermanent(source.getSourceId());
-        }
-        if (permanent != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             int amount = permanent.getCounters(game).getCount(CounterType.P1P1);
             if (amount != lastAmount) {
                 // Only instantiate a new ability if the number of P1P1 counters changed.
@@ -190,7 +187,20 @@ class UlamogTheDefilerContinuousAbility extends ContinuousEffectImpl {
             }
             permanent.addAbility(ability, source.getSourceId(), game);
         }
-        return true;
     }
 
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent;
+        if (getAffectedObjectsSet()) {
+            permanent = affectedObjectList.get(0).getPermanent(game);
+        } else {
+            permanent = game.getPermanent(source.getSourceId());
+        }
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        return false;
+    }
 }

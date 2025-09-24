@@ -1,6 +1,7 @@
 package mage.cards.u;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
@@ -22,6 +23,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -94,25 +96,28 @@ class UnctusGrandMetatectEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent == null) {
-            discard();
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addCardType(game, CardType.ARTIFACT);
+                    break;
+                case ColorChangingEffects_5:
+                    permanent.getColor(game).setBlue(true);
+                    break;
+            }
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.addCardType(game, CardType.ARTIFACT);
-                return true;
-            case ColorChangingEffects_5:
-                permanent.getColor(game).setBlue(true);
-                return true;
-        }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        discard();
         return false;
     }
 
