@@ -108,7 +108,7 @@ class TheNecrobloomDredgeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return false;

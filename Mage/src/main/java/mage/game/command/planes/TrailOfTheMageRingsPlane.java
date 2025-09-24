@@ -105,7 +105,7 @@ class TrailOfTheMageRingsReboundEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Plane cPlane = game.getState().getCurrentPlane();
         if (cPlane == null) {
             return false;

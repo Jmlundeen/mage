@@ -69,7 +69,7 @@ class UncheckedGrowthTrampleEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (UUID permanentId : getTargetPointer().getTargets(game, source)) {
             Permanent permanent = game.getPermanent(permanentId);
             if (permanent != null && permanent.hasSubtype(SubType.SPIRIT, game)) {

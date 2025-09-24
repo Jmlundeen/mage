@@ -96,7 +96,7 @@ class ToymakerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent artifact = game.getPermanent(this.getTargetPointer().getFirst(game, source));
         if (artifact != null) {
             affectedObjects.add(artifact);

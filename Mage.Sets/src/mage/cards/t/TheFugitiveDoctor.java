@@ -83,7 +83,7 @@ class TheFugitiveDoctorEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Card card = game.getCard(getTargetPointer().getFirst(game, source));
         if (card != null) {
             affectedObjects.add(card);

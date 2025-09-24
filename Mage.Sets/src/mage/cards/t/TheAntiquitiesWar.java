@@ -102,7 +102,7 @@ class TheAntiquitiesWarEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageObjectReference mor : affectedObjectList) {
             Permanent permanent = mor.getPermanent(game);
             if (permanent != null) {

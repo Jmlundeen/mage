@@ -115,7 +115,7 @@ class TheChainVeilIncreaseLoyaltyUseEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         affectedObjects.addAll(game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER,
                 source.getControllerId(), source, game

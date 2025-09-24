@@ -81,7 +81,7 @@ class TrazynTheInfiniteEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         Player player = game.getPlayer(source.getControllerId());
         if (permanent == null || player == null) {

@@ -99,7 +99,7 @@ class TyrannicalPitlordBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Object chosenCreature = game.getState().getValue(CardUtil.getCardZoneString("chosenCreature", source.getSourceId(), game));
         if (!(chosenCreature instanceof MageObjectReference)) {
             return false;
