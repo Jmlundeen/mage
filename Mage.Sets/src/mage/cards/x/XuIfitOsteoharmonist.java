@@ -1,6 +1,7 @@
 package mage.cards.x;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
@@ -14,6 +15,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInYourGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -65,6 +67,33 @@ class XuIfitOsteoharmonistEffect extends ContinuousEffectImpl {
         return new XuIfitOsteoharmonistEffect(this);
     }
 
+
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addSubType(game, SubType.SKELETON);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
+        if (permanent == null) {
+            discard();
+            return false;
+        }
+        affectedObjects.add(permanent);
+        return true;
+    }
+
     @Override
     public boolean hasLayer(Layer layer) {
         switch (layer) {
@@ -74,27 +103,5 @@ class XuIfitOsteoharmonistEffect extends ContinuousEffectImpl {
             default:
                 return false;
         }
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent == null) {
-            discard();
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.addSubType(game, SubType.SKELETON);
-                break;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 }

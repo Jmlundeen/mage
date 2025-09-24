@@ -1,7 +1,7 @@
 package mage.cards.y;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.ZoneChangeTriggeredAbility;
@@ -14,6 +14,9 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -47,7 +50,7 @@ public final class YixlidJailer extends CardImpl {
 class YixlidJailerEffect extends ContinuousEffectImpl {
 
     YixlidJailerEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.LoseAbility);
+        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.LoseAbility);
         staticText = "Cards in graveyards lose all abilities.";
 
         this.dependencyTypes.add(DependencyType.AddingAbility); // Necrotic Ooze
@@ -63,34 +66,27 @@ class YixlidJailerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        if (layer == Layer.AbilityAddingRemovingEffects_6) {
-            Player controller = game.getPlayer(source.getControllerId());
-            if (controller != null) {
-                for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
-                    Player player = game.getPlayer(playerId);
-                    if (player != null) {
-                        for (Card card : player.getGraveyard().getCards(game)) {
-                            if (card != null) {
-                                card.looseAllAbilities(game);
-                            }
-                        }
-                    }
-                }
-                return true;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Card) {
+                Card card = (Card) object;
+                card.looseAllAbilities(game);
             }
         }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.AbilityAddingRemovingEffects_6;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller != null) {
+            for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
+                Player player = game.getPlayer(playerId);
+                if (player != null) {
+                    affectedObjects.addAll(player.getGraveyard().getCards(game));
+                }
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 }
 

@@ -2,6 +2,7 @@
 package mage.cards.x;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
@@ -15,6 +16,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -85,40 +87,31 @@ class XenicPoltergeistEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        switch (layer) {
-            case TypeChangingEffects_4:
-                if (sublayer == SubLayer.NA) {
-                    UUID permanentId = getTargetPointer().getFirst(game, source);
-                    Permanent permanent = game.getPermanentOrLKIBattlefield(permanentId);
-                    if (permanent != null) {
-                        if (!permanent.isArtifact(game)) {
-                            permanent.addCardType(game, CardType.ARTIFACT);
-                        }
-                        if (!permanent.isCreature(game)) {
-                            permanent.addCardType(game, CardType.CREATURE);
-                        }
-                    }
-                }
-                break;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addCardType(game, CardType.ARTIFACT);
+                    permanent.addCardType(game, CardType.CREATURE);
+                    break;
 
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    UUID permanentId = getTargetPointer().getFirst(game, source);
-                    Permanent permanent = game.getPermanentOrLKIBattlefield(permanentId);
-                    if (permanent != null) {
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
                         int manaCost = permanent.getManaValue();
                         permanent.getPower().setModifiedBaseValue(manaCost);
                         permanent.getToughness().setModifiedBaseValue(manaCost);
                     }
-                }
+            }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        UUID permanentId = getTargetPointer().getFirst(game, source);
+        Permanent permanent = game.getPermanentOrLKIBattlefield(permanentId);
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override
@@ -127,4 +120,9 @@ class XenicPoltergeistEffect extends ContinuousEffectImpl {
                 || layer == Layer.TypeChangingEffects_4;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b
+                || sublayer == SubLayer.NA;
+    }
 }

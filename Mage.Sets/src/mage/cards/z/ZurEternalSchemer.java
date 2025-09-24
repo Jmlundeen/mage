@@ -1,6 +1,7 @@
 package mage.cards.z;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.CompoundAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -22,6 +23,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -92,32 +94,33 @@ class ZurEternalSchemerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent enchantment = game.getPermanent(this.getTargetPointer().getFirst(game, source));
-        if (enchantment == null) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                if (sublayer == SubLayer.NA) {
-                    if (!enchantment.isCreature(game)) {
-                        enchantment.addCardType(game, CardType.CREATURE);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent enchantment = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    if (sublayer == SubLayer.NA) {
+                            enchantment.addCardType(game, CardType.CREATURE);
                     }
-                }
-                break;
+                    break;
 
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    int cmc = enchantment.getManaValue();
-                    enchantment.getPower().setModifiedBaseValue(cmc);
-                    enchantment.getToughness().setModifiedBaseValue(cmc);
-                }
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        int cmc = enchantment.getManaValue();
+                        enchantment.getPower().setModifiedBaseValue(cmc);
+                        enchantment.getToughness().setModifiedBaseValue(cmc);
+                    }
+            }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent enchantment = game.getPermanent(this.getTargetPointer().getFirst(game, source));
+        if (enchantment != null) {
+            affectedObjects.add(enchantment);
+            return true;
+        }
         return false;
     }
 
@@ -125,5 +128,11 @@ class ZurEternalSchemerEffect extends ContinuousEffectImpl {
     public boolean hasLayer(Layer layer) {
         return layer == Layer.PTChangingEffects_7
                 || layer == Layer.TypeChangingEffects_4;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b
+                || sublayer == SubLayer.NA;
     }
 }

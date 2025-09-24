@@ -1,6 +1,7 @@
 package mage.cards.z;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,6 +14,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -46,7 +48,7 @@ public final class ZilorthaStrengthIncarnate extends CardImpl {
 class ZilorthaStrengthIncarnateEffect extends ContinuousEffectImpl {
 
     ZilorthaStrengthIncarnateEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = "Lethal damage dealt to creatures you control is determined by their power rather than their toughness";
     }
 
@@ -55,22 +57,15 @@ class ZilorthaStrengthIncarnateEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        // Change the rule
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         FilterCreaturePermanent filter = StaticFilters.FILTER_PERMANENT_CREATURE.copy();
         filter.add(new ControllerIdPredicate(source.getControllerId()));
         game.getState().addPowerInsteadOfToughnessForDamageLethalityFilter(source.getSourceId(), filter);
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 
     @Override

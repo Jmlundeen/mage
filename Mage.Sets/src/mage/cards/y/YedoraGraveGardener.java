@@ -1,6 +1,7 @@
 package mage.cards.y;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
@@ -20,6 +21,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -110,19 +112,27 @@ class YedoraGraveGardenerContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent target = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (target == null || !target.isFaceDown(game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeAllSuperTypes(game);
+            permanent.removeAllCardTypes(game);
+            permanent.removeAllSubTypes(game);
+            permanent.addCardType(game, CardType.LAND);
+            permanent.addSubType(game, SubType.FOREST);
+            permanent.removeAllAbilities(source.getSourceId(), game);
+            permanent.addAbility(new GreenManaAbility(), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
+        if (permanent == null || !permanent.isFaceDown(game)) {
             discard();
             return false;
         }
-        target.removeAllSuperTypes(game);
-        target.removeAllCardTypes(game);
-        target.removeAllSubTypes(game);
-        target.addCardType(game, CardType.LAND);
-        target.addSubType(game, SubType.FOREST);
-        target.removeAllAbilities(source.getSourceId(), game);
-        target.addAbility(new GreenManaAbility(), source.getSourceId(), game);
+        affectedObjects.add(permanent);
         return true;
     }
 }
