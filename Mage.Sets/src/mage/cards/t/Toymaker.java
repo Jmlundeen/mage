@@ -1,8 +1,8 @@
 
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.DiscardCardCost;
@@ -17,6 +17,9 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -73,40 +76,41 @@ class ToymakerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent artifact = game.getPermanent(this.getTargetPointer().getFirst(game, source));
-        if (artifact == null) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                if (sublayer == SubLayer.NA) {
-                    if (!artifact.isArtifact(game)) {
-                        artifact.addCardType(game, CardType.ARTIFACT);
-                    }
-                    if (!artifact.isCreature(game)) {
-                        artifact.addCardType(game, CardType.CREATURE);
-                    }
-                }
-                break;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent artifact = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    artifact.addCardType(game, CardType.ARTIFACT);
+                    artifact.addCardType(game, CardType.CREATURE);
+                    break;
 
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    int cmc = artifact.getManaValue();
-                    artifact.getPower().setModifiedBaseValue(cmc);
-                    artifact.getToughness().setModifiedBaseValue(cmc);
-                }
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        int cmc = artifact.getManaValue();
+                        artifact.getPower().setModifiedBaseValue(cmc);
+                        artifact.getToughness().setModifiedBaseValue(cmc);
+                    }
+            }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent artifact = game.getPermanent(this.getTargetPointer().getFirst(game, source));
+        if (artifact != null) {
+            affectedObjects.add(artifact);
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.PTChangingEffects_7 || layer == Layer.TypeChangingEffects_4;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

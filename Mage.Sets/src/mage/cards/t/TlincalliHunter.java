@@ -1,7 +1,7 @@
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +20,9 @@ import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -117,7 +120,7 @@ class TlincalliHunterAlternativeCost extends AlternativeCostSourceAbility {
 class TlincalliHunterAddAltCostEffect extends ContinuousEffectImpl {
 
     TlincalliHunterAddAltCostEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = "Once each turn, you may pay {0} rather than pay the mana cost for a creature spell you cast from exile.";
     }
 
@@ -131,36 +134,35 @@ class TlincalliHunterAddAltCostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player controller = (Player) object;
+            TlincalliHunterAlternativeCost alternateCostAbility = new TlincalliHunterAlternativeCost();
+            alternateCostAbility.setSourceId(source.getSourceId());
+            controller.getAlternativeSourceCosts().add(alternateCostAbility);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            Permanent sourcePermanent = game.getPermanent(source.getSourceId());
-            if (sourcePermanent != null) {
-                Boolean wasItUsed = (Boolean) game.getState().getValue(
-                        sourcePermanent.getId().toString()
-                                + sourcePermanent.getZoneChangeCounter(game)
-                                + sourcePermanent.getTurnsOnBattlefield());
-                // If we haven't used it yet this turn, give the option of using the zero alternative cost
-                if (wasItUsed == null) {
-                    TlincalliHunterAlternativeCost alternateCostAbility = new TlincalliHunterAlternativeCost();
-                    alternateCostAbility.setSourceId(source.getSourceId());
-                    controller.getAlternativeSourceCosts().add(alternateCostAbility);
-                }
-                // Return true even if we didn't add the alt cost. We still applied the effect
-                return true;
-            }
+        if (controller == null) {
+            return false;
+        }
+        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
+        if (sourcePermanent == null) {
+            return false;
+        }
+        Boolean wasItUsed = (Boolean) game.getState().getValue(
+                sourcePermanent.getId().toString()
+                        + sourcePermanent.getZoneChangeCounter(game)
+                        + sourcePermanent.getTurnsOnBattlefield());
+        // If we haven't used it yet this turn, give the option of using the zero alternative cost
+        if (wasItUsed == null) {
+            affectedObjects.add(controller);
+            return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }
 

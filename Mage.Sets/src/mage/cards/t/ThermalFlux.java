@@ -1,6 +1,7 @@
 
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.common.delayed.AtTheBeginOfNextUpkeepDelayedTriggeredAbility;
@@ -16,6 +17,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -82,15 +84,24 @@ class ThermalFluxEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getFirstTarget());
-        if (permanent != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             if (addSnow) {
                 permanent.addSuperType(game, SuperType.SNOW);
             } else {
                 permanent.removeSuperType(game, SuperType.SNOW);
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getFirstTarget());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        return false;
     }
 }

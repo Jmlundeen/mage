@@ -1,27 +1,31 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
+import mage.abilities.Ability;
+import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.condition.Condition;
+import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.DemonstrateAbility;
+import mage.cards.Card;
+import mage.cards.CardImpl;
+import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
+import mage.players.Player;
 import mage.watchers.Watcher;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import mage.abilities.Ability;
-import mage.abilities.condition.Condition;
-import mage.abilities.effects.ContinuousEffectImpl;
-import mage.players.Player;
-import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.counters.CounterType;
 
 /**
  * @author Mo1eculeMan
@@ -72,7 +76,14 @@ class TheTwelfthDoctorGainDemonstrateEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility((Card) object, new DemonstrateAbility());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         TheTwelfthDoctorWatcher watcher = game.getState().getWatcher(TheTwelfthDoctorWatcher.class);
         if (controller == null || watcher == null) {
@@ -85,11 +96,11 @@ class TheTwelfthDoctorGainDemonstrateEffect extends ContinuousEffectImpl {
                     && stackObject.isControlledBy(source.getControllerId())) {
                 Spell spell = (Spell) stackObject;
                 if (FirstSpellCastFromNotHandEachTurnCondition.instance.apply(game, source)) {
-                    game.getState().addOtherAbility(spell.getCard(), new DemonstrateAbility());
+                    affectedObjects.add(spell.getCard());
                 }
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }
 

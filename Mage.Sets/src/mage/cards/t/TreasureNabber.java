@@ -1,9 +1,8 @@
 package mage.cards.t;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.GainControlTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -12,9 +11,7 @@ import mage.game.events.GameEvent;
 import mage.game.events.TappedForManaEvent;
 import mage.game.permanent.Permanent;
 import mage.target.targetpointer.FixedTarget;
-import mage.target.targetpointer.FixedTargets;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -47,7 +44,7 @@ public final class TreasureNabber extends CardImpl {
 class TreasureNabberAbility extends TriggeredAbilityImpl {
 
     TreasureNabberAbility() {
-        super(Zone.BATTLEFIELD, new TreasureNabberEffect());
+        super(Zone.BATTLEFIELD, new GainControlTargetEffect(Duration.UntilEndOfYourNextTurn, true));
     }
 
     private TreasureNabberAbility(TreasureNabberAbility ability) {
@@ -84,33 +81,5 @@ class TreasureNabberAbility extends TriggeredAbilityImpl {
     @Override
     public String getRule() {
         return "Whenever an opponent taps an artifact for mana, gain control of that artifact until the end of your next turn.";
-    }
-}
-
-class TreasureNabberEffect extends ContinuousEffectImpl {
-
-    TreasureNabberEffect() {
-        super(Duration.UntilEndOfYourNextTurn, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        this.staticText = "gain control of that artifact until the end of your next turn";
-    }
-
-    private TreasureNabberEffect(final TreasureNabberEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public TreasureNabberEffect copy() {
-        return new TreasureNabberEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-
-        if (permanent != null) {
-            permanent.changeControllerId(source.getControllerId(), game, source);
-            return true;
-        }
-        return false;
     }
 }

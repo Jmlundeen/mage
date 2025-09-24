@@ -1,24 +1,26 @@
 package mage.cards.t;
 
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.DontUntapInControllersUntapStepEnchantedEffect;
-import mage.constants.*;
+import mage.abilities.keyword.EnchantAbility;
 import mage.abilities.keyword.FlashAbility;
+import mage.cards.CardImpl;
+import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
-import mage.abilities.effects.common.AttachEffect;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
-import mage.abilities.keyword.EnchantAbility;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -118,15 +120,24 @@ class TamiyosCompleationLoseAbilitiesEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent enchantment = source.getSourcePermanentIfItStillExists(game);
-        if (enchantment != null) {
-            Permanent enchanted = game.getPermanent(enchantment.getAttachedTo());
-            if (enchanted != null) {
-                enchanted.removeAllAbilities(source.getSourceId(), game);
-                return true;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeAllAbilities(source.getSourceId(), game);
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent enchantment = game.getPermanent(source.getSourceId());
+        if (enchantment == null || enchantment.getAttachedTo() == null) {
+            return false;
+        }
+        Permanent enchanted = game.getPermanent(enchantment.getAttachedTo());
+        if (enchanted == null) {
+            return false;
+        } else {
+            affectedObjects.add(enchanted);
+            return true;
+        }
     }
 }

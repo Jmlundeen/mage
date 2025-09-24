@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -143,7 +144,26 @@ class TakklemaggotNonAuraEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            if (layer == Layer.TypeChangingEffects_4) {
+                permanent.removeSubType(game, SubType.AURA);
+            } else if (layer == Layer.AbilityAddingRemovingEffects_6) {
+                List<Ability> toRemove = new ArrayList<>();
+                for (Ability ability : permanent.getAbilities(game)) {
+                    if (ability instanceof EnchantAbility) {
+                        toRemove.add(ability);
+                    }
+                }
+                permanent.removeAbilities(toRemove, source.getSourceId(), game);
+                permanent.addAbility(new TakklemaggotUpkeepAbility(playerId), source.getSourceId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent;
         if (affectedObjectList.isEmpty()) { // not yet initiated, check entering permanent
             permanent = game.getPermanentEntering(source.getSourceId());
@@ -157,6 +177,7 @@ class TakklemaggotNonAuraEffect extends ContinuousEffectImpl {
                 } else {
                     // initiate with ZCC and check that in all future calls
                     affectedObjectList.add(new MageObjectReference(source.getSourceId(), game));
+                    affectedObjects.add(permanent);
                 }
             }
         } else {
@@ -165,29 +186,9 @@ class TakklemaggotNonAuraEffect extends ContinuousEffectImpl {
                 discard(); // permanent no longer on battlefield so effect no longer applies
                 return true;
             }
+            affectedObjects.add(permanent);
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeSubType(game, SubType.AURA);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                List<Ability> toRemove = new ArrayList<>();
-                for (Ability ability : permanent.getAbilities(game)) {
-                    if (ability instanceof EnchantAbility) {
-                        toRemove.add(ability);
-                    }
-                }
-                permanent.removeAbilities(toRemove, source.getSourceId(), game);
-                permanent.addAbility(new TakklemaggotUpkeepAbility(playerId), source.getSourceId(), game);
-                return true;
-            default:
-                return true;
-        }
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

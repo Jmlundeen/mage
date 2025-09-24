@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
@@ -22,6 +23,7 @@ import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInHand;
 import mage.target.targetpointer.FixedTargets;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -123,25 +125,30 @@ class TezzeretCruelMachinistCardTypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        boolean flag = false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeAllSuperTypes(game);
+            permanent.removeAllCardTypes(game);
+            permanent.removeAllSubTypes(game);
+            permanent.addCardType(game, CardType.ARTIFACT, CardType.CREATURE);
+            permanent.getPower().setModifiedBaseValue(5);
+            permanent.getToughness().setModifiedBaseValue(5);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (UUID targetId : getTargetPointer().getTargets(game, source)) {
             Permanent target = game.getPermanent(targetId);
             if (target == null || !target.isFaceDown(game)) {
                 continue;
             }
-            flag = true;
-            target.removeAllSuperTypes(game);
-            target.removeAllCardTypes(game);
-            target.removeAllSubTypes(game);
-            target.addCardType(game, CardType.ARTIFACT, CardType.CREATURE);
-            target.getPower().setModifiedBaseValue(5);
-            target.getToughness().setModifiedBaseValue(5);
+            affectedObjects.add(target);
         }
-        if (!flag) {
+        if (affectedObjects.isEmpty()) {
             discard();
-            return false;
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

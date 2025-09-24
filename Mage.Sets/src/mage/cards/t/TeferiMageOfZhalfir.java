@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,6 +16,7 @@ import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -69,44 +71,49 @@ class TeferiMageOfZhalfirAddFlashEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, FlashAbility.getInstance());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
             // in graveyard
             for (UUID cardId : controller.getGraveyard()) {
                 Card card = game.getCard(cardId);
                 if (card != null && card.isCreature(game)) {
-                    game.getState().addOtherAbility(card, FlashAbility.getInstance());
+                    affectedObjects.add(card);
                 }
             }
             // on Hand
             for (UUID cardId : controller.getHand()) {
                 Card card = game.getCard(cardId);
                 if (card != null && card.isCreature(game)) {
-                    game.getState().addOtherAbility(card, FlashAbility.getInstance());
+                    affectedObjects.add(card);
                 }
             }
             // in Exile
             for (Card card : game.getState().getExile().getCardsOwned(game, controller.getId())) {
                 if (card.isCreature(game)) {
-                    game.getState().addOtherAbility(card, FlashAbility.getInstance());
+                    affectedObjects.add(card);
                 }
             }
             // in Library (e.g. for Mystical Teachings)
             for (Card card : controller.getLibrary().getCards(game)) {
                 if (card.isCreature(game)) {
-                    game.getState().addOtherAbility(card, FlashAbility.getInstance());
+                    affectedObjects.add(card);
                 }
             }
             // cards in command zone
             game.getCommanderCardsFromCommandZone(controller, CommanderCardType.ANY).stream()
                     .filter(card1 -> card1.isCreature(game))
-                    .forEach(card -> {
-                        game.getState().addOtherAbility(card, FlashAbility.getInstance());
-                    });
-            return true;
+                    .forEach(affectedObjects::add);
         }
-        return false;
+        return !affectedObjects.isEmpty();
     }
 }
 

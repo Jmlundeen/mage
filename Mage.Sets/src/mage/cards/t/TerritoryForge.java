@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -19,6 +20,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -73,7 +75,24 @@ class TerritoryForgeStaticEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), permanent.getZoneChangeCounter(game));
+            ExileZone exileZone = game.getExile().getExileZone(exileId);
+            for (Card card : exileZone.getCards(game)) {
+                for (Ability ability : card.getAbilities(game)) {
+                    if (ability.isActivatedAbility()) {
+                        ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
+                        permanent.addAbility(copyAbility, source.getSourceId(), game, true);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             return false;
@@ -83,14 +102,7 @@ class TerritoryForgeStaticEffect extends ContinuousEffectImpl {
         if (exileZone == null || exileZone.isEmpty()) {
             return false;
         }
-        for (Card card : exileZone.getCards(game)) {
-            for (Ability ability : card.getAbilities(game)) {
-                if (ability.isActivatedAbility()) {
-                    ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
-                    permanent.addAbility(copyAbility, source.getSourceId(), game, true);
-                }
-            }
-        }
+        affectedObjects.add(permanent);
         return true;
     }
 }

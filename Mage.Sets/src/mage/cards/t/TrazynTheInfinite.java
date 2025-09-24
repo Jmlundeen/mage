@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -14,6 +15,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -62,12 +64,8 @@ class TrazynTheInfiniteEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
-        if (permanent == null || player == null) {
-            return false;
-        }
         Set<Ability> abilities = player.getGraveyard()
                 .getCards(StaticFilters.FILTER_CARD_ARTIFACT, game)
                 .stream()
@@ -75,9 +73,21 @@ class TrazynTheInfiniteEffect extends ContinuousEffectImpl {
                 .flatMap(Collection::stream)
                 .filter(Ability::isActivatedAbility)
                 .collect(Collectors.toSet());
-        for (Ability ability : abilities) {
-            permanent.addAbility(ability, source.getSourceId(), game, true);
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : abilities) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
+            }
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        Player player = game.getPlayer(source.getControllerId());
+        if (permanent == null || player == null) {
+            return false;
+        }
+        affectedObjects.add(permanent);
         return true;
     }
 

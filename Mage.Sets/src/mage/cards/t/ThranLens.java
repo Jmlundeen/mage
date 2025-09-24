@@ -1,7 +1,7 @@
 
 package mage.cards.t;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -11,6 +11,9 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -42,13 +45,19 @@ public final class ThranLens extends CardImpl {
         super(Duration.WhileOnBattlefield, Layer.ColorChangingEffects_5, SubLayer.NA, Outcome.Benefit);
         staticText = "All permanents are colorless";
     }
-    @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent perm: game.getBattlefield().getActivePermanents(source.getControllerId(), game)) {
-            perm.getColor(game).setColor(ObjectColor.COLORLESS);
-        }
-        return true;
-    }
+
+     @Override
+     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+         for (MageItem object : affectedObjects) {
+             ((Permanent) object).getColor(game).setColor(ObjectColor.COLORLESS);
+         }
+     }
+
+     @Override
+     public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+         affectedObjects.addAll(game.getBattlefield().getActivePermanents(source.getSourceId(), game));
+         return !affectedObjects.isEmpty();
+     }
 
     @Override
     public ThranLensEffect copy() {

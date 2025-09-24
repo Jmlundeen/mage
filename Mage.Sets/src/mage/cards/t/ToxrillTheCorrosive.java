@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
@@ -24,6 +25,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.SlugToken;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -98,15 +100,21 @@ class ToxrillTheCorrosiveEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CREATURE_YOU_DONT_CONTROL,
-                source.getControllerId(), source, game
-        )) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             int counter = permanent.getCounters(game).getCount(CounterType.SLIME);
             permanent.getPower().increaseBoostedValue(-counter);
             permanent.getToughness().increaseBoostedValue(-counter);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_CREATURE_YOU_DONT_CONTROL,
+                source.getControllerId(), source, game
+        ));
+        return !affectedObjects.isEmpty();
     }
 }

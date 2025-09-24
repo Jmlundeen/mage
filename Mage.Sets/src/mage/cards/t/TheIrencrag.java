@@ -1,6 +1,6 @@
 package mage.cards.t;
 
-import mage.MageObjectReference;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldControlledTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -17,6 +17,7 @@ import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -75,47 +76,43 @@ class TheIrencragBecomesContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        affectedObjectList.add(new MageObjectReference(source.getSourceId(), game));
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TextChangingEffects_3:
+                    permanent.setName("Everflame, Heroes' Legacy");
+                    break;
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.addSuperType(game, SuperType.LEGENDARY);
+                    permanent.addCardType(game, CardType.ARTIFACT);
+                    permanent.retainAllArtifactSubTypes(game);
+                    permanent.addSubType(game, SubType.EQUIPMENT);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    permanent.addAbility(
+                            new EquipAbility(3, false),
+                            source.getSourceId(), game
+                    );
+                    permanent.addAbility(
+                            new SimpleStaticAbility(new BoostEquippedEffect(3, 3)),
+                            source.getSourceId(), game
+                    );
+            }
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = affectedObjectList.get(0).getPermanent(game);
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent == null) {
             this.discard();
             return false;
         }
-        switch (layer) {
-            case TextChangingEffects_3:
-                permanent.setName("Everflame, Heroes' Legacy");
-                return true;
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.addSuperType(game, SuperType.LEGENDARY);
-                permanent.addCardType(game, CardType.ARTIFACT);
-                permanent.retainAllArtifactSubTypes(game);
-                permanent.addSubType(game, SubType.EQUIPMENT);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                permanent.addAbility(
-                        new EquipAbility(3, false),
-                        source.getSourceId(), game
-                );
-                permanent.addAbility(
-                        new SimpleStaticAbility(new BoostEquippedEffect(3, 3)),
-                        source.getSourceId(), game
-                );
-                return true;
-        }
+        affectedObjects.add(permanent);
         return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 
     @Override
@@ -124,5 +121,4 @@ class TheIrencragBecomesContinuousEffect extends ContinuousEffectImpl {
                 || layer == Layer.TypeChangingEffects_4
                 || layer == Layer.AbilityAddingRemovingEffects_6;
     }
-
 }

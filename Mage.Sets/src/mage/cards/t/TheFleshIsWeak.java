@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -18,6 +19,7 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -76,13 +78,18 @@ class TheFleshIsWeakEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent perm : game.getBattlefield().getActivePermanents(
-                filter, source.getControllerId(), source, game
-        )) {
-            perm.addCardType(game, CardType.ARTIFACT);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addCardType(game, CardType.ARTIFACT);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                filter, source.getControllerId(), source, game
+        ));
+        return !affectedObjects.isEmpty();
     }
 
     @Override

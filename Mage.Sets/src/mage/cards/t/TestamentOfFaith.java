@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.VariableCostType;
@@ -15,6 +16,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -64,13 +66,22 @@ class TestamentOfFaithEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addCardType(game, CardType.CREATURE);
+            permanent.addSubType(game, SubType.WALL);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent == null) {
             return false;
+        } else {
+            affectedObjects.add(permanent);
+            return true;
         }
-        permanent.addCardType(game, CardType.CREATURE);
-        permanent.addSubType(game, SubType.WALL);
-        return true;
     }
 }

@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
@@ -17,7 +18,7 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.stack.Spell;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -82,16 +83,24 @@ class TaigamOjutaiMasterEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Spell spell = (Spell) object;
+            if (spell.getAbilities().containsClass(ReboundAbility.class)) {
+                continue;
+            }
+            game.getState().addOtherAbility(spell.getCard(), new ReboundAbility());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
         if (spell == null) {
             discard();
             return false;
         }
-        Optional.of(spell)
-                .map(Spell::getCard)
-                .filter(card -> !card.getAbilities(game).containsClass(ReboundAbility.class))
-                .ifPresent(card -> game.getState().addOtherAbility(card, new ReboundAbility()));
+        affectedObjects.add(spell);
         return true;
     }
 }

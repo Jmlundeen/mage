@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
@@ -20,6 +21,7 @@ import mage.game.stack.StackObject;
 import mage.watchers.Watcher;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -105,24 +107,20 @@ class TheChainVeilIncreaseLoyaltyUseEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER,
-                source.getControllerId(), source, game
-        )) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             permanent.incrementLoyaltyActivationsAvailable();
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER,
+                source.getControllerId(), source, game
+        ));
+        return !affectedObjects.isEmpty();
     }
 }
 

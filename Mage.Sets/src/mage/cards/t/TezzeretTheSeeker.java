@@ -1,6 +1,7 @@
 
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -116,39 +117,46 @@ class TezzeretTheSeekerEffect3 extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<Permanent> permanents = game.getBattlefield().getAllActivePermanents(new FilterArtifactPermanent(), source.getControllerId(), game);
-        for (Permanent permanent : permanents) {
-            if (permanent != null) {
-                switch (layer) {
-                    case TypeChangingEffects_4:
-                        if (sublayer == SubLayer.NA) {
-                            if (!permanent.isArtifact(game)) {
-                                permanent.addCardType(game, CardType.ARTIFACT);
-                            }
-                            if (!permanent.isCreature(game)) {
-                                permanent.addCardType(game, CardType.CREATURE);
-                            }
-                        }
-                        break;
-                    case PTChangingEffects_7:
-                        if (sublayer == SubLayer.SetPT_7b) {
-                            permanent.getPower().setModifiedBaseValue(5);
-                            permanent.getToughness().setModifiedBaseValue(5);
-                        }
-                }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addCardType(game, CardType.ARTIFACT);
+                    permanent.addCardType(game, CardType.CREATURE);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(5);
+                        permanent.getToughness().setModifiedBaseValue(5);
+                    }
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+                Player controller = game.getPlayer(source.getControllerId());
+                if (controller == null) {
+                    return false;
+                }
+                List<Permanent> permanents = game.getBattlefield().getAllActivePermanents(new FilterArtifactPermanent(), controller.getId(), game);
+                affectedObjects.addAll(permanents);
+                source.getAffectedObjects().addAll(permanents);
+            }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.TypeChangingEffects_4 || layer == Layer.PTChangingEffects_7;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }

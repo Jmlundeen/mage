@@ -1,7 +1,7 @@
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
@@ -10,14 +10,17 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ChooseCreatureEffect;
-import mage.constants.*;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -43,7 +46,6 @@ public final class TyrannicalPitlord extends CardImpl {
 
         // The chosen creature gets +3/+3 and has flying.
         Ability ability = new SimpleStaticAbility(new TyrannicalPitlordBoostEffect());
-        ability.addEffect(new TyrannicalPitlordGainFlyingEffect());
         this.addAbility(ability);
 
         // When Tyrannical Pitlord leaves the battlefield, sacrifice the chosen creature.
@@ -63,8 +65,8 @@ public final class TyrannicalPitlord extends CardImpl {
 class TyrannicalPitlordBoostEffect extends ContinuousEffectImpl {
 
     TyrannicalPitlordBoostEffect() {
-        super(Duration.WhileOnBattlefield, Layer.PTChangingEffects_7, SubLayer.ModifyPT_7c, Outcome.BoostCreature);
-        this.staticText = "the chosen creature gets +3/+3";
+        super(Duration.WhileOnBattlefield, Outcome.BoostCreature);
+        this.staticText = "the chosen creature gets +3/+3 and has flying";
     }
 
     private TyrannicalPitlordBoostEffect(final TyrannicalPitlordBoostEffect effect) {
@@ -77,7 +79,27 @@ class TyrannicalPitlordBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case AbilityAddingRemovingEffects_6:
+                    permanent.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.ModifyPT_7c) {
+                        permanent.addPower(3);
+                        permanent.addToughness(3);
+                    }
+                    break;
+            }
+            ((Permanent) object).addPower(3);
+            ((Permanent) object).addToughness(3);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
         Object chosenCreature = game.getState().getValue(CardUtil.getCardZoneString("chosenCreature", source.getSourceId(), game));
         if (!(chosenCreature instanceof MageObjectReference)) {
             return false;
@@ -86,40 +108,18 @@ class TyrannicalPitlordBoostEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        permanent.addPower(3);
-        permanent.addToughness(3);
+        affectedObjects.add(permanent);
         return true;
-    }
-}
-
-class TyrannicalPitlordGainFlyingEffect extends ContinuousEffectImpl {
-
-    TyrannicalPitlordGainFlyingEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "and has flying";
-    }
-
-    private TyrannicalPitlordGainFlyingEffect(final TyrannicalPitlordGainFlyingEffect effect) {
-        super(effect);
     }
 
     @Override
-    public TyrannicalPitlordGainFlyingEffect copy() {
-        return new TyrannicalPitlordGainFlyingEffect(this);
+    public boolean hasLayer(Layer layer) {
+        return layer == Layer.PTChangingEffects_7 || layer == Layer.AbilityAddingRemovingEffects_6;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Object chosenCreature = game.getState().getValue(CardUtil.getCardZoneString("chosenCreature", source.getSourceId(), game));
-        if (!(chosenCreature instanceof MageObjectReference)) {
-            return false;
-        }
-        Permanent permanent = ((MageObjectReference) chosenCreature).getPermanent(game);
-        if (permanent == null) {
-            return false;
-        }
-        permanent.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
-        return true;
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.ModifyPT_7c || sublayer == SubLayer.NA;
     }
 }
 

@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -13,6 +14,8 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
 import mage.game.stack.Spell;
 import mage.util.CardUtil;
+
+import java.util.List;
 
 /**
  * @author nantuko
@@ -81,7 +84,7 @@ public class TransformAbility extends SimpleStaticAbility {
         return true;
     }
 
-    private static MageObject findSourceObjectForTransform(Permanent permanent) {
+    protected static MageObject findSourceObjectForTransform(Permanent permanent) {
         if (permanent == null) {
             return null;
         }
@@ -151,18 +154,24 @@ class TransformEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            TransformAbility.transformPermanent((Permanent) object, game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent == null) {
+        if (permanent == null || !permanent.isTransformed()) {
             return false;
         }
-
-        // only for transformed permanents
-        if (!permanent.isTransformed()) {
+        MageObject sourceCard = TransformAbility.findSourceObjectForTransform(permanent);
+        if (sourceCard == null) {
             return false;
         }
-
-        return TransformAbility.transformPermanent(permanent, game, source);
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package mage.game.command.planes;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -26,7 +27,6 @@ import mage.target.common.TargetCardInLibrary;
 import mage.watchers.common.PlanarRollWatcher;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,7 +97,15 @@ class TrailOfTheMageRingsReboundEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            addReboundAbility(card, source, game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
         Plane cPlane = game.getState().getCurrentPlane();
         if (cPlane == null) {
             return false;
@@ -108,23 +116,20 @@ class TrailOfTheMageRingsReboundEffect extends ContinuousEffectImpl {
 
         for (UUID playerId : game.getPlayers().keySet()) {
             Player player = game.getPlayer(playerId);
-            if (player != null) {
-                for (Card card : player.getHand().getCards(filter, game)) {
-                    addReboundAbility(card, source, game);
-                }
-                for (Iterator<StackObject> iterator = game.getStack().iterator(); iterator.hasNext(); ) {
-                    StackObject stackObject = iterator.next();
-                    if (stackObject instanceof Spell && stackObject.isControlledBy(source.getControllerId())) {
-                        Spell spell = (Spell) stackObject;
-                        Card card = spell.getCard();
-                        if (card != null) {
-                            addReboundAbility(card, source, game);
-                        }
+            if (player == null) {
+                continue;
+            }
+            for (StackObject stackObject : game.getStack()) {
+                if (stackObject instanceof Spell && stackObject.isControlledBy(source.getControllerId())) {
+                    Spell spell = (Spell) stackObject;
+                    Card card = spell.getCard();
+                    if (card != null) {
+                        affectedObjects.add(card);
                     }
                 }
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     private void addReboundAbility(Card card, Ability source, Game game) {

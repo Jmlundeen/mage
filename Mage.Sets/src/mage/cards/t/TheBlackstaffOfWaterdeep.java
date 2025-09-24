@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.common.SkipUntapOptionalAbility;
@@ -17,6 +18,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -78,35 +80,48 @@ class TheBlackstaffOfWaterdeepEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        Permanent artifact = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent == null || !permanent.isTapped() || artifact == null) {
-            discard();
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent artifact = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    artifact.addCardType(game, CardType.ARTIFACT);
+                    artifact.addCardType(game, CardType.CREATURE);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        artifact.getPower().setModifiedBaseValue(4);
+                        artifact.getToughness().setModifiedBaseValue(4);
+                        break;
+                    }
+            }
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                artifact.addCardType(game, CardType.ARTIFACT);
-                artifact.addCardType(game, CardType.CREATURE);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    artifact.getPower().setModifiedBaseValue(4);
-                    artifact.getToughness().setModifiedBaseValue(4);
-                    return true;
-                }
-        }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        }
+        else {
+            Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+            Permanent artifact = game.getPermanent(getTargetPointer().getFirst(game, source));
+            if (permanent == null || !permanent.isTapped() || artifact == null) {
+                discard();
+                return false;
+            }
+            affectedObjects.add(artifact);
+        }
+        return true;
     }
 
     @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.TypeChangingEffects_4 || layer == Layer.PTChangingEffects_7;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }

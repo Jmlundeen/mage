@@ -1,7 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
-import mage.MageObject;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldFromGraveyardTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -14,6 +14,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -64,14 +65,21 @@ class TreacherousPitDwellerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game); // it can also return Card object
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).changeControllerId(source.getFirstTarget(), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         Player targetOpponent = game.getPlayer(source.getFirstTarget());
         if (permanent != null && targetOpponent != null) {
-            return permanent.changeControllerId(targetOpponent.getId(), game, source);
-        } else {
-            discard();
+            affectedObjects.add(permanent);
+            return true;
         }
+        discard();
         return false;
     }
 

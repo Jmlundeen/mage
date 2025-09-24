@@ -1,5 +1,6 @@
 package mage.game.command.emblems;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -27,6 +28,7 @@ import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.watchers.common.TemptedByTheRingWatcher;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -152,16 +154,18 @@ class TheRingEmblemLegendaryEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = Optional
-                .ofNullable(game.getPlayer(source.getControllerId()))
-                .map(player -> player.getRingBearer(game))
-                .orElse(null);
-        if (permanent == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addSuperType(game, SuperType.LEGENDARY);
         }
-        permanent.addSuperType(game, SuperType.LEGENDARY);
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Optional.ofNullable(game.getPlayer(source.getControllerId()))
+                .map(player -> player.getRingBearer(game))
+                .ifPresent(affectedObjects::add);
+        return !affectedObjects.isEmpty();
     }
 }
 

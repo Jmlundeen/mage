@@ -1,8 +1,8 @@
 
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +20,9 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInASingleGraveyard;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -83,14 +86,22 @@ class ThelonOfHavenwoodBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent creature : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
             int numCounters = creature.getCounters(game).getCount(CounterType.SPORE);
-            if (numCounters > 0) {
-                creature.addPower(numCounters);
-                creature.addToughness(numCounters);
+            creature.addPower(numCounters);
+            creature.addToughness(numCounters);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Permanent creature : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+            if (creature.getCounters(game).getCount(CounterType.SPORE) > 0) {
+                affectedObjects.add(creature);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

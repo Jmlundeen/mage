@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -16,6 +17,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledLandPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -77,12 +79,15 @@ class TophTheFirstMetalbenderEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                filter, source.getControllerId(), source, game
-        )) {
-            permanent.addCardType(game, CardType.LAND);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addCardType(game, CardType.LAND);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
+        return !affectedObjects.isEmpty();
     }
 }

@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.triggers.BeginningOfCombatTriggeredAbility;
 import mage.abilities.costs.mana.GenericManaCost;
@@ -15,6 +16,7 @@ import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -73,29 +75,45 @@ class TangletroveKelpEffect extends ContinuousEffectImpl {
     }
 
     @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addCardType(game, CardType.CREATURE);
+                    permanent.addSubType(game, SubType.PLANT);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getToughness().setModifiedBaseValue(6);
+                        permanent.getPower().setModifiedBaseValue(6);
+                    }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            for (Permanent clue : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                affectedObjects.add(clue);
+                source.getAffectedObjects().add(clue);
+            }
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.TypeChangingEffects_4
                 || layer == Layer.PTChangingEffects_7;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Permanent clue : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-            switch (layer) {
-                case TypeChangingEffects_4:
-                    clue.addCardType(game, CardType.CREATURE);
-                    clue.addSubType(game, SubType.PLANT);
-                    break;
-                case PTChangingEffects_7:
-                    clue.getToughness().setModifiedBaseValue(6);
-                    clue.getPower().setModifiedBaseValue(6);
-            }
-        }
-        return true;
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return  sublayer == SubLayer.NA
+                || sublayer == SubLayer.SetPT_7b;
     }
 }
