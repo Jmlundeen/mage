@@ -85,12 +85,20 @@ class StationLevelAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null || permanent.getCounters(game).getCount(CounterType.CHARGE) < level) {
             return false;
         }
-        permanent.addAbility(ability, source.getSourceId(), game);
+        affectedObjects.add(permanent);
         return true;
     }
 }

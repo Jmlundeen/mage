@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
@@ -32,7 +33,16 @@ public class SetCardSubtypeAttachedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeAllCreatureTypes(game);
+            permanent.addSubType(game, setSubtypes);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent equipment = game.getPermanent(source.getSourceId());
         if (equipment == null || equipment.getAttachedTo() == null) {
             return true;
@@ -41,8 +51,7 @@ public class SetCardSubtypeAttachedEffect extends ContinuousEffectImpl {
         if (target == null) {
             return true;
         }
-        target.removeAllCreatureTypes(game);
-        target.addSubType(game, setSubtypes);
+        affectedObjects.add(target);
         return true;
     }
 

@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
@@ -19,6 +20,7 @@ import mage.target.TargetPermanent;
 import mage.target.common.TargetNonlandPermanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -160,7 +162,23 @@ class SchemingFenceGainEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent chosenPermanent = ((MageObjectReference) game.getState().getValue(source.getSourceId() + "_chosenPermanent"))
+                .getPermanent(game);
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability ability : chosenPermanent.getAbilities(game).getActivatedAbilities(Zone.ALL)) {
+                if (!(ability instanceof LoyaltyAbility)) {
+                    Ability copied = ability.copy();
+                    ability.getEffects().setValue("schemingFence", source.getSourceId());
+                    permanent.addAbility(copied, source.getSourceId(), game, true);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             return false;
@@ -170,22 +188,13 @@ class SchemingFenceGainEffect extends ContinuousEffectImpl {
         if (chosenPermanentMOR == null) {
             return false;
         }
-
-        Permanent chosenPermanent = Optional.ofNullable(chosenPermanentMOR)
-                .map(MageObjectReference.class::cast)
+        Permanent chosenPermanent = Optional.of(chosenPermanentMOR)
                 .map(mor -> mor.getPermanent(game))
                 .orElse(null);
         if (chosenPermanent == null) {
             return false;
         }
-
-        for (Ability ability : chosenPermanent.getAbilities(game).getActivatedAbilities(Zone.ALL)) {
-            if (!(ability instanceof LoyaltyAbility)) {
-                Ability copied = ability.copy();
-                ability.getEffects().setValue("schemingFence", source.getSourceId());
-                permanent.addAbility(copied, source.getSourceId(), game, true);
-            }
-        }
+        affectedObjects.add(permanent);
         return true;
     }
 }

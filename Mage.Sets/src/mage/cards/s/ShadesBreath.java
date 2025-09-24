@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -60,14 +61,18 @@ class ShadesBreathSetColorEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        List<Permanent> permanents = game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game);
-        for (Permanent permanent : permanents) {
-            if (permanent != null) {
-                permanent.getColor(game).setColor(ObjectColor.BLACK);
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).getColor(game).setColor(ObjectColor.BLACK);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(
+                StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game
+        ));
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -88,18 +93,20 @@ class ShadesBreathSetSubtypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        List<Permanent> permanents = game.getBattlefield().getAllActivePermanents(
-                StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game
-        );
-        for (Permanent permanent : permanents) {
-            if (permanent == null) {
-                continue;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             permanent.removeAllCreatureTypes(game);
             permanent.addSubType(game, SubType.SHADE);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(
+                StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game
+        ));
+        return !affectedObjects.isEmpty();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -17,10 +18,7 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -130,22 +128,31 @@ class SharkeyTyrantOfTheShireContinousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm == null) {
-            return false;
-        }
-        for (Ability ability : game.getBattlefield()
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        List<Ability> abilities = game.getBattlefield()
                 .getActivePermanents(filter, source.getControllerId(), source, game)
                 .stream()
                 .map(permanent -> permanent.getAbilities(game))
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
                 .filter(Ability::isNonManaActivatedAbility)
-                .collect(Collectors.toList())) {
-            perm.addAbility(ability, source.getSourceId(), game, true);
+                .collect(Collectors.toList());
+        for (MageItem object : affectedObjects) {
+            Permanent perm = (Permanent) object;
+            for (Ability ability : abilities) {
+                perm.addAbility(ability, source.getSourceId(), game, true);
+            }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        return false;
     }
 }
 

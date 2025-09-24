@@ -1,8 +1,8 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.LandfallAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -12,6 +12,9 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -47,7 +50,7 @@ public final class ShoalSerpent extends CardImpl {
 class ShoalSerpentEffect extends ContinuousEffectImpl {
 
     ShoalSerpentEffect() {
-        super(Duration.EndOfTurn, Outcome.AddAbility);
+        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
         staticText = "{this} loses defender until end of turn";
     }
 
@@ -61,29 +64,19 @@ class ShoalSerpentEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeAbility(DefenderAbility.getInstance(), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent != null) {
-            switch (layer) {
-                case AbilityAddingRemovingEffects_6:
-                    if (sublayer == SubLayer.NA) {
-                        permanent.removeAbility(DefenderAbility.getInstance(), source.getSourceId(), game);
-                    }
-                    break;
-            }
+            affectedObjects.add(permanent);
             return true;
         }
         return false;
     }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.AbilityAddingRemovingEffects_6;
-    }
-
 }

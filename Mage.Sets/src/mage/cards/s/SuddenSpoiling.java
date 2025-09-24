@@ -1,23 +1,22 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.keyword.SplitSecondAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPlayer;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -75,31 +74,37 @@ class SuddenSpoilingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Player player = game.getPlayer(this.getTargetPointer().getFirst(game, source));
-        if (player == null) {
-            return false;
-        }
-        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, player.getId(), game)) {
-            if (affectedObjectList.contains(new MageObjectReference(permanent, game))) {
-                switch (layer) {
-                    case AbilityAddingRemovingEffects_6:
-                        permanent.removeAllAbilities(source.getSourceId(), game);
-                        break;
-                    case PTChangingEffects_7:
-                        if (sublayer == SubLayer.SetPT_7b) {
-                            permanent.getPower().setModifiedBaseValue(0);
-                            permanent.getToughness().setModifiedBaseValue(2);
-                        }
-                }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(0);
+                        permanent.getToughness().setModifiedBaseValue(2);
+                    }
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            Player player = game.getPlayer(this.getTargetPointer().getFirst(game, source));
+            if (player == null) {
+                return false;
+            }
+            for (Permanent perm : game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, player.getId(), game)) {
+                affectedObjects.add(perm);
+                source.getAffectedObjects().add(perm);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -107,4 +112,8 @@ class SuddenSpoilingEffect extends ContinuousEffectImpl {
         return layer == Layer.AbilityAddingRemovingEffects_6 || layer == Layer.PTChangingEffects_7;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return  sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
+    }
 }

@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.delayed.CastNextSpellDelayedTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -14,6 +15,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -75,20 +77,34 @@ class SolarArrayEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            if (object.getId().equals(permanentId)) {
+                if (object instanceof Permanent) {
+                    ((Permanent) object).addAbility(new SunburstAbility((Permanent) object), source.getSourceId(), game);
+                } else if (object instanceof Spell) {
+                    game.getState().addOtherAbility(((Spell) object).getCard(), new SunburstAbility((Spell) object), true);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (game.getState().getZoneChangeCounter(permanentId) >= zoneChangeCounter) {
             discard();
             return false;
         }
         Permanent permanent = game.getPermanent(permanentId);
         if (permanent != null && permanent.getZoneChangeCounter(game) <= zoneChangeCounter) {
-            permanent.addAbility(new SunburstAbility(permanent), source.getSourceId(), game);
+            affectedObjects.add(permanent);
             return true;
         }
         Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
         if (spell != null) {
-            game.getState().addOtherAbility(spell.getCard(), new SunburstAbility(spell), true);
+            affectedObjects.add(spell);
+            return true;
         }
-        return true;
+        return false;
     }
 }

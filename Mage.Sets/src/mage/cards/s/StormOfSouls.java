@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
@@ -16,6 +17,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -93,45 +95,43 @@ class StormOfSoulsChangeCreatureEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
+    public StormOfSoulsChangeCreatureEffect copy() {
+        return new StormOfSoulsChangeCreatureEffect(this);
+    }
 
-        // Each of them is a 1/1 Spirit with flying in addition to its other types
-        for (UUID cardID : getTargetPointer().getTargets(game, source)) {
-            Permanent permanent = game.getPermanent(cardID);
-            if (permanent == null) {
-                continue;
-            }
-
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     permanent.addSubType(game, SubType.SPIRIT);
-                    break;
+                    continue;
                 case AbilityAddingRemovingEffects_6:
                     permanent.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
-                    break;
+                    continue;
                 case PTChangingEffects_7:
                     if (sublayer == SubLayer.SetPT_7b) {
                         permanent.getPower().setModifiedBaseValue(1);
                         permanent.getToughness().setModifiedBaseValue(1);
                     }
-                    break;
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public StormOfSoulsChangeCreatureEffect copy() {
-        return new StormOfSoulsChangeCreatureEffect(this);
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player player = game.getPlayer(source.getControllerId());
+        if (player == null) {
+            return false;
+        }
+        for (UUID cardID : getTargetPointer().getTargets(game, source)) {
+            Permanent permanent = game.getPermanent(cardID);
+            if (permanent != null) {
+                affectedObjects.add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -139,5 +139,10 @@ class StormOfSoulsChangeCreatureEffect extends ContinuousEffectImpl {
         return layer == Layer.TypeChangingEffects_4
                 || layer == Layer.AbilityAddingRemovingEffects_6
                 || layer == Layer.PTChangingEffects_7;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

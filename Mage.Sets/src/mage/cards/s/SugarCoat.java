@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -16,6 +17,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -78,32 +80,36 @@ class SugarCoatEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent aura = source.getSourcePermanentIfItStillExists(game);
-        if (aura == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            if (permanent != null) {
+                switch (layer) {
+                    case TypeChangingEffects_4:
+                        permanent.retainAllArtifactSubTypes(game);
+                        permanent.removeAllCardTypes(game);
+                        permanent.addCardType(game, CardType.ARTIFACT);
+                        permanent.addSubType(game, SubType.FOOD);
+                        break;
+                    case AbilityAddingRemovingEffects_6:
+                        permanent.removeAllAbilities(source.getSourceId(), game);
+                        permanent.addAbility(ability, source.getSourceId(), game);
+                        break;
+                }
+            }
         }
-        Permanent permanent = game.getPermanent(aura.getAttachedTo());
-        if (permanent == null) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.retainAllArtifactSubTypes(game);
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.ARTIFACT);
-                permanent.addSubType(game, SubType.FOOD);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                permanent.addAbility(ability, source.getSourceId(), game);
-                return true;
-        }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent aura = source.getSourcePermanentIfItStillExists(game);
+        if (aura != null) {
+            Permanent permanent = game.getPermanent(aura.getAttachedTo());
+            if (permanent != null) {
+                affectedObjects.add(permanent);
+                return true;
+            }
+        }
         return false;
     }
 

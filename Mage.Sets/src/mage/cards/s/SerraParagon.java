@@ -2,6 +2,7 @@ package mage.cards.s;
 
 import mage.MageIdentifier;
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -160,19 +161,30 @@ class SerraParagonGainEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+            } else if (object instanceof Card) {
+                game.getState().addOtherAbility((Card) object, ability);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (mor.getZoneChangeCounter() + 1 < game.getState().getZoneChangeCounter(mor.getSourceId())) {
             discard();
             return false;
         }
         Spell spell = game.getSpell(mor.getSourceId());
         if (spell != null) {
-            game.getState().addOtherAbility(spell.getCard(), ability);
+            affectedObjects.add(spell.getCard());
             return true;
         }
         Permanent permanent = game.getPermanent(mor.getSourceId());
         if (permanent != null) {
-            permanent.addAbility(ability, source.getSourceId(), game);
+            affectedObjects.add(permanent);
             return true;
         }
         return false;

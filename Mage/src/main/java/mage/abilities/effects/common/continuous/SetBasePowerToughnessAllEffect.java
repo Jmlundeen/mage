@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -15,6 +16,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -70,26 +72,30 @@ public class SetBasePowerToughnessAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         int newPower = power.calculate(game, source, this);
         int newToughness = toughness.calculate(game, source, this);
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.getPower().setModifiedBaseValue(newPower);
+            permanent.getToughness().setModifiedBaseValue(newToughness);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
             for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
                 Permanent permanent = it.next().getPermanent(game);
                 if (permanent != null) {
-                    permanent.getPower().setModifiedBaseValue(newPower);
-                    permanent.getToughness().setModifiedBaseValue(newToughness);
+                    affectedObjects.add(permanent);
                 } else {
                     it.remove(); // no longer on the battlefield, remove reference to object
                 }
             }
         } else {
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                permanent.getPower().setModifiedBaseValue(newPower);
-                permanent.getToughness().setModifiedBaseValue(newToughness);
-            }
+            affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
-
 }

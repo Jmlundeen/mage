@@ -2,6 +2,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksAndIsNotBlockedTriggeredAbility;
 import mage.abilities.condition.common.SourceRemainsInZoneCondition;
@@ -15,6 +16,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -62,15 +64,23 @@ class StromgaldSpyEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player defender = (Player) object;
+            defender.revealCards(defender.getName() + "'s hand cards", defender.getHand(), game, false);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent sourcePermanent = game.getPermanent(source.getSourceId());
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null && sourcePermanent != null) {
             Player defender = game.getPlayer(this.getTargetPointer().getFirst(game, source));
             if (defender != null) {
-                defender.revealCards(defender.getName() + "'s hand cards", defender.getHand(), game, false);
+                affectedObjects.add(defender);
+                return true;
             }
-            return true;
         }
         return false;
     }

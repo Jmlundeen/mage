@@ -85,7 +85,7 @@ class MirrorEntityEffect extends ContinuousEffectImpl {
     @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageItem object : affectedObjects) {
-            ((Permanent) object).setIsAllCreatureTypes(true);
+            ((Permanent) object).setIsAllCreatureTypes(game, true);
         }
     }
 

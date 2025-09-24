@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
@@ -19,6 +20,7 @@ import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -79,14 +81,20 @@ class SliverGravemotherEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            card.getAbilities().add(new EncoreAbility(new GenericManaCost(card.getManaValue())));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
             return false;
         }
-        for (Card card : player.getGraveyard().getCards(filter, game)) {
-            game.getState().addOtherAbility(card, new EncoreAbility(new GenericManaCost(card.getManaValue())));
-        }
-        return true;
+        affectedObjects.addAll(controller.getGraveyard().getCards(filter, game));
+        return !affectedObjects.isEmpty();
     }
 }

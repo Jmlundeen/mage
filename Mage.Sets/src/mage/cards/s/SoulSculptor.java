@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -17,6 +18,7 @@ import mage.game.permanent.Permanent;
 import mage.game.stack.StackObject;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -80,29 +82,30 @@ class SoulSculptorEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = affectedObjectList.get(0).getPermanent(game);
-        if (permanent == null) {
-            this.discard();
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.retainAllEnchantmentSubTypes(game);
-                permanent.addCardType(game, CardType.ENCHANTMENT);
-                break;
-            case AbilityAddingRemovingEffects_6:
-                if (sublayer == SubLayer.NA) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.retainAllEnchantmentSubTypes(game);
+                    permanent.addCardType(game, CardType.ENCHANTMENT);
+                    break;
+                case AbilityAddingRemovingEffects_6:
                     permanent.getAbilities().clear();
-                }
-                break;
+                    break;
+            }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getFirstTarget());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        this.discard();
         return false;
     }
 

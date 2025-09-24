@@ -1,6 +1,6 @@
 package mage.cards.s;
 
-import mage.MageObjectReference;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,6 +15,7 @@ import mage.filter.common.FilterPlaneswalkerPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -67,46 +68,42 @@ class SparkRuptureEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.addCardType(game, CardType.CREATURE);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer != SubLayer.SetPT_7b) {
+                        break;
+                    }
+                    int counters = permanent.getCounters(game).getCount(CounterType.LOYALTY);
+                    permanent.getPower().setModifiedBaseValue(counters);
+                    permanent.getToughness().setModifiedBaseValue(counters);
+                    break;
+            }
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        switch (layer) {
-            case TypeChangingEffects_4:
-                affectedObjectList.clear();
-                for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                        filter, source.getControllerId(), source, game
-                )) {
-                    affectedObjectList.add(new MageObjectReference(permanent, game));
-                    permanent.removeAllCardTypes(game);
-                    permanent.addCardType(game, CardType.CREATURE);
-                }
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                for (MageObjectReference mor : getAffectedObjects()) {
-                    Permanent permanent = mor.getPermanent(game);
-                    if (permanent != null) {
-                        int counters = permanent.getCounters(game).getCount(CounterType.LOYALTY);
-                        permanent.getPower().setModifiedBaseValue(counters);
-                        permanent.getToughness().setModifiedBaseValue(counters);
-                    }
-                }
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer != SubLayer.SetPT_7b) {
-                    return false;
-                }
-                for (MageObjectReference mor : getAffectedObjects()) {
-                    Permanent permanent = mor.getPermanent(game);
-                    if (permanent != null) {
-                        permanent.removeAllAbilities(source.getSourceId(), game);
-                    }
-                }
-                return true;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(
+                    filter, source.getControllerId(), source, game
+            )) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
+            }
         }
-        return false;
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -118,5 +115,10 @@ class SparkRuptureEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }

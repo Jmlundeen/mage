@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
@@ -18,6 +19,7 @@ import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,7 +72,18 @@ class ShiftingShadowGainEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addAbility(HasteAbility.getInstance(), source.getSourceId(), game);
+            permanent.addAbility(new BeginningOfUpkeepTriggeredAbility(
+                    new ShiftingShadowEffect(source.getSourcePermanentIfItStillExists(game), game)
+            ), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent aura = source.getSourcePermanentIfItStillExists(game);
         if (aura == null) {
             return false;
@@ -79,10 +92,7 @@ class ShiftingShadowGainEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        permanent.addAbility(HasteAbility.getInstance(), source.getSourceId(), game);
-        permanent.addAbility(new BeginningOfUpkeepTriggeredAbility(
-                new ShiftingShadowEffect(aura, game)
-        ), source.getSourceId(), game);
+        affectedObjects.add(permanent);
         return true;
     }
 }

@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleStaticAbility;
@@ -17,6 +18,7 @@ import mage.game.events.GameEvent;
 import mage.game.stack.StackAbility;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -101,14 +103,20 @@ class SatoruUmezawaEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, new NinjutsuAbility("{2}{U}{B}"));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return false;
         }
-        for (Card card : player.getHand().getCards(StaticFilters.FILTER_CARD_CREATURE, game)) {
-            game.getState().addOtherAbility(card, new NinjutsuAbility("{2}{U}{B}"));
-        }
-        return true;
+        affectedObjects.addAll(player.getHand().getCards(StaticFilters.FILTER_CARD_CREATURE, game));
+        return !affectedObjects.isEmpty();
     }
 }

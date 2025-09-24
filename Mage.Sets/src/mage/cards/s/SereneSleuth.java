@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -16,7 +17,9 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.permanent.GoadedPredicate;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -114,7 +117,14 @@ class SereneSleuthEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).getGoadingPlayers().clear();
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
             this.affectedObjectList.removeIf(mor -> !mor.zoneCounterIsCurrent(game)
                     || mor.getPermanent(game) == null);
@@ -123,10 +133,10 @@ class SereneSleuthEffect extends ContinuousEffectImpl {
                 return false;
             }
             for (MageObjectReference mor : this.affectedObjectList) {
-                mor.getPermanent(game).getGoadingPlayers().clear();
+                affectedObjects.add(mor.getPermanent(game));
             }
             return true;
         }
-        return true;
+        return false;
     }
 }

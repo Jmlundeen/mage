@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +16,7 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -74,15 +76,24 @@ class SnapcasterMageEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
             FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
             ability.setSourceId(card.getId());
             ability.setControllerId(card.getOwnerId());
             game.getState().addOtherAbility(card, ability);
-            return true;
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = game.getCard(getTargetPointer().getFirst(game, source));
+        if (card != null) {
+            affectedObjects.add(card);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

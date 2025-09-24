@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -22,6 +23,7 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.EldraziSliverToken;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -82,20 +84,23 @@ class SlivdraziMonstrosityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-            if (perm.isControlledBy(source.getControllerId())) {
-                // Due to the carefully calibrated system of layers that Magic uses to determine the interaction of continuous
-                // effects, gaining an ability that changes the color of an object has no effect on the color of that object.
-                // Despite this, Slivdrazi Monstrosity causes Slivers to become colorless as they gain devoid. Rather than try
-                // to figure out how this could work, this card should just be played as though it read “Slivers you control
-                // have devoid and annihilator 1 and are colorless.”
-                // (2019-11-12)
-                // This ruling implemented here by adding this ability in the color-changing effect layer.
-                perm.addAbility(new DevoidAbility(perm.getColor(game)), source.getSourceId(), game);
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        // Due to the carefully calibrated system of layers that Magic uses to determine the interaction of continuous
+        // effects, gaining an ability that changes the color of an object has no effect on the color of that object.
+        // Despite this, Slivdrazi Monstrosity causes Slivers to become colorless as they gain devoid. Rather than try
+        // to figure out how this could work, this card should just be played as though it read “Slivers you control
+        // have devoid and annihilator 1 and are colorless.”
+        // (2019-11-12)
+        // This ruling implemented here by adding this ability in the color-changing effect layer.
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(new DevoidAbility(((Permanent) object).getColor(game)), source.getSourceId(), game);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
+        return !affectedObjects.isEmpty();
     }
 
     @Override

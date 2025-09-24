@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.constants.Duration;
 import mage.constants.Layer;
 import mage.constants.Outcome;
@@ -10,6 +11,7 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -31,16 +33,21 @@ public class SwitchPowerToughnessTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        int affectedTargets = 0;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).switchPowerToughness();
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (UUID uuid : getTargetPointer().getTargets(game, source)) {
-            Permanent target = game.getPermanent(uuid);
-            if (target != null) {
-                target.switchPowerToughness();
-                affectedTargets++;
+            Permanent permanent = game.getPermanent(uuid);
+            if (permanent != null) {
+                affectedObjects.add(permanent);
             }
         }
-        return affectedTargets > 0;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

@@ -1,10 +1,13 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author LevelX2
@@ -33,7 +36,16 @@ public class SetBasePowerToughnessAttachedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.getPower().setModifiedBaseValue(power);
+            permanent.getToughness().setModifiedBaseValue(toughness);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent enchantment = game.getPermanent(source.getSourceId());
         if (enchantment == null || enchantment.getAttachedTo() == null) {
             return false;
@@ -43,10 +55,7 @@ public class SetBasePowerToughnessAttachedEffect extends ContinuousEffectImpl {
         if (enchanted == null) {
             return false;
         }
-
-        enchanted.getPower().setModifiedBaseValue(power);
-        enchanted.getToughness().setModifiedBaseValue(toughness);
+        affectedObjects.add(enchanted);
         return true;
     }
-
 }

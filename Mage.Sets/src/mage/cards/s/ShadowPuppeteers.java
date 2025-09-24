@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksCreatureYouControlTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -18,6 +19,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.FaerieRogueToken;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -84,6 +86,35 @@ class ShadowPuppeteersContinousEffect extends ContinuousEffectImpl {
     }
 
     @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addSubType(game, SubType.DRAGON);
+                    break;
+                case ColorChangingEffects_5:
+                    permanent.getColor(game).setRed(true);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getToughness().setModifiedBaseValue(4);
+                        permanent.getPower().setModifiedBaseValue(4);
+                    }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        return false;
+    }
+    @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.PTChangingEffects_7
                 || layer == Layer.ColorChangingEffects_5
@@ -91,27 +122,7 @@ class ShadowPuppeteersContinousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent == null) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.addSubType(game, SubType.DRAGON);
-                break;
-            case ColorChangingEffects_5:
-                permanent.getColor(game).setRed(true);
-                break;
-            case PTChangingEffects_7:
-                permanent.getToughness().setModifiedBaseValue(4);
-                permanent.getPower().setModifiedBaseValue(4);
-        }
-        return true;
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

@@ -1,7 +1,7 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
@@ -10,17 +10,15 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ChooseColorEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -62,21 +60,23 @@ class ShiftingSkyEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            ObjectColor color = (ObjectColor) game.getState().getValue(source.getSourceId() + "_color");
-            if (color == null) {
-                return false;
-            }
-            for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                perm.getColor(game).setColor(color);
-            }
-            return true;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).getColor(game).setColor((ObjectColor) game.getState().getValue(source.getSourceId() + "_color"));
         }
-        return false;
     }
-    
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        ObjectColor color = (ObjectColor) game.getState().getValue(source.getSourceId() + "_color");
+        if (color == null || controller == null) {
+            return false;
+        }
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
+        return !affectedObjects.isEmpty();
+    }
+
     @Override
     public ShiftingSkyEffect copy() {
         return new ShiftingSkyEffect(this);
