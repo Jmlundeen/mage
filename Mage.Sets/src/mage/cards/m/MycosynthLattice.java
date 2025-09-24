@@ -60,11 +60,16 @@ class PermanentsAreArtifactsEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent perm : game.getBattlefield().getActivePermanents(source.getControllerId(), game)) {
-            perm.addCardType(game, CardType.ARTIFACT);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addCardType(game, CardType.ARTIFACT);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 
     @Override

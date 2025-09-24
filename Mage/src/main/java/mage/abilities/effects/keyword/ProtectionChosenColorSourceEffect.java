@@ -1,6 +1,7 @@
 
 package mage.abilities.effects.keyword;
 
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,6 +14,8 @@ import mage.filter.FilterObject;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author LevelX2
@@ -43,7 +46,14 @@ public class ProtectionChosenColorSourceEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(protectionAbility, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent != null) {
             ObjectColor color = (ObjectColor) game.getState().getValue(permanent.getId() + "_color");
@@ -54,7 +64,7 @@ public class ProtectionChosenColorSourceEffect extends ContinuousEffectImpl {
                 protectionAbility = new ProtectionAbility(protectionFilter);
             }
             if (protectionAbility != null) {
-                permanent.addAbility(protectionAbility, source.getSourceId(), game);
+                affectedObjects.add(permanent);
                 return true;
             }
         }

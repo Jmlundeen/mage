@@ -1,6 +1,6 @@
 package mage.cards.p;
 
-import mage.MageObject;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
@@ -12,7 +12,9 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -69,12 +71,18 @@ class PlanarNexusEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject sourceObject = game.getObject(source);
-        if (sourceObject == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).setIsAllNonbasicLandTypes(game, true);
         }
-        sourceObject.setIsAllNonbasicLandTypes(game, true);
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (layer == Layer.TypeChangingEffects_4) {
+            affectedObjects.add(source.getSourceObject(game));
+            return true;
+        }
+        return false;
     }
 }

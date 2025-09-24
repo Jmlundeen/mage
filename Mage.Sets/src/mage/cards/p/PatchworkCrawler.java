@@ -1,6 +1,7 @@
 package mage.cards.p;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -8,7 +9,6 @@ import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ExileTargetForSourceEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -20,6 +20,8 @@ import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.util.CardUtil;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -67,19 +69,29 @@ class PatchworkCrawlerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
+        Set<Ability> abilities = exileZone.getCards(StaticFilters.FILTER_CARD_CREATURE, game)
+                .stream()
+                .flatMap(card -> card.getAbilities(game).stream())
+                .filter(Ability::isActivatedAbility)
+                .collect(java.util.stream.Collectors.toSet());
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability ability : abilities) {
+                permanent.addAbility(ability, source.getSourceId(), game, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
         if (permanent == null || exileZone == null || exileZone.isEmpty()) {
             return false;
         }
-        for (Card card : exileZone.getCards(StaticFilters.FILTER_CARD_CREATURE, game)) {
-            for (Ability ability : card.getAbilities(game)) {
-                if (ability.isActivatedAbility()) {
-                    permanent.addAbility(ability, source.getSourceId(), game, true);
-                }
-            }
-        }
+        affectedObjects.add(permanent);
         return true;
     }
 

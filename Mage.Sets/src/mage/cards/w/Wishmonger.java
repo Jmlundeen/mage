@@ -1,8 +1,8 @@
 
 package mage.cards.w;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -15,14 +15,7 @@ import mage.abilities.keyword.ProtectionAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.choices.ChoiceColor;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.SubType;
-import mage.constants.TargetController;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.FilterObject;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
@@ -30,6 +23,9 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -128,20 +124,28 @@ class ProtectionChosenColorTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(protectionAbility, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent != null) {
-            ObjectColor color = (ObjectColor) game.getState().getValue(permanent.getId() + "_color");
-            if (color != null && (protectionAbility == null || !color.equals(chosenColor))) {
-                chosenColor = color;
-                FilterObject protectionFilter = new FilterObject(chosenColor.getDescription());
-                protectionFilter.add(new ColorPredicate(chosenColor));
-                protectionAbility = new ProtectionAbility(protectionFilter);
-            }
-            if (protectionAbility != null) {
-                permanent.addAbility(protectionAbility, source.getSourceId(), game);
-                return true;
-            }
+        if (permanent == null) {
+            return false;
+        }
+        ObjectColor color = (ObjectColor) game.getState().getValue(permanent.getId() + "_color");
+        if (color != null && (protectionAbility == null || !color.equals(chosenColor))) {
+            chosenColor = color;
+            FilterObject protectionFilter = new FilterObject<>(chosenColor.getDescription());
+            protectionFilter.add(new ColorPredicate(chosenColor));
+            protectionAbility = new ProtectionAbility(protectionFilter);
+        }
+        if (protectionAbility != null) {
+            affectedObjects.add(permanent);
+            return true;
         }
         return false;
     }

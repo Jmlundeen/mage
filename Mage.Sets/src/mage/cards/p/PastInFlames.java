@@ -1,5 +1,6 @@
 package mage.cards.p;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -12,6 +13,8 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -62,7 +65,7 @@ class PastInFlamesEffect extends ContinuousEffectImpl {
         if (getAffectedObjectsSet()) {
             Player player = game.getPlayer(source.getControllerId());
             if (player != null) {
-                player.getGraveyard().stream().map((cardId) -> game.getCard(cardId)).filter(card1 -> card1.isInstantOrSorcery(game)).forEachOrdered((card) -> {
+                player.getGraveyard().stream().map(game::getCard).filter(card1 -> card1.isInstantOrSorcery(game)).forEachOrdered((card) -> {
                     affectedObjectList.add(new MageObjectReference(card, game));
                 });
             }
@@ -70,20 +73,30 @@ class PastInFlamesEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return false;
         }
-        player.getGraveyard().stream().filter((cardId) -> (affectedObjectList.contains(new MageObjectReference(cardId, game)))).forEachOrdered((cardId) -> {
-            Card card = game.getCard(cardId);
-            if (card != null) {
-                FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-                ability.setSourceId(cardId);
-                ability.setControllerId(card.getOwnerId());
-                game.getState().addOtherAbility(card, ability);
+        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+            MageObjectReference mor = it.next();
+            Card card = mor.getCard(game);
+            if (card == null) {
+                it.remove();
             }
-        });
-        return true;
+            affectedObjects.add(card);
+        }
+        return !affectedObjects.isEmpty();
     }
 }

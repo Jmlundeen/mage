@@ -1,6 +1,7 @@
 
 package mage.abilities.effects.keyword;
 
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,6 +14,8 @@ import mage.filter.FilterObject;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author LevelX2
@@ -39,6 +42,7 @@ public class ProtectionChosenColorAttachedEffect extends ContinuousEffectImpl {
             this.protectionAbility = effect.protectionAbility.copy();
         }
         this.notRemoveItself = effect.notRemoveItself;
+        this.notRemoveControlled = effect.notRemoveControlled;
     }
 
     @Override
@@ -47,29 +51,38 @@ public class ProtectionChosenColorAttachedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addAbility(protectionAbility, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent attachement = game.getPermanent(source.getSourceId());
-        if (attachement != null && attachement.getAttachedTo() != null) {
-            ObjectColor color = (ObjectColor) game.getState().getValue(attachement.getId() + "_color");
-            if (color != null && (protectionAbility == null || !color.equals(chosenColor))) {
-                chosenColor = color;
-                FilterObject protectionFilter = new FilterObject(chosenColor.getDescription());
-                protectionFilter.add(new ColorPredicate(chosenColor));
-                protectionAbility = new ProtectionAbility(protectionFilter);
-                if (notRemoveItself) {
-                    protectionAbility.setAuraIdNotToBeRemoved(source.getSourceId());
-                }
-                if (notRemoveControlled) {
-                    protectionAbility.setDoesntRemoveControlled(true);
-                    protectionAbility.setRemoveEquipment(false);
-                    protectionAbility.setRemovesAuras(false);
-                }
+        if (attachement == null || attachement.getAttachedTo() == null) {
+            return false;
+        }
+        ObjectColor color = (ObjectColor) game.getState().getValue(attachement.getId() + "_color");
+        if (color != null && (protectionAbility == null || !color.equals(chosenColor))) {
+            chosenColor = color;
+            FilterObject protectionFilter = new FilterObject(chosenColor.getDescription());
+            protectionFilter.add(new ColorPredicate(chosenColor));
+            protectionAbility = new ProtectionAbility(protectionFilter);
+            if (notRemoveItself) {
+                protectionAbility.setAuraIdNotToBeRemoved(source.getSourceId());
             }
-            if (protectionAbility != null) {
-                Permanent attachedTo = game.getPermanent(attachement.getAttachedTo());
-                if (attachedTo != null) {
-                    attachedTo.addAbility(protectionAbility, source.getSourceId(), game);
-                }
+            if (notRemoveControlled) {
+                protectionAbility.setDoesntRemoveControlled(true);
+                protectionAbility.setRemoveEquipment(false);
+                protectionAbility.setRemovesAuras(false);
+            }
+        }
+        if (protectionAbility != null) {
+            Permanent attachedTo = game.getPermanent(attachement.getAttachedTo());
+            if (attachedTo != null) {
+                affectedObjects.add(attachedTo);
                 return true;
             }
         }
