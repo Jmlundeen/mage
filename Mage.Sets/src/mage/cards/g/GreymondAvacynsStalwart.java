@@ -1,6 +1,7 @@
 package mage.cards.g;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -28,6 +29,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -136,11 +138,8 @@ class RickSteadfastLeaderGainEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         Object choice = game.getState().getValue(source.getSourceId() + "_rick");
-        if (!(choice instanceof String)) {
-            return false;
-        }
         Ability ability1 = null;
         Ability ability2 = null;
         switch (((String) choice)) {
@@ -156,18 +155,23 @@ class RickSteadfastLeaderGainEffect extends ContinuousEffectImpl {
                 ability1 = VigilanceAbility.getInstance();
                 ability2 = LifelinkAbility.getInstance();
                 break;
-            default:
-                return false;
         }
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                filter, source.getControllerId(), source, game
-        )) {
-            if (permanent == null) {
-                continue;
-            }
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             permanent.addAbility(ability1, source.getSourceId(), game);
             permanent.addAbility(ability2, source.getSourceId(), game);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Object choice = game.getState().getValue(source.getSourceId() + "_rick");
+        if (!(choice instanceof String)) {
+            return false;
+        }
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                filter, source.getControllerId(), source, game
+        ));
+        return !affectedObjects.isEmpty();
     }
 }

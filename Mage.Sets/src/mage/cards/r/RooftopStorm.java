@@ -1,7 +1,7 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.SourceIsSpellCondition;
@@ -14,6 +14,9 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -52,7 +55,7 @@ class RooftopStormRuleEffect extends ContinuousEffectImpl {
             = new AlternativeCostSourceAbility(new ManaCostsImpl<>("{0}"), SourceIsSpellCondition.instance, null, filter, true);
 
     public RooftopStormRuleEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Detriment);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Detriment);
         staticText = "You may pay {0} rather than pay the mana cost for Zombie creature spells you cast";
     }
 
@@ -70,24 +73,22 @@ class RooftopStormRuleEffect extends ContinuousEffectImpl {
         super.init(source, game, activePlayerId);
         alternativeCastingCostAbility.setSourceId(source.getSourceId());
     }
-    
+
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Player) object).getAlternativeSourceCosts().remove(alternativeCastingCostAbility);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            controller.getAlternativeSourceCosts().add(alternativeCastingCostAbility);
+            affectedObjects.add(controller);
             return true;
+        } else {
+            return false;
         }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }

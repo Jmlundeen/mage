@@ -94,6 +94,7 @@ class PastInFlamesEffect extends ContinuousEffectImpl {
             Card card = mor.getCard(game);
             if (card == null) {
                 it.remove();
+                continue;
             }
             affectedObjects.add(card);
         }

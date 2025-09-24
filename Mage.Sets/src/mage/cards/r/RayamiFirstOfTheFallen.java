@@ -1,12 +1,12 @@
 package mage.cards.r;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.keyword.*;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -19,8 +19,8 @@ import mage.game.permanent.PermanentToken;
 import mage.players.Player;
 import mage.util.CardUtil;
 
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -55,6 +55,22 @@ public final class RayamiFirstOfTheFallen extends CardImpl {
 
 class RayamiFirstOfTheFallenEffect extends ContinuousEffectImpl {
 
+    private static final Set<Class<? extends Ability>> KEYWORD_ABILITIES = new HashSet<>(Arrays.asList(
+            FlyingAbility.class,
+            FirstStrikeAbility.class,
+            DoubleStrikeAbility.class,
+            DeathtouchAbility.class,
+            HasteAbility.class,
+            HexproofBaseAbility.class,
+            IndestructibleAbility.class,
+            LifelinkAbility.class,
+            MenaceAbility.class,
+            ReachAbility.class,
+            TrampleAbility.class,
+            VigilanceAbility.class,
+            ProtectionAbility.class
+    ));
+
     RayamiFirstOfTheFallenEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
         this.addDependedToType(DependencyType.AddingAbility);
@@ -68,35 +84,31 @@ class RayamiFirstOfTheFallenEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
-        if (sourcePermanent == null) {
-            return false;
-        }
-        game.getExile()
-                .getCardsInRange(game, sourcePermanent.getControllerId())
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Set<Ability> abilities = game.getExile()
+                .getCardsInRange(game, source.getControllerId())
                 .stream()
                 .filter(card1 -> card1.isCreature(game))
                 .filter(card -> card.getCounters(game).getCount(CounterType.BLOOD) > 0)
                 .map(card -> card.getAbilities(game))
                 .flatMap(Collection::stream)
-                .forEach(ability -> {
-                    if (ability instanceof FlyingAbility
-                            || ability instanceof FirstStrikeAbility
-                            || ability instanceof DoubleStrikeAbility
-                            || ability instanceof DeathtouchAbility
-                            || ability instanceof HasteAbility
-                            || ability instanceof HexproofBaseAbility
-                            || ability instanceof IndestructibleAbility
-                            || ability instanceof LifelinkAbility
-                            || ability instanceof MenaceAbility
-                            || ability instanceof ReachAbility
-                            || ability instanceof TrampleAbility
-                            || ability instanceof VigilanceAbility
-                            || ability instanceof ProtectionAbility) {
-                        sourcePermanent.addAbility(ability, source.getSourceId(), game);
-                    }
-                });
+                .filter(ability -> KEYWORD_ABILITIES.stream()
+                        .anyMatch(aClass -> ability.getClass().isAssignableFrom(aClass)))
+                .collect(Collectors.toSet());
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : abilities) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
+        if (sourcePermanent == null) {
+            return false;
+        }
+        affectedObjects.add(sourcePermanent);
         return true;
     }
 

@@ -1,7 +1,7 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -9,15 +9,14 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author duncant
@@ -103,14 +102,21 @@ class RallyTheRighteousBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addPower(2);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageObjectReference mageObjectReference : affectedObjectList) {
             Permanent permanent = mageObjectReference.getPermanent(game);
             if (permanent != null) {
-                permanent.addPower(2);
+                affectedObjects.add(permanent);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

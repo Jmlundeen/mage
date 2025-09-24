@@ -1,6 +1,9 @@
 package mage.cards.r;
 
 import mage.MageInt;
+import mage.MageItem;
+import mage.abilities.Abilities;
+import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbility;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
@@ -23,6 +26,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -120,19 +124,29 @@ class RexCyberhoundContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm == null) {
-            return false;
-        }
-        for (Card card : game.getExile().getCardsInRange(filter, source.getControllerId(), source, game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Abilities<Ability> abilities = new AbilitiesImpl<>();
+        for (Card card : game.getExile().getCardsOwned(filter, source.getControllerId(), source, game)) {
             for (Ability ability : card.getAbilities(game)) {
                 if (ability.isActivatedAbility()) {
                     ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
-                    perm.addAbility(copyAbility, source.getSourceId(), game, true);
+                    abilities.add(copyAbility);
                 }
             }
         }
-        return true;
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : abilities) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent perm = game.getPermanent(source.getSourceId());
+        if (perm != null) {
+            affectedObjects.add(perm);
+        }
+        return !affectedObjects.isEmpty();
     }
 }

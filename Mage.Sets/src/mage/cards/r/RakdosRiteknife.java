@@ -1,11 +1,13 @@
 package mage.cards.r;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeSourceCost;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
@@ -24,10 +26,8 @@ import mage.target.TargetPlayer;
 import mage.target.common.TargetControlledCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
-import mage.abilities.costs.mana.GenericManaCost;
-
-import mage.filter.StaticFilters;
 
 /**
  * @author TheElk801
@@ -81,17 +81,34 @@ class RakdosRiteknifeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
     public RakdosRiteknifeEffect copy() {
         return new RakdosRiteknifeEffect(this);
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
+            switch (layer) {
+                case AbilityAddingRemovingEffects_6:
+                    creature.addAbility(makeAbility(permanent, game), source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer != SubLayer.ModifyPT_7c) {
+                        break;
+                    }
+                    int count = permanent.getCounters(game).getCount(CounterType.BLOOD);
+                    if (count > 0) {
+                        creature.addPower(count);
+                        break;
+                    }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             return false;
@@ -100,27 +117,19 @@ class RakdosRiteknifeEffect extends ContinuousEffectImpl {
         if (creature == null) {
             return false;
         }
-        switch (layer) {
-            case AbilityAddingRemovingEffects_6:
-                creature.addAbility(makeAbility(permanent, game), source.getSourceId(), game);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer != SubLayer.ModifyPT_7c) {
-                    return false;
-                }
-                int count = permanent.getCounters(game).getCount(CounterType.BLOOD);
-                if (count > 0) {
-                    creature.addPower(count);
-                    return true;
-                }
-        }
-        return false;
+        affectedObjects.add(creature);
+        return true;
     }
 
     @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.AbilityAddingRemovingEffects_6
                 || layer == Layer.PTChangingEffects_7;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.ModifyPT_7c || sublayer == SubLayer.NA;
     }
 
     private static Ability makeAbility(Permanent permanent, Game game) {
