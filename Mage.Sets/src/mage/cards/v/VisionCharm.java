@@ -1,5 +1,6 @@
 package mage.cards.v;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -22,6 +23,7 @@ import mage.target.TargetPlayer;
 import mage.target.common.TargetArtifactPermanent;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -111,13 +113,9 @@ class VisionCharmEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
-            Permanent land = it.next().getPermanent(game);
-            if (land == null) {
-                it.remove();
-                continue;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent land = (Permanent) object;
             land.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
             land.addSubType(game, targetBasicLandType);
             land.removeAllAbilities(source.getSourceId(), game);
@@ -139,7 +137,18 @@ class VisionCharmEffect extends ContinuousEffectImpl {
                     break;
             }
         }
+    }
 
-        return true;
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+            Permanent land = it.next().getPermanent(game);
+            if (land == null) {
+                it.remove();
+                continue;
+            }
+            affectedObjects.add(land);
+        }
+        return !affectedObjects.isEmpty();
     }
 }

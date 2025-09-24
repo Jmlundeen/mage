@@ -1,6 +1,7 @@
 
 package mage.cards.v;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +21,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -79,18 +81,26 @@ class VampirismBoostEnchantedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         FilterControlledCreaturePermanent filter = new FilterControlledCreaturePermanent();
         int count = game.getBattlefield().count(filter, source.getControllerId(), source, game) - 1;
-        if (count > 0) {
-            Permanent enchantment = game.getPermanent(source.getSourceId());
-            if (enchantment != null && enchantment.getAttachedTo() != null) {
-                Permanent creature = game.getPermanent(enchantment.getAttachedTo());
-                if (creature != null) {
-                    creature.addPower(count);
-                    creature.addToughness(count);
-                    return true;
-                }
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
+            if (count > 0) {
+                creature.addPower(count);
+                creature.addToughness(count);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent enchantment = game.getPermanent(source.getSourceId());
+        if (enchantment != null && enchantment.getAttachedTo() != null) {
+            Permanent creature = game.getPermanent(enchantment.getAttachedTo());
+            if (creature != null) {
+                affectedObjects.add(creature);
+                return true;
             }
         }
         return false;

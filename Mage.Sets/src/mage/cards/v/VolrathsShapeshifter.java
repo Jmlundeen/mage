@@ -1,6 +1,7 @@
 package mage.cards.v;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,6 +15,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -64,7 +66,41 @@ class VolrathsShapeshifterEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = game.getPlayer(source.getControllerId()).getGraveyard().getTopCard(game);
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.getPower().setModifiedBaseValue(card.getPower().getModifiedBaseValue());
+            permanent.getToughness().setModifiedBaseValue(card.getToughness().getModifiedBaseValue());
+            permanent.getColor(game).setColor(card.getColor(game));
+            permanent.getManaCost().clear();
+            permanent.getManaCost().add(card.getManaCost().copy());
+            permanent.removeAllCardTypes(game);
+            permanent.setName(card.getName());
+
+            for (CardType type : card.getCardType(game)) {
+                permanent.addCardType(game, type);
+            }
+
+            permanent.removeAllSubTypes(game);
+            permanent.copySubTypesFrom(game, card);
+
+            permanent.removeAllSuperTypes(game);
+            for (SuperType type : card.getSuperType(game)) {
+                permanent.addSuperType(game, type);
+
+            }
+
+            for (Ability ability : card.getAbilities(game)) {
+                if (!permanent.getAbilities().contains(ability)) {
+                    permanent.addAbility(ability, source.getSourceId(), game, true);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Card card = game.getPlayer(source.getControllerId()).getGraveyard().getTopCard(game);
         Permanent permanent = game.getPermanent(source.getSourceId());
 
@@ -73,34 +109,7 @@ class VolrathsShapeshifterEffect extends ContinuousEffectImpl {
                 || !card.isCreature(game)) {
             return false;
         }
-
-        permanent.getPower().setModifiedBaseValue(card.getPower().getModifiedBaseValue());
-        permanent.getToughness().setModifiedBaseValue(card.getToughness().getModifiedBaseValue());
-        permanent.getColor(game).setColor(card.getColor(game));
-        permanent.getManaCost().clear();
-        permanent.getManaCost().add(card.getManaCost().copy());
-        permanent.removeAllCardTypes(game);
-        permanent.setName(card.getName());
-
-        for (CardType type : card.getCardType(game)) {
-            permanent.addCardType(game, type);
-        }
-
-        permanent.removeAllSubTypes(game);
-        permanent.copySubTypesFrom(game, card);
-
-        permanent.removeAllSuperTypes(game);
-        for (SuperType type : card.getSuperType(game)) {
-            permanent.addSuperType(game, type);
-
-        }
-
-        for (Ability ability : card.getAbilities(game)) {
-            if (!permanent.getAbilities().contains(ability)) {
-                permanent.addAbility(ability, source.getSourceId(), game, true);
-            }
-        }
-
+        affectedObjects.add(permanent);
         return true;
     }
 }
