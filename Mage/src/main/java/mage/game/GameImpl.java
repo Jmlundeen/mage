@@ -237,7 +237,7 @@ public abstract class GameImpl implements Game {
         this.mulligan = game.mulligan.copy();
 
         this.attackOption = game.attackOption;
-        this.gameOptions = game.gameOptions.copy();
+        this.gameOptions = game.gameOptions == null ? null : game.gameOptions.copy();
         this.startMessage = game.startMessage;
 
         this.scopeRelevant = game.scopeRelevant;

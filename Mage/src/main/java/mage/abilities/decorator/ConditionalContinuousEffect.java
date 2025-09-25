@@ -153,6 +153,11 @@ public class ConditionalContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return effect.hasSubLayer(sublayer);
+    }
+
+    @Override
     public ConditionalContinuousEffect copy() {
         return new ConditionalContinuousEffect(this);
     }

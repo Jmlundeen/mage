@@ -91,6 +91,9 @@ public interface ContinuousEffect extends Effect {
     @Override
     ContinuousEffect copy();
 
+    // TODO: review result calculation as cards are updated, possibly need to change method
+    int calculateResult(Game game, Ability source, List<MageItem> affectedObjects);
+
     boolean isTemporary();
 
     void setTemporary(boolean temporary);

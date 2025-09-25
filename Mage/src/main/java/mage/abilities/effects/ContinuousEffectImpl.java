@@ -390,6 +390,11 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
         return affectedObjectList;
     }
 
+    // TODO: review result calculation as cards are updated, possibly need to change method
+    @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        return 0;
+    }
     /**
      * Returns the status if the effect is temporary added to the
      * ContinuousEffects
