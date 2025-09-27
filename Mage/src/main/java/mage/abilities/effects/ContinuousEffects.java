@@ -1120,7 +1120,6 @@ public class ContinuousEffects implements Serializable {
         Game gameSim = game.createSimulationForAI();
         GameState startingState = gameSim.getState().copy();
 
-        effects:
         for (ContinuousEffect effect : filteredLayeredEffects) {
             gameSim.getState().restore(startingState.copy());
             dependencyGraph.addVertex(effect);
@@ -1128,9 +1127,6 @@ public class ContinuousEffects implements Serializable {
             int resultBefore = 0;
             List<MageItem> affectedBefore = new ArrayList<>();
             for (Ability ability : getLayeredEffectAbilities(effect)) {
-                if (!ability.getAffectedObjects().isEmpty()) {
-                    continue effects; // effect has been applied before, it's independent
-                }
                 resultBefore = applySimulatedEffect(currentLayer, subLayer, effect, ability, gameSim, affectedBefore, resultBefore);
             }
 
