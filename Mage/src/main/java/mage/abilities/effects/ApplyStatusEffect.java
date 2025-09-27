@@ -13,7 +13,6 @@ import mage.counters.Counters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,18 +66,13 @@ public class ApplyStatusEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
+    public boolean hasLayer(Layer layer) {
+        return layer == Layer.PTChangingEffects_7 || layer == Layer.AbilityAddingRemovingEffects_6;
     }
 
     @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.PTChangingEffects_7 || layer == Layer.AbilityAddingRemovingEffects_6;
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.Counters_7d;
     }
 
     @Override

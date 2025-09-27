@@ -73,39 +73,6 @@ class EatenByPiranhasEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent enchantment = source.getSourcePermanentIfItStillExists(game);
-        if (enchantment == null) {
-            return false;
-        }
-        Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
-        if (permanent == null) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.CREATURE);
-                permanent.removeAllSubTypes(game);
-                permanent.addSubType(game, SubType.SKELETON);
-                break;
-            case ColorChangingEffects_5:
-                permanent.getColor(game).setColor(ObjectColor.BLACK);
-                break;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                break;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(1);
-                    permanent.getToughness().setModifiedBaseValue(1);
-                }
-                break;
-        }
-        return true;
-    }
-
-    @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageItem object : affectedObjects) {
             Permanent permanent = (Permanent) object;
@@ -156,5 +123,10 @@ class EatenByPiranhasEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

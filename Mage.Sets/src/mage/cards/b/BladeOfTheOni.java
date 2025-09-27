@@ -13,7 +13,6 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,16 +105,6 @@ class BladeOfTheOniEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public boolean hasLayer(Layer layer) {
         switch (layer) {
             case TypeChangingEffects_4:
@@ -125,5 +114,10 @@ class BladeOfTheOniEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

@@ -67,4 +67,18 @@ public class LoseAbilitySourceEffect extends ContinuousEffectImpl {
             return false;
         }
     }
+
+    @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        int result = 0;
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                Permanent permanent = (Permanent) object;
+                if (!permanent.getAbilities().contains(ability)) {
+                    result++;
+                }
+            }
+        }
+        return result;
+    }
 }

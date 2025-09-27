@@ -121,6 +121,20 @@ public class GainAbilityControlledEffect extends ContinuousEffectImpl {
         return !affectedObjects.isEmpty();
     }
 
+    @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        int result = 0;
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability abilityToAdd : ability) {
+                if (permanent.getAbilities().contains(abilityToAdd)) {
+                    result++;
+                }
+            }
+        }
+        return result;
+    }
+
     public void setAbility(Ability ability) {
         this.ability = new CompoundAbility(ability);
     }

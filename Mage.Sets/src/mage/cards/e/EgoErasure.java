@@ -13,7 +13,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPlayer;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -74,18 +73,6 @@ class EgoErasureEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        if (hasLayer(layer)) {
-            ArrayList<MageItem> affectedObjects = new ArrayList<>();
-            if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-                applyToObjects(layer, sublayer, source, game, affectedObjects);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageItem object : affectedObjects) {
             Permanent permanent = (Permanent) object;
@@ -122,5 +109,10 @@ class EgoErasureEffect extends ContinuousEffectImpl {
     @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.TypeChangingEffects_4 || layer == Layer.PTChangingEffects_7;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.ModifyPT_7c;
     }
 }

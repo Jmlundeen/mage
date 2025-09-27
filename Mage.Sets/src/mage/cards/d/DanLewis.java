@@ -17,7 +17,6 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,16 +96,6 @@ class DanLewisEffect extends ContinuousEffectImpl {
             }
         }
         return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
     }
 
     @Override

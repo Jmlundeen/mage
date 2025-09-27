@@ -89,6 +89,18 @@ class NecroticOozeEffect extends ContinuousEffectImpl {
     }
 
     @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        int result = 0;
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                Permanent permanent = (Permanent) object;
+                result += (int) permanent.getAbilities().stream().filter(Ability::isActivatedAbility).count();
+            }
+        }
+        return result;
+    }
+
+    @Override
     public NecroticOozeEffect copy() {
         return new NecroticOozeEffect(this);
     }

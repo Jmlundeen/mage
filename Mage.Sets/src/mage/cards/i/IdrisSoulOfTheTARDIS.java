@@ -165,16 +165,6 @@ class IdrisSoulOfTheTARDISGainEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public boolean hasLayer(Layer layer) {
         switch (layer) {
             case AbilityAddingRemovingEffects_6:
@@ -183,5 +173,10 @@ class IdrisSoulOfTheTARDISGainEffect extends ContinuousEffectImpl {
             default:
                 return false;
         }
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.ModifyPT_7c || sublayer == SubLayer.NA;
     }
 }

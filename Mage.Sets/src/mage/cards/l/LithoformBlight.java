@@ -19,7 +19,6 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetLandPermanent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -105,16 +104,6 @@ class ChangeLandAttachedEffect extends ContinuousEffectImpl {
         }
         affectedObjects.add(permanent);
         return true;
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
     }
 
     @Override

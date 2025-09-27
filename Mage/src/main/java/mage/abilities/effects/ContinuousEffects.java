@@ -1198,6 +1198,9 @@ public class ContinuousEffects implements Serializable {
     private void applyContinuousEffect(ContinuousEffect effect, Layer currentLayer, SubLayer subLayer, Game game) {
         Set<Ability> abilities = layeredEffects.getAbility(effect.getId());
         for (Ability ability : abilities) {
+            if (subLayer == SubLayer.CharacteristicDefining_7a && !abilityActive(ability, game)) {
+                continue;
+            }
             if (isAbilityStillExists(game, ability, effect) || currentLayer == Layer.CopyEffects_1 || currentLayer == Layer.ControlChangingEffects_2) {
                 effect.apply(currentLayer, subLayer, ability, game);
             }
@@ -1222,6 +1225,11 @@ public class ContinuousEffects implements Serializable {
         }
         return effect instanceof BecomesFaceDownCreatureEffect || this.appliedEffects.contains(effect.getId())
                 || card.hasAbility(ability, game) || ability instanceof DelayedTriggeredAbility;
+    }
+
+    private boolean abilityActive(Ability ability, Game game) {
+        MageObject object = game.getObject(ability.getSourceId());
+        return object != null && object.hasAbility(ability, game);
     }
 
     public Set<Ability> getLayeredEffectAbilities(ContinuousEffect effect) {

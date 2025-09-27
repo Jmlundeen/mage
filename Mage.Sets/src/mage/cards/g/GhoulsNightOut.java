@@ -146,16 +146,6 @@ class GhoulsNightOutTypeChangingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer subLayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, subLayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.ColorChangingEffects_5 || layer == Layer.TypeChangingEffects_4;
     }

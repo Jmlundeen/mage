@@ -8,7 +8,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.Token;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +28,7 @@ public class BecomesCreatureAttachedEffect extends ContinuousEffectImpl {
     }
 
     public BecomesCreatureAttachedEffect(Token token, String text, Duration duration, LoseType loseType) {
-        super(duration, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.BecomeCreature);
+        super(duration, Outcome.BecomeCreature);
         this.token = token;
         this.loseType = loseType;
         staticText = text;
@@ -137,15 +136,6 @@ public class BecomesCreatureAttachedEffect extends ContinuousEffectImpl {
         }
     }
 
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
-    }
 
     @Override
     public boolean hasLayer(Layer layer) {
@@ -155,4 +145,9 @@ public class BecomesCreatureAttachedEffect extends ContinuousEffectImpl {
                 || layer == Layer.TypeChangingEffects_4;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b
+                || sublayer == SubLayer.NA;
+    }
 }

@@ -1,6 +1,7 @@
 package mage.abilities.effects.common.continuous;
 
 import mage.MageItem;
+import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -65,6 +66,7 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
                     .stream()
                     .map(game::getPermanent)
                     .filter(Objects::nonNull)
+                    .filter(permanent -> !this.affectedObjectList.contains(new MageObjectReference(permanent, game)))
                     .forEach(permanent -> {
                         this.affectedObjectList.add(new MageObjectReference(permanent, game));
                     });
@@ -170,6 +172,17 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
             }
         }
         return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        int result = 0;
+        for (MageItem object : affectedObjects) {
+            if (((MageObject) object).hasAbility(ability, game)) {
+                result++;
+            }
+        }
+        return result;
     }
 
     /**

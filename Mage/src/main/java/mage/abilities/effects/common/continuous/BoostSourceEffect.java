@@ -57,7 +57,10 @@ public class BoostSourceEffect extends ContinuousEffectImpl {
     public void init(Ability source, Game game) {
         super.init(source, game);
         if (getAffectedObjectsSet()) {
-            affectedObjectList.add(new MageObjectReference(source.getSourceId(), game));
+            MageObjectReference mor = new MageObjectReference(source.getSourceId(), game);
+            if (!affectedObjectList.contains(mor)) {
+                affectedObjectList.add(mor);
+            }
             // Boost must be locked in (if it's a dynamic value) for non-static ability
             power = StaticValue.get(power.calculate(game, source, this));
             toughness = StaticValue.get(toughness.calculate(game, source, this));

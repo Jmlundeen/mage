@@ -233,10 +233,10 @@ public class LandTypeChangingEffectsTest extends CardTestPlayerBase {
                 creatures++;
             }
         }
-        Assert.assertTrue("1 land has to be of island type", islandTypes == 1);
-        Assert.assertTrue("3 lands have to be of mountain type", mountainTypes == 3);
-        Assert.assertTrue("4 lands have to be of swamp type", swampTypes == 4);
-        Assert.assertTrue("4 lands have to be creatures but there are " + creatures, creatures == 4);
+        Assert.assertEquals("1 land has to be of island type", 1, islandTypes);
+        Assert.assertEquals("3 lands have to be of mountain type", 3, mountainTypes);
+        Assert.assertEquals("4 lands have to be of swamp type", 4, swampTypes);
+        Assert.assertEquals("5 lands have to be creatures but there are " + creatures, 5, creatures);
     }
 
     @Test

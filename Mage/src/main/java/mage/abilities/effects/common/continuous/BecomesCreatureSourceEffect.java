@@ -256,4 +256,9 @@ public class BecomesCreatureSourceEffect extends ContinuousEffectImpl {
                 || layer == Layer.TypeChangingEffects_4;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b
+                || sublayer == SubLayer.NA;
+    }
 }

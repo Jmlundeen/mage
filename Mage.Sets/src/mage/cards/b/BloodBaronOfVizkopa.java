@@ -16,7 +16,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -96,16 +95,6 @@ class BloodBaronOfVizkopaEffect extends ContinuousEffectImpl {
         return true;
     }
 
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (queryAffectedObjects(layer, source, game, affectedObjects)) {
-            applyToObjects(layer, sublayer, source, game, affectedObjects);
-            return true;
-        }
-        return false;
-    }
-
     private boolean conditionState(Ability source, Game game) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null || controller.getLife() < 30) {
@@ -123,5 +112,10 @@ class BloodBaronOfVizkopaEffect extends ContinuousEffectImpl {
     @Override
     public boolean hasLayer(Layer layer) {
         return (layer == Layer.AbilityAddingRemovingEffects_6 || layer == Layer.PTChangingEffects_7);
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.ModifyPT_7c || sublayer == SubLayer.NA;
     }
 }

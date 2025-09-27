@@ -26,12 +26,13 @@ public class AlpineMoonTest extends CardTestPlayerBase {
     @Test
     public void testAlpineMoonAfterUrborg() {
         setStrictChooseMode(true);
-        addCard(Zone.BATTLEFIELD, playerA, urborg);
-        addCard(Zone.BATTLEFIELD, playerB, alpine);
-        addCard(Zone.BATTLEFIELD, playerB, "Mountain");
-        addCard(Zone.BATTLEFIELD, playerA, "Island");
+        addCard(Zone.BATTLEFIELD, playerB, urborg);
+        addCard(Zone.HAND, playerA, alpine);
+        addCard(Zone.BATTLEFIELD, playerA, "Mountain");
+        addCard(Zone.BATTLEFIELD, playerB, "Island");
 
-        setChoice(playerB, urborg);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, alpine);
+        setChoice(playerA, urborg);
 
         setStopAt(1, PhaseStep.BEGIN_COMBAT);
         execute();
@@ -39,23 +40,23 @@ public class AlpineMoonTest extends CardTestPlayerBase {
         assertNotSubtype(urborg, SubType.SWAMP);
         assertSubtype("Mountain", SubType.SWAMP);
         assertSubtype("Island", SubType.SWAMP);
-        assertAbility(playerA, urborg, new AnyColorManaAbility(), true);
+        assertAbility(playerB, urborg, new AnyColorManaAbility(), true);
     }
 
     @Test
     public void testAlpineMoonBeforeUrborg() {
         setStrictChooseMode(true);
-        addCard(Zone.BATTLEFIELD, playerB, urborg);
         addCard(Zone.BATTLEFIELD, playerA, alpine);
-        addCard(Zone.BATTLEFIELD, playerA, "Mountain");
-        addCard(Zone.BATTLEFIELD, playerB, "Island");
+        addCard(Zone.BATTLEFIELD, playerB, urborg);
+        addCard(Zone.BATTLEFIELD, playerB, "Mountain");
+        addCard(Zone.BATTLEFIELD, playerA, "Island");
 
         setChoice(playerA, urborg);
 
         setStopAt(1, PhaseStep.BEGIN_COMBAT);
         execute();
 
-        assertNotSubtype(urborg, SubType.SWAMP);
+        assertSubtype(urborg, SubType.SWAMP);
         assertSubtype("Mountain", SubType.SWAMP);
         assertSubtype("Island", SubType.SWAMP);
         assertAbility(playerB, urborg, new AnyColorManaAbility(), true);
