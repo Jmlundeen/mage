@@ -1,10 +1,10 @@
 package mage.abilities.effects;
 
-import com.google.common.collect.Iterators;
 import mage.ApprovingObject;
 import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
+import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.MageSingleton;
 import mage.abilities.StaticAbility;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
@@ -61,6 +61,7 @@ public class ContinuousEffects implements Serializable {
 
     private final List<ContinuousEffect> lastEffectList = new ArrayList<>();
     private final Set<UUID> appliedEffects = new HashSet<>();
+    private final Map<Layer, DefaultDirectedGraph<ContinuousEffect, DefaultEdge>> layerDependencies = new EnumMap<>(Layer.class);
 
 
     public ContinuousEffects() {
@@ -261,13 +262,21 @@ public class ContinuousEffects implements Serializable {
             }
         }
         if (clearEffects) {
+            if (layerEffects.size() != lastEffectList.size()) {
+                layerDependencies.clear();
+            }
             lastEffectList.clear();
             lastEffectList.addAll(layerEffects);
         }
+
     }
 
     public void setOrder(ContinuousEffect effect) {
         effect.setOrder(order++);
+    }
+
+    public void resetDependencies() {
+        layerDependencies.clear();
     }
 
     private List<ContinuousEffect> filterLayeredEffects(List<ContinuousEffect> effects, Layer layer, SubLayer subLayer) {
@@ -1044,10 +1053,17 @@ public class ContinuousEffects implements Serializable {
     private void applyLayer(List<ContinuousEffect> activeLayerEffects, Layer currentLayer, SubLayer subLayer, Game game) {
         List<ContinuousEffect> filteredLayeredEffects = filterLayeredEffects(activeLayerEffects, currentLayer, subLayer);
         Set<UUID> appliedLayerEffects = new HashSet<>();
-        while (!filteredLayeredEffects.isEmpty()) {
+        DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraph = layerDependencies.get(currentLayer);
+        if (dependencyGraph == null) {
+            dependencyGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+        }
+        // workaround for copy effects adding abilities with more copy effects
+        // store the initial size and ignore after processing them
+        int initialSize = filteredLayeredEffects.size();
+        while (!filteredLayeredEffects.isEmpty() && (currentLayer != Layer.CopyEffects_1 || appliedLayerEffects.size() < initialSize)) {
             ContinuousEffect effect = filteredLayeredEffects.get(0);
             if (filteredLayeredEffects.size() > 1) {
-                effect = getNextEffectToApply(filteredLayeredEffects, currentLayer, subLayer, game);
+                effect = getNextEffectToApply(filteredLayeredEffects, currentLayer, subLayer, game, dependencyGraph);
             }
 
             applyContinuousEffect(effect, currentLayer, subLayer, game);
@@ -1058,20 +1074,55 @@ public class ContinuousEffects implements Serializable {
                     .filter(continuousEffect -> !appliedLayerEffects.contains(continuousEffect.getId()))
             .collect(Collectors.toList());
         }
+        layerDependencies.put(currentLayer, dependencyGraph);
     }
 
     /**
      * Test continuos effects for the layer and sublayer looking for any dependencies. The returned effect is correct
      * dependencies/timestamp
      */
-    private ContinuousEffect getNextEffectToApply(List<ContinuousEffect> filteredLayeredEffects, Layer currentLayer, SubLayer subLayer, Game game) {
-        DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+    private ContinuousEffect getNextEffectToApply(List<ContinuousEffect> filteredLayeredEffects, Layer currentLayer, SubLayer subLayer, Game game,
+                                                  DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraph) {
+        if (game.isSimulation()) {
+            // skip dependency calculation for AI simulations
+            return filteredLayeredEffects.stream()
+                    .min(Comparator.comparingInt(effect -> (int) effect.getOrder()))
+                    .orElse(null);
+        }
+        // if any of the layer effects are not in dependency graph, recalculate
+        if (filteredLayeredEffects.stream().anyMatch(effect -> !dependencyGraph.containsVertex(effect))) {
+            calculateDependencies(filteredLayeredEffects, currentLayer, subLayer, game, dependencyGraph);
+            // 613.8b. If several dependent effects form a dependency loop, then this rule is ignored
+            // remove cycles
+            List<List<ContinuousEffect>> cycles = new SzwarcfiterLauerSimpleCycles<>(dependencyGraph).findSimpleCycles();
+            for (List<ContinuousEffect> cycle : cycles) {
+                for (int i = 0; i < cycle.size() - 1; i++) {
+                    dependencyGraph.removeEdge(cycle.get(i), cycle.get(i + 1));
+                }
+                dependencyGraph.removeEdge(cycle.get(cycle.size() - 1), cycle.get(0));
+            }
+        }
+
+        // remove applied effects
+        DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraphCopy = (DefaultDirectedGraph<ContinuousEffect, DefaultEdge>) dependencyGraph.clone();
+        dependencyGraphCopy.removeAllVertices(dependencyGraph.vertexSet().stream()
+                .filter(effect -> !filteredLayeredEffects.contains(effect))
+                .collect(Collectors.toList()));
+        // earliest independent effect should be the correct one to apply
+        List<ContinuousEffect> orderedEffects = dependencyGraphCopy.vertexSet().stream()
+                .sorted(Comparator.comparingInt(dependencyGraphCopy::outDegreeOf)
+                        .thenComparingInt(effect -> (int) effect.getOrder()))
+                .collect(Collectors.toList());
+        return orderedEffects.stream().findFirst().orElse(null);
+    }
+
+    private void calculateDependencies(List<ContinuousEffect> filteredLayeredEffects, Layer currentLayer, SubLayer subLayer, Game game, DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraph) {
         Game gameSim = game.createSimulationForAI();
         GameState startingState = gameSim.getState().copy();
 
         effects:
         for (ContinuousEffect effect : filteredLayeredEffects) {
-            gameSim.getState().restore(startingState);
+            gameSim.getState().restore(startingState.copy());
             dependencyGraph.addVertex(effect);
 
             int resultBefore = 0;
@@ -1080,14 +1131,14 @@ public class ContinuousEffects implements Serializable {
                 if (!ability.getAffectedObjects().isEmpty()) {
                     continue effects; // effect has been applied before, it's independent
                 }
-                applySimulatedEffect(currentLayer, subLayer, effect, ability, gameSim, affectedBefore, resultBefore);
+                resultBefore = applySimulatedEffect(currentLayer, subLayer, effect, ability, gameSim, affectedBefore, resultBefore);
             }
 
             for (ContinuousEffect otherEffect : filteredLayeredEffects) {
                 if (otherEffect == effect) {
                     continue;
                 }
-                gameSim.getState().restore(startingState);
+                gameSim.getState().restore(startingState.copy());
                 for (Ability ability : getLayeredEffectAbilities(otherEffect)) {
                     List<MageItem> otherAffectedObjects = new ArrayList<>();
                     applySimulatedEffect(currentLayer, subLayer, otherEffect, ability, gameSim, otherAffectedObjects, 0);
@@ -1100,11 +1151,20 @@ public class ContinuousEffects implements Serializable {
                 int resultAfter = 0;
                 for (Ability ability : getLayeredEffectAbilities(effect)) {
                     dependency |= !isAbilityStillExists(gameSim, ability, effect);
-                    applySimulatedEffect(currentLayer, subLayer, effect, ability, gameSim, affectedAfter, resultAfter);
+                    if (!dependency) {
+                        resultAfter = applySimulatedEffect(currentLayer, subLayer, effect, ability, gameSim, affectedAfter, resultAfter);
+                    }
                 }
                 // what it applies to,
                 if (!dependency) {
-                    dependency = !Iterators.elementsEqual(affectedBefore.iterator(), affectedAfter.iterator());
+                    Set<UUID> uuidsBefore = affectedBefore.stream()
+                        .map(MageItem::getId)
+                        .collect(Collectors.toSet());
+                    Set<UUID> uuidsAfter = affectedAfter.stream()
+                        .map(MageItem::getId)
+                        .collect(Collectors.toSet());
+
+                    dependency = !uuidsBefore.equals(uuidsAfter);
                 }
                 // or what it does to any of the things it applies to;
                 if (!dependency) {
@@ -1116,47 +1176,20 @@ public class ContinuousEffects implements Serializable {
                     dependencyGraph.addEdge(effect, otherEffect);
                 }
             }
-            // If no dependencies occurred, just return the first effect
-            if (dependencyGraph.edgeSet().isEmpty() && filteredLayeredEffects.get(0).equals(effect)) {
-                return effect;
-            }
         }
-
-        // 613.8b. If several dependent effects form a dependency loop, then this rule is ignored
-        // remove cycles
-        List<List<ContinuousEffect>> cycles = new SzwarcfiterLauerSimpleCycles<>(dependencyGraph).findSimpleCycles();
-        for (List<ContinuousEffect> cycle : cycles) {
-            for (int i = 0; i < cycle.size() - 1; i++) {
-                dependencyGraph.removeEdge(cycle.get(i), cycle.get(i + 1));
-            }
-            dependencyGraph.removeEdge(cycle.get(cycle.size() - 1), cycle.get(0));
-        }
-
-        // remove dependent effects
-        Set<ContinuousEffect> toRemove = new HashSet<>();
-        for (ContinuousEffect effect : dependencyGraph.vertexSet()) {
-            if (dependencyGraph.outDegreeOf(effect) > 0) {
-                toRemove.add(effect);
-            }
-        }
-        dependencyGraph.removeAllVertices(toRemove);
-
-        // earliest independent effect should be the correct one to apply
-        return dependencyGraph.vertexSet().stream()
-                .min(Comparator.comparing(ContinuousEffect::getOrder))
-                .orElse(null);
     }
 
     /**
      * Applies a continuous effect with ability copy for simulation
      */
-    private static void applySimulatedEffect(Layer currentLayer, SubLayer subLayer, ContinuousEffect effect, Ability ability,
+    private int applySimulatedEffect(Layer currentLayer, SubLayer subLayer, ContinuousEffect effect, Ability ability,
                                              Game gameSim, List<MageItem> affectedObjects, int result) {
         Ability abilityCopy = ability.copy();
         if (effect.queryAffectedObjects(currentLayer, abilityCopy, gameSim, affectedObjects)) {
             effect.applyToObjects(currentLayer, subLayer, abilityCopy, gameSim, affectedObjects);
             result += effect.calculateResult(gameSim, ability, affectedObjects);
         }
+        return result;
     }
 
     /**
@@ -1165,7 +1198,7 @@ public class ContinuousEffects implements Serializable {
     private void applyContinuousEffect(ContinuousEffect effect, Layer currentLayer, SubLayer subLayer, Game game) {
         Set<Ability> abilities = layeredEffects.getAbility(effect.getId());
         for (Ability ability : abilities) {
-            if (isAbilityStillExists(game, ability, effect)) {
+            if (isAbilityStillExists(game, ability, effect) || currentLayer == Layer.CopyEffects_1 || currentLayer == Layer.ControlChangingEffects_2) {
                 effect.apply(currentLayer, subLayer, ability, game);
             }
         }
@@ -1181,9 +1214,14 @@ public class ContinuousEffects implements Serializable {
             case Custom:  // custom duration means the effect ends itself if needed
                 return true;
         }
-        final Card card = game.getPermanentOrLKIBattlefield(ability.getSourceId());
+        Card card = game.getPermanentOrLKIBattlefield(ability.getSourceId());
+        if (card == null) {
+            // if no permanent check the card/card state
+            card = game.getCard(ability.getSourceId());
+            return card == null || card.hasAbility(ability, game);
+        }
         return effect instanceof BecomesFaceDownCreatureEffect || this.appliedEffects.contains(effect.getId())
-                || card == null || card.hasAbility(ability, game);
+                || card.hasAbility(ability, game) || ability instanceof DelayedTriggeredAbility;
     }
 
     public Set<Ability> getLayeredEffectAbilities(ContinuousEffect effect) {

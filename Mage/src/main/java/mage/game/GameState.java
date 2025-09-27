@@ -1748,4 +1748,8 @@ public class GameState implements Serializable, Copyable<GameState> {
     public boolean getReverseTurnOrder() {
         return this.reverseTurnOrder;
     }
+
+    public void resetDependencies() {
+        this.effects.resetDependencies();
+    }
 }
