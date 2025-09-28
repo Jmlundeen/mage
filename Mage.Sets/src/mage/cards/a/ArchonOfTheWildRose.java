@@ -3,13 +3,12 @@ package mage.cards.a;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.continuous.GainAbilityAllEffect;
-import mage.abilities.effects.common.continuous.SetBasePowerToughnessAllEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
@@ -43,10 +42,11 @@ public final class ArchonOfTheWildRose extends CardImpl {
 
         // Other creatures you control that are enchanted by Auras you control have base power and toughness 4/4 and have flying.
         Ability ability = new SimpleStaticAbility(
-                new SetBasePowerToughnessAllEffect(4, 4, Duration.WhileOnBattlefield, filter)
+                new ContinuousEffectBuilder(Outcome.BoostCreature, filter)
+                        .withSetPowerAndToughness(4, 4)
+                        .withGainedAbilities(FlyingAbility.getInstance())
+                        .setText("{permFilter} have {basePT} and have {gainedAbilities}")
         );
-        ability.addEffect(new GainAbilityAllEffect(FlyingAbility.getInstance(), Duration.WhileOnBattlefield, filter)
-                .setText("and have flying"));
         this.addAbility(ability);
     }
 

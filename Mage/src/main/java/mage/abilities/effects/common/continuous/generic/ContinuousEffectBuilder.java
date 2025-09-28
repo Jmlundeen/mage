@@ -38,11 +38,12 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private List<SubLayer> additionalSublayers;
     private DynamicValue powerModifier;
     private DynamicValue toughnessModifier;
-    private DynamicValue powerSet;
-    private DynamicValue toughnessSet;
+    private DynamicValue basePower;
+    private DynamicValue baseToughness;
 
     /**
-     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, players, or permanent source is attached to
+     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, players, or permanent source is attached to.
+     * Zones need to be set separately using {@link #setAffectedZones(List)} or {@link #setAffectedZones(Zone...)}
      * @param duration
      * @param outcome
      * @param affected
@@ -50,6 +51,16 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, ContinuousAffected affected) {
         super(duration, outcome);
         this.affected = affected;
+    }
+
+    /**
+     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, players, or permanent source is attached to.
+     * Zones need to be set separately using {@link #setAffectedZones(List)} or {@link #setAffectedZones(Zone...)}
+     * @param outcome
+     * @param affected
+     */
+    public ContinuousEffectBuilder(Outcome outcome, ContinuousAffected affected) {
+        this(Duration.EndOfGame, outcome, affected);
     }
 
     /**
@@ -108,8 +119,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.additionalSublayers = effect.additionalSublayers;
         this.powerModifier = effect.powerModifier;
         this.toughnessModifier = effect.toughnessModifier;
-        this.powerSet = effect.powerSet;
-        this.toughnessSet = effect.toughnessSet;
+        this.basePower = effect.basePower;
+        this.baseToughness = effect.baseToughness;
     }
 
     @Override
@@ -144,17 +155,25 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     break;
                 case PTChangingEffects_7:
                     if (sublayer == SubLayer.CharacteristicDefining_7a) {
-                        // TODO: implement
+                        if (basePower == null && baseToughness == null) {
+                            throw new IllegalArgumentException("Power and toughness not set in ContinuousEffectBuilder");
+                        }
+                        if (basePower != null) {
+                            mageObject.getPower().setModifiedBaseValue(basePower.calculate(game, source, this));
+                        }
+                        if (baseToughness != null) {
+                            mageObject.getToughness().setModifiedBaseValue(baseToughness.calculate(game, source, this));
+                        }
                         break;
                     }
                     if (sublayer == SubLayer.SetPT_7b) {
-                        if (powerSet == null || toughnessSet == null) {
+                        if (basePower == null || baseToughness == null) {
                             throw new IllegalArgumentException("Power and/or toughness not set in ContinuousEffectBuilder");
                         }
                         if (mageObject instanceof Permanent) {
                             Permanent permanent = (Permanent) mageObject;
-                            permanent.getPower().setModifiedBaseValue(powerSet.calculate(game, source, this));
-                            permanent.getToughness().setModifiedBaseValue(toughnessSet.calculate(game, source, this));
+                            permanent.getPower().setModifiedBaseValue(basePower.calculate(game, source, this));
+                            permanent.getToughness().setModifiedBaseValue(baseToughness.calculate(game, source, this));
                         }
                         break;
                     }
@@ -279,6 +298,29 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         }
     }
 
+    /**
+     * Set the zones the effect applies to.
+     * @param affectedZones
+     */
+    public ContinuousEffectBuilder setAffectedZones(List<Zone> affectedZones) {
+        this.affectedZones = affectedZones;
+        return this;
+    }
+
+    /**
+     * Set the zones the effect applies to.
+     * @param affectedZones
+     */
+    public ContinuousEffectBuilder setAffectedZones(Zone... affectedZones) {
+        this.affectedZones = new ArrayList<>();
+        Collections.addAll(this.affectedZones, affectedZones);
+        return this;
+    }
+
+    /**
+     * Add abilities to the affected objects
+     * @param gainedAbilities
+     */
     public ContinuousEffectBuilder withGainedAbilities(Ability... gainedAbilities) {
         this.gainedAbilities = new ArrayList<>();
         Collections.addAll(this.gainedAbilities, gainedAbilities);
@@ -286,6 +328,10 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
+    /**
+     * Add power to the affected objects.
+     * @param power
+     */
     public ContinuousEffectBuilder withAddPower(int power) {
         setPowerModifier(StaticValue.get(power));
         this.addLayer(Layer.PTChangingEffects_7);
@@ -293,6 +339,10 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
+    /**
+     * Add power to the affected objects.
+     * @param power
+     */
     public ContinuousEffectBuilder withAddPower(DynamicValue power) {
         setPowerModifier(power);
         this.addLayer(Layer.PTChangingEffects_7);
@@ -300,20 +350,32 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
+    /**
+     * Set power to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * @param power
+     */
     public ContinuousEffectBuilder withSetPower(int power) {
-        setPowerModifier(StaticValue.get(power));
+        this.basePower = StaticValue.get(power);
         this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.SetPT_7b);
+        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
         return this;
     }
 
+    /**
+     * Set power to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * @param power
+     */
     public ContinuousEffectBuilder withSetPower(DynamicValue power) {
-        setPowerModifier(power);
+        this.basePower = power;
         this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.SetPT_7b);
+        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
         return this;
     }
 
+    /**
+     * Add toughness to the affected objects.
+     * @param toughness
+     */
     public ContinuousEffectBuilder withAddToughness(int toughness) {
         setToughnessModifier(StaticValue.get(toughness));
         this.addLayer(Layer.PTChangingEffects_7);
@@ -321,6 +383,10 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
+    /**
+     * Add toughness to the affected objects.
+     * @param toughness
+     */
     public ContinuousEffectBuilder withAddToughness(DynamicValue toughness) {
         setToughnessModifier(toughness);
         this.addLayer(Layer.PTChangingEffects_7);
@@ -328,15 +394,49 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
+    /**
+     * Set toughness to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * @param toughness
+     */
     public ContinuousEffectBuilder withSetToughness(int toughness) {
-        setToughnessModifier(StaticValue.get(toughness));
+        this.baseToughness = StaticValue.get(toughness);
+        this.addLayer(Layer.PTChangingEffects_7);
+        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
+        return this;
+    }
+
+    /**
+     * Set toughness to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * @param toughness
+     */
+    public ContinuousEffectBuilder withSetToughness(DynamicValue toughness) {
+        this.baseToughness = toughness;
+        this.addLayer(Layer.PTChangingEffects_7);
+        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
+        return this;
+    }
+
+    /**
+     * Set power and toughness to the affected objects. Use for non-CDA effects only.
+     * @param power
+     * @param toughness
+     */
+    public ContinuousEffectBuilder withSetPowerAndToughness(int power, int toughness) {
+        this.basePower = StaticValue.get(power);
+        this.baseToughness = StaticValue.get(toughness);
         this.addLayer(Layer.PTChangingEffects_7);
         this.addSubLayer(SubLayer.SetPT_7b);
         return this;
     }
 
-    public ContinuousEffectBuilder withSetToughness(DynamicValue toughness) {
-        setToughnessModifier(toughness);
+    /**
+     * Set power and toughness to the affected objects. Use for non-CDA effects only.
+     * @param power
+     * @param toughness
+     */
+    public ContinuousEffectBuilder withSetPowerAndToughness(DynamicValue power, DynamicValue toughness) {
+        this.basePower = power;
+        this.baseToughness = toughness;
         this.addLayer(Layer.PTChangingEffects_7);
         this.addSubLayer(SubLayer.SetPT_7b);
         return this;
@@ -394,15 +494,33 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     @Override
     public String getText(Mode mode) {
-        return staticText.replace("{permFilter}", permanentFilter == null ? "" : permanentFilter.getMessage())
-                .replace("{cardFilter}", cardFilter == null ? "" : cardFilter.getMessage())
-                .replace("{affectedZones}", affectedZones == null ? "" :
-                        affectedZones.stream().map(Zone::toString).collect(Collectors.joining(", ")))
-                .replace("{gainedAbilitiesQuotes}", gainedAbilities == null ? "" :
-                        gainedAbilities.stream().map(ability -> "\"" + ability.getRule() + "\"").collect(Collectors.joining(", ")))
-                .replace("{gainedAbilities}", gainedAbilities == null ? "" :
-                        gainedAbilities.stream().map(Ability::getRule).collect(Collectors.joining(", ")))
-                .replace("{ptMod}", CardUtil.getBoostCountAsStr(powerModifier, toughnessModifier))
-                ;
+        String result = staticText;
+
+        if (permanentFilter != null) {
+            result = result.replace("{permFilter}", permanentFilter.getMessage());
+        }
+        if (cardFilter != null) {
+            result = result.replace("{cardFilter}", cardFilter.getMessage());
+        }
+        if (affectedZones != null) {
+            result = result.replace("{affectedZones}", affectedZones.stream()
+                    .map(Zone::toString)
+                    .collect(Collectors.joining(", ")));
+        }
+        if (gainedAbilities != null) {
+            String abilitiesText = gainedAbilities.stream()
+                    .map(Ability::getRule)
+                    .collect(Collectors.joining(", "));
+            result = result.replace("{gainedAbilitiesQuotes}", "\"" + abilitiesText + "\"")
+                           .replace("{gainedAbilities}", abilitiesText);
+        }
+        if (powerModifier != null && toughnessModifier != null) {
+            result = result.replace("{ptMod}", CardUtil.getBoostCountAsStr(powerModifier, toughnessModifier));
+        }
+        if (basePower != null && baseToughness != null) {
+            result = result.replace("{basePT}", "base power and toughness " + basePower + "/" + baseToughness);
+        }
+
+        return result;
     }
 }

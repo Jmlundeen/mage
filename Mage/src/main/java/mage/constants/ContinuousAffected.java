@@ -4,4 +4,5 @@ public enum ContinuousAffected {
     SOURCE,
     CONTROLLER,
     ATTACHED_TO,
+    TARGETED,
 }

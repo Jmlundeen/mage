@@ -6,7 +6,7 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.continuous.SetBasePowerSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.MenaceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -46,7 +46,10 @@ public final class AvalancheOfSector7 extends CardImpl {
         this.addAbility(new MenaceAbility());
 
         // Avalanche of Sector 7's power is equal to the number of artifacts your opponents control.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new SetBasePowerSourceEffect(xValue)));
+        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                .withSetPower(xValue)
+                .setText("{this}'s power is equal to the number of " + xValue.getMessage())
+        ));
 
         // Whenever an opponent activates an ability of an artifact they control, Avalanche of Sector 7 deals 1 damage to that player.
         this.addAbility(new AvalancheOfSector7TriggeredAbility());

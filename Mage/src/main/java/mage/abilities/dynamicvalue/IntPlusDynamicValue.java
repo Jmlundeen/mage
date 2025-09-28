@@ -43,7 +43,9 @@ public class IntPlusDynamicValue implements DynamicValue {
 
     @Override
     public String getMessage() {
-        return value.getMessage();
+        StringBuilder sb = new StringBuilder();
+        sb.append(baseValue).append(" plus ");
+        return sb.append(value.getMessage()).toString();
     }
 
     @Override
