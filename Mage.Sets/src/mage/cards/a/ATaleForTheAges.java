@@ -1,12 +1,12 @@
 package mage.cards.a;
 
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.continuous.BoostControlledEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.filter.common.FilterCreaturePermanent;
+import mage.constants.Outcome;
+import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.permanent.EnchantedPredicate;
 
 import java.util.UUID;
@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 public final class ATaleForTheAges extends CardImpl {
 
-    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("enchanted creatures");
+    private static final FilterControlledCreaturePermanent filter = new FilterControlledCreaturePermanent("enchanted creatures you control");
 
     static {
         filter.add(EnchantedPredicate.instance);
@@ -26,9 +26,12 @@ public final class ATaleForTheAges extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{1}{W}");
 
         // Enchanted creatures you control get +2/+2.
-        this.addAbility(new SimpleStaticAbility(new BoostControlledEffect(
-                2, 2, Duration.WhileOnBattlefield, filter
-        )));
+        this.addAbility(new SimpleStaticAbility(
+                new ContinuousEffectBuilder(Outcome.Benefit, filter)
+                        .withAddPower(2)
+                        .withAddToughness(2)
+                        .setText("{permFilter} get {ptMod}"))
+        );
     }
 
     private ATaleForTheAges(final ATaleForTheAges card) {
