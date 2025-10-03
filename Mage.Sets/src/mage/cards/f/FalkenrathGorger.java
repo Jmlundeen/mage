@@ -2,30 +2,28 @@
 package mage.cards.f;
 
 import mage.MageInt;
-import mage.MageItem;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.MadnessAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.common.FilterCreatureCard;
-import mage.game.Game;
-import mage.players.Player;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  *
  * @author LevelX2
  */
 public final class FalkenrathGorger extends CardImpl {
+
+    private static final FilterCreatureCard filter = new FilterCreatureCard("Vampire creature card you own");
+
+    static {
+        filter.add(SubType.VAMPIRE.getPredicate());
+
+    }
 
     public FalkenrathGorger(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.CREATURE},"{R}");
@@ -46,7 +44,12 @@ public final class FalkenrathGorger extends CardImpl {
          * from Falkenrath Gorger.
          */
         // Each Vampire creature card you own that isn't on the battlefield has madness. Its madness cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new FalkenrathGorgerEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+                .withGainedAbility((card, source, game) -> new MadnessAbility(card.getManaCost()))
+                .setCardFilter(filter)
+                .setAffectedZones(Zone.GRAVEYARD, Zone.HAND, Zone.LIBRARY, Zone.EXILED, Zone.COMMAND, Zone.STACK)
+                .setText("Each Vampire creature card you own that isn't on the battlefield has madness. The madness cost is equal to its mana cost")
+        ));
     }
 
     private FalkenrathGorger(final FalkenrathGorger card) {
@@ -56,71 +59,5 @@ public final class FalkenrathGorger extends CardImpl {
     @Override
     public FalkenrathGorger copy() {
         return new FalkenrathGorger(this);
-    }
-}
-
-class FalkenrathGorgerEffect extends ContinuousEffectImpl {
-
-    private static final FilterCreatureCard filter = new FilterCreatureCard("Vampire creature card you own");
-
-    static {
-        filter.add(SubType.VAMPIRE.getPredicate());
-
-    }
-
-    Map<UUID, MadnessAbility> madnessAbilities = new HashMap<>(); // reuse the same ability for the same object
-
-    public FalkenrathGorgerEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "Each Vampire creature card you own that isn't on the battlefield has madness. The madness cost is equal to its mana cost";
-    }
-
-    private FalkenrathGorgerEffect(final FalkenrathGorgerEffect effect) {
-        super(effect);
-        this.madnessAbilities.putAll(effect.madnessAbilities);
-    }
-
-    @Override
-    public FalkenrathGorgerEffect copy() {
-        return new FalkenrathGorgerEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Map<UUID, MadnessAbility> usedMadnessAbilities = new HashMap<>();
-        for (MageItem object : affectedObjects) {
-            addMadnessToCard(game, (Card) object, usedMadnessAbilities);
-        }
-        madnessAbilities.clear();
-        madnessAbilities.putAll(usedMadnessAbilities);
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        // hand
-        affectedObjects.addAll(controller.getHand().getCards(filter, game));
-        // graveyard
-        affectedObjects.addAll(controller.getGraveyard().getCards(filter, game));
-        // Exile
-        affectedObjects.addAll(game.getExile().getCardsOwned(filter, controller.getId(), source, game));
-        // Library
-        affectedObjects.addAll(controller.getLibrary().getCards(game).stream()
-                .filter(card -> filter.match(card, controller.getId(), source, game))
-                .collect(Collectors.toList())
-        );
-        return !affectedObjects.isEmpty();
-    }
-
-    private void addMadnessToCard(Game game, Card card, Map<UUID, MadnessAbility> usedMadnessAbilities) {
-        MadnessAbility ability = madnessAbilities.get(card.getId());
-        if (ability == null) {
-            ability = new MadnessAbility(card.getSpellAbility().getManaCosts());
-        }
-        game.getState().addOtherAbility(card, ability, false);
-        usedMadnessAbilities.put(card.getId(), ability);
     }
 }

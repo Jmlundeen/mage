@@ -10,10 +10,7 @@ import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.ContinuousAffected;
-import mage.constants.Outcome;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.ColorPredicate;
 
@@ -39,7 +36,7 @@ public final class AnHavvaConstable extends CardImpl {
         this.toughness = new MageInt(1);
 
         // An-Havva Constable's toughness is equal to 1 plus the number of green creatures on the battlefield.
-        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
                 .withSetToughness(creatureValue)
                 .setText("{this}'s toughness is equal to " + creatureValue.getMessage())
         ));

@@ -5,4 +5,6 @@ public enum ContinuousAffected {
     CONTROLLER,
     ATTACHED_TO,
     TARGETED,
+    STATIC,
+    TOP_OF_LIBRARY
 }

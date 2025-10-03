@@ -7,9 +7,9 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.continuous.LookAtTopCardOfLibraryAnyTimeEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.PlotAbility;
 import mage.abilities.keyword.WardAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -39,7 +39,10 @@ public final class FblthpLostOnTheRange extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new LookAtTopCardOfLibraryAnyTimeEffect()));
 
         // The top card of your library has plot. The plot cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new FblthpLostOnTheRangePlotGivingEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, ContinuousAffected.TOP_OF_LIBRARY)
+                .withGainedAbility((card, source, game) -> new PlotAbility(card.getManaCost().getText()))
+                .setText("The top card of your library has plot. The plot cost is equal to its mana cost.")
+        ));
 
         // You may plot nonland cards from the top of your library.
         this.addAbility(new SimpleStaticAbility(new FblthpLostOnTheRangePermissionEffect()));
@@ -52,45 +55,6 @@ public final class FblthpLostOnTheRange extends CardImpl {
     @Override
     public FblthpLostOnTheRange copy() {
         return new FblthpLostOnTheRange(this);
-    }
-}
-
-class FblthpLostOnTheRangePlotGivingEffect extends ContinuousEffectImpl {
-
-    FblthpLostOnTheRangePlotGivingEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "The top card of your library has plot. The plot cost is equal to its mana cost.";
-    }
-
-    private FblthpLostOnTheRangePlotGivingEffect(final FblthpLostOnTheRangePlotGivingEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public FblthpLostOnTheRangePlotGivingEffect copy() {
-        return new FblthpLostOnTheRangePlotGivingEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            game.getState().addOtherAbility((Card) object, new PlotAbility(((Card) object).getManaCost().getText()));
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        Card card = controller.getLibrary().getFromTop(game);
-        if (card != null) {
-            affectedObjects.add(card);
-            return true;
-        } else {
-            return false;
-        }
     }
 }
 

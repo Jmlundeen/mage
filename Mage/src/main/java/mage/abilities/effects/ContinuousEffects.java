@@ -191,18 +191,27 @@ public class ContinuousEffects implements Serializable {
     public synchronized List<ContinuousEffect> getLayeredEffects(Game game, boolean clearPrevious) {
         List<ContinuousEffect> layerEffects = new ArrayList<>();
         for (ContinuousEffect effect : layeredEffects) {
-            switch (effect.getDuration()) {
-                case WhileOnBattlefield:
-                case WhileControlled:
-                case WhileOnStack:
-                case WhileInGraveyard:
-                    Set<Ability> abilities = layeredEffects.getAbility(effect.getId());
-                    if (!abilities.isEmpty()) {
-                        for (Ability ability : abilities) {
-                            if (clearPrevious) {
-                                // reset ability affected objects on first call
-                                ability.getAffectedObjects().clear();
-                            }
+            if (this.appliedEffects.contains(effect.getId())) {
+                // 613.6  If an effect should be applied in different layers and/or sublayers,
+                // the parts of the effect each apply in their appropriate ones.
+                // If an effect starts to apply in one layer and/or sublayer,
+                // it will continue to be applied to the same set of objects in each other applicable layer and/or sublayer,
+                // even if the ability generating the effect is removed during this process.
+                layerEffects.add(effect);
+                continue;
+            }
+            Set<Ability> abilities = layeredEffects.getAbility(effect.getId());
+            if (!abilities.isEmpty()) {
+                for (Ability ability : abilities) {
+                    if (clearPrevious) {
+                        // reset ability affected objects on first call
+                        ability.getAffectedObjects().clear();
+                    }
+                    switch (effect.getDuration()) {
+                        case WhileOnBattlefield:
+                        case WhileControlled:
+                        case WhileOnStack:
+                        case WhileInGraveyard:
                             // If e.g. triggerd abilities (non static) created the effect, the ability must not be in usable zone (e.g. Unearth giving Haste effect)
                             if (!(ability instanceof StaticAbility) || ability.isInUseableZone(game, null, null)) {
                                 layerEffects.add(effect);
@@ -210,22 +219,15 @@ public class ContinuousEffects implements Serializable {
                                     effect.init(ability, game);
                                 }
                                 break;
-                            } else if (this.appliedEffects.contains(effect.getId())) {
-                                // 613.6  If an effect should be applied in different layers and/or sublayers,
-                                // the parts of the effect each apply in their appropriate ones.
-                                // If an effect starts to apply in one layer and/or sublayer,
-                                // it will continue to be applied to the same set of objects in each other applicable layer and/or sublayer,
-                                // even if the ability generating the effect is removed during this process.
-                                layerEffects.add(effect);
-                                break;
                             }
-                        }
-                    } else {
-                        logger.error("No abilities for continuous effect: " + effect);
+                            break;
+                        default:
+                            layerEffects.add(effect);
                     }
-                    break;
-                default:
-                    layerEffects.add(effect);
+                }
+            }
+            else {
+                    logger.error("No abilities for continuous effect: " + effect);
             }
         }
 
@@ -1054,7 +1056,7 @@ public class ContinuousEffects implements Serializable {
         List<ContinuousEffect> filteredLayeredEffects = filterLayeredEffects(activeLayerEffects, currentLayer, subLayer);
         Set<UUID> appliedLayerEffects = new HashSet<>();
         DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraph = layerDependencies.get(currentLayer);
-        if (dependencyGraph == null) {
+        if (dependencyGraph == null && shouldCheckLayerForDependencies(currentLayer, subLayer)) {
             dependencyGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
         }
         // workaround for copy effects adding abilities with more copy effects
@@ -1077,13 +1079,32 @@ public class ContinuousEffects implements Serializable {
         layerDependencies.put(currentLayer, dependencyGraph);
     }
 
+    private boolean shouldCheckLayerForDependencies(Layer currentLayer, SubLayer subLayer) {
+        boolean check = false;
+        switch (currentLayer) {
+            case CopyEffects_1:
+            case ControlChangingEffects_2:
+            case TextChangingEffects_3:
+            case TypeChangingEffects_4:
+            case AbilityAddingRemovingEffects_6:
+                check = true;
+                break;
+            case PTChangingEffects_7:
+                if (subLayer == SubLayer.CharacteristicDefining_7a) {
+                    check = true;
+                }
+                break;
+        }
+        return check;
+    }
+
     /**
      * Test continuos effects for the layer and sublayer looking for any dependencies. The returned effect is correct
      * dependencies/timestamp
      */
     private ContinuousEffect getNextEffectToApply(List<ContinuousEffect> filteredLayeredEffects, Layer currentLayer, SubLayer subLayer, Game game,
                                                   DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraph) {
-        if (game.isSimulation()) {
+        if (game.isSimulation() || dependencyGraph == null) {
             // skip dependency calculation for AI simulations
             return filteredLayeredEffects.stream()
                     .min(Comparator.comparingInt(effect -> (int) effect.getOrder()))

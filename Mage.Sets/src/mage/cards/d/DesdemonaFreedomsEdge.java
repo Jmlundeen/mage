@@ -1,23 +1,19 @@
 package mage.cards.d;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.EscapeAbility;
 import mage.abilities.keyword.VigilanceAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
-import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -49,7 +45,12 @@ public final class DesdemonaFreedomsEdge extends CardImpl {
         // Whenever Desdemona, Freedom's Edge attacks,
         // target creature card in your graveyard that's an artifact or that has mana value 3 or less gains escape until end of turn.
         // The escape cost is equal to its mana cost plus exile two other cards from your graveyard.
-        Ability ability = new AttacksTriggeredAbility(new DesdemonaFreedomsEdgeEffect());
+        Ability ability = new AttacksTriggeredAbility(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new EscapeAbility(card, card.getManaCost().getText(), 2))
+                .setText("target creature card in your graveyard that's an artifact " +
+                        "or that has mana value 3 or less gains escape until end of turn. " +
+                        "The escape cost is equal to its mana cost plus exile two other cards from your graveyard. " +
+                        "<i>(You may cast it from your graveyard for its escape cost this turn.)</i>"));
         ability.addTarget(new TargetCardInYourGraveyard(filter));
         this.addAbility(ability);
     }
@@ -61,46 +62,5 @@ public final class DesdemonaFreedomsEdge extends CardImpl {
     @Override
     public DesdemonaFreedomsEdge copy() {
         return new DesdemonaFreedomsEdge(this);
-    }
-}
-
-class DesdemonaFreedomsEdgeEffect extends ContinuousEffectImpl {
-
-    DesdemonaFreedomsEdgeEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "target creature card in your graveyard that's an artifact " +
-                "or that has mana value 3 or less gains escape until end of turn. " +
-                "The escape cost is equal to its mana cost plus exile two other cards from your graveyard. " +
-                "<i>(You may cast it from your graveyard for its escape cost this turn.)</i>";
-    }
-
-    private DesdemonaFreedomsEdgeEffect(final DesdemonaFreedomsEdgeEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            Ability ability = new EscapeAbility(card, card.getManaCost().getText(), 2);
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card == null || card.getManaCost().getText().isEmpty()) {
-            return false;
-        }
-        affectedObjects.add(card);
-        return true;
-    }
-
-    @Override
-    public DesdemonaFreedomsEdgeEffect copy() {
-        return new DesdemonaFreedomsEdgeEffect(this);
     }
 }

@@ -1,16 +1,14 @@
 package mage.cards.d;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.SacrificeControllerEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -22,7 +20,6 @@ import mage.game.events.DamageEvent;
 import mage.game.events.GameEvent;
 import mage.target.common.TargetCardInYourGraveyard;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -52,7 +49,10 @@ public final class DralnuLichLord extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new DralnuLichLordReplacementEffect()));
 
         // {tap}: Target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        Ability ability = new SimpleActivatedAbility(new DralnuLichLordFlashbackEffect(), new TapSourceCost());
+        Ability ability = new SimpleActivatedAbility(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("target instant or sorcery card in your graveyard gains flashback until end of turn. " +
+                        "The flashback cost is equal to its mana cost"), new TapSourceCost());
         ability.addTarget(new TargetCardInYourGraveyard(filter));
         this.addAbility(ability);
     }
@@ -97,43 +97,5 @@ class DralnuLichLordReplacementEffect extends ReplacementEffectImpl {
     @Override
     public DralnuLichLordReplacementEffect copy() {
         return new DralnuLichLordReplacementEffect(this);
-    }
-}
-
-class DralnuLichLordFlashbackEffect extends ContinuousEffectImpl {
-
-    DralnuLichLordFlashbackEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost";
-    }
-
-    private DralnuLichLordFlashbackEffect(final DralnuLichLordFlashbackEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public DralnuLichLordFlashbackEffect copy() {
-        return new DralnuLichLordFlashbackEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card != null) {
-            affectedObjects.add(card);
-            return true;
-        }
-        return false;
     }
 }

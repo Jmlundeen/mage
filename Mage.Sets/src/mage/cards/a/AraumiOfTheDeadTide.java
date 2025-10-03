@@ -1,13 +1,13 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.ContinuousEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.EncoreAbility;
 import mage.cards.*;
 import mage.constants.*;
@@ -17,7 +17,6 @@ import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInYourGraveyard;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,7 +34,10 @@ public final class AraumiOfTheDeadTide extends CardImpl {
         this.toughness = new MageInt(4);
 
         // {T}, Exile cards from your graveyard equal to the number of opponents you have: Target creature card in your graveyard gains encore until end of turn. The encore cost is equal to its mana cost.
-        Ability ability = new SimpleActivatedAbility(new AraumiOfTheDeadTideEffect(), new TapSourceCost());
+        ContinuousEffect effect = new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new EncoreAbility(card.getManaCost()))
+                .setText("Target creature card in your graveyard gains encore until end of turn. The encore cost is equal to its mana cost.");
+        Ability ability = new SimpleActivatedAbility(effect, new TapSourceCost());
         ability.addCost(new AraumiOfTheDeadTideCost());
         ability.addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
         this.addAbility(ability);
@@ -48,42 +50,6 @@ public final class AraumiOfTheDeadTide extends CardImpl {
     @Override
     public AraumiOfTheDeadTide copy() {
         return new AraumiOfTheDeadTide(this);
-    }
-}
-
-class AraumiOfTheDeadTideEffect extends ContinuousEffectImpl {
-
-    AraumiOfTheDeadTideEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "Target creature card in your graveyard gains encore until end of turn. " +
-                "The encore cost is equal to its mana cost.";
-    }
-
-    private AraumiOfTheDeadTideEffect(final AraumiOfTheDeadTideEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public AraumiOfTheDeadTideEffect copy() {
-        return new AraumiOfTheDeadTideEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            game.getState().addOtherAbility(card, new EncoreAbility(card.getManaCost()));
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card == null) {
-            return false;
-        }
-        affectedObjects.add(card);
-        return true;
     }
 }
 

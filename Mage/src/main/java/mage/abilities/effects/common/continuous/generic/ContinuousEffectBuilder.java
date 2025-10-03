@@ -2,6 +2,7 @@ package mage.abilities.effects.common.continuous.generic;
 
 import mage.MageItem;
 import mage.MageObject;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -19,10 +20,7 @@ import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.util.CardUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ContinuousEffectBuilder extends ContinuousEffectImpl {
@@ -31,7 +29,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private FilterPermanent permanentFilter;
     private FilterCard cardFilter;
     private TargetController targetController;
-    private ContinuousAffected affected;
+    private ContinuousAffected affected = ContinuousAffected.STATIC;
+    private List<MageObjectReference> staticAffectedObjects;
     private List<Zone> affectedZones;
     private List<Ability> gainedAbilities;
     private List<Layer> additionalLayers;
@@ -47,10 +46,22 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private boolean removeOtherCardTypes;
     private boolean removeOtherSuperTypes;
     private boolean removeOtherSubTypes;
+    private MakeAbilityFunction makeAbilityFunction;
+    private Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
 
     /**
-     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, players, or permanent source is attached to.
-     * Zones need to be set separately using {@link #setAffectedZones(Zone...)}
+     * Creates a new standard ContinuousEffectBuilder.
+     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
+     * @param duration
+     * @param outcome
+     */
+    public ContinuousEffectBuilder(Duration duration, Outcome outcome) {
+        super(duration, outcome);
+    }
+
+    /**
+     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, controller, or permanent source is attached to.
+     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
      * @param duration
      * @param outcome
      * @param affected
@@ -61,13 +72,38 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
-     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, players, or permanent source is attached to.
-     * Zones need to be set separately using {@link #setAffectedZones(Zone...)}
+     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, controller, or permanent source is attached to.
+     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
      * @param outcome
      * @param affected
      */
     public ContinuousEffectBuilder(Outcome outcome, ContinuousAffected affected) {
         this(Duration.EndOfGame, outcome, affected);
+    }
+
+    /**
+     * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller.
+     * Make sure to set the affected zones using {@link #setAffectedZones(Zone...)}
+     * @param duration
+     * @param outcome
+     * @param objectController
+     */
+    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController objectController) {
+        super(duration, outcome);
+        this.targetController = objectController;
+        this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
+    }
+
+    /**
+     * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller.
+     * Make sure to set the affected zones using {@link #setAffectedZones(Zone...)}
+     * @param outcome
+     * @param objectController
+     */
+    public ContinuousEffectBuilder(Outcome outcome, TargetController objectController) {
+        super(Duration.WhileOnBattlefield, outcome);
+        this.targetController = objectController;
+        this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
     }
 
     /**
@@ -119,6 +155,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.permanentFilter = effect.permanentFilter;
         this.cardFilter = effect.cardFilter;
         this.targetController = effect.targetController;
+        this.staticAffectedObjects = effect.staticAffectedObjects;
         this.affected = effect.affected;
         this.affectedZones = effect.affectedZones;
         this.gainedAbilities = effect.gainedAbilities;
@@ -135,11 +172,30 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.removeOtherCardTypes = effect.removeOtherCardTypes;
         this.removeOtherSuperTypes = effect.removeOtherSuperTypes;
         this.removeOtherSubTypes = effect.removeOtherSubTypes;
+        this.makeAbilityFunction = effect.makeAbilityFunction;
+        this.createdAbilities = effect.createdAbilities == null ? null : new HashMap<>(effect.createdAbilities);
     }
 
     @Override
     public ContinuousEffectBuilder copy() {
         return new ContinuousEffectBuilder(this);
+    }
+
+    @Override
+    public void init(Ability source, Game game) {
+        super.init(source, game);
+        if (getAffectedObjectsSet() && affected == ContinuousAffected.STATIC && getTargetPointer().getTargets(game, source).isEmpty()) {
+            // for static affected objects, set affected objects only once at init
+
+            List<MageItem> affectedObjects = new ArrayList<>();
+            queryAffectedObjects(layer, source, game, affectedObjects);
+            if (staticAffectedObjects == null && !affectedObjects.isEmpty()) {
+                staticAffectedObjects = new ArrayList<>();
+            }
+            for (MageItem object : affectedObjects) {
+                staticAffectedObjects.add(new MageObjectReference((MageObject) object, game));
+            }
+        }
     }
 
     @Override
@@ -184,6 +240,31 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                                 }
                                 ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
                             } else if (mageObject instanceof Card) {
+                                if (removeOtherAbilities) {
+                                    game.getState().getCardState(mageObject.getId()).clearAbilities();
+                                }
+                                game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
+                            }
+                        }
+                    }
+                    if (makeAbilityFunction != null && mageObject instanceof Card) {
+                        Ability abilityToAdd;
+                        if (createdAbilities != null && createdAbilities.containsKey(mageObject.getId())) {
+                            abilityToAdd = createdAbilities.get(mageObject.getId());
+                        } else {
+                            abilityToAdd = makeAbilityFunction.makeAbility((Card) mageObject, source, game);
+                            if (createdAbilities == null) {
+                                createdAbilities = new HashMap<>();
+                            }
+                            createdAbilities.put(mageObject.getId(), abilityToAdd);
+                        }
+                        if (abilityToAdd != null) {
+                            if (mageObject instanceof Permanent) {
+                                if (removeOtherAbilities) {
+                                    ((Permanent) mageObject).removeAllAbilities(source.getSourceId(), game);
+                                }
+                                ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
+                            } else {
                                 if (removeOtherAbilities) {
                                     game.getState().getCardState(mageObject.getId()).clearAbilities();
                                 }
@@ -250,6 +331,19 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             affectedObjects.addAll(source.getAffectedObjects());
             return true;
         }
+        if (staticAffectedObjects != null && !staticAffectedObjects.isEmpty()) {
+            affectedObjects.addAll(getStaticAffectedObjects(game));
+            return !affectedObjects.isEmpty();
+        }
+        if (!getTargetPointer().getTargets(game, source).isEmpty()) {
+            for (UUID uuid : getTargetPointer().getTargets(game, source)) {
+                MageItem object = game.getObject(uuid);
+                if (object != null) {
+                    affectedObjects.add(object);
+                }
+            }
+            return !affectedObjects.isEmpty();
+        }
         if (affected == ContinuousAffected.SOURCE) {
             MageObject sourceObject = game.getObject(source.getSourceId());
             if (sourceObject != null) {
@@ -268,13 +362,22 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
             return !affectedObjects.isEmpty();
         }
+        if (affected == ContinuousAffected.TOP_OF_LIBRARY) {
+            Card topCard = controller.getLibrary().getFromTop(game);
+            if (topCard != null && (cardFilter == null || cardFilter.match(topCard, controller.getId(), source, game))) {
+                affectedObjects.add(topCard);
+            }
+            return !affectedObjects.isEmpty();
+        }
         if (affectedZones == null || affectedZones.isEmpty()) {
             return false;
         }
         for (Zone zone : affectedZones) {
             getObjectsFromZone(game, zone, controller, source, affectedObjects);
         }
-        source.getAffectedObjects().addAll(affectedObjects);
+        if (additionalLayers != null && !additionalLayers.isEmpty()) {
+            source.getAffectedObjects().addAll(affectedObjects);
+        }
         return !affectedObjects.isEmpty();
     }
 
@@ -330,7 +433,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             case STACK:
                 affectedObjects.addAll(game.getStack().stream()
                         .filter(stackObject -> stackObjectFilter != null ? stackObjectFilter.match(stackObject, player.getId(), source, game)
-                                : cardFilter == null || (stackObject instanceof Spell && cardFilter.match(((Spell) stackObject).getCard(), player.getId(), source, game)))
+                                : cardFilter == null || (stackObject instanceof Spell && cardFilter.match(((Spell) stackObject), player.getId(), source, game)))
+                                .map(stackObject -> game.getCard(stackObject.getSourceId()))
                         .collect(Collectors.toList())
                 );
                 break;
@@ -344,12 +448,66 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
+     * Get the static affected objects, removing any that are no longer valid.
+     * @param game
+     */
+    private List<MageItem> getStaticAffectedObjects(Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (staticAffectedObjects != null && !staticAffectedObjects.isEmpty()) {
+            for (Iterator<MageObjectReference> it = staticAffectedObjects.iterator(); it.hasNext(); ) {
+                MageObjectReference mor = it.next();
+                MageObject object;
+                if (affectedZones.contains(Zone.BATTLEFIELD)) {
+                    object = mor.getPermanentOrLKIBattlefield(game);
+                } else if (affectedZones.contains(Zone.STACK)) {
+                    object = mor.getSpell(game);
+                } else {
+                    object = mor.getCard(game);
+                }
+                if (object != null) {
+                    affectedObjects.add(object);
+                } else {
+                    it.remove();
+                }
+            }
+        }
+        return affectedObjects;
+    }
+
+    /**
      * Set the zones the effect applies to.
      * @param affectedZones
      */
     public ContinuousEffectBuilder setAffectedZones(Zone... affectedZones) {
         this.affectedZones = new ArrayList<>();
         Collections.addAll(this.affectedZones, affectedZones);
+        return this;
+    }
+
+    /**
+     * Set the filter for stack objects (spells and abilities on the stack)
+     * @param stackObjectFilter
+     */
+    public ContinuousEffectBuilder setStackObjectFilter(FilterStackObject stackObjectFilter) {
+        this.stackObjectFilter = stackObjectFilter;
+        return this;
+    }
+
+    /**
+     * Set the filter for permanents on the battlefield
+     * @param permanentFilter
+     */
+    public ContinuousEffectBuilder setPermanentFilter(FilterPermanent permanentFilter) {
+        this.permanentFilter = permanentFilter;
+        return this;
+    }
+
+    /**
+     * Set the filter for cards in zones other than the battlefield
+     * @param cardFilter
+     */
+    public ContinuousEffectBuilder setCardFilter(FilterCard cardFilter) {
+        this.cardFilter = cardFilter;
         return this;
     }
 
@@ -361,6 +519,21 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.gainedAbilities = new ArrayList<>();
         Collections.addAll(this.gainedAbilities, gainedAbilities);
         this.addLayer(Layer.TypeChangingEffects_4);
+        return this;
+    }
+
+    /**
+     * Used to add abilities like Flashback where cost is equal to the card's mana cost.
+     * <br>
+     * e.g. (card) -> new FlashbackAbility(card, card.getManaCost())
+     * <br>
+     * See SnapCaster Mage for an example.
+     * @param function
+     * @return
+     */
+    public ContinuousEffectBuilder withGainedAbility(MakeAbilityFunction function) {
+        this.makeAbilityFunction = function;
+        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
         return this;
     }
 

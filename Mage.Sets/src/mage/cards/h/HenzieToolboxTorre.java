@@ -5,6 +5,7 @@ import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.cost.CostModificationEffectImpl;
 import mage.abilities.keyword.BlitzAbility;
 import mage.cards.Card;
@@ -26,6 +27,11 @@ import java.util.*;
  */
 public final class HenzieToolboxTorre extends CardImpl {
 
+    private static final FilterCreatureCard filter = new FilterCreatureCard("creature spell you cast with mana value 4 or greater");
+    static {
+        filter.add(new ManaValuePredicate(ComparisonType.OR_GREATER, 4));
+    }
+
     public HenzieToolboxTorre(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{B}{R}{G}");
         
@@ -36,7 +42,12 @@ public final class HenzieToolboxTorre extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Each creature you cast with mana value 4 or greater has blitz. The blitz cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new HenzieToolboxTorreGainBlitzEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+                .setAffectedZones(Zone.LIBRARY, Zone.HAND, Zone.GRAVEYARD, Zone.EXILED, Zone.COMMAND, Zone.STACK)
+                .setCardFilter(filter)
+                .withGainedAbility((card, source, game) -> new BlitzAbility(card, card.getManaCost().getText()))
+                .setText("Each creature spell you cast with mana value 4 or greater has blitz. The blitz cost is equal to its mana cost.")
+        ));
 
         // Blitz costs you pay cost {1} less for each time you’ve cast your commander from the command zone this game.
         this.addAbility(new SimpleStaticAbility(new HenzieToolboxTorreBlitzDiscountEffect()));

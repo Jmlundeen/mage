@@ -1,22 +1,18 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashAbility;
 import mage.abilities.keyword.FlashbackAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
-import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -44,7 +40,12 @@ public final class SnapcasterMage extends CardImpl {
         this.addAbility(FlashAbility.getInstance());
 
         // When Snapcaster Mage enters the battlefield, target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        Ability ability = new EntersBattlefieldTriggeredAbility(new SnapcasterMageEffect());
+        Ability ability = new EntersBattlefieldTriggeredAbility(
+                new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                        .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                        .setText("target instant or sorcery card in your graveyard gains flashback until end of turn. " +
+                                "The flashback cost is equal to its mana cost")
+        );
         ability.addTarget(new TargetCardInYourGraveyard(filter));
         this.addAbility(ability);
     }
@@ -56,44 +57,5 @@ public final class SnapcasterMage extends CardImpl {
     @Override
     public SnapcasterMage copy() {
         return new SnapcasterMage(this);
-    }
-}
-
-class SnapcasterMageEffect extends ContinuousEffectImpl {
-
-    SnapcasterMageEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost";
-    }
-
-    private SnapcasterMageEffect(final SnapcasterMageEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public SnapcasterMageEffect copy() {
-        return new SnapcasterMageEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card != null) {
-            affectedObjects.add(card);
-            return true;
-        } else {
-            return false;
-        }
     }
 }
