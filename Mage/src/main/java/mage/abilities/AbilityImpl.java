@@ -13,6 +13,7 @@ import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.Effects;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.mana.ManaEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.icon.CardIcon;
@@ -257,7 +258,10 @@ public abstract class AbilityImpl implements Ability {
              * abilities with replacement effects deactivated too late Example:
              * {@link org.mage.test.cards.replacement.DryadMilitantTest#testDiesByDestroy testDiesByDestroy}
              */
-            game.getState().resetDependencies();
+            if (!(effect instanceof ManaEffect)) {
+                // reset dependencies for attachment since dependency calculations happen before actual attachment
+                game.getState().resetDependencies();
+            }
             game.processAction();
         }
         return result;

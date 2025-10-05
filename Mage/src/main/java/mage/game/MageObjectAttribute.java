@@ -2,6 +2,7 @@ package mage.game;
 
 import mage.MageObject;
 import mage.ObjectColor;
+import mage.abilities.effects.ContinuousEffects;
 import mage.constants.CardType;
 import mage.constants.SuperType;
 import mage.util.Copyable;
@@ -40,6 +41,19 @@ public class MageObjectAttribute implements Serializable, Copyable<MageObjectAtt
 
     public MageObjectAttribute copy() {
         return new MageObjectAttribute(this);
+    }
+
+    /**
+     * created for {@link ContinuousEffects} dependency checking, not intended to be used elsewhere
+     */
+    public void copyFrom(MageObjectAttribute mageObjectAttribute) {
+        color.setColor(mageObjectAttribute.getColor());
+        subtype.clear();
+        subtype.addAll(mageObjectAttribute.getSubtype());
+        cardType.clear();
+        cardType.addAll(mageObjectAttribute.getCardType());
+        superType.clear();
+        superType.addAll(mageObjectAttribute.getSuperType());
     }
 
     public ObjectColor getColor() {

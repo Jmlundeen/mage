@@ -16,7 +16,6 @@ import mage.filter.predicate.Predicate;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.CardIdPredicate;
 import mage.game.Game;
-import mage.game.GameState;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -1139,26 +1138,30 @@ public class ContinuousEffects implements Serializable {
 
     private void calculateDependencies(List<ContinuousEffect> filteredLayeredEffects, Layer currentLayer, SubLayer subLayer, Game game, DefaultDirectedGraph<ContinuousEffect, DefaultEdge> dependencyGraph) {
         Game gameSim = game.createSimulationForAI();
-        GameState startingState = gameSim.getState().copy();
+        EffectStateTracker stateTracker = new EffectStateTracker();
 
         for (ContinuousEffect effect : filteredLayeredEffects) {
-            gameSim.getState().restore(startingState.copy());
             dependencyGraph.addVertex(effect);
 
+            // Calculate initial state without any other effects
             int resultBefore = 0;
             List<MageItem> affectedBefore = new ArrayList<>();
             for (Ability ability : getLayeredEffectAbilities(effect)) {
-                resultBefore = applySimulatedEffect(currentLayer, subLayer, effect, ability, gameSim, affectedBefore, resultBefore);
+                resultBefore = applySimulatedEffectWithTracking(currentLayer, subLayer, effect, ability, gameSim, affectedBefore, resultBefore, stateTracker);
             }
+
+            // Revert changes from applying the effect
+            stateTracker.revertChanges(gameSim);
 
             for (ContinuousEffect otherEffect : filteredLayeredEffects) {
                 if (otherEffect == effect) {
                     continue;
                 }
-                gameSim.getState().restore(startingState.copy());
+
+                // Apply the other effect first
                 for (Ability ability : getLayeredEffectAbilities(otherEffect)) {
                     List<MageItem> otherAffectedObjects = new ArrayList<>();
-                    applySimulatedEffect(currentLayer, subLayer, otherEffect, ability, gameSim, otherAffectedObjects, 0);
+                    applySimulatedEffectWithTracking(currentLayer, subLayer, otherEffect, ability, gameSim, otherAffectedObjects, 0, stateTracker);
                 }
 
                 boolean dependency = false;
@@ -1169,7 +1172,7 @@ public class ContinuousEffects implements Serializable {
                 for (Ability ability : getLayeredEffectAbilities(effect)) {
                     dependency |= !isAbilityStillExists(gameSim, ability, effect);
                     if (!dependency) {
-                        resultAfter = applySimulatedEffect(currentLayer, subLayer, effect, ability, gameSim, affectedAfter, resultAfter);
+                        resultAfter = applySimulatedEffectWithTracking(currentLayer, subLayer, effect, ability, gameSim, affectedAfter, resultAfter, stateTracker);
                     }
                 }
                 // what it applies to,
@@ -1192,6 +1195,9 @@ public class ContinuousEffects implements Serializable {
                     dependencyGraph.addVertex(otherEffect);
                     dependencyGraph.addEdge(effect, otherEffect);
                 }
+
+                // Revert all changes before testing next effect
+                stateTracker.revertChanges(gameSim);
             }
         }
     }
@@ -1199,10 +1205,15 @@ public class ContinuousEffects implements Serializable {
     /**
      * Applies a continuous effect with ability copy for simulation
      */
-    private int applySimulatedEffect(Layer currentLayer, SubLayer subLayer, ContinuousEffect effect, Ability ability,
-                                             Game gameSim, List<MageItem> affectedObjects, int result) {
+    private int applySimulatedEffectWithTracking(Layer currentLayer, SubLayer subLayer, ContinuousEffect effect, Ability ability,
+                                                Game gameSim, List<MageItem> affectedObjects, int result, EffectStateTracker stateTracker) {
         Ability abilityCopy = ability.copy();
         if (effect.queryAffectedObjects(currentLayer, abilityCopy, gameSim, affectedObjects)) {
+            // Record state of objects that will be modified
+            for (MageItem item : affectedObjects) {
+                stateTracker.recordMageItemState(item, gameSim);
+            }
+
             effect.applyToObjects(currentLayer, subLayer, abilityCopy, gameSim, affectedObjects);
             result += effect.calculateResult(gameSim, ability, affectedObjects);
         }

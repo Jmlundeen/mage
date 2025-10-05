@@ -90,12 +90,12 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
     @Test
     public void testBoostPowerToughness() {
         addCard(Zone.BATTLEFIELD, playerA, aTaleForTheAges);
-        addCard(Zone.BATTLEFIELD, playerA, balduvianBears);
+        addCard(Zone.BATTLEFIELD, playerA, balduvianBears + "@bearA");
         addCard(Zone.BATTLEFIELD, playerB, balduvianBears);
         addCard(Zone.BATTLEFIELD, playerA, "Plains");
         addCard(Zone.HAND, playerA, spiritLink);
 
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, spiritLink, balduvianBears);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, spiritLink, "@bearA");
 
         setStrictChooseMode(true);
         setStopAt(1, PhaseStep.BEGIN_COMBAT);
@@ -108,12 +108,12 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
     @Test
     public void testSetPowerToughness() {
         addCard(Zone.BATTLEFIELD, playerA, archonOfTheWildRose);
-        addCard(Zone.BATTLEFIELD, playerA, balduvianBears);
+        addCard(Zone.BATTLEFIELD, playerA, balduvianBears + "@bearA");
         addCard(Zone.BATTLEFIELD, playerB, balduvianBears);
         addCard(Zone.BATTLEFIELD, playerA, "Plains");
         addCard(Zone.HAND, playerA, spiritLink);
 
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, spiritLink, balduvianBears);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, spiritLink, "@bearA");
 
         setStrictChooseMode(true);
         setStopAt(1, PhaseStep.BEGIN_COMBAT);

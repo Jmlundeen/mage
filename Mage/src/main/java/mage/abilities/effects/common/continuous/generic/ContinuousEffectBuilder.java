@@ -23,6 +23,12 @@ import mage.util.CardUtil;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Used for consolidating some continuous effect logic. Layers are handled in mutator methods when adding modifications.
+ * Other than effects that only use the battlefield, affected zones, filters, and targetController should be set based on
+ * what/whose objects are affected. {@link ContinuousAffected} can be used as a shortcut for some logic such as the source object,
+ * targeted objects, and attached to.
+ */
 public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     private FilterStackObject stackObjectFilter;
@@ -518,7 +524,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder withGainedAbilities(Ability... gainedAbilities) {
         this.gainedAbilities = new ArrayList<>();
         Collections.addAll(this.gainedAbilities, gainedAbilities);
-        this.addLayer(Layer.TypeChangingEffects_4);
+        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
         return this;
     }
 
