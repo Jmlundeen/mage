@@ -1,10 +1,18 @@
 package org.mage.test.cards.continuous;
 
+import mage.abilities.Ability;
+import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.Card;
 import mage.constants.PhaseStep;
 import mage.constants.SubType;
 import mage.constants.Zone;
+import mage.counters.CounterType;
+import mage.filter.StaticFilters;
+import mage.target.TargetPermanent;
+import mage.target.common.TargetPermanentOrPlayer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
@@ -93,6 +101,15 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
     Until end of turn, each creature you control becomes a black Shade and gains "{B}: This creature gets +1/+1 until end of turn."
     */
     private static final String shadesBreath = "Shade's Breath";
+
+    /*
+    Clamavus
+    {4}{G}
+    Creature - Human Tyranid Artificer
+    Proclamator Hailer -- Each creature you control gets +1/+1 for each +1/+1 counter on it.
+    3/3
+    */
+    private static final String clamavus = "Clamavus";
 
     @Test
     public void testGainOneAbility() {
@@ -202,5 +219,29 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
         assertColor(playerB, balduvianBears, "G", true);
         assertTrue("bearA should be subtype Shade", getPermanent(balduvianBears, playerA).hasSubtype(SubType.SHADE, currentGame));
         assertFalse("bearB should not be subtype Shade", getPermanent(balduvianBears, playerB).hasSubtype(SubType.SHADE, currentGame));
+    }
+
+    @Test
+    public void testDynamicPowerToughnessReferencingObject() {
+        Ability ability  = new SimpleActivatedAbility(
+                new AddCountersTargetEffect(CounterType.P1P1.createInstance(3)),
+                new ManaCostsImpl<>("")
+        );
+        ability.addTarget(new TargetPermanent(2, StaticFilters.FILTER_PERMANENT));
+        addCustomCardWithAbility("add counter", playerA, ability);
+
+        addCard(Zone.BATTLEFIELD, playerA, clamavus);
+        addCard(Zone.BATTLEFIELD, playerA, balduvianBears + "@bearA");
+        addCard(Zone.BATTLEFIELD, playerB, balduvianBears + "@bearB");
+
+        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "put");
+        addTarget(playerA, "@bearA^@bearB");
+
+        setStrictChooseMode(true);
+        setStopAt(1, PhaseStep.BEGIN_COMBAT);
+        execute();
+
+        assertPowerToughness(playerA, balduvianBears, 2 + 3 * 2, 2 + 3 * 2); // 2/2 +1/+1 * 3 * 2
+        assertPowerToughness(playerB, balduvianBears, 2 + 3, 2 + 3); // no double from Clamavus
     }
 }

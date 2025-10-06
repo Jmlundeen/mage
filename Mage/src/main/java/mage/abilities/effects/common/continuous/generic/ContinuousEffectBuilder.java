@@ -305,8 +305,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                         }
                         if (mageObject instanceof Permanent) {
                             Permanent permanent = (Permanent) mageObject;
-                            permanent.addPower(powerModifier.calculate(game, source, this));
-                            permanent.addToughness(toughnessModifier.calculate(game, source, this));
+                            permanent.addPower(powerModifier.calculate(game, source, this, permanent));
+                            permanent.addToughness(toughnessModifier.calculate(game, source, this, permanent));
                         }
                         break;
                     }
