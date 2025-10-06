@@ -6,6 +6,7 @@ import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ChooseCreatureTypeEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -31,7 +32,11 @@ public final class AshesOfTheFallen extends CardImpl {
         this.addAbility(new AsEntersBattlefieldAbility(new ChooseCreatureTypeEffect(Outcome.Benefit)));
 
         // Each creature card in your graveyard has the chosen creature type in addition to its other types.
-        this.addAbility(new SimpleStaticAbility(new AshesOfTheFallenEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+                .setAffectedZones(Zone.GRAVEYARD)
+                .withGainChosenCreatureType(false)
+                .setText("Each creature card in your graveyard has the chosen creature type in addition to its other types")
+                ));
     }
 
     private AshesOfTheFallen(final AshesOfTheFallen card) {

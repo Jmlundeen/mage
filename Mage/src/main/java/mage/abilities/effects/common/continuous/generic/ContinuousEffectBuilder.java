@@ -8,6 +8,7 @@ import mage.abilities.Mode;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.ChooseCreatureTypeEffect;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.filter.FilterCard;
@@ -52,6 +53,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private boolean removeOtherCardTypes;
     private boolean removeOtherSuperTypes;
     private boolean removeOtherSubTypes;
+    private boolean useChosenCreatureType;
     private MakeAbilityFunction makeAbilityFunction;
     private Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
 
@@ -156,6 +158,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.removeOtherCardTypes = effect.removeOtherCardTypes;
         this.removeOtherSuperTypes = effect.removeOtherSuperTypes;
         this.removeOtherSubTypes = effect.removeOtherSubTypes;
+        this.useChosenCreatureType = effect.useChosenCreatureType;
         this.makeAbilityFunction = effect.makeAbilityFunction;
         this.createdAbilities = effect.createdAbilities == null ? null : new HashMap<>(effect.createdAbilities);
     }
@@ -191,24 +194,30 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     // TODO: implement
                     break;
                 case TypeChangingEffects_4:
+                    if (removeOtherCardTypes) {
+                        mageObject.removeAllCardTypes(game);
+                    }
                     if (addedCardTypes != null) {
-                        if (removeOtherCardTypes) {
-                            mageObject.removeAllCardTypes(game);
-                        }
                         mageObject.addCardType(game, addedCardTypes);
                     }
+                    if (removeOtherSuperTypes) {
+                        mageObject.removeAllSuperTypes(game);
+                    }
                     if (addedSuperTypes != null) {
-                        if (removeOtherSuperTypes) {
-                            mageObject.removeAllSuperTypes(game);
-                        }
                         for (SuperType superType : addedSuperTypes) {
                             mageObject.addSuperType(superType);
                         }
                     }
-                    if (addedSubTypes != null) {
-                        if (removeOtherSubTypes) {
-                            mageObject.removeAllSubTypes(game);
+                    if (removeOtherSubTypes) {
+                        mageObject.removeAllSubTypes(game);
+                    }
+                    if (useChosenCreatureType) {
+                        SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
+                        if (subType != null) {
+                            mageObject.addSubType(game, subType);
                         }
+                    }
+                    if (addedSubTypes != null) {
                         mageObject.addSubType(game, addedSubTypes);
                     }
                     break;
@@ -653,6 +662,14 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         }
         this.addLayer(Layer.TypeChangingEffects_4);
         this.removeOtherSubTypes = removeOtherSubTypes;
+        return this;
+    }
+
+
+    public ContinuousEffectBuilder withGainChosenCreatureType(boolean removeOtherCardTypes) {
+        this.removeOtherSubTypes = removeOtherCardTypes;
+        this.addLayer(Layer.TypeChangingEffects_4);
+        this.useChosenCreatureType = true;
         return this;
     }
 

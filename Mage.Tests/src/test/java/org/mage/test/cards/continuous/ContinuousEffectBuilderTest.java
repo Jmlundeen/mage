@@ -3,6 +3,7 @@ package org.mage.test.cards.continuous;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.Card;
 import mage.constants.PhaseStep;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import org.junit.Assert;
 import org.junit.Test;
@@ -73,6 +74,14 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
     */
     private static final String tormodsCrypt = "Tormod's Crypt";
 
+    /*
+     Ashes of the Fallen
+     {2}
+     Artifact
+     As Ashes of the Fallen enters the battlefield, choose a creature type.
+     Each creature card in your graveyard has the chosen creature type in addition to its other types.
+     */
+    private static final String ashesOfTheFallen = "Ashes of the Fallen";
 
     @Test
     public void testGainOneAbility() {
@@ -139,5 +148,23 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
         assertPowerToughness(playerA, avalancheOfSector7, 6, 3); // 6 artifacts controlled by opponent
         Card handCard = playerA.getHand().getCards(currentGame).stream().findFirst().orElse(null);
         Assert.assertTrue("Avalanche in hand should have power 6", handCard != null && handCard.getPower().getValue() == 6);
+    }
+
+    @Test
+    public void testChosenCreatureType() {
+        addCard(Zone.BATTLEFIELD, playerA, "Swamp", 2);
+        addCard(Zone.HAND, playerA, ashesOfTheFallen);
+        addCard(Zone.GRAVEYARD, playerA, balduvianBears);
+
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, ashesOfTheFallen);
+        setChoice(playerA, "Sliver");
+
+        setStrictChooseMode(true);
+        setStopAt(1, PhaseStep.BEGIN_COMBAT);
+        execute();
+
+        assertGraveyardCount(playerA, balduvianBears, 1);
+        Card card = playerA.getGraveyard().getCards(currentGame).stream().findFirst().orElse(null);
+        Assert.assertTrue("Balduvian Bears should have subtype Sliver", card != null && card.hasSubtype(SubType.SLIVER, currentGame));
     }
 }
