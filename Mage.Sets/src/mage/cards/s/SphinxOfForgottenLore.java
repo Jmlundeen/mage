@@ -5,6 +5,7 @@ import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashAbility;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.abilities.keyword.FlyingAbility;
@@ -48,7 +49,10 @@ public final class SphinxOfForgottenLore extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Whenever this creature attacks, target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to that card's mana cost.
-        Ability ability = new AttacksTriggeredAbility(new SphinxOfForgottenLoreEffect());
+        Ability ability = new AttacksTriggeredAbility(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("target instant or sorcery card in your graveyard gains flashback until end of turn. " +
+                        "The flashback cost is equal to that card's mana cost"));
         ability.addTarget(new TargetCardInYourGraveyard(filter));
         this.addAbility(ability);
     }
@@ -60,42 +64,5 @@ public final class SphinxOfForgottenLore extends CardImpl {
     @Override
     public SphinxOfForgottenLore copy() {
         return new SphinxOfForgottenLore(this);
-    }
-}
-
-class SphinxOfForgottenLoreEffect extends ContinuousEffectImpl {
-
-    SphinxOfForgottenLoreEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "target instant or sorcery card in your graveyard gains flashback until end of turn. "
-                + "The flashback cost is equal to that card's mana cost";
-    }
-
-    private SphinxOfForgottenLoreEffect(final SphinxOfForgottenLoreEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public SphinxOfForgottenLoreEffect copy() {
-        return new SphinxOfForgottenLoreEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card == null) {
-            return false;
-        }
-        affectedObjects.add(card);
-        return true;
     }
 }

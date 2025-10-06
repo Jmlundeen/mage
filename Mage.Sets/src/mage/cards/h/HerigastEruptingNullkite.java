@@ -9,6 +9,7 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.CastSourceTriggeredAbility;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.EmergeAbility;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.Card;
@@ -49,7 +50,12 @@ public final class HerigastEruptingNullkite extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Each creature spell you cast has emerge. The emerge cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new HerigastEruptingNullkiteEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+                .withGainedAbility((card, source, game) -> new EmergeAbility(card, card.getManaCost().getText()))
+                .setAffectedZones(Zone.HAND, Zone.GRAVEYARD, Zone.LIBRARY, Zone.EXILED, Zone.COMMAND, Zone.STACK)
+                .setCardFilter(StaticFilters.FILTER_CARD_CREATURE)
+                .setText("Each creature spell you cast has emerge. The emerge cost is equal to its mana cost.")
+        ));
     }
 
     private HerigastEruptingNullkite(final HerigastEruptingNullkite card) {
@@ -59,68 +65,5 @@ public final class HerigastEruptingNullkite extends CardImpl {
     @Override
     public HerigastEruptingNullkite copy() {
         return new HerigastEruptingNullkite(this);
-    }
-}
-
-class HerigastEruptingNullkiteEffect extends ContinuousEffectImpl {
-
-    HerigastEruptingNullkiteEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "Each creature spell you cast has emerge. The emerge cost is equal to its mana cost.";
-    }
-
-    private HerigastEruptingNullkiteEffect(final HerigastEruptingNullkiteEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            Ability ability = new EmergeAbility(card, card.getManaCost().getText());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getControllerOrOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        Set<Card> cardsToGainEmerge = new HashSet<>();
-        cardsToGainEmerge.addAll(controller.getHand().getCards(StaticFilters.FILTER_CARD_CREATURE, game));
-        cardsToGainEmerge.addAll(controller.getGraveyard().getCards(StaticFilters.FILTER_CARD_CREATURE, game));
-        controller.getLibrary().getCards(game).stream()
-                .filter(c -> StaticFilters.FILTER_CARD_CREATURE.match(c, game))
-                .forEach(cardsToGainEmerge::add);
-        game.getExile().getCardsInRange(game, controller.getId()).stream()
-                .filter(c -> StaticFilters.FILTER_CARD_CREATURE.match(c, game))
-                .forEach(cardsToGainEmerge::add);
-        game.getCommanderCardsFromCommandZone(controller, CommanderCardType.ANY)
-                .stream()
-                .filter(card -> StaticFilters.FILTER_CARD_CREATURE.match(card, game))
-                .forEach(cardsToGainEmerge::add);
-        game.getStack().stream()
-                .filter(Spell.class::isInstance)
-                .filter(s -> s.isControlledBy(controller.getId()))
-                .filter(s -> StaticFilters.FILTER_CARD_CREATURE.match((Spell) s, game))
-                .map(s -> game.getCard(s.getSourceId()))
-                .filter(Objects::nonNull)
-                .forEach(cardsToGainEmerge::add);
-        for (Card card : cardsToGainEmerge) {
-            if (card.getManaCost().getText().isEmpty()) {
-                continue; // card must have a mana cost
-            }
-            affectedObjects.add(card);
-        }
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public HerigastEruptingNullkiteEffect copy() {
-        return new HerigastEruptingNullkiteEffect(this);
     }
 }

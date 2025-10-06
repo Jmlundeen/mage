@@ -58,8 +58,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     /**
      * Creates a new standard ContinuousEffectBuilder.
      * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
-     * @param duration
-     * @param outcome
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome) {
         super(duration, outcome);
@@ -68,9 +66,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     /**
      * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, controller, or permanent source is attached to.
      * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
-     * @param duration
-     * @param outcome
-     * @param affected
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, ContinuousAffected affected) {
         super(duration, outcome);
@@ -80,8 +75,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     /**
      * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, controller, or permanent source is attached to.
      * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
-     * @param outcome
-     * @param affected
      */
     public ContinuousEffectBuilder(Outcome outcome, ContinuousAffected affected) {
         this(Duration.EndOfGame, outcome, affected);
@@ -90,9 +83,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     /**
      * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller.
      * Make sure to set the affected zones using {@link #setAffectedZones(Zone...)}
-     * @param duration
-     * @param outcome
-     * @param objectController
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController objectController) {
         super(duration, outcome);
@@ -103,8 +93,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     /**
      * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller.
      * Make sure to set the affected zones using {@link #setAffectedZones(Zone...)}
-     * @param outcome
-     * @param objectController
      */
     public ContinuousEffectBuilder(Outcome outcome, TargetController objectController) {
         super(Duration.WhileOnBattlefield, outcome);
@@ -114,8 +102,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Creates a new ContinuousEffectBuilder that applies to permanents on the battlefield the controlling player controls
-     * @param outcome
-     * @param permanentFilter
      */
     public ContinuousEffectBuilder(Outcome outcome, FilterPermanent permanentFilter) {
         super(Duration.WhileOnBattlefield, outcome);
@@ -126,10 +112,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Creates a new ContinuousEffectBuilder that applies to permanents on the battlefield
-     * @param duration
-     * @param outcome
      * @param targetController the controller whose objects are affected. Use {@link TargetController#YOU}, {@link TargetController#OPPONENT}, {@link TargetController#EACH_PLAYER}
-     * @param permanentFilter
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController targetController, FilterPermanent permanentFilter) {
         super(duration, outcome);
@@ -140,11 +123,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Creates a new ContinuousEffectBuilder that applies to Cards in the specified zones
-     * @param duration
-     * @param outcome
-     * @param targetController
-     * @param cardFilter
-     * @param affectedZones
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController targetController,
                                    FilterCard cardFilter, Zone... affectedZones) {
@@ -455,7 +433,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Get the static affected objects, removing any that are no longer valid.
-     * @param game
      */
     private List<MageItem> getStaticAffectedObjects(Game game) {
         List<MageItem> affectedObjects = new ArrayList<>();
@@ -482,7 +459,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set the zones the effect applies to.
-     * @param affectedZones
      */
     public ContinuousEffectBuilder setAffectedZones(Zone... affectedZones) {
         this.affectedZones = new ArrayList<>();
@@ -492,7 +468,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set the filter for stack objects (spells and abilities on the stack)
-     * @param stackObjectFilter
      */
     public ContinuousEffectBuilder setStackObjectFilter(FilterStackObject stackObjectFilter) {
         this.stackObjectFilter = stackObjectFilter;
@@ -501,7 +476,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set the filter for permanents on the battlefield
-     * @param permanentFilter
      */
     public ContinuousEffectBuilder setPermanentFilter(FilterPermanent permanentFilter) {
         this.permanentFilter = permanentFilter;
@@ -510,7 +484,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set the filter for cards in zones other than the battlefield
-     * @param cardFilter
      */
     public ContinuousEffectBuilder setCardFilter(FilterCard cardFilter) {
         this.cardFilter = cardFilter;
@@ -519,7 +492,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Add abilities to the affected objects
-     * @param gainedAbilities
      */
     public ContinuousEffectBuilder withGainedAbilities(Ability... gainedAbilities) {
         this.gainedAbilities = new ArrayList<>();
@@ -534,8 +506,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * e.g. (card) -> new FlashbackAbility(card, card.getManaCost())
      * <br>
      * See SnapCaster Mage for an example.
-     * @param function
-     * @return
      */
     public ContinuousEffectBuilder withGainedAbility(MakeAbilityFunction function) {
         this.makeAbilityFunction = function;
@@ -545,7 +515,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Add power to the affected objects.
-     * @param power
      */
     public ContinuousEffectBuilder withAddPower(int power) {
         setPowerModifier(StaticValue.get(power));
@@ -556,7 +525,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Add power to the affected objects.
-     * @param power
      */
     public ContinuousEffectBuilder withAddPower(DynamicValue power) {
         setPowerModifier(power);
@@ -567,7 +535,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set power to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
-     * @param power
      */
     public ContinuousEffectBuilder withSetPower(int power) {
         this.basePower = StaticValue.get(power);
@@ -578,7 +545,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set power to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
-     * @param power
      */
     public ContinuousEffectBuilder withSetPower(DynamicValue power) {
         this.basePower = power;
@@ -589,7 +555,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Add toughness to the affected objects.
-     * @param toughness
      */
     public ContinuousEffectBuilder withAddToughness(int toughness) {
         setToughnessModifier(StaticValue.get(toughness));
@@ -600,7 +565,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Add toughness to the affected objects.
-     * @param toughness
      */
     public ContinuousEffectBuilder withAddToughness(DynamicValue toughness) {
         setToughnessModifier(toughness);
@@ -611,7 +575,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set toughness to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
-     * @param toughness
      */
     public ContinuousEffectBuilder withSetToughness(int toughness) {
         this.baseToughness = StaticValue.get(toughness);
@@ -622,7 +585,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set toughness to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
-     * @param toughness
      */
     public ContinuousEffectBuilder withSetToughness(DynamicValue toughness) {
         this.baseToughness = toughness;
@@ -633,8 +595,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set power and toughness to the affected objects. Use for non-CDA effects only.
-     * @param power
-     * @param toughness
      */
     public ContinuousEffectBuilder withSetPowerAndToughness(int power, int toughness) {
         this.basePower = StaticValue.get(power);
@@ -646,8 +606,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Set power and toughness to the affected objects. Use for non-CDA effects only.
-     * @param power
-     * @param toughness
      */
     public ContinuousEffectBuilder withSetPowerAndToughness(DynamicValue power, DynamicValue toughness) {
         this.basePower = power;

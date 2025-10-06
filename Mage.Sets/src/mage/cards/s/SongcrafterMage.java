@@ -5,7 +5,9 @@ import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashAbility;
+import mage.abilities.keyword.FlashbackAbility;
 import mage.abilities.keyword.HarmonizeAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -35,7 +37,10 @@ public final class SongcrafterMage extends CardImpl {
         this.addAbility(FlashAbility.getInstance());
 
         // When this creature enters, target instant or sorcery card in your graveyard gains harmonize until end of turn. Its harmonize cost is equal to its mana cost.
-        Ability ability = new EntersBattlefieldTriggeredAbility(new SongcrafterMageEffect());
+        Ability ability = new EntersBattlefieldTriggeredAbility(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new HarmonizeAbility(card, card.getManaCost().getText()))
+                .setText("target instant or sorcery card in your graveyard gains harmonize until end of turn. " +
+                        "Its harmonize cost is equal to its mana cost"));
         ability.addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY_FROM_YOUR_GRAVEYARD));
         this.addAbility(ability);
     }
@@ -47,41 +52,5 @@ public final class SongcrafterMage extends CardImpl {
     @Override
     public SongcrafterMage copy() {
         return new SongcrafterMage(this);
-    }
-}
-
-class SongcrafterMageEffect extends ContinuousEffectImpl {
-
-    SongcrafterMageEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "target instant or sorcery card in your graveyard gains harmonize until end of turn. " +
-                "Its harmonize cost is equal to its mana cost";
-    }
-
-    private SongcrafterMageEffect(final SongcrafterMageEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public SongcrafterMageEffect copy() {
-        return new SongcrafterMageEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            game.getState().addOtherAbility(card, new HarmonizeAbility(card, card.getManaCost().getText()));
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card == null) {
-            return false;
-        }
-        affectedObjects.add(card);
-        return true;
     }
 }

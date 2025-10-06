@@ -4,6 +4,7 @@ import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -32,7 +33,10 @@ public final class Recoup extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.SORCERY}, "{1}{R}");
 
         // Target sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        this.getSpellAbility().addEffect(new RecoupEffect());
+        this.getSpellAbility().addEffect(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("Target sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost")
+                );
         this.getSpellAbility().addTarget(new TargetCardInYourGraveyard(filter));
 
         // Flashback {3}{R}
@@ -46,47 +50,5 @@ public final class Recoup extends CardImpl {
     @Override
     public Recoup copy() {
         return new Recoup(this);
-    }
-}
-
-class RecoupEffect extends ContinuousEffectImpl {
-
-    RecoupEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "Target sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost";
-    }
-
-    private RecoupEffect(final RecoupEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public RecoupEffect copy() {
-        return new RecoupEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card != null) {
-            affectedObjects.add(card);
-            return true;
-        }
-        return false;
     }
 }

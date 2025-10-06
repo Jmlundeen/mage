@@ -8,6 +8,7 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.TransformSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
 import mage.abilities.effects.keyword.ConniveSourceEffect;
 import mage.abilities.keyword.CantBeBlockedSourceAbility;
@@ -19,6 +20,7 @@ import mage.cards.CardSetInfo;
 import mage.cards.ModalDoubleFacedCard;
 import mage.constants.*;
 import mage.filter.FilterCard;
+import mage.filter.StaticFilters;
 import mage.filter.predicate.card.CastFromZonePredicate;
 import mage.game.Game;
 import mage.players.Player;
@@ -70,7 +72,12 @@ public final class NormanOsborn extends ModalDoubleFacedCard {
         this.getRightHalfCard().addAbility(new SimpleStaticAbility(new SpellsCostReductionControllerEffect(filter, 2)));
 
         // Goblin Formula -- Each nonland card in your graveyard has mayhem. The mayhem cost is equal to its mana cost.
-        this.getRightHalfCard().addAbility(new SimpleStaticAbility(new GreenGoblinEffect()));
+        this.getRightHalfCard().addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+                .setAffectedZones(Zone.GRAVEYARD)
+                .setCardFilter(StaticFilters.FILTER_CARD_A_NON_LAND)
+                .withGainedAbility((card, source, game) -> new MayhemAbility(card, card.getManaCost().getText()))
+                .setText("Each nonland card in your graveyard has mayhem. The mayhem cost is equal to the card's mana cost.")
+        ));
     }
 
     private NormanOsborn(final NormanOsborn card) {
@@ -80,50 +87,5 @@ public final class NormanOsborn extends ModalDoubleFacedCard {
     @Override
     public NormanOsborn copy() {
         return new NormanOsborn(this);
-    }
-}
-class GreenGoblinEffect extends ContinuousEffectImpl {
-
-    GreenGoblinEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "Each nonland card in your graveyard has mayhem. " +
-                "The mayhem cost is equal to the card's mana cost.";
-    }
-
-    private GreenGoblinEffect(final GreenGoblinEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            Ability ability = new MayhemAbility(card, card.getManaCost().getText());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        controller
-                .getGraveyard()
-                .getCards(game)
-                .stream()
-                .filter(Objects::nonNull)
-                .filter(card -> !card.getManaCost().getText().isEmpty()) // card must have a mana cost
-                .filter(card -> !card.isLand(game))
-                .forEach(affectedObjects::add);
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public GreenGoblinEffect copy() {
-        return new GreenGoblinEffect(this);
     }
 }

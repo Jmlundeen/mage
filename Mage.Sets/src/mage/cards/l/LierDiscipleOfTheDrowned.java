@@ -5,6 +5,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.ContinuousRuleModifyingEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -35,7 +36,13 @@ public final class LierDiscipleOfTheDrowned extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new LierDiscipleOfTheDrownedCounteredEffect()));
 
         // Each instant and sorcery card in your graveyard has flashback. The flashback cost is equal to that card's mana cost.
-        this.addAbility(new SimpleStaticAbility(new LierDiscipleOfTheDrownedFlashbackEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+                .setAffectedZones(Zone.GRAVEYARD)
+                .setCardFilter(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("Each instant and sorcery card in your graveyard has flashback. " +
+                        "The flashback cost is equal to that card's mana cost")
+        ));
     }
 
     private LierDiscipleOfTheDrowned(final LierDiscipleOfTheDrowned card) {
@@ -72,38 +79,5 @@ class LierDiscipleOfTheDrownedCounteredEffect extends ContinuousRuleModifyingEff
     @Override
     public boolean applies(GameEvent event, Ability source, Game game) {
         return game.getSpell(event.getTargetId()) != null;
-    }
-}
-
-class LierDiscipleOfTheDrownedFlashbackEffect extends ContinuousEffectImpl {
-
-    LierDiscipleOfTheDrownedFlashbackEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "Each instant and sorcery card in your graveyard has flashback. " +
-                "The flashback cost is equal to that card's mana cost";
-    }
-
-    private LierDiscipleOfTheDrownedFlashbackEffect(final LierDiscipleOfTheDrownedFlashbackEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public LierDiscipleOfTheDrownedFlashbackEffect copy() {
-        return new LierDiscipleOfTheDrownedFlashbackEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
-        for (Card card : player.getGraveyard().getCards(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY, game)) {
-            Ability ability = new FlashbackAbility(card, card.getManaCost());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-        return true;
     }
 }

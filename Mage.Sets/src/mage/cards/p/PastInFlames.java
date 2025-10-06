@@ -6,6 +6,7 @@ import mage.abilities.keyword.FlashbackAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.StaticFilters;
 
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public final class PastInFlames extends CardImpl {
         // Each instant and sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
         this.getSpellAbility().addEffect(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility, TargetController.YOU)
                 .setAffectedZones(Zone.GRAVEYARD)
+                .setCardFilter(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY)
                 .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
                 .setText("Each instant and sorcery card in your graveyard gains flashback until end of turn. " +
                         "The flashback cost is equal to its mana cost")

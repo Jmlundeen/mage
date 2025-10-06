@@ -7,11 +7,13 @@ import mage.abilities.Mode;
 import mage.abilities.condition.common.ControlACommanderCondition;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 
@@ -40,7 +42,12 @@ public final class WillOfTheJeskai extends CardImpl {
         this.getSpellAbility().addEffect(new WillOfTheJeskaiEffect());
 
         // * Each instant and sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        Mode mode = new Mode(new WillOfTheJeskaiFlashbackEffect());
+        Mode mode = new Mode(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility, TargetController.YOU)
+                .setAffectedZones(Zone.GRAVEYARD)
+                .setCardFilter(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("Each instant and sorcery card in your graveyard gains flashback until end of turn. " +
+                        "The flashback cost is equal to its mana cost"));
         this.getSpellAbility().addMode(mode);
     }
 
@@ -87,65 +94,5 @@ class WillOfTheJeskaiEffect extends OneShotEffect {
             player.drawCards(5, source, game);
         }
         return true;
-    }
-}
-
-class WillOfTheJeskaiFlashbackEffect extends ContinuousEffectImpl {
-
-    WillOfTheJeskaiFlashbackEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "each instant and sorcery card in your graveyard gains flashback until end of turn. " +
-                "The flashback cost is equal to its mana cost";
-    }
-
-    private WillOfTheJeskaiFlashbackEffect(final WillOfTheJeskaiFlashbackEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public WillOfTheJeskaiFlashbackEffect copy() {
-        return new WillOfTheJeskaiFlashbackEffect(this);
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        if (!getAffectedObjectsSet()) {
-            return;
-        }
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return;
-        }
-        player.getGraveyard()
-                .stream()
-                .map(game::getCard)
-                .filter(Objects::nonNull)
-                .filter(card -> card.isInstantOrSorcery(game))
-                .forEachOrdered(card -> affectedObjectList.add(new MageObjectReference(card, game)));
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Card card = (Card) object;
-            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-            game.getState().addOtherAbility(card, ability);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
-        player.getGraveyard()
-                .stream()
-                .filter(cardId -> affectedObjectList.contains(new MageObjectReference(cardId, game)))
-                .map(game::getCard)
-                .filter(Objects::nonNull)
-                .forEachOrdered(affectedObjects::add);
-        return !affectedObjects.isEmpty();
     }
 }
