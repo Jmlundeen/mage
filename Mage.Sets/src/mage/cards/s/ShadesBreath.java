@@ -5,9 +5,11 @@ import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.continuous.BoostSourceEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -27,15 +29,20 @@ public final class ShadesBreath extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{1}{B}");
 
         // Until end of turn, each creature you control becomes a black Shade and gains "{B}: This creature gets +1/+1 until end of turn."
-        this.getSpellAbility().addEffect(new ShadesBreathSetColorEffect());
-        this.getSpellAbility().addEffect(new ShadesBreathSetSubtypeEffect());
-        this.getSpellAbility().addEffect(
-                new GainAbilityControlledEffect(new SimpleActivatedAbility(
-                        Zone.BATTLEFIELD,
-                        new BoostSourceEffect(1, 1, Duration.EndOfTurn).setText("this creature gets +1/+1 until end of turn"),
-                        new ManaCostsImpl<>("{B}")
-                ), Duration.EndOfTurn, StaticFilters.FILTER_CONTROLLED_A_CREATURE)
-                        .setText("and gains \"{B}: This creature gets +1/+1 until end of turn.\"")
+        ContinuousEffect effect = new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                .withAddPower(1)
+                .withAddToughness(1)
+                .setText("{this} gets +1/+1 until end of turn");
+        Ability gainedAbility = new SimpleActivatedAbility(
+                Zone.BATTLEFIELD,
+                effect,
+                new ManaCostsImpl<>("{B}")
+        );
+        this.getSpellAbility().addEffect(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BecomeCreature, TargetController.YOU, StaticFilters.FILTER_PERMANENT_CREATURE)
+                .withAddedColor(true, ObjectColor.BLACK)
+                .withAddedSubTypes(true, SubType.SHADE)
+                .withGainedAbilities(gainedAbility)
+                .setText("Until end of turn, each creature you control becomes a black Shade and gains \"{B}: This creature gets +1/+1 until end of turn.\"")
         );
     }
 
@@ -46,71 +53,5 @@ public final class ShadesBreath extends CardImpl {
     @Override
     public ShadesBreath copy() {
         return new ShadesBreath(this);
-    }
-}
-
-class ShadesBreathSetColorEffect extends ContinuousEffectImpl {
-
-    ShadesBreathSetColorEffect() {
-        super(Duration.EndOfTurn, Layer.ColorChangingEffects_5, SubLayer.NA, Outcome.Benefit);
-        staticText = "Until end of turn, each creature you control becomes a black";
-    }
-
-    private ShadesBreathSetColorEffect(final ShadesBreathSetColorEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            ((Permanent) object).getColor(game).setColor(ObjectColor.BLACK);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(
-                StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game
-        ));
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public ShadesBreathSetColorEffect copy() {
-        return new ShadesBreathSetColorEffect(this);
-    }
-}
-
-class ShadesBreathSetSubtypeEffect extends ContinuousEffectImpl {
-
-    ShadesBreathSetSubtypeEffect() {
-        super(Duration.EndOfTurn, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
-        staticText = " Shade";
-    }
-
-    private ShadesBreathSetSubtypeEffect(final ShadesBreathSetSubtypeEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            permanent.removeAllCreatureTypes(game);
-            permanent.addSubType(game, SubType.SHADE);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(
-                StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game
-        ));
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public ShadesBreathSetSubtypeEffect copy() {
-        return new ShadesBreathSetSubtypeEffect(this);
     }
 }

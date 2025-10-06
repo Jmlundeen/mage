@@ -9,6 +9,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
 
     /*
@@ -83,6 +86,14 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
      */
     private static final String ashesOfTheFallen = "Ashes of the Fallen";
 
+    /*
+    Shade's Breath
+    {1}{B}
+    Instant
+    Until end of turn, each creature you control becomes a black Shade and gains "{B}: This creature gets +1/+1 until end of turn."
+    */
+    private static final String shadesBreath = "Shade's Breath";
+
     @Test
     public void testGainOneAbility() {
         addCard(Zone.BATTLEFIELD, playerA, aRealmReborn);
@@ -147,7 +158,7 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
 
         assertPowerToughness(playerA, avalancheOfSector7, 6, 3); // 6 artifacts controlled by opponent
         Card handCard = playerA.getHand().getCards(currentGame).stream().findFirst().orElse(null);
-        Assert.assertTrue("Avalanche in hand should have power 6", handCard != null && handCard.getPower().getValue() == 6);
+        assertTrue("Avalanche in hand should have power 6", handCard != null && handCard.getPower().getValue() == 6);
     }
 
     @Test
@@ -165,6 +176,31 @@ public class ContinuousEffectBuilderTest extends CardTestPlayerBase {
 
         assertGraveyardCount(playerA, balduvianBears, 1);
         Card card = playerA.getGraveyard().getCards(currentGame).stream().findFirst().orElse(null);
-        Assert.assertTrue("Balduvian Bears should have subtype Sliver", card != null && card.hasSubtype(SubType.SLIVER, currentGame));
+        assertTrue("Balduvian Bears should have subtype Sliver", card != null && card.hasSubtype(SubType.SLIVER, currentGame));
+    }
+
+    @Test
+    public void testAddedColorAndAbility() {
+        addCard(Zone.BATTLEFIELD, playerA, "Swamp", 3);
+        addCard(Zone.HAND, playerA, shadesBreath);
+        addCard(Zone.BATTLEFIELD, playerA, balduvianBears + "@bearA");
+        addCard(Zone.BATTLEFIELD, playerB, balduvianBears + "@bearB");
+
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, shadesBreath, true);
+        checkPlayableAbility("Player B should not have activated ability", 1, PhaseStep.PRECOMBAT_MAIN, playerB, "{B}: {this}", false);
+        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{B}: {this}");
+
+        setStrictChooseMode(true);
+        setStopAt(1, PhaseStep.BEGIN_COMBAT);
+        execute();
+
+        assertPowerToughness(playerA, balduvianBears, 3, 3); // 2/2 +1/+1
+        assertPowerToughness(playerB, balduvianBears, 2, 2);
+        assertColor(playerA, balduvianBears, "B", true);
+        assertColor(playerB, balduvianBears, "B", false);
+        assertColor(playerA, balduvianBears, "G", false);
+        assertColor(playerB, balduvianBears, "G", true);
+        assertTrue("bearA should be subtype Shade", getPermanent(balduvianBears, playerA).hasSubtype(SubType.SHADE, currentGame));
+        assertFalse("bearB should not be subtype Shade", getPermanent(balduvianBears, playerB).hasSubtype(SubType.SHADE, currentGame));
     }
 }

@@ -3,6 +3,7 @@ package mage.abilities.effects.common.continuous.generic;
 import mage.MageItem;
 import mage.MageObject;
 import mage.MageObjectReference;
+import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -49,11 +50,13 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private CardType[] addedCardTypes;
     private SuperType[] addedSuperTypes;
     private SubType[] addedSubTypes;
+    private ObjectColor addedColor;
     private boolean removeOtherAbilities;
     private boolean removeOtherCardTypes;
     private boolean removeOtherSuperTypes;
     private boolean removeOtherSubTypes;
     private boolean useChosenCreatureType;
+    private boolean removeOtherColors;
     private MakeAbilityFunction makeAbilityFunction;
     private Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
 
@@ -89,15 +92,15 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController objectController) {
         super(duration, outcome);
         this.targetController = objectController;
-        this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
     }
 
     /**
-     * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller.
-     * Make sure to set the affected zones using {@link #setAffectedZones(Zone...)}
+     * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller on the battlefield.
+     * @param objectController the controller whose objects are affected. Use {@link TargetController#YOU}, {@link TargetController#OPPONENT}, {@link TargetController#EACH_PLAYER}
      */
-    public ContinuousEffectBuilder(Outcome outcome, TargetController objectController) {
+    public ContinuousEffectBuilder(Outcome outcome, TargetController objectController, FilterPermanent permanentFilter) {
         super(Duration.WhileOnBattlefield, outcome);
+        this.permanentFilter = permanentFilter;
         this.targetController = objectController;
         this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
     }
@@ -154,11 +157,13 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.addedCardTypes = effect.addedCardTypes;
         this.addedSuperTypes = effect.addedSuperTypes;
         this.addedSubTypes = effect.addedSubTypes;
+        this.addedColor = effect.addedColor;
         this.removeOtherAbilities = effect.removeOtherAbilities;
         this.removeOtherCardTypes = effect.removeOtherCardTypes;
         this.removeOtherSuperTypes = effect.removeOtherSuperTypes;
         this.removeOtherSubTypes = effect.removeOtherSubTypes;
         this.useChosenCreatureType = effect.useChosenCreatureType;
+        this.removeOtherColors = effect.removeOtherColors;
         this.makeAbilityFunction = effect.makeAbilityFunction;
         this.createdAbilities = effect.createdAbilities == null ? null : new HashMap<>(effect.createdAbilities);
     }
@@ -222,7 +227,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     }
                     break;
                 case ColorChangingEffects_5:
-                    // TODO: implement
+                    if (removeOtherColors) {
+                        mageObject.getColor(game).setColor(addedColor);
+                    } else {
+                        mageObject.getColor(game).addColor(addedColor);
+                    }
                     break;
                 case AbilityAddingRemovingEffects_6:
                     if (gainedAbilities != null) {
@@ -393,7 +402,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     private void getPlayersObjectsFromZone(Game game, Zone zone, Player player, Ability source, List<MageItem> affectedObjects) {
-
         switch (zone) {
             case GRAVEYARD:
                 affectedObjects.addAll(player.getGraveyard().getCards(game).stream()
@@ -417,7 +425,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                 for (Object commObj : game.getState().getCommand()) {
                     if (commObj instanceof Commander) {
                         Card card = game.getCard(((Commander) commObj).getId());
-                        if (card != null && (cardFilter == null || cardFilter.match(card, player.getId(), source, game))) {
+                        if (card != null && card.getControllerOrOwnerId().equals(player.getId()) &&
+                                (cardFilter == null || cardFilter.match(card, player.getId(), source, game))) {
                             affectedObjects.add(card);
                         }
                     }
@@ -425,6 +434,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                 break;
             case STACK:
                 affectedObjects.addAll(game.getStack().stream()
+                        .filter(stackObject -> stackObject.getControllerId().equals(player.getId()))
                         .filter(stackObject -> stackObjectFilter != null ? stackObjectFilter.match(stackObject, player.getId(), source, game)
                                 : cardFilter == null || (stackObject instanceof Spell && cardFilter.match(((Spell) stackObject), player.getId(), source, game)))
                                 .map(stackObject -> game.getCard(stackObject.getSourceId()))
@@ -435,7 +445,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                 if (permanentFilter == null) {
                     throw new IllegalArgumentException("Permanent filter must be defined for battlefield zone");
                 }
-                affectedObjects.addAll(game.getBattlefield().getActivePermanents(permanentFilter, player.getId(), source, game));
+                for (Permanent permanent : game.getBattlefield().getAllActivePermanents(player.getId())) {
+                    if ((permanentFilter == null || permanentFilter.match(permanent, player.getId(), source, game))) {
+                        affectedObjects.add(permanent);
+                    }
+                }
                 break;
         }
     }
@@ -665,11 +679,17 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
-
     public ContinuousEffectBuilder withGainChosenCreatureType(boolean removeOtherCardTypes) {
         this.removeOtherSubTypes = removeOtherCardTypes;
         this.addLayer(Layer.TypeChangingEffects_4);
         this.useChosenCreatureType = true;
+        return this;
+    }
+
+    public ContinuousEffectBuilder withAddedColor(boolean removeOtherColors, ObjectColor color) {
+        addedColor = new ObjectColor(color);
+        this.addLayer(Layer.ColorChangingEffects_5);
+        this.removeOtherColors = removeOtherColors;
         return this;
     }
 
