@@ -47,9 +47,12 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private DynamicValue toughnessModifier;
     private DynamicValue basePower;
     private DynamicValue baseToughness;
-    private CardType[] addedCardTypes;
-    private SuperType[] addedSuperTypes;
-    private SubType[] addedSubTypes;
+    private List<CardType> addedCardTypes;
+    private List<CardType> removedCardTypes;
+    private List<SuperType> addedSuperTypes;
+    private List<SuperType> removedSuperTypes;
+    private List<SubType> addedSubTypes;
+    private List<SubType> removedSubTypes;
     private ObjectColor addedColor;
     private boolean removeOtherAbilities;
     private boolean removeOtherCardTypes;
@@ -59,6 +62,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private boolean removeOtherColors;
     private MakeAbilityFunction makeAbilityFunction;
     private Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
+    private List<Class<? extends Ability>> abilitiesToRemove;
 
     /**
      * Creates a new standard ContinuousEffectBuilder.
@@ -155,8 +159,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.basePower = effect.basePower;
         this.baseToughness = effect.baseToughness;
         this.addedCardTypes = effect.addedCardTypes;
+        this.removedCardTypes = effect.removedCardTypes;
         this.addedSuperTypes = effect.addedSuperTypes;
+        this.removedSuperTypes = effect.removedSuperTypes;
         this.addedSubTypes = effect.addedSubTypes;
+        this.removedSubTypes = effect.removedSubTypes;
         this.addedColor = effect.addedColor;
         this.removeOtherAbilities = effect.removeOtherAbilities;
         this.removeOtherCardTypes = effect.removeOtherCardTypes;
@@ -165,7 +172,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.useChosenCreatureType = effect.useChosenCreatureType;
         this.removeOtherColors = effect.removeOtherColors;
         this.makeAbilityFunction = effect.makeAbilityFunction;
-        this.createdAbilities = effect.createdAbilities == null ? null : new HashMap<>(effect.createdAbilities);
+        this.createdAbilities = effect.createdAbilities;
+        this.abilitiesToRemove = effect.abilitiesToRemove;
     }
 
     @Override
@@ -195,6 +203,9 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         for (MageItem object : affectedObjects) {
             MageObject mageObject = (MageObject) object;
             switch (layer) {
+                case ControlChangingEffects_2:
+                    ((Permanent) mageObject).changeControllerId(source.getControllerId(), game, source);
+                    break;
                 case TextChangingEffects_3:
                     // TODO: implement
                     break;
@@ -203,7 +214,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                         mageObject.removeAllCardTypes(game);
                     }
                     if (addedCardTypes != null) {
-                        mageObject.addCardType(game, addedCardTypes);
+                        mageObject.addCardType(game, addedCardTypes.toArray(new CardType[0]));
                     }
                     if (removeOtherSuperTypes) {
                         mageObject.removeAllSuperTypes(game);
@@ -234,17 +245,33 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     }
                     break;
                 case AbilityAddingRemovingEffects_6:
+                    if (removeOtherAbilities) {
+                        if (mageObject instanceof Permanent) {
+                            ((Permanent) mageObject).removeAllAbilities(source.getSourceId(), game);
+                        } else if (mageObject instanceof Card) {
+                            game.getState().getCardState(mageObject.getId()).clearAbilities();
+                        }
+                    }
+                    if (abilitiesToRemove != null) {
+                        List<Ability> toRemove = new ArrayList<>();
+                        for (Class<? extends Ability> abilityClass : abilitiesToRemove) {
+                            mageObject.getAbilities().stream()
+                                    .filter(ability -> abilityClass.isAssignableFrom(ability.getClass()))
+                                    .forEach(toRemove::add);
+                        }
+                        for (Ability ability : toRemove) {
+                            if (mageObject instanceof Permanent) {
+                                ((Permanent) mageObject).removeAbility(ability, source.getSourceId(), game);
+                            } else if (mageObject instanceof Card) {
+                                game.getState().getCardState(mageObject.getId()).getAbilities().remove(ability);
+                            }
+                        }
+                    }
                     if (gainedAbilities != null) {
                         for (Ability abilityToAdd : gainedAbilities) {
                             if (mageObject instanceof Permanent) {
-                                if (removeOtherAbilities) {
-                                    ((Permanent) mageObject).removeAllAbilities(source.getSourceId(), game);
-                                }
                                 ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
                             } else if (mageObject instanceof Card) {
-                                if (removeOtherAbilities) {
-                                    game.getState().getCardState(mageObject.getId()).clearAbilities();
-                                }
                                 game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
                             }
                         }
@@ -310,12 +337,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                         }
                         break;
                     }
-                    if (sublayer == SubLayer.Counters_7d) {
-                        // TODO: implement
-                        break;
-                    }
                     if (sublayer == SubLayer.SwitchPT_e) {
-                        // TODO: implement
+                        ((Permanent) mageObject).switchPowerToughness();
                         break;
                     }
             }
@@ -537,6 +560,28 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
+     * Remove all other abilities, not gained from this effect, from the affected objects
+     */
+    public ContinuousEffectBuilder withRemoveOtherAbilities() {
+        this.removeOtherAbilities = true;
+        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
+        return this;
+    }
+
+    /**
+     * Remove the specified abilities from the affected objects with the matching classes
+     */
+    @SafeVarargs
+    public final ContinuousEffectBuilder withRemoveAbilities(Class<? extends Ability>... abilitiesToRemove) {
+        if (this.abilitiesToRemove == null) {
+            this.abilitiesToRemove = new ArrayList<>();
+        }
+        Collections.addAll(this.abilitiesToRemove, abilitiesToRemove);
+        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
+        return this;
+    }
+
+    /**
      * Add power to the affected objects.
      */
     public ContinuousEffectBuilder withAddPower(int power) {
@@ -653,29 +698,44 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     public ContinuousEffectBuilder withAddedCardTypes(boolean removeOtherCardTypes, CardType... cardTypes) {
-        if (addedCardTypes == null) {
-            addedCardTypes = cardTypes;
-        }
+        addedCardTypes = Arrays.asList(cardTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
         this.removeOtherCardTypes = removeOtherCardTypes;
         return this;
     }
 
+    public ContinuousEffectBuilder withRemovedCardTypes(CardType... cardTypes) {
+        removedCardTypes = Arrays.asList(cardTypes);
+        this.addLayer(Layer.TypeChangingEffects_4);
+        this.removeOtherCardTypes = true;
+        return this;
+    }
+
     public ContinuousEffectBuilder withAddedSuperTypes(boolean removeOtherSuperTypes, SuperType... superTypes) {
-        if (addedSuperTypes == null) {
-            addedSuperTypes = superTypes;
-        }
+        addedSuperTypes = Arrays.asList(superTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
         this.removeOtherSuperTypes = removeOtherSuperTypes;
         return this;
     }
 
+    public ContinuousEffectBuilder withRemovedSuperTypes(SuperType... superTypes) {
+        removedSuperTypes = Arrays.asList(superTypes);
+        this.addLayer(Layer.TypeChangingEffects_4);
+        this.removeOtherSuperTypes = true;
+        return this;
+    }
+
     public ContinuousEffectBuilder withAddedSubTypes(boolean removeOtherSubTypes, SubType... subTypes) {
-        if (addedSubTypes == null) {
-            addedSubTypes = subTypes;
-        }
+        addedSubTypes = Arrays.asList(subTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
         this.removeOtherSubTypes = removeOtherSubTypes;
+        return this;
+    }
+
+    public ContinuousEffectBuilder withRemovedSubTypes(SubType... subTypes) {
+        removedSubTypes = Arrays.asList(subTypes);
+        this.addLayer(Layer.TypeChangingEffects_4);
+        this.removeOtherSubTypes = true;
         return this;
     }
 
@@ -690,6 +750,23 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         addedColor = new ObjectColor(color);
         this.addLayer(Layer.ColorChangingEffects_5);
         this.removeOtherColors = removeOtherColors;
+        return this;
+    }
+
+    /**
+     * Gain control of affected permanents
+     */
+    public ContinuousEffectBuilder withGainControl() {
+        this.addLayer(Layer.ControlChangingEffects_2);
+        return this;
+    }
+
+    /**
+     * Switch power and toughness of affected permanents
+     */
+    public ContinuousEffectBuilder withSwitchPT() {
+        this.addLayer(Layer.PTChangingEffects_7);
+        this.addSubLayer(SubLayer.SwitchPT_e);
         return this;
     }
 
