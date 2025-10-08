@@ -5,8 +5,10 @@ import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.SpellAbility;
 import mage.abilities.TriggeredAbilityImpl;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.command.Emblem;
@@ -44,7 +46,10 @@ public final class DackFaydenEmblem extends Emblem {
 class DackFaydenEmblemTriggeredAbility extends TriggeredAbilityImpl {
 
     DackFaydenEmblemTriggeredAbility() {
-        super(Zone.COMMAND, new DackFaydenEmblemEffect(), false);
+        super(Zone.COMMAND, new ContinuousEffectBuilder(Duration.EndOfGame, Outcome.GainControl)
+                .withGainControl()
+                .setText("Gain control of those permanents"),
+                false);
     }
 
     DackFaydenEmblemTriggeredAbility(final DackFaydenEmblemTriggeredAbility ability) {
@@ -96,8 +101,8 @@ class DackFaydenEmblemTriggeredAbility extends TriggeredAbilityImpl {
             }
         }
         for (Effect effect : this.getEffects()) {
-            if (effect instanceof DackFaydenEmblemEffect) {
-                DackFaydenEmblemEffect dackEffect = (DackFaydenEmblemEffect) effect;
+            if (effect instanceof ContinuousEffectBuilder) {
+                ContinuousEffect dackEffect = (ContinuousEffect) effect;
                 List<Permanent> permanents = new ArrayList<>();
                 for (UUID permanentId : targetedPermanentIds) {
                     Permanent permanent = game.getPermanent(permanentId);
@@ -106,7 +111,7 @@ class DackFaydenEmblemTriggeredAbility extends TriggeredAbilityImpl {
                     }
                 }
 
-                dackEffect.setTargets(permanents, game);
+                dackEffect.setTargetPointer(new FixedTargets(permanents, game));
             }
         }
         return returnValue;
@@ -115,47 +120,5 @@ class DackFaydenEmblemTriggeredAbility extends TriggeredAbilityImpl {
     @Override
     public String getRule() {
         return "Whenever you cast a spell that targets one or more permanents, gain control of those permanents.";
-    }
-}
-
-class DackFaydenEmblemEffect extends ContinuousEffectImpl {
-
-    protected FixedTargets fixedTargets = new FixedTargets(new ArrayList<>());
-
-    DackFaydenEmblemEffect() {
-        super(Duration.EndOfGame, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        this.staticText = "gain control of those permanents";
-    }
-
-    DackFaydenEmblemEffect(final DackFaydenEmblemEffect effect) {
-        super(effect);
-        this.fixedTargets = effect.fixedTargets.copy();
-    }
-
-    @Override
-    public DackFaydenEmblemEffect copy() {
-        return new DackFaydenEmblemEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            ((Permanent) object).changeControllerId(source.getControllerId(), game, source);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (UUID permanentId : fixedTargets.getTargets(game, source)) {
-            Permanent permanent = game.getPermanent(permanentId);
-            if (permanent != null) {
-                affectedObjects.add(permanent);
-            }
-        }
-        return !affectedObjects.isEmpty();
-    }
-
-    public void setTargets(List<Permanent> targetedPermanents, Game game) {
-        this.fixedTargets = new FixedTargets(new ArrayList<>(targetedPermanents), game);
     }
 }

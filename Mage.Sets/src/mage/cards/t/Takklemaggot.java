@@ -3,7 +3,9 @@ package mage.cards.t;
 import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
+import mage.abilities.TriggeredAbility;
 import mage.abilities.TriggeredAbilityImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.DiesAttachedTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -115,85 +117,16 @@ class TakklemaggotEffect extends OneShotEffect {
             creature.addAttachment(auraCard.getId(), source, game);
         } else {
             // return as non-Aura enchantment
-            game.addEffect(new TakklemaggotNonAuraEffect(player.getId()), source);
+            game.addEffect(new ContinuousEffectBuilder(Duration.Custom, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                            .withRemovedSubTypes(SubType.AURA)
+                            .withGainedAbilities(new TakklemaggotUpkeepAbility(player.getId()))
+                            .withRemoveAbilities(EnchantAbility.class),
+                    source
+            );
             controller.moveCards(auraCard, Zone.BATTLEFIELD, source, game);
             auraCard.addInfo("chosen player", CardUtil.addToolTipMarkTags("Chosen player: " + player.getLogName()), game);
         }
         return true;
-    }
-
-}
-
-class TakklemaggotNonAuraEffect extends ContinuousEffectImpl {
-
-    private final UUID playerId;
-
-    TakklemaggotNonAuraEffect(UUID playerId) {
-        super(Duration.Custom, Outcome.AddAbility);
-        this.playerId = playerId;
-    }
-
-    private TakklemaggotNonAuraEffect(final TakklemaggotNonAuraEffect effect) {
-        super(effect);
-        this.playerId = effect.playerId;
-    }
-
-    @Override
-    public TakklemaggotNonAuraEffect copy() {
-        return new TakklemaggotNonAuraEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            if (layer == Layer.TypeChangingEffects_4) {
-                permanent.removeSubType(game, SubType.AURA);
-            } else if (layer == Layer.AbilityAddingRemovingEffects_6) {
-                List<Ability> toRemove = new ArrayList<>();
-                for (Ability ability : permanent.getAbilities(game)) {
-                    if (ability instanceof EnchantAbility) {
-                        toRemove.add(ability);
-                    }
-                }
-                permanent.removeAbilities(toRemove, source.getSourceId(), game);
-                permanent.addAbility(new TakklemaggotUpkeepAbility(playerId), source.getSourceId(), game);
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent;
-        if (affectedObjectList.isEmpty()) { // not yet initiated, check entering permanent
-            permanent = game.getPermanentEntering(source.getSourceId());
-            // if an entering permanent is found, then proceed to applying continuous effects by layer
-            // otherwise try to find the permanent on the battlefield
-            if (permanent == null) {
-                permanent = game.getPermanent(source.getSourceId());
-                if (permanent == null) {
-                    discard(); // no permanent found, can't initiate
-                    return false;
-                } else {
-                    // initiate with ZCC and check that in all future calls
-                    affectedObjectList.add(new MageObjectReference(source.getSourceId(), game));
-                    affectedObjects.add(permanent);
-                }
-            }
-        } else {
-            permanent = affectedObjectList.get(0).getPermanent(game);
-            if (permanent == null) {
-                discard(); // permanent no longer on battlefield so effect no longer applies
-                return true;
-            }
-            affectedObjects.add(permanent);
-        }
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return Layer.AbilityAddingRemovingEffects_6 == layer || Layer.TypeChangingEffects_4 == layer;
     }
 
 }
