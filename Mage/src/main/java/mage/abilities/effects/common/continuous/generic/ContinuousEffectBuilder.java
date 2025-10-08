@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
  * Other than effects that only use the battlefield, affected zones, filters, and targetController should be set based on
  * what/whose objects are affected. {@link ContinuousAffected} can be used as a shortcut for some logic such as the source object,
  * targeted objects, and attached to.
+ *
+ * @author Jmlundeen
  */
 public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
@@ -62,6 +64,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private boolean removeOtherColors;
     private MakeAbilityFunction makeAbilityFunction;
     private Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
+    int cachedAbilityZcc; // reset created abilities cache if source ZCC changes
     private List<Class<? extends Ability>> abilitiesToRemove;
 
     /**
@@ -174,6 +177,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.makeAbilityFunction = effect.makeAbilityFunction;
         this.createdAbilities = effect.createdAbilities;
         this.abilitiesToRemove = effect.abilitiesToRemove;
+        this.cachedAbilityZcc = effect.cachedAbilityZcc;
     }
 
     @Override
@@ -200,6 +204,10 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (layer == Layer.AbilityAddingRemovingEffects_6 && makeAbilityFunction != null) {
+            cleanupStaleCreatedAbilities(game, source, affectedObjects);
+        }
+
         for (MageItem object : affectedObjects) {
             MageObject mageObject = (MageObject) object;
             switch (layer) {
@@ -210,32 +218,9 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     // TODO: implement
                     break;
                 case TypeChangingEffects_4:
-                    if (removeOtherCardTypes) {
-                        mageObject.removeAllCardTypes(game);
-                    }
-                    if (addedCardTypes != null) {
-                        mageObject.addCardType(game, addedCardTypes.toArray(new CardType[0]));
-                    }
-                    if (removeOtherSuperTypes) {
-                        mageObject.removeAllSuperTypes(game);
-                    }
-                    if (addedSuperTypes != null) {
-                        for (SuperType superType : addedSuperTypes) {
-                            mageObject.addSuperType(superType);
-                        }
-                    }
-                    if (removeOtherSubTypes) {
-                        mageObject.removeAllSubTypes(game);
-                    }
-                    if (useChosenCreatureType) {
-                        SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
-                        if (subType != null) {
-                            mageObject.addSubType(game, subType);
-                        }
-                    }
-                    if (addedSubTypes != null) {
-                        mageObject.addSubType(game, addedSubTypes);
-                    }
+                    handleCardTypes(game, mageObject);
+                    handleSuperTypes(game, mageObject);
+                    handleSubTypes(source, game, mageObject);
                     break;
                 case ColorChangingEffects_5:
                     if (removeOtherColors) {
@@ -245,96 +230,16 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     }
                     break;
                 case AbilityAddingRemovingEffects_6:
-                    if (removeOtherAbilities) {
-                        if (mageObject instanceof Permanent) {
-                            ((Permanent) mageObject).removeAllAbilities(source.getSourceId(), game);
-                        } else if (mageObject instanceof Card) {
-                            game.getState().getCardState(mageObject.getId()).clearAbilities();
-                        }
-                    }
-                    if (abilitiesToRemove != null) {
-                        List<Ability> toRemove = new ArrayList<>();
-                        for (Class<? extends Ability> abilityClass : abilitiesToRemove) {
-                            mageObject.getAbilities().stream()
-                                    .filter(ability -> abilityClass.isAssignableFrom(ability.getClass()))
-                                    .forEach(toRemove::add);
-                        }
-                        for (Ability ability : toRemove) {
-                            if (mageObject instanceof Permanent) {
-                                ((Permanent) mageObject).removeAbility(ability, source.getSourceId(), game);
-                            } else if (mageObject instanceof Card) {
-                                game.getState().getCardState(mageObject.getId()).getAbilities().remove(ability);
-                            }
-                        }
-                    }
-                    if (gainedAbilities != null) {
-                        for (Ability abilityToAdd : gainedAbilities) {
-                            if (mageObject instanceof Permanent) {
-                                ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
-                            } else if (mageObject instanceof Card) {
-                                game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
-                            }
-                        }
-                    }
-                    if (makeAbilityFunction != null && mageObject instanceof Card) {
-                        Ability abilityToAdd;
-                        if (createdAbilities != null && createdAbilities.containsKey(mageObject.getId())) {
-                            abilityToAdd = createdAbilities.get(mageObject.getId());
-                        } else {
-                            abilityToAdd = makeAbilityFunction.makeAbility((Card) mageObject, source, game);
-                            if (createdAbilities == null) {
-                                createdAbilities = new HashMap<>();
-                            }
-                            createdAbilities.put(mageObject.getId(), abilityToAdd);
-                        }
-                        if (abilityToAdd != null) {
-                            if (mageObject instanceof Permanent) {
-                                if (removeOtherAbilities) {
-                                    ((Permanent) mageObject).removeAllAbilities(source.getSourceId(), game);
-                                }
-                                ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
-                            } else {
-                                if (removeOtherAbilities) {
-                                    game.getState().getCardState(mageObject.getId()).clearAbilities();
-                                }
-                                game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
-                            }
-                        }
-                    }
+                    removeAbilities(source, game, mageObject);
+                    addAbilities(source, game, mageObject);
                     break;
                 case PTChangingEffects_7:
-                    if (sublayer == SubLayer.CharacteristicDefining_7a) {
-                        if (basePower == null && baseToughness == null) {
-                            throw new IllegalArgumentException("Power and toughness not set in ContinuousEffectBuilder");
-                        }
-                        if (basePower != null) {
-                            mageObject.getPower().setModifiedBaseValue(basePower.calculate(game, source, this));
-                        }
-                        if (baseToughness != null) {
-                            mageObject.getToughness().setModifiedBaseValue(baseToughness.calculate(game, source, this));
-                        }
-                        break;
-                    }
-                    if (sublayer == SubLayer.SetPT_7b) {
-                        if (basePower == null || baseToughness == null) {
-                            throw new IllegalArgumentException("Power and/or toughness not set in ContinuousEffectBuilder");
-                        }
-                        if (mageObject instanceof Permanent) {
-                            Permanent permanent = (Permanent) mageObject;
-                            permanent.getPower().setModifiedBaseValue(basePower.calculate(game, source, this, permanent));
-                            permanent.getToughness().setModifiedBaseValue(baseToughness.calculate(game, source, this, permanent));
-                        }
+                    if (sublayer == SubLayer.CharacteristicDefining_7a || sublayer == SubLayer.SetPT_7b) {
+                        setBasePowerAndToughness(source, game, mageObject);
                         break;
                     }
                     if (sublayer == SubLayer.ModifyPT_7c) {
-                        if (powerModifier == null || toughnessModifier == null) {
-                            throw new IllegalArgumentException("Power and/or toughness modifier not set in ContinuousEffectBuilder");
-                        }
-                        if (mageObject instanceof Permanent) {
-                            Permanent permanent = (Permanent) mageObject;
-                            permanent.addPower(powerModifier.calculate(game, source, this, permanent));
-                            permanent.addToughness(toughnessModifier.calculate(game, source, this, permanent));
-                        }
+                        addPowerAndToughness(source, game, mageObject);
                         break;
                     }
                     if (sublayer == SubLayer.SwitchPT_e) {
@@ -342,6 +247,153 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                         break;
                     }
             }
+        }
+    }
+
+    /**
+     * Clean up stale entries from the createdAbilities map by removing abilities
+     * for objects that are no longer affected by this continuous effect.
+     */
+    private void cleanupStaleCreatedAbilities(Game game, Ability source, List<MageItem> currentAffectedObjects) {
+        if (createdAbilities == null || createdAbilities.isEmpty() || cachedAbilityZcc == game.getState().getZoneChangeCounter(source.getSourceId())) {
+            return;
+        }
+
+        Set<UUID> currentAffectedIds = new HashSet<>();
+        for (MageItem item : currentAffectedObjects) {
+            if (item instanceof MageObject) {
+                currentAffectedIds.add(item.getId());
+            }
+        }
+
+        // Remove abilities for objects that are no longer affected
+        Iterator<Map.Entry<UUID, Ability>> iterator = createdAbilities.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Ability> entry = iterator.next();
+            UUID objectId = entry.getKey();
+
+            if (!currentAffectedIds.contains(objectId)) {
+                iterator.remove();
+            }
+        }
+    }
+
+    private void addPowerAndToughness(Ability source, Game game, MageObject mageObject) {
+        if (powerModifier == null || toughnessModifier == null) {
+            throw new IllegalArgumentException("Power and/or toughness modifier not set in ContinuousEffectBuilder");
+        }
+        if (mageObject instanceof Permanent) {
+            Permanent permanent = (Permanent) mageObject;
+            permanent.addPower(powerModifier.calculate(game, source, this, permanent));
+            permanent.addToughness(toughnessModifier.calculate(game, source, this, permanent));
+        }
+    }
+
+    private void setBasePowerAndToughness(Ability source, Game game, MageObject mageObject) {
+        if (basePower == null && baseToughness == null) {
+            throw new IllegalArgumentException("Power and toughness not set in ContinuousEffectBuilder");
+        }
+        if (basePower != null) {
+            mageObject.getPower().setModifiedBaseValue(basePower.calculate(game, source, this, mageObject));
+        }
+        if (baseToughness != null) {
+            mageObject.getToughness().setModifiedBaseValue(baseToughness.calculate(game, source, this, mageObject));
+        }
+    }
+
+    private void addAbilities(Ability source, Game game, MageObject mageObject) {
+        if (gainedAbilities != null) {
+            for (Ability abilityToAdd : gainedAbilities) {
+                if (mageObject instanceof Permanent) {
+                    ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
+                } else if (mageObject instanceof Card) {
+                    game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
+                }
+            }
+        }
+        if (makeAbilityFunction != null && mageObject instanceof Card) {
+            if (cachedAbilityZcc != game.getState().getZoneChangeCounter(source.getSourceId())) {
+                if (createdAbilities != null) {
+                    createdAbilities.clear();
+                } else {
+                    createdAbilities = new HashMap<>();
+                }
+                cachedAbilityZcc = game.getState().getZoneChangeCounter(source.getSourceId());
+            }
+
+            Ability abilityToAdd = createdAbilities != null && createdAbilities.containsKey(mageObject.getId())
+                    ? createdAbilities.get(mageObject.getId())
+                    : makeAbilityFunction.makeAbility((Card) mageObject, source, game);
+
+            if (abilityToAdd != null) {
+                createdAbilities.put(mageObject.getId(), abilityToAdd);
+
+                if (mageObject instanceof Permanent) {
+                    ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
+                } else {
+                    game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
+                }
+            }
+        }
+    }
+
+    private void removeAbilities(Ability source, Game game, MageObject mageObject) {
+        if (removeOtherAbilities) {
+            if (mageObject instanceof Permanent) {
+                ((Permanent) mageObject).removeAllAbilities(source.getSourceId(), game);
+            } else if (mageObject instanceof Card) {
+                game.getState().getCardState(mageObject.getId()).getAbilities().clear();
+            }
+        }
+        if (abilitiesToRemove != null) {
+            List<Ability> toRemove = new ArrayList<>();
+            for (Class<? extends Ability> abilityClass : abilitiesToRemove) {
+                mageObject.getAbilities().stream()
+                        .filter(ability -> abilityClass.isAssignableFrom(ability.getClass()))
+                        .forEach(toRemove::add);
+            }
+            for (Ability ability : toRemove) {
+                if (mageObject instanceof Permanent) {
+                    ((Permanent) mageObject).removeAbility(ability, source.getSourceId(), game);
+                } else if (mageObject instanceof Card) {
+                    game.getState().getCardState(mageObject.getId()).getAbilities().remove(ability);
+                }
+            }
+        }
+    }
+
+    private void handleSubTypes(Ability source, Game game, MageObject mageObject) {
+        if (removeOtherSubTypes) {
+            mageObject.removeAllSubTypes(game);
+        }
+        if (useChosenCreatureType) {
+            SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
+            if (subType != null) {
+                mageObject.addSubType(game, subType);
+            }
+        }
+        if (addedSubTypes != null) {
+            mageObject.addSubType(game, addedSubTypes);
+        }
+    }
+
+    private void handleSuperTypes(Game game, MageObject mageObject) {
+        if (removeOtherSuperTypes) {
+            mageObject.removeAllSuperTypes(game);
+        }
+        if (addedSuperTypes != null) {
+            for (SuperType superType : addedSuperTypes) {
+                mageObject.addSuperType(superType);
+            }
+        }
+    }
+
+    private void handleCardTypes(Game game, MageObject mageObject) {
+        if (removeOtherCardTypes) {
+            mageObject.removeAllCardTypes(game);
+        }
+        if (addedCardTypes != null) {
+            mageObject.addCardType(game, addedCardTypes.toArray(new CardType[0]));
         }
     }
 
@@ -585,10 +637,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * Add power to the affected objects.
      */
     public ContinuousEffectBuilder withAddPower(int power) {
-        setPowerModifier(StaticValue.get(power));
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.ModifyPT_7c);
-        return this;
+        return withAddPower(StaticValue.get(power));
     }
 
     /**
@@ -602,22 +651,27 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
-     * Set power to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * Set power to the affected objects. Sublayer is set based on {@link #affected}
+     * <br>
+     * 7a - Characteristic Defining Ability (CDA) if affected is SOURCE
+     * <br>
+     * 7b - Set PT for all other cases
      */
     public ContinuousEffectBuilder withSetPower(int power) {
-        this.basePower = StaticValue.get(power);
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
-        return this;
+        return withSetPower(StaticValue.get(power));
     }
 
     /**
-     * Set power to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * Set power to the affected objects. Sublayer is set based on {@link #affected}
+     * <br>
+     * 7a - Characteristic Defining Ability (CDA) if affected is SOURCE
+     * <br>
+     * 7b - Set PT for all other cases
      */
     public ContinuousEffectBuilder withSetPower(DynamicValue power) {
         this.basePower = power;
         this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
+        this.addSubLayer(affected == ContinuousAffected.SOURCE ? SubLayer.CharacteristicDefining_7a : SubLayer.SetPT_7b);
         return this;
     }
 
@@ -625,10 +679,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * Add toughness to the affected objects.
      */
     public ContinuousEffectBuilder withAddToughness(int toughness) {
-        setToughnessModifier(StaticValue.get(toughness));
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.ModifyPT_7c);
-        return this;
+        return withAddToughness(StaticValue.get(toughness));
     }
 
     /**
@@ -642,22 +693,27 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
-     * Set toughness to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * Set toughness to the affected objects. Sublayer is set based on {@link #affected}
+     * <br>
+     * 7a - Characteristic Defining Ability (CDA) if affected is SOURCE
+     * <br>
+     * 7b - Set PT for all other cases
      */
     public ContinuousEffectBuilder withSetToughness(int toughness) {
-        this.baseToughness = StaticValue.get(toughness);
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
-        return this;
+        return withSetToughness(StaticValue.get(toughness));
     }
 
     /**
-     * Set toughness to the affected objects. Use for Characteristic Defining Abilities (CDA) only.
+     * Set toughness to the affected objects. Sublayer is set based on {@link #affected}
+     * <br>
+     * 7a - Characteristic Defining Ability (CDA) if affected is SOURCE
+     * <br>
+     * 7b - Set PT for all other cases
      */
     public ContinuousEffectBuilder withSetToughness(DynamicValue toughness) {
         this.baseToughness = toughness;
         this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.CharacteristicDefining_7a);
+        this.addSubLayer(affected == ContinuousAffected.SOURCE ? SubLayer.CharacteristicDefining_7a : SubLayer.SetPT_7b);
         return this;
     }
 
@@ -667,17 +723,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder withSetPowerAndToughness(int power, int toughness) {
         this.basePower = StaticValue.get(power);
         this.baseToughness = StaticValue.get(toughness);
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.SetPT_7b);
-        return this;
-    }
-
-    /**
-     * Set power and toughness to the affected objects. Use for non-CDA effects only.
-     */
-    public ContinuousEffectBuilder withSetPowerAndToughness(DynamicValue power, DynamicValue toughness) {
-        this.basePower = power;
-        this.baseToughness = toughness;
         this.addLayer(Layer.PTChangingEffects_7);
         this.addSubLayer(SubLayer.SetPT_7b);
         return this;
