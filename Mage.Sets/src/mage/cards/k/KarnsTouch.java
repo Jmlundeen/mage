@@ -3,7 +3,9 @@ package mage.cards.k;
 
 import mage.MageItem;
 import mage.abilities.Ability;
+import mage.abilities.dynamicvalue.common.ObjectManaValue;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -32,7 +34,12 @@ public final class KarnsTouch extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{U}{U}");
 
         // Target noncreature artifact becomes an artifact creature with power and toughness each equal to its converted mana cost until end of turn.
-        this.getSpellAbility().addEffect(new KarnsTouchEffect());
+        this.getSpellAbility().addEffect(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BecomeCreature)
+                .withAddedCardTypes(false, CardType.ARTIFACT, CardType.CREATURE)
+                .withSetPower(ObjectManaValue.instance)
+                .withSetToughness(ObjectManaValue.instance)
+                .setText("Target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value until end of turn")
+        );
         this.getSpellAbility().addTarget(new TargetPermanent(filter));
     }
 
@@ -43,74 +50,5 @@ public final class KarnsTouch extends CardImpl {
     @Override
     public KarnsTouch copy() {
         return new KarnsTouch(this);
-    }
-}
-
-class KarnsTouchEffect extends ContinuousEffectImpl {
-
-    KarnsTouchEffect() {
-        super(Duration.EndOfTurn, Outcome.BecomeCreature);
-        staticText = "Target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value until end of turn";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
-    }
-
-    private KarnsTouchEffect(final KarnsTouchEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public KarnsTouchEffect copy() {
-        return new KarnsTouchEffect(this);
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent artifact = game.getPermanent(this.getTargetPointer().getFirst(game, source));
-        if (artifact == null) {
-            return false;
-        }
-        if (!source.getAffectedObjects().isEmpty()) {
-            affectedObjects.addAll(source.getAffectedObjects());
-        } else {
-            affectedObjects.add(artifact);
-            source.getAffectedObjects().add(artifact);
-        }
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent artifact = (Permanent) object;
-            switch (layer) {
-                case TypeChangingEffects_4:
-                    if (sublayer == SubLayer.NA) {
-                        if (!artifact.isArtifact(game)) {
-                            artifact.addCardType(game, CardType.ARTIFACT);
-                        }
-                        if (!artifact.isCreature(game)) {
-                            artifact.addCardType(game, CardType.CREATURE);
-                        }
-                    }
-                    break;
-
-                case PTChangingEffects_7:
-                    if (sublayer == SubLayer.SetPT_7b) {
-                        int cmc = artifact.getManaValue();
-                        artifact.getPower().setModifiedBaseValue(cmc);
-                        artifact.getToughness().setModifiedBaseValue(cmc);
-                    }
-            }
-        }
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.PTChangingEffects_7 || layer == Layer.TypeChangingEffects_4;
-    }
-
-    @Override
-    public boolean hasSubLayer(SubLayer sublayer) {
-        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }

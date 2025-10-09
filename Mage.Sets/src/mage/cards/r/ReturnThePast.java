@@ -32,7 +32,7 @@ public final class ReturnThePast extends CardImpl {
 
 
         // As long as it's your turn, each instant and sorcery card in your graveyard has flashback. Its flashback cost is equal to its mana cost.
-        ContinuousEffect effect = new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+        ContinuousEffect effect = new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
                 .setAffectedZones(Zone.GRAVEYARD)
                 .setCardFilter(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY)
                 .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()));

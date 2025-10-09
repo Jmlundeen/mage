@@ -32,7 +32,7 @@ public final class AshesOfTheFallen extends CardImpl {
         this.addAbility(new AsEntersBattlefieldAbility(new ChooseCreatureTypeEffect(Outcome.Benefit)));
 
         // Each creature card in your graveyard has the chosen creature type in addition to its other types.
-        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
                 .setAffectedZones(Zone.GRAVEYARD)
                 .withGainChosenCreatureType(false)
                 .setText("Each creature card in your graveyard has the chosen creature type in addition to its other types")

@@ -42,7 +42,7 @@ public final class WillOfTheJeskai extends CardImpl {
         this.getSpellAbility().addEffect(new WillOfTheJeskaiEffect());
 
         // * Each instant and sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        Mode mode = new Mode(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility, TargetController.YOU)
+        Mode mode = new Mode(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
                 .setAffectedZones(Zone.GRAVEYARD)
                 .setCardFilter(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY)
                 .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))

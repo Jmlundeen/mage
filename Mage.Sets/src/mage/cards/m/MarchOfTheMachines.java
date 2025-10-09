@@ -29,7 +29,8 @@ public final class MarchOfTheMachines extends CardImpl {
 
         // Each noncreature artifact is an artifact creature with power and toughness each equal to its converted mana cost.
         this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.BecomeCreature, filter)
-                .withSetPowerAndToughness(ObjectManaValue.instance, ObjectManaValue.instance)
+                .withSetPower(ObjectManaValue.instance)
+                .withSetToughness(ObjectManaValue.instance)
                 .withAddedCardTypes(false, CardType.CREATURE)
                 .setText("Each noncreature artifact is an artifact creature with power and toughness each equal to " + ObjectManaValue.instance.getMessage())
         ));

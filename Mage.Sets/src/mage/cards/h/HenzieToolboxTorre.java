@@ -42,7 +42,7 @@ public final class HenzieToolboxTorre extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Each creature you cast with mana value 4 or greater has blitz. The blitz cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
                 .setAffectedZones(Zone.LIBRARY, Zone.HAND, Zone.GRAVEYARD, Zone.EXILED, Zone.COMMAND, Zone.STACK)
                 .setCardFilter(filter)
                 .withGainedAbility((card, source, game) -> new BlitzAbility(card, card.getManaCost().getText()))

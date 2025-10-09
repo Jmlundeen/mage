@@ -68,7 +68,7 @@ class GhostArkTriggeredAbility extends TriggeredAbilityImpl {
     }
 
     GhostArkTriggeredAbility() {
-        super(Zone.BATTLEFIELD, new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility, TargetController.YOU)
+        super(Zone.BATTLEFIELD, new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
                 .setAffectedZones(Zone.GRAVEYARD)
                 .setCardFilter(filter)
                 .withGainedAbilities(new UnearthAbility(new GenericManaCost(3)))

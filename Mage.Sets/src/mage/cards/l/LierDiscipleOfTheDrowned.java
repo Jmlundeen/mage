@@ -36,7 +36,7 @@ public final class LierDiscipleOfTheDrowned extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new LierDiscipleOfTheDrownedCounteredEffect()));
 
         // Each instant and sorcery card in your graveyard has flashback. The flashback cost is equal to that card's mana cost.
-        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
                 .setAffectedZones(Zone.GRAVEYARD)
                 .setCardFilter(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY)
                 .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))

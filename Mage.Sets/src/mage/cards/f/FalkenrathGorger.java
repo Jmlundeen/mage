@@ -44,7 +44,7 @@ public final class FalkenrathGorger extends CardImpl {
          * from Falkenrath Gorger.
          */
         // Each Vampire creature card you own that isn't on the battlefield has madness. Its madness cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
                 .withGainedAbility((card, source, game) -> new MadnessAbility(card.getManaCost()))
                 .setCardFilter(filter)
                 .setAffectedZones(Zone.GRAVEYARD, Zone.HAND, Zone.LIBRARY, Zone.EXILED, Zone.COMMAND, Zone.STACK)

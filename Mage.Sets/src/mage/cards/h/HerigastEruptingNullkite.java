@@ -50,7 +50,7 @@ public final class HerigastEruptingNullkite extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Each creature spell you cast has emerge. The emerge cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
                 .withGainedAbility((card, source, game) -> new EmergeAbility(card, card.getManaCost().getText()))
                 .setAffectedZones(Zone.HAND, Zone.GRAVEYARD, Zone.LIBRARY, Zone.EXILED, Zone.COMMAND, Zone.STACK)
                 .setCardFilter(StaticFilters.FILTER_CARD_CREATURE)

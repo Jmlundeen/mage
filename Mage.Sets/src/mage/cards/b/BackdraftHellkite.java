@@ -27,7 +27,7 @@ public final class BackdraftHellkite extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Whenever Backdraft Hellkite attacks, each instant and sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        this.addAbility(new AttacksTriggeredAbility(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility, TargetController.YOU)
+        this.addAbility(new AttacksTriggeredAbility(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
                 .setAffectedZones(Zone.GRAVEYARD)
                 .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
                 .setText("Each instant and sorcery card in your graveyard gains flashback until end of turn. " +

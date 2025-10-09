@@ -40,7 +40,7 @@ public final class WireSurgeons extends CardImpl {
         this.addAbility(FearAbility.getInstance());
 
         // Each artifact creature card in your graveyard has encore. Its encore cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, TargetController.YOU)
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
                 .setAffectedZones(Zone.GRAVEYARD)
                 .setCardFilter(filter)
                 .withGainedAbility((card, source, game) -> new EncoreAbility(card.getManaCost()))

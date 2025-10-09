@@ -43,7 +43,8 @@ public final class ArchonOfTheWildRose extends CardImpl {
         // Other creatures you control that are enchanted by Auras you control have base power and toughness 4/4 and have flying.
         Ability ability = new SimpleStaticAbility(
                 new ContinuousEffectBuilder(Outcome.BoostCreature, filter)
-                        .withSetPowerAndToughness(4, 4)
+                        .withSetPower(4)
+                        .withSetToughness(4)
                         .withGainedAbilities(FlyingAbility.getInstance())
                         .setText("{permFilter} have {basePT} and have {gainedAbilities}")
         );
