@@ -67,6 +67,28 @@ public enum CardType {
         return includeInSearch;
     }
 
+    public SubTypeSet getSubTypeSet() {
+        switch (this) {
+            case ARTIFACT:
+                return SubTypeSet.ArtifactType;
+            case BATTLE:
+                return SubTypeSet.BattleType;
+            case CREATURE:
+            case KINDRED:
+                return SubTypeSet.CreatureType;
+            case ENCHANTMENT:
+                return SubTypeSet.EnchantmentType;
+            case LAND:
+                return SubTypeSet.NonBasicLandType;
+            case PLANESWALKER:
+                return SubTypeSet.PlaneswalkerType;
+            case INSTANT:
+            case SORCERY:
+                return SubTypeSet.SpellType;
+            default:
+                return null;
+        }
+    }
     /**
      * Returns all of the card types from two lists of card types. Duplicates
      * are eliminated.

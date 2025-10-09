@@ -10,6 +10,7 @@ import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ChooseCreatureTypeEffect;
+import mage.abilities.mana.*;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.filter.FilterCard;
@@ -35,48 +36,49 @@ import java.util.stream.Collectors;
  */
 public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
-    private FilterStackObject stackObjectFilter;
-    private FilterPermanent permanentFilter;
-    private FilterCard cardFilter;
-    private TargetController targetController;
-    private ContinuousAffected affected = ContinuousAffected.STATIC;
-    private List<MageObjectReference> staticAffectedObjects;
-    private List<Zone> affectedZones;
-    private List<Ability> gainedAbilities;
-    private List<Layer> additionalLayers;
-    private List<SubLayer> additionalSublayers;
-    private DynamicValue powerModifier;
-    private DynamicValue toughnessModifier;
-    private DynamicValue basePower;
-    private DynamicValue baseToughness;
-    private List<CardType> addedCardTypes;
-    private List<CardType> removedCardTypes;
-    private List<SuperType> addedSuperTypes;
-    private List<SuperType> removedSuperTypes;
-    private List<SubType> addedSubTypes;
-    private List<SubType> removedSubTypes;
-    private ObjectColor addedColor;
-    private boolean removeOtherAbilities;
-    private boolean removeOtherCardTypes;
-    private boolean removeOtherSuperTypes;
-    private boolean removeOtherSubTypes;
-    private boolean useChosenCreatureType;
-    private boolean removeOtherColors;
-    private MakeAbilityFunction makeAbilityFunction;
-    private Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
-    int cachedAbilityZcc; // reset created abilities cache if source ZCC changes
-    private List<Class<? extends Ability>> abilitiesToRemove;
+    protected FilterStackObject stackObjectFilter;
+    protected FilterPermanent permanentFilter;
+    protected FilterCard cardFilter;
+    protected TargetController targetController;
+    protected ContinuousAffected affected = ContinuousAffected.STATIC;
+    protected List<MageObjectReference> staticAffectedObjects;
+    protected List<Zone> affectedZones;
+    protected List<Ability> gainedAbilities;
+    protected List<Layer> additionalLayers;
+    protected List<SubLayer> additionalSublayers;
+    protected DynamicValue powerModifier;
+    protected DynamicValue toughnessModifier;
+    protected DynamicValue basePower;
+    protected DynamicValue baseToughness;
+    protected List<CardType> addedCardTypes;
+    protected List<CardType> removedCardTypes;
+    protected List<SuperType> addedSuperTypes;
+    protected List<SuperType> removedSuperTypes;
+    protected List<SubType> addedSubTypes;
+    protected List<SubType> removedSubTypes;
+    protected List<SubTypeSet> removedSubTypeSets;
+    protected ObjectColor addedColor;
+    protected boolean removeOtherAbilities;
+    protected boolean removeOtherCardTypes = true;
+    protected boolean removeOtherSubtypes = true;
+    protected boolean useChosenCreatureType;
+    protected boolean removeOtherColors;
+    protected MakeAbilityFunction makeAbilityFunction;
+    protected Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
+    protected int cachedAbilityZcc; // reset created abilities cache if source ZCC changes
+    protected List<Class<? extends Ability>> abilitiesToRemove;
 
     /**
-     * Creates a new standard ContinuousEffectBuilder.
+     * Creates a new standard ContinuousEffectBuilder. For abilities that affect cards of the controller
      * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome) {
         super(duration, outcome);
+        this.targetController = TargetController.YOU;
     }
 
     /**
-     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, controller, or permanent source is attached to.
+     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object or permanent source is attached to.
      * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, ContinuousAffected affected) {
@@ -85,7 +87,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
-     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object, controller, or permanent source is attached to.
+     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object or permanent source is attached to.
      * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
      */
     public ContinuousEffectBuilder(Outcome outcome, ContinuousAffected affected) {
@@ -167,11 +169,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.removedSuperTypes = effect.removedSuperTypes;
         this.addedSubTypes = effect.addedSubTypes;
         this.removedSubTypes = effect.removedSubTypes;
+        this.removedSubTypeSets = effect.removedSubTypeSets;
         this.addedColor = effect.addedColor;
         this.removeOtherAbilities = effect.removeOtherAbilities;
         this.removeOtherCardTypes = effect.removeOtherCardTypes;
-        this.removeOtherSuperTypes = effect.removeOtherSuperTypes;
-        this.removeOtherSubTypes = effect.removeOtherSubTypes;
+        this.removeOtherSubtypes = effect.removeOtherSubtypes;
         this.useChosenCreatureType = effect.useChosenCreatureType;
         this.removeOtherColors = effect.removeOtherColors;
         this.makeAbilityFunction = effect.makeAbilityFunction;
@@ -304,11 +306,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     private void addAbilities(Ability source, Game game, MageObject mageObject) {
         if (gainedAbilities != null) {
             for (Ability abilityToAdd : gainedAbilities) {
-                if (mageObject instanceof Permanent) {
-                    ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
-                } else if (mageObject instanceof Card) {
-                    game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
-                }
+                addAbilityToObject(source, game, mageObject, abilityToAdd);
             }
         }
         if (makeAbilityFunction != null && mageObject instanceof Card) {
@@ -327,13 +325,16 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
             if (abilityToAdd != null) {
                 createdAbilities.put(mageObject.getId(), abilityToAdd);
-
-                if (mageObject instanceof Permanent) {
-                    ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
-                } else {
-                    game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
-                }
+                addAbilityToObject(source, game, mageObject, abilityToAdd);
             }
+        }
+    }
+
+    private static void addAbilityToObject(Ability source, Game game, MageObject mageObject, Ability abilityToAdd) {
+        if (mageObject instanceof Permanent) {
+            ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
+        } else if (mageObject instanceof Card) {
+            game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
         }
     }
 
@@ -363,37 +364,146 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     private void handleSubTypes(Ability source, Game game, MageObject mageObject) {
-        if (removeOtherSubTypes) {
-            mageObject.removeAllSubTypes(game);
+        if (removedSubTypes != null) {
+            for (SubType subType : removedSubTypes) {
+                mageObject.removeSubType(game, subType);
+            }
         }
         if (useChosenCreatureType) {
             SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
+            if (removeOtherSubtypes) {
+                mageObject.removeAllSubTypes(game, SubTypeSet.CreatureType);
+            }
             if (subType != null) {
                 mageObject.addSubType(game, subType);
             }
         }
         if (addedSubTypes != null) {
-            mageObject.addSubType(game, addedSubTypes);
+            List<SubType> addedBasicLandTypes = new ArrayList<>();
+            Set<SubTypeSet> setsToRemove = new HashSet<>();
+            for (SubType subType : addedSubTypes) {
+                setsToRemove.add(subType.getSubTypeSet());
+            }
+            if (removeOtherSubtypes) {
+                // 205.1a. ...Similarly, when an effect sets one or more of an object's subtypes,
+                // the new subtype(s) replaces any existing subtypes from the appropriate set
+                // (creature types, land types, artifact types, enchantment types, planeswalker types, or spell types).
+                for (SubTypeSet set : setsToRemove) {
+                    mageObject.removeAllSubTypes(game, set);
+                }
+            }
+            for (SubType subType : addedSubTypes) {
+                mageObject.addSubType(game, subType);
+                if (subType.getSubTypeSet() == SubTypeSet.BasicLandType) {
+                    addedBasicLandTypes.add(subType);
+                }
+            }
+            if (!addedBasicLandTypes.isEmpty()) {
+                checkManaAbilities(source, game, mageObject, addedBasicLandTypes);
+            }
+        }
+    }
+
+    private static void checkManaAbilities(Ability source, Game game, MageObject mageObject, List<SubType> addedBasicLandTypes) {
+        if (!(mageObject instanceof Permanent)) {
+            return;
+        }
+
+        Permanent permanent = (Permanent) mageObject;
+
+        // check if types being added + existing types include all basic land types
+        Set<SubType> allBasicLandTypes = EnumSet.noneOf(SubType.class);
+        for (SubType subType : addedBasicLandTypes) {
+            if (subType.getSubTypeSet() == SubTypeSet.BasicLandType) {
+                allBasicLandTypes.add(subType);
+            }
+        }
+        for (SubType subType : permanent.getSubtype(game)) {
+            if (subType.getSubTypeSet() == SubTypeSet.BasicLandType) {
+                allBasicLandTypes.add(subType);
+            }
+        }
+        if (allBasicLandTypes.size() == 5) {
+            // all basic land types are present, remove basic mana abilities and add AnyColorManaAbility
+            for (Ability basicManaAbility : Arrays.asList(
+                    new WhiteManaAbility(),
+                    new BlueManaAbility(),
+                    new BlackManaAbility(),
+                    new RedManaAbility(),
+                    new GreenManaAbility())) {
+                if (permanent.getAbilities(game).containsRule(basicManaAbility)) {
+                    permanent.removeAbility(basicManaAbility, source.getSourceId(), game);
+                }
+            }
+            permanent.addAbility(new AnyColorManaAbility(), source.getSourceId(), game);
+        } else {
+            // not all basic land types are present, add basic mana abilities for added basic land types
+            for (SubType subType : addedBasicLandTypes) {
+                switch (subType) {
+                    case FOREST:
+                        if (!permanent.getAbilities(game).containsClass(GreenManaAbility.class)) {
+                            permanent.addAbility(new GreenManaAbility(), source.getSourceId(), game);
+                        }
+                        break;
+                    case ISLAND:
+                        if (!permanent.getAbilities(game).containsClass(BlueManaAbility.class)) {
+                            permanent.addAbility(new BlueManaAbility(), source.getSourceId(), game);
+                        }
+                        break;
+                    case SWAMP:
+                        if (!permanent.getAbilities(game).containsClass(BlackManaAbility.class)) {
+                            permanent.addAbility(new BlackManaAbility(), source.getSourceId(), game);
+                        }
+                        break;
+                    case MOUNTAIN:
+                        if (!permanent.getAbilities(game).containsClass(RedManaAbility.class)) {
+                            permanent.addAbility(new RedManaAbility(), source.getSourceId(), game);
+                        }
+                        break;
+                    case PLAINS:
+                        if (!permanent.getAbilities(game).containsClass(WhiteManaAbility.class)) {
+                            permanent.addAbility(new WhiteManaAbility(), source.getSourceId(), game);
+                        }
+                        break;
+                }
+            }
         }
     }
 
     private void handleSuperTypes(Game game, MageObject mageObject) {
-        if (removeOtherSuperTypes) {
-            mageObject.removeAllSuperTypes(game);
-        }
         if (addedSuperTypes != null) {
             for (SuperType superType : addedSuperTypes) {
-                mageObject.addSuperType(superType);
+                mageObject.addSuperType(game, superType);
             }
         }
     }
 
     private void handleCardTypes(Game game, MageObject mageObject) {
+        List<CardType> toRemove = new ArrayList<>();
         if (removeOtherCardTypes) {
-            mageObject.removeAllCardTypes(game);
+            // 205.1a. Some effects set an object's card type. In most such cases, the new card type(s)
+            // replaces any existing card types. However, an object with either the instant or sorcery card type retains that type.
+            game.getState().getCreateMageObjectAttribute(mageObject, game).getCardType().stream()
+                    .filter(cardType -> cardType != CardType.INSTANT && cardType != CardType.SORCERY)
+                    .forEach(toRemove::add);
+        }
+        if (removedCardTypes != null) {
+            toRemove.addAll(removedCardTypes);
         }
         if (addedCardTypes != null) {
             mageObject.addCardType(game, addedCardTypes.toArray(new CardType[0]));
+        }
+        for (CardType cardType : toRemove) {
+            mageObject.removeCardType(game, cardType);
+            // if removing card type, also remove related subtypes
+            // 205.1a. ...If an object's card type is removed, the subtypes correlated with that card type will
+            // remain if they are also the subtypes of a card type the object currently has;
+            // otherwise, they are also removed for the entire time the object's card type is removed.
+            if (cardType == CardType.CREATURE && mageObject.getCardType(game).contains(CardType.KINDRED)
+                    || cardType == CardType.KINDRED && mageObject.getCardType(game).contains(CardType.CREATURE)) {
+                continue;
+            }
+            mageObject.removeAllSubTypes(game, cardType.getSubTypeSet());
         }
     }
 
@@ -742,10 +852,30 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         }
     }
 
+    /**
+     * Add card types to the affected objects and defaults to remove other card types.
+     */
+    public ContinuousEffectBuilder withAddedCardTypes(CardType... cardTypes) {
+        return withAddedCardTypes(true, cardTypes);
+    }
+
+    /**
+     * Add card types to the affected objects. {@link #removeOtherCardTypes} should be true in most cases.
+     * If the effect says "in addition to its other types" or "still a [type, supertype, subtype]" then set false.
+     * If the effect sets Artifact and Creature, it should also be false. This is handled by the function.
+     * @param removeOtherCardTypes if true, removes other card types and related subtypes
+     */
     public ContinuousEffectBuilder withAddedCardTypes(boolean removeOtherCardTypes, CardType... cardTypes) {
         addedCardTypes = Arrays.asList(cardTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
-        this.removeOtherCardTypes = removeOtherCardTypes;
+        if (addedCardTypes.contains(CardType.CREATURE) && addedCardTypes.contains(CardType.ARTIFACT)) {
+            // 205.1a. ...Some effects state that an object becomes an "artifact creature";
+            // these effects also allow the object to retain all of its prior card types and subtypes.
+            this.removeOtherCardTypes = false;
+            this.removeOtherSubtypes = false;
+        } else {
+            this.removeOtherCardTypes = removeOtherCardTypes;
+        }
         return this;
     }
 
@@ -756,36 +886,45 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
-    public ContinuousEffectBuilder withAddedSuperTypes(boolean removeOtherSuperTypes, SuperType... superTypes) {
+    public ContinuousEffectBuilder withAddedSuperTypes(SuperType... superTypes) {
         addedSuperTypes = Arrays.asList(superTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
-        this.removeOtherSuperTypes = removeOtherSuperTypes;
         return this;
     }
 
     public ContinuousEffectBuilder withRemovedSuperTypes(SuperType... superTypes) {
         removedSuperTypes = Arrays.asList(superTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
-        this.removeOtherSuperTypes = true;
         return this;
     }
 
+    /**
+     * Add subtypes to the affected objects. If the effect says "in addition to its other types" or
+     * "still a [subtype]." then set removeOtherSubTypes to false.
+     * @param removeOtherSubTypes if true, removes other subtypes in the same SubTypeSet(s) as the added subtypes
+     */
     public ContinuousEffectBuilder withAddedSubTypes(boolean removeOtherSubTypes, SubType... subTypes) {
         addedSubTypes = Arrays.asList(subTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
-        this.removeOtherSubTypes = removeOtherSubTypes;
+        this.removeOtherSubtypes = removeOtherSubTypes;
         return this;
     }
 
     public ContinuousEffectBuilder withRemovedSubTypes(SubType... subTypes) {
         removedSubTypes = Arrays.asList(subTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
-        this.removeOtherSubTypes = true;
+        this.removeOtherSubtypes = true;
+        return this;
+    }
+
+    public ContinuousEffectBuilder withRemovedSubTypeSets(SubTypeSet... subTypeSets) {
+        removedSubTypeSets = Arrays.asList(subTypeSets);
+        this.addLayer(Layer.TypeChangingEffects_4);
         return this;
     }
 
     public ContinuousEffectBuilder withGainChosenCreatureType(boolean removeOtherCardTypes) {
-        this.removeOtherSubTypes = removeOtherCardTypes;
+        this.removeOtherSubtypes = removeOtherCardTypes;
         this.addLayer(Layer.TypeChangingEffects_4);
         this.useChosenCreatureType = true;
         return this;
