@@ -6,6 +6,8 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.common.*;
 import mage.filter.predicate.Predicates;
+import mage.filter.predicate.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.ability.TriggeredAbilityPredicate;
 import mage.filter.predicate.mageobject.*;
 import mage.filter.predicate.other.AnotherTargetPredicate;
 import mage.filter.predicate.permanent.*;
@@ -1392,5 +1394,22 @@ public final class StaticFilters {
 
     static {
         FILTER_CONTROLLED_CLUE.setLockedFilter(true);
+    }
+
+    public static final FilterAbility FILTER_ACTIVATED_ABILITY = new FilterAbility("activated ability");
+
+    static {
+        FILTER_ACTIVATED_ABILITY.add(ActivatedAbilityPredicate.instance);
+        FILTER_ACTIVATED_ABILITY.setLockedFilter(true);
+    }
+
+    public static final FilterAbility FILTER_ACTIVATED_OR_TRIGGERED_ABILITY = new FilterAbility("activated or triggered ability");
+
+    static {
+        FILTER_ACTIVATED_OR_TRIGGERED_ABILITY.add(Predicates.or(
+                ActivatedAbilityPredicate.instance,
+                TriggeredAbilityPredicate.instance
+        ));
+        FILTER_ACTIVATED_OR_TRIGGERED_ABILITY.setLockedFilter(true);
     }
 }
