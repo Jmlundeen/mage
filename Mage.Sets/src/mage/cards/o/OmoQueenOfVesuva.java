@@ -6,6 +6,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldOrAttacksSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.abilities.mana.*;
 import mage.cards.CardImpl;
@@ -29,6 +30,15 @@ import java.util.UUID;
  */
 public final class OmoQueenOfVesuva extends CardImpl {
 
+    private static final FilterPermanent landFilter = new FilterLandPermanent();
+    private static final FilterPermanent creatureFilter = new FilterNonlandPermanent();
+
+    static {
+        landFilter.add(CounterType.EVERYTHING.getPredicate());
+        creatureFilter.add(CardType.CREATURE.getPredicate());
+        creatureFilter.add(CounterType.EVERYTHING.getPredicate());
+    }
+
     public OmoQueenOfVesuva(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{2}{G/U}");
 
@@ -49,10 +59,17 @@ public final class OmoQueenOfVesuva extends CardImpl {
         this.addAbility(ability);
 
         // Each land with an everything counter on it is every land type in addition to its other types.
-        this.addAbility(new SimpleStaticAbility(new OmoQueenOfVesuvaLandEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.Detriment, TargetController.EACH_PLAYER, landFilter)
+                .withAddedSubTypes(false, SubType.PLAINS, SubType.ISLAND, SubType.SWAMP, SubType.MOUNTAIN, SubType.FOREST)
+                .withIsEveryLandType()
+                .setText("each land with an everything counter on it is every land type in addition to its other types")
+        ));
 
         // Each nonland creature with an everything counter on it is every creature type.
-        this.addAbility(new SimpleStaticAbility(new OmoQueenOfVesuvaCreatureEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.Detriment, TargetController.EACH_PLAYER, creatureFilter)
+                .withIsEveryCreatureType()
+                .setText("each nonland creature with an everything counter on it is every creature type")
+        ));
     }
 
     private OmoQueenOfVesuva(final OmoQueenOfVesuva card) {
@@ -62,115 +79,5 @@ public final class OmoQueenOfVesuva extends CardImpl {
     @Override
     public OmoQueenOfVesuva copy() {
         return new OmoQueenOfVesuva(this);
-    }
-}
-
-class OmoQueenOfVesuvaLandEffect extends ContinuousEffectImpl {
-
-    private static final Ability[] basicManaAbilities = {
-            new WhiteManaAbility(),
-            new BlueManaAbility(),
-            new BlackManaAbility(),
-            new RedManaAbility(),
-            new GreenManaAbility()
-    };
-    private static final FilterPermanent filter = new FilterLandPermanent();
-
-    static {
-        filter.add(CounterType.EVERYTHING.getPredicate());
-    }
-
-    public OmoQueenOfVesuvaLandEffect() {
-        super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
-        this.staticText = "each land with an everything counter on it is every land type in addition to its other types";
-        this.dependendToTypes.add(DependencyType.BecomeMountain);
-        this.dependendToTypes.add(DependencyType.BecomeForest);
-        this.dependendToTypes.add(DependencyType.BecomeSwamp);
-        this.dependendToTypes.add(DependencyType.BecomeIsland);
-        this.dependendToTypes.add(DependencyType.BecomePlains);
-    }
-
-    private OmoQueenOfVesuvaLandEffect(final OmoQueenOfVesuvaLandEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public OmoQueenOfVesuvaLandEffect copy() {
-        return new OmoQueenOfVesuvaLandEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            permanent.addSubType(
-                    game,
-                    SubType.PLAINS,
-                    SubType.ISLAND,
-                    SubType.SWAMP,
-                    SubType.MOUNTAIN,
-                    SubType.FOREST
-            );
-            permanent.setIsAllNonbasicLandTypes(game, true);
-            // Optimization: Remove basic mana abilities since they are redundant with AnyColorManaAbility
-            //               and keeping them will only produce too many combinations inside ManaOptions
-            for (Ability basicManaAbility : basicManaAbilities) {
-                if (permanent.getAbilities(game).containsRule(basicManaAbility)) {
-                    permanent.removeAbility(basicManaAbility, source.getSourceId(), game);
-                }
-            }
-            // Add the {T}: Add one mana of any color ability
-            // This is functionally equivalent to having five "{T}: Add {COLOR}" for each COLOR in {W}{U}{B}{R}{G}
-            AnyColorManaAbility ability = new AnyColorManaAbility();
-            if (!permanent.getAbilities(game).containsRule(ability)) {
-                permanent.addAbility(ability, source.getSourceId(), game);
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
-        return !affectedObjects.isEmpty();
-    }
-}
-
-class OmoQueenOfVesuvaCreatureEffect extends ContinuousEffectImpl {
-
-    private static final FilterPermanent filter = new FilterNonlandPermanent();
-
-    static {
-        filter.add(CardType.CREATURE.getPredicate());
-        filter.add(CounterType.EVERYTHING.getPredicate());
-    }
-
-    public OmoQueenOfVesuvaCreatureEffect() {
-        super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
-        this.staticText = "each nonland creature with an everything counter on it is every creature type";
-        this.dependendToTypes.add(DependencyType.BecomeCreature);
-        this.dependencyTypes.add(DependencyType.AddingCreatureType);
-    }
-
-    private OmoQueenOfVesuvaCreatureEffect(final OmoQueenOfVesuvaCreatureEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public OmoQueenOfVesuvaCreatureEffect copy() {
-        return new OmoQueenOfVesuvaCreatureEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            permanent.setIsAllCreatureTypes(game, true);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
-        return !affectedObjects.isEmpty();
     }
 }

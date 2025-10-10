@@ -40,7 +40,7 @@ public final class ShadesBreath extends CardImpl {
         );
         this.getSpellAbility().addEffect(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BecomeCreature, TargetController.YOU, StaticFilters.FILTER_PERMANENT_CREATURE)
                 .withAddedColor(true, ObjectColor.BLACK)
-                .withAddedSubTypes(true, SubType.SHADE)
+                .withAddedSubTypes(SubType.SHADE)
                 .withGainedAbilities(gainedAbility)
                 .setText("Until end of turn, each creature you control becomes a black Shade and gains \"{B}: This creature gets +1/+1 until end of turn.\"")
         );

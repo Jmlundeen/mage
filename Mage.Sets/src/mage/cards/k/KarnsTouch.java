@@ -35,7 +35,7 @@ public final class KarnsTouch extends CardImpl {
 
         // Target noncreature artifact becomes an artifact creature with power and toughness each equal to its converted mana cost until end of turn.
         this.getSpellAbility().addEffect(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BecomeCreature)
-                .withAddedCardTypes(false, CardType.ARTIFACT, CardType.CREATURE)
+                .withAddedCardTypes(CardType.ARTIFACT, CardType.CREATURE)
                 .withSetPower(ObjectManaValue.instance)
                 .withSetToughness(ObjectManaValue.instance)
                 .setText("Target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value until end of turn")

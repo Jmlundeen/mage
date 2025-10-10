@@ -31,7 +31,7 @@ public final class MarchOfTheMachines extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.BecomeCreature, filter)
                 .withSetPower(ObjectManaValue.instance)
                 .withSetToughness(ObjectManaValue.instance)
-                .withAddedCardTypes(false, CardType.CREATURE)
+                .withAddedCardTypes(CardType.ARTIFACT, CardType.CREATURE)
                 .setText("Each noncreature artifact is an artifact creature with power and toughness each equal to " + ObjectManaValue.instance.getMessage())
         ));
     }
