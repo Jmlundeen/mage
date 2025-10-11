@@ -16,6 +16,7 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
 import mage.filter.FilterStackObject;
+import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.command.Commander;
 import mage.game.permanent.Permanent;
@@ -39,7 +40,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     protected FilterStackObject stackObjectFilter;
     protected FilterPermanent permanentFilter;
     protected FilterCard cardFilter;
-    protected TargetController targetController;
+    protected TargetController cardsControlledBy = TargetController.YOU;
     protected ContinuousAffected affected = ContinuousAffected.STATIC;
     protected List<MageObjectReference> staticAffectedObjects;
     protected List<Zone> affectedZones;
@@ -76,7 +77,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome) {
         super(duration, outcome);
-        this.targetController = TargetController.YOU;
     }
 
     /**
@@ -102,7 +102,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController objectController) {
         super(duration, outcome);
-        this.targetController = objectController;
+        this.cardsControlledBy = objectController;
     }
 
     /**
@@ -112,7 +112,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder(Outcome outcome, TargetController objectController, FilterPermanent permanentFilter) {
         super(Duration.WhileOnBattlefield, outcome);
         this.permanentFilter = permanentFilter;
-        this.targetController = objectController;
+        this.cardsControlledBy = objectController;
         this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
     }
 
@@ -122,29 +122,29 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder(Outcome outcome, FilterPermanent permanentFilter) {
         super(Duration.WhileOnBattlefield, outcome);
         this.permanentFilter = permanentFilter;
-        this.targetController = TargetController.YOU;
+        this.cardsControlledBy = TargetController.YOU;
         this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
     }
 
     /**
      * Creates a new ContinuousEffectBuilder that applies to permanents on the battlefield
-     * @param targetController the controller whose objects are affected. Use {@link TargetController#YOU}, {@link TargetController#OPPONENT}, {@link TargetController#EACH_PLAYER}
+     * @param cardsControlledBy the controller whose objects are affected. Use {@link TargetController#YOU}, {@link TargetController#OPPONENT}, {@link TargetController#EACH_PLAYER}
      */
-    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController targetController, FilterPermanent permanentFilter) {
+    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController cardsControlledBy, FilterPermanent permanentFilter) {
         super(duration, outcome);
         this.permanentFilter = permanentFilter;
-        this.targetController = targetController;
+        this.cardsControlledBy = cardsControlledBy;
         this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
     }
 
     /**
      * Creates a new ContinuousEffectBuilder that applies to Cards in the specified zones
      */
-    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController targetController,
+    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController cardsControlledBy,
                                    FilterCard cardFilter, Zone... affectedZones) {
         super(duration, outcome);
         this.cardFilter = cardFilter;
-        this.targetController = targetController;
+        this.cardsControlledBy = cardsControlledBy;
         this.affectedZones = new ArrayList<>();
         Collections.addAll(this.affectedZones, affectedZones);
     }
@@ -154,7 +154,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.stackObjectFilter = effect.stackObjectFilter;
         this.permanentFilter = effect.permanentFilter;
         this.cardFilter = effect.cardFilter;
-        this.targetController = effect.targetController;
+        this.cardsControlledBy = effect.cardsControlledBy;
         this.staticAffectedObjects = effect.staticAffectedObjects;
         this.affected = effect.affected;
         this.affectedZones = effect.affectedZones;
@@ -178,6 +178,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.removeOtherSubtypes = effect.removeOtherSubtypes;
         this.useChosenCreatureType = effect.useChosenCreatureType;
         this.useEveryCreatureType = effect.useEveryCreatureType;
+        this.useEveryLandType = effect.useEveryLandType;
         this.removeOtherColors = effect.removeOtherColors;
         this.makeAbilityFunction = effect.makeAbilityFunction;
         this.createdAbilities = effect.createdAbilities;
@@ -548,31 +549,10 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
             return !affectedObjects.isEmpty();
         }
-        if (affected == ContinuousAffected.SOURCE) {
-            MageObject sourceObject = game.getObject(source.getSourceId());
-            if (sourceObject != null) {
-                affectedObjects.add(sourceObject);
-            }
-            return !affectedObjects.isEmpty();
+        if (affected != ContinuousAffected.STATIC) {
+            return handleSpecialAffected(source, game, controller, affectedObjects);
         }
-        if (affected == ContinuousAffected.ATTACHED_TO) {
-            Permanent sourcePermanent = game.getPermanent(source.getSourceId());
-            if (sourcePermanent == null || sourcePermanent.getAttachedTo() == null) {
-                return false;
-            }
-            Permanent attachedTo = game.getPermanent(sourcePermanent.getAttachedTo());
-            if (attachedTo != null) {
-                affectedObjects.add(attachedTo);
-            }
-            return !affectedObjects.isEmpty();
-        }
-        if (affected == ContinuousAffected.TOP_OF_LIBRARY) {
-            Card topCard = controller.getLibrary().getFromTop(game);
-            if (topCard != null && (cardFilter == null || cardFilter.match(topCard, controller.getId(), source, game))) {
-                affectedObjects.add(topCard);
-            }
-            return !affectedObjects.isEmpty();
-        }
+
         if (affectedZones == null || affectedZones.isEmpty()) {
             return false;
         }
@@ -585,8 +565,48 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return !affectedObjects.isEmpty();
     }
 
+    private boolean handleSpecialAffected(Ability source, Game game, Player controller, List<MageItem> affectedObjects) {
+        switch (affected) {
+            case SOURCE:
+                MageObject sourceObject = game.getObject(source.getSourceId());
+                if (sourceObject != null) {
+                    affectedObjects.add(sourceObject);
+                }
+                break;
+            case EXILED_WITH_SOURCE:
+                ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
+                        game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())
+                ));
+                if (exileZone != null && !exileZone.isEmpty()) {
+                    affectedObjects.addAll(exileZone.getCards(game).stream()
+                            .filter(card -> cardFilter == null || cardFilter.match(card, controller.getId(), source, game))
+                            .collect(Collectors.toList()));
+                }
+                break;
+            case ATTACHED_TO:
+                Permanent sourcePermanent = game.getPermanent(source.getSourceId());
+                if (sourcePermanent == null || sourcePermanent.getAttachedTo() == null) {
+                    return false;
+                }
+                Permanent attachedTo = game.getPermanent(sourcePermanent.getAttachedTo());
+                if (attachedTo != null) {
+                    affectedObjects.add(attachedTo);
+                }
+                break;
+            case TOP_OF_LIBRARY:
+                Card topCard = controller.getLibrary().getFromTop(game);
+                if (topCard != null && (cardFilter == null || cardFilter.match(topCard, controller.getId(), source, game))) {
+                    affectedObjects.add(topCard);
+                }
+                break;
+            default:
+                return false;
+        }
+        return !affectedObjects.isEmpty();
+    }
+
     protected void getObjectsFromZone(Game game, Zone zone, Player controller, Ability source, List<MageItem> affectedObjects) {
-        if (this.targetController.equals(TargetController.YOU)) {
+        if (this.cardsControlledBy.equals(TargetController.YOU)) {
             getPlayersObjectsFromZone(game, zone, controller, source, affectedObjects);
             return;
         }
@@ -598,7 +618,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
             getPlayersObjectsFromZone(game, zone, opponent, source, affectedObjects);
         }
-        if (this.targetController.equals(TargetController.EACH_PLAYER)) {
+        if (this.cardsControlledBy.equals(TargetController.EACH_PLAYER)) {
             getPlayersObjectsFromZone(game, zone, controller, source, affectedObjects);
         }
     }
@@ -683,6 +703,14 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
+     * Set the controller whose objects are affected by this effect.
+     */
+    public ContinuousEffectBuilder setCardsControlledBy(TargetController cardsControlledBy) {
+        this.cardsControlledBy = cardsControlledBy;
+        return this;
+    }
+
+    /**
      * Set the zones the effect applies to.
      */
     public ContinuousEffectBuilder setAffectedZones(Zone... affectedZones) {
@@ -692,7 +720,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
-     * Set the filter for stack objects (spells and abilities on the stack)
+     * Set the filter for stack objects (spells and abilities on the stack) that will be affected
      */
     public ContinuousEffectBuilder setStackObjectFilter(FilterStackObject stackObjectFilter) {
         this.stackObjectFilter = stackObjectFilter;
@@ -700,7 +728,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
-     * Set the filter for permanents on the battlefield
+     * Set the filter for permanents that will be affected on the battlefield
      */
     public ContinuousEffectBuilder setPermanentFilter(FilterPermanent permanentFilter) {
         this.permanentFilter = permanentFilter;
@@ -708,7 +736,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     /**
-     * Set the filter for cards in zones other than the battlefield
+     * Set the filter for cards that will be affected in zones other than the battlefield
      */
     public ContinuousEffectBuilder setCardFilter(FilterCard cardFilter) {
         this.cardFilter = cardFilter;

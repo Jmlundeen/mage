@@ -1,32 +1,29 @@
 package mage.cards.h;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldOrAttacksSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.ExileTargetEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.abilities.keyword.MenaceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledPermanent;
-import mage.game.ExileZone;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.game.permanent.token.FoodToken;
 import mage.target.common.TargetCardInGraveyard;
-import mage.util.CardUtil;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * @author PurpleCrowbar
  */
 public final class HazelsBrewmaster extends CardImpl {
+
+    private static final FilterControlledPermanent filter = new FilterControlledPermanent(SubType.FOOD, "Foods you control");
 
     public HazelsBrewmaster(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{3}{B}");
@@ -44,7 +41,16 @@ public final class HazelsBrewmaster extends CardImpl {
         this.addAbility(ability);
 
         // Foods you control have all activated abilities of all creature cards exiled with Hazel's Brewmaster.
-        this.addAbility(new SimpleStaticAbility(new HazelsBrewmasterAbilityEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
+                Duration.WhileOnBattlefield,
+                ContinuousAffected.STATIC,
+                StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "Foods you control have all activated abilities of all creature cards exiled with {this}")
+                .fromSourceExiled()
+                .setCardWithAbilityFilter(StaticFilters.FILTER_CARD_CREATURE)
+                .setAffectedZones(Zone.BATTLEFIELD)
+                .setPermanentFilter(filter)
+        ));
     }
 
     private HazelsBrewmaster(final HazelsBrewmaster card) {
@@ -54,61 +60,5 @@ public final class HazelsBrewmaster extends CardImpl {
     @Override
     public HazelsBrewmaster copy() {
         return new HazelsBrewmaster(this);
-    }
-}
-
-class HazelsBrewmasterAbilityEffect extends ContinuousEffectImpl {
-
-    private static final FilterControlledPermanent filter = new FilterControlledPermanent(SubType.FOOD, "Foods you control");
-
-    HazelsBrewmasterAbilityEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "Foods you control have all activated abilities of all creature cards exiled with {this}";
-    }
-
-    private HazelsBrewmasterAbilityEffect(final HazelsBrewmasterAbilityEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            for (Ability ability : getAbilities(game, source)) {
-                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Set<Ability> abilities = getAbilities(game, source);
-        if (abilities.isEmpty()) {
-            return false;
-        }
-        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
-        return !affectedObjects.isEmpty();
-    }
-
-    private static Set<Ability> getAbilities(Game game, Ability source) {
-        Set<Ability> abilities = new HashSet<>();
-                ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
-                game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())
-        ));
-        if (exileZone == null || exileZone.isEmpty()) {
-            return abilities;
-        }
-        exileZone
-                .getCards(StaticFilters.FILTER_CARD_CREATURE, game)
-                .stream()
-                .map(card -> card.getAbilities(game))
-                .flatMap(Collection::stream)
-                .filter(Ability::isActivatedAbility)
-                .forEach(abilities::add);
-        return abilities;
-    }
-
-    @Override
-    public HazelsBrewmasterAbilityEffect copy() {
-        return new HazelsBrewmasterAbilityEffect(this);
     }
 }

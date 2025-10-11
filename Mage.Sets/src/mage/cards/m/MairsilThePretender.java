@@ -1,37 +1,39 @@
 package mage.cards.m;
 
 import mage.MageInt;
-import mage.MageItem;
-import mage.abilities.Abilities;
-import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
+import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInHand;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.util.CardUtil;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
  * @author TheElk801
  */
 public final class MairsilThePretender extends CardImpl {
+
+    private static final FilterCard filter = new FilterCard();
+
+    static {
+        filter.add(CounterType.CAGE.getPredicate());
+    }
 
     public MairsilThePretender(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}{B}{R}");
@@ -48,7 +50,12 @@ public final class MairsilThePretender extends CardImpl {
 
         // Mairsil, the Pretender has all activated abilities of all cards you own in exile with cage counters on them. 
         // You may activate each of those abilities only once each turn.
-        Ability ability = new SimpleStaticAbility(new MairsilThePretenderGainAbilitiesEffect());
+        Ability ability = new SimpleStaticAbility(new GainAbilitiesOfEffect(
+                StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of all cards you own in exile with cage counters on them. You may activate each of those abilities only once each turn")
+                .fromCardsInZones(filter, Zone.EXILED)
+                .modifyAbilities((newAbility) -> ((ActivatedAbility) newAbility).setMaxActivationsPerTurn(1)
+        ));
         this.addAbility(ability);
     }
 
@@ -112,56 +119,5 @@ class MairsilThePretenderExileEffect extends OneShotEffect {
             return CardUtil.moveCardWithCounter(game, source, controller, card, Zone.EXILED, CounterType.CAGE.createInstance());
         }
         return false;
-    }
-}
-
-class MairsilThePretenderGainAbilitiesEffect extends ContinuousEffectImpl {
-
-    private static final FilterCard filter = new FilterCard();
-
-    static {
-        filter.add(CounterType.CAGE.getPredicate());
-    }
-
-    public MairsilThePretenderGainAbilitiesEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of all cards you own in exile with cage counters on them. You may activate each of those abilities only once each turn";
-    }
-
-    private MairsilThePretenderGainAbilitiesEffect(final MairsilThePretenderGainAbilitiesEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Abilities<Ability> abilities = new AbilitiesImpl<>();
-        for (Card card : game.getExile().getCardsOwned(filter, source.getControllerId(), source, game)) {
-            for (Ability ability : card.getAbilities(game)) {
-                if (ability.isActivatedAbility()) {
-                    ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
-                    copyAbility.setMaxActivationsPerTurn(1);
-                    abilities.add(copyAbility);
-                }
-            }
-        }
-        for (MageItem object : affectedObjects) {
-            for (Ability ability : abilities) {
-                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm != null) {
-            affectedObjects.add(perm);
-        }
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public MairsilThePretenderGainAbilitiesEffect copy() {
-        return new MairsilThePretenderGainAbilitiesEffect(this);
     }
 }

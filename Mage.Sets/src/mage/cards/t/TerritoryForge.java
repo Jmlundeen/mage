@@ -1,26 +1,19 @@
 package mage.cards.t;
 
-import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.ActivatedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.CastFromEverywhereSourceCondition;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ExileTargetEffect;
-import mage.cards.Card;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
 import mage.filter.FilterPermanent;
+import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
-import mage.game.ExileZone;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
-import mage.util.CardUtil;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -44,7 +37,10 @@ public final class TerritoryForge extends CardImpl {
         this.addAbility(ability);
 
         // Territory Forge has all activated abilities of the exiled card.
-        this.addAbility(new SimpleStaticAbility(new TerritoryForgeStaticEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of the exiled card")
+                .fromSourceExiled()
+        ));
     }
 
     private TerritoryForge(final TerritoryForge card) {
@@ -54,55 +50,5 @@ public final class TerritoryForge extends CardImpl {
     @Override
     public TerritoryForge copy() {
         return new TerritoryForge(this);
-    }
-}
-
-// Inspired by Dark Impostor
-class TerritoryForgeStaticEffect extends ContinuousEffectImpl {
-
-    TerritoryForgeStaticEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.Benefit);
-        staticText = "{this} has all activated abilities of the exiled card";
-    }
-
-    private TerritoryForgeStaticEffect(final TerritoryForgeStaticEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public TerritoryForgeStaticEffect copy() {
-        return new TerritoryForgeStaticEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), permanent.getZoneChangeCounter(game));
-            ExileZone exileZone = game.getExile().getExileZone(exileId);
-            for (Card card : exileZone.getCards(game)) {
-                for (Ability ability : card.getAbilities(game)) {
-                    if (ability.isActivatedAbility()) {
-                        ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
-                        permanent.addAbility(copyAbility, source.getSourceId(), game, true);
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
-            return false;
-        }
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), permanent.getZoneChangeCounter(game));
-        ExileZone exileZone = game.getExile().getExileZone(exileId);
-        if (exileZone == null || exileZone.isEmpty()) {
-            return false;
-        }
-        affectedObjects.add(permanent);
-        return true;
     }
 }

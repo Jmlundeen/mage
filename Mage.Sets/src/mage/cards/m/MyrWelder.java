@@ -1,23 +1,25 @@
 package mage.cards.m;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.AbilityWord;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SubType;
+import mage.filter.StaticFilters;
 import mage.filter.common.FilterArtifactCard;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInGraveyard;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -39,7 +41,11 @@ public final class MyrWelder extends CardImpl {
         this.addAbility(ability.setAbilityWord(AbilityWord.IMPRINT));
 
         // Myr Welder has all activated abilities of all cards exiled with it
-        this.addAbility(new SimpleStaticAbility(new MyrWelderContinuousEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
+                StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of all cards exiled with it")
+                .fromSourceImprinted()
+        ));
 
     }
 
@@ -80,51 +86,6 @@ class MyrWelderEffect extends OneShotEffect {
     @Override
     public MyrWelderEffect copy() {
         return new MyrWelderEffect(this);
-    }
-
-}
-
-class MyrWelderContinuousEffect extends ContinuousEffectImpl {
-
-    MyrWelderContinuousEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of all cards exiled with it";
-    }
-
-    private MyrWelderContinuousEffect(final MyrWelderContinuousEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent perm = (Permanent) object;
-            for (UUID imprintedId : perm.getImprinted()) {
-                Card card = game.getCard(imprintedId);
-                if (card != null) {
-                    for (Ability ability : card.getAbilities(game)) {
-                        if (ability.isActivatedAbility()) {
-                            perm.addAbility(ability, source.getId(), game, true);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent != null) {
-            affectedObjects.add(permanent);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public MyrWelderContinuousEffect copy() {
-        return new MyrWelderContinuousEffect(this);
     }
 
 }

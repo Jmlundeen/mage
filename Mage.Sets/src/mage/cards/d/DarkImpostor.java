@@ -1,28 +1,26 @@
 package mage.cards.d;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
-import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
 import mage.util.CardUtil;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -48,7 +46,10 @@ public final class DarkImpostor extends CardImpl {
         this.addAbility(ability);
 
         // Dark Impostor has all activated abilities of all creature cards exiled with it.
-        this.addAbility(new SimpleStaticAbility(new DarkImpostorContinuousEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of all creature cards exiled with it")
+                .fromSourceExiled()
+        ));
     }
 
     private DarkImpostor(final DarkImpostor card) {
@@ -85,53 +86,9 @@ class DarkImpostorExileTargetEffect extends OneShotEffect {
             return false;
         }
         return player.moveCardsToExile(
-                permanent, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
+                permanent, source, game, true,
+                CardUtil.getExileZoneId(game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())),
+                CardUtil.getSourceName(game, source)
         );
-    }
-}
-
-class DarkImpostorContinuousEffect extends ContinuousEffectImpl {
-
-    DarkImpostorContinuousEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of all creature cards exiled with it";
-    }
-
-    private DarkImpostorContinuousEffect(final DarkImpostorContinuousEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source, 1));
-            if (exileZone == null || exileZone.isEmpty()) {
-                continue;
-            }
-            for (Card card : exileZone.getCards(StaticFilters.FILTER_CARD_CREATURE, game)) {
-                for (Ability ability : card.getAbilities(game)) {
-                    if (ability.isActivatedAbility()) {
-                        permanent.addAbility(ability, source.getSourceId(), game, true);
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
-            return false;
-        }
-        affectedObjects.add(permanent);
-        return true;
-    }
-
-    @Override
-    public DarkImpostorContinuousEffect copy() {
-        return new DarkImpostorContinuousEffect(this);
     }
 }

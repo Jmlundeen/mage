@@ -1,21 +1,23 @@
 package mage.cards.k;
 
 import mage.ApprovingObject;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.GetXValue;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.abilities.effects.keyword.ScryEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterAbility;
 import mage.filter.FilterCard;
-import mage.filter.StaticFilters;
+import mage.filter.FilterPermanent;
 import mage.filter.common.FilterInstantOrSorceryCard;
+import mage.filter.predicate.ability.LoyaltyAbilityPredicate;
+import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.mageobject.SharesColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -23,14 +25,20 @@ import mage.game.permanent.token.FractalToken;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
  */
 public final class KasminaEnigmaSage extends CardImpl {
+
+    private static final FilterAbility abilityFilter = new FilterAbility("the loyalty abilities of {this}");
+    private static final FilterPermanent permanentFilter = new FilterPermanent("each other planeswalker you control");
+    static {
+        abilityFilter.add(LoyaltyAbilityPredicate.instance);
+        permanentFilter.add(AnotherPredicate.instance);
+        permanentFilter.add(CardType.PLANESWALKER.getPredicate());
+    }
 
     public KasminaEnigmaSage(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.PLANESWALKER}, "{1}{G}{U}");
@@ -40,7 +48,13 @@ public final class KasminaEnigmaSage extends CardImpl {
         this.setStartingLoyalty(2);
 
         // Each other planeswalker you control has the loyalty abilities of Kasmina, Enigma Sage.
-        this.addAbility(new SimpleStaticAbility(new KasminaEnigmaSageGainAbilitiesEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield,
+                ContinuousAffected.STATIC, abilityFilter,
+                "each other planeswalker you control has the loyalty abilities of {this}")
+                .fromSource()
+                .setAffectedZones(Zone.BATTLEFIELD)
+                .setPermanentFilter(permanentFilter)
+        ));
 
         // +2: Scry 1.
         this.addAbility(new LoyaltyAbility(new ScryEffect(1, false), 2));
@@ -61,51 +75,6 @@ public final class KasminaEnigmaSage extends CardImpl {
     @Override
     public KasminaEnigmaSage copy() {
         return new KasminaEnigmaSage(this);
-    }
-}
-
-class KasminaEnigmaSageGainAbilitiesEffect extends ContinuousEffectImpl {
-
-    KasminaEnigmaSageGainAbilitiesEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "each other planeswalker you control has the loyalty abilities of {this}";
-    }
-
-    private KasminaEnigmaSageGainAbilitiesEffect(final KasminaEnigmaSageGainAbilitiesEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        List<Ability> loyaltyAbilities = source.getSourcePermanentIfItStillExists(game)
-                .getAbilities(game)
-                .stream()
-                .filter(LoyaltyAbility.class::isInstance)
-                .collect(Collectors.toList());
-        for (MageItem object : affectedObjects) {
-            for (Ability ability : loyaltyAbilities) {
-                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent perm = source.getSourcePermanentIfItStillExists(game);
-        if (perm == null) {
-            return false;
-        }
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER, source.getControllerId(), source, game)) {
-            affectedObjects.add(permanent);
-            source.getAffectedObjects().add(permanent);
-        }
-        return !affectedObjects.isEmpty();
-    }
-
-    @Override
-    public KasminaEnigmaSageGainAbilitiesEffect copy() {
-        return new KasminaEnigmaSageGainAbilitiesEffect(this);
     }
 }
 

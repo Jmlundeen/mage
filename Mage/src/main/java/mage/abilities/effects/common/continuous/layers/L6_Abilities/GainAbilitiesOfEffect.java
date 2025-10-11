@@ -9,10 +9,12 @@ import mage.constants.*;
 import mage.filter.FilterAbility;
 import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
+import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardQuery;
+import mage.util.CardUtil;
 
 import java.util.*;
 
@@ -24,11 +26,13 @@ public class GainAbilitiesOfEffect extends ContinuousEffectBuilder {
 
     FilterAbility filter;
     Set<Zone> cardWithAbilityZones;
-    TargetController cardController = TargetController.YOU;
+    TargetController cardWithAbilityController = TargetController.YOU;
     FilterCard cardWithAbilityFilter;
     FilterPermanent permanentWithAbilityFilter;
     ModifyAbilityFunction modifyAbilityFunction;
-    boolean giveOwnAbilities;
+    boolean fromSource;
+    boolean fromSourceExiled;
+    boolean fromSourceImprinted;
 
     public GainAbilitiesOfEffect(FilterAbility filter, String text) {
         this(Duration.WhileOnBattlefield, ContinuousAffected.SOURCE, filter, text);
@@ -62,11 +66,27 @@ public class GainAbilitiesOfEffect extends ContinuousEffectBuilder {
     }
 
     /**
+     * Sets the filter for cards when not using {@link #fromCardsInZones(FilterCard, Zone...)}
+     */
+    public GainAbilitiesOfEffect setCardWithAbilityFilter(FilterCard cardWithAbilityFilter) {
+        this.cardWithAbilityFilter = cardWithAbilityFilter;
+        return this;
+    }
+
+    /**
+     * Sets the filter for permanents when not using {@link #fromPermanents(FilterPermanent)}
+     */
+    public GainAbilitiesOfEffect setPermanentWithAbilityFilter(FilterPermanent permanentWithAbilityFilter) {
+        this.permanentWithAbilityFilter = permanentWithAbilityFilter;
+        return this;
+    }
+
+    /**
      * Designate which player's cards to use. Supports YOU, OPPONENT, and EACH_PLAYER.
      * @param cardController {@link TargetController}
      */
     public GainAbilitiesOfEffect fromCardsControlledBy(TargetController cardController) {
-        this.cardController = cardController;
+        this.cardWithAbilityController = cardController;
         return this;
     }
 
@@ -79,15 +99,50 @@ public class GainAbilitiesOfEffect extends ContinuousEffectBuilder {
         return this;
     }
 
+    /**
+     * Designate which player's cards to gain abilities from. Supports YOU, OPPONENT, and EACH_PLAYER.
+     * @param cardWithAbilityController {@link TargetController}
+     */
+    public GainAbilitiesOfEffect setCardWithAbilityController(TargetController cardWithAbilityController) {
+        this.cardWithAbilityController = cardWithAbilityController;
+        return this;
+    }
+
+    /**
+     * Use this when you want abilities from cards exiled by the source
+     */
+    public GainAbilitiesOfEffect fromSourceExiled() {
+        this.fromSourceExiled = true;
+        return this;
+    }
+
+    /**
+     * Use this when you want abilities from cards imprinted on the source
+     */
+    public GainAbilitiesOfEffect fromSourceImprinted() {
+        this.fromSourceImprinted = true;
+        return this;
+    }
+
+    /**
+     * Use this when you want abilities from the source itself
+     */
+    public GainAbilitiesOfEffect fromSource() {
+        this.fromSource = true;
+        return this;
+    }
+
     private GainAbilitiesOfEffect(final GainAbilitiesOfEffect effect) {
         super(effect);
         this.filter = effect.filter;
         this.cardWithAbilityZones = effect.cardWithAbilityZones;
-        this.cardController = effect.cardController;
+        this.cardWithAbilityController = effect.cardWithAbilityController;
         this.cardWithAbilityFilter = effect.cardWithAbilityFilter;
         this.permanentWithAbilityFilter = effect.permanentWithAbilityFilter;
         this.modifyAbilityFunction = effect.modifyAbilityFunction;
-        this.giveOwnAbilities = effect.giveOwnAbilities;
+        this.fromSource = effect.fromSource;
+        this.fromSourceExiled = effect.fromSourceExiled;
+        this.fromSourceImprinted = effect.fromSourceImprinted;
     }
 
     @Override
@@ -102,7 +157,7 @@ public class GainAbilitiesOfEffect extends ContinuousEffectBuilder {
             for (Ability ability : abilities) {
                 Ability newAbility = ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
                 if (newAbility != null && modifyAbilityFunction != null) {
-                    modifyAbilityFunction.apply(game, source, newAbility);
+                    modifyAbilityFunction.apply(newAbility);
                 }
             }
         }
@@ -110,7 +165,7 @@ public class GainAbilitiesOfEffect extends ContinuousEffectBuilder {
 
     private List<Ability> getAbilities(Ability source, Game game) {
         List<Ability> abilities = new ArrayList<>();
-        if (giveOwnAbilities) {
+        if (fromSource) {
             Permanent permanent = source.getSourcePermanentIfItStillExists(game);
             if (permanent != null) {
                 for (Ability ability : permanent.getAbilities(game)) {
@@ -121,9 +176,42 @@ public class GainAbilitiesOfEffect extends ContinuousEffectBuilder {
             }
             return abilities;
         }
+        if (fromSourceExiled) {
+            ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
+                    game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())
+            ));
+            if (exileZone != null && !exileZone.isEmpty()) {
+                exileZone.getCards(game).stream()
+                        .filter(card -> cardFilter == null || cardFilter.match(card, source.getControllerId(), source, game))
+                        .forEach(card -> {
+                            for (Ability ability : card.getAbilities(game)) {
+                                if (filter.match(ability, game)) {
+                                    abilities.add(ability);
+                                }
+                            }
+                        });
+            }
+            return abilities;
+        }
+        if (fromSourceImprinted) {
+            Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+            if (permanent != null) {
+                for (UUID imprintedId : permanent.getImprinted()) {
+                    Card card = game.getCard(imprintedId);
+                    if (card != null && (cardWithAbilityFilter == null || cardWithAbilityFilter.match(card, source.getControllerId(), source, game))) {
+                        for (Ability ability : card.getAbilities(game)) {
+                            if (filter.match(ability, game)) {
+                                abilities.add(ability);
+                            }
+                        }
+                    }
+                }
+            }
+            return abilities;
+        }
         Player controller = game.getPlayer(source.getControllerId());
         List<MageObject> objects = new ArrayList<>();
-        CardQuery cardQuery = new CardQuery(cardController, cardWithAbilityFilter, stackObjectFilter, permanentWithAbilityFilter);
+        CardQuery cardQuery = new CardQuery(cardWithAbilityController, cardWithAbilityFilter, stackObjectFilter, permanentWithAbilityFilter);
         if (controller != null && cardWithAbilityZones != null) {
             for (Zone zone : cardWithAbilityZones) {
                 cardQuery.getObjectsFromZone(game, zone, controller, source, objects);
@@ -145,5 +233,17 @@ public class GainAbilitiesOfEffect extends ContinuousEffectBuilder {
             }
         }
         return abilities;
+    }
+
+    @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        int result = 0;
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                Permanent permanent = (Permanent) object;
+                result += (int) permanent.getAbilities().stream().filter(ability -> filter.match(ability, game)).count();
+            }
+        }
+        return result;
     }
 }

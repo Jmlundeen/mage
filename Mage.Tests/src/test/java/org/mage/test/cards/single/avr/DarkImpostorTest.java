@@ -18,7 +18,7 @@ public class DarkImpostorTest extends CardTestPlayerBase {
     This creature has all activated abilities of all creature cards exiled with it.
     2/2
      */
-    public static final String darkImposter = "Dark Impostor";
+    public static final String darkImpostor = "Dark Impostor";
     /*
     Deathrite Shaman
     {B/G}
@@ -38,7 +38,7 @@ public class DarkImpostorTest extends CardTestPlayerBase {
     public void testDarkImpostor() {
         setStrictChooseMode(true);
 
-        addCard(Zone.BATTLEFIELD, playerA, darkImposter);
+        addCard(Zone.BATTLEFIELD, playerA, darkImpostor);
         addCard(Zone.BATTLEFIELD, playerA, deathriteShaman);
         addCard(Zone.BATTLEFIELD, playerA, "Swamp", 6);
 
@@ -48,6 +48,6 @@ public class DarkImpostorTest extends CardTestPlayerBase {
         setStopAt(1, PhaseStep.END_TURN);
         execute();
 
-        assertAbilityCount(playerA, darkImposter, SimpleActivatedAbility.class, 4); // own ability + 3 other from deathrite
+        assertAbilityCount(playerA, darkImpostor, SimpleActivatedAbility.class, 4); // own ability + 3 other from deathrite
     }
 }

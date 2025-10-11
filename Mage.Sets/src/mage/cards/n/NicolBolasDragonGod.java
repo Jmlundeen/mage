@@ -1,20 +1,20 @@
 package mage.cards.n;
 
-import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DestroyTargetEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterAbility;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterCreatureOrPlaneswalkerPermanent;
-import mage.filter.common.FilterPlaneswalkerPermanent;
+import mage.filter.predicate.ability.LoyaltyAbilityPredicate;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -26,12 +26,20 @@ import mage.target.common.TargetControlledPermanent;
 import mage.target.common.TargetCreatureOrPlaneswalker;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
  */
 public final class NicolBolasDragonGod extends CardImpl {
+
+    private static final FilterAbility abilityFilter = new FilterAbility("the loyalty abilities of {this}");
+    private static final FilterPermanent permanentFilter = new FilterPermanent("each other planeswalker on the battlefield");
+
+    static {
+        abilityFilter.add(LoyaltyAbilityPredicate.instance);
+        permanentFilter.add(AnotherPredicate.instance);
+        permanentFilter.add(CardType.PLANESWALKER.getPredicate());
+    }
 
     public NicolBolasDragonGod(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.PLANESWALKER}, "{U}{B}{B}{B}{R}");
@@ -41,7 +49,11 @@ public final class NicolBolasDragonGod extends CardImpl {
         this.setStartingLoyalty(4);
 
         // Nicol Bolas, Dragon-God has all loyalty abilities of all other planeswalkers on the battlefield.
-        this.addAbility(new SimpleStaticAbility(new NicolBolasDragonGodGainAbilitiesEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(abilityFilter,
+                "{this} has all loyalty abilities of all other planeswalkers on the battlefield.")
+                .fromPermanents(permanentFilter)
+                .setCardWithAbilityController(TargetController.EACH_PLAYER)
+        ));
 
         // +1: You draw a card. Each opponent exiles a card from their hand or a permanent they control.
         this.addAbility(new LoyaltyAbility(new NicolBolasDragonGodPlusOneEffect(), 1));
@@ -62,53 +74,6 @@ public final class NicolBolasDragonGod extends CardImpl {
     @Override
     public NicolBolasDragonGod copy() {
         return new NicolBolasDragonGod(this);
-    }
-}
-
-class NicolBolasDragonGodGainAbilitiesEffect extends ContinuousEffectImpl {
-
-    private static final FilterPermanent filter = new FilterPlaneswalkerPermanent();
-
-    static {
-        filter.add(AnotherPredicate.instance);
-    }
-
-    NicolBolasDragonGodGainAbilitiesEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all loyalty abilities of all other planeswalkers on the battlefield.";
-    }
-
-    private NicolBolasDragonGodGainAbilitiesEffect(final NicolBolasDragonGodGainAbilitiesEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Set<Ability> abilities = game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)
-                .stream()
-                .flatMap(permanent -> permanent.getAbilities().stream())
-                .filter(ability -> ability instanceof LoyaltyAbility)
-                .collect(Collectors.toSet());
-        for (MageItem object : affectedObjects) {
-            for (Ability ability : abilities) {
-                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
-            }
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm == null) {
-            return true;
-        }
-        affectedObjects.add(perm);
-        return true;
-    }
-
-    @Override
-    public NicolBolasDragonGodGainAbilitiesEffect copy() {
-        return new NicolBolasDragonGodGainAbilitiesEffect(this);
     }
 }
 
