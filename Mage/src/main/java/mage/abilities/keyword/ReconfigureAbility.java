@@ -134,7 +134,9 @@ class ReconfigureTypeEffect extends ContinuousEffectImpl {
     @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageItem object : affectedObjects) {
-            ((Permanent) object).removeCardType(game, CardType.CREATURE);
+            Permanent permanent = (Permanent) object;
+            permanent.removeCardType(game, CardType.CREATURE);
+            permanent.removeAllCreatureTypes(game);
         }
     }
 
