@@ -3,15 +3,15 @@ package mage.cards.p;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.TargetController;
 import mage.counters.CounterType;
 import mage.game.Game;
-import mage.game.events.CreateTokenEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
@@ -27,7 +27,10 @@ public final class PrimalVigor extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{4}{G}");
 
         // If one or more tokens would be created, twice that many of those tokens are created instead.
-        this.addAbility(new SimpleStaticAbility(new PrimalVigorTokenEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 2)
+                .setControllingPlayer(TargetController.ANY)
+                .setText("If one or more tokens would be created, twice that many of those tokens are created instead")
+        ));
         // If one or more +1/+1 counters would be put on a creature, twice that many +1/+1 counters are put on that creature instead.
         this.addAbility(new SimpleStaticAbility(new PrimalVigorCounterEffect()));
 
@@ -41,42 +44,6 @@ public final class PrimalVigor extends CardImpl {
     public PrimalVigor copy() {
         return new PrimalVigor(this);
     }
-}
-
-class PrimalVigorTokenEffect extends ReplacementEffectImpl {
-
-    PrimalVigorTokenEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Copy);
-        staticText = "If one or more tokens would be created, twice that many of those tokens are created instead";
-    }
-
-    private PrimalVigorTokenEffect(final PrimalVigorTokenEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public PrimalVigorTokenEffect copy() {
-        return new PrimalVigorTokenEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return true;
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        if (event instanceof CreateTokenEvent) {
-            ((CreateTokenEvent) event).multiplyTokens(2);
-        }
-        return false;
-    }
-
 }
 
 class PrimalVigorCounterEffect extends ReplacementEffectImpl {

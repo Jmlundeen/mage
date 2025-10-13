@@ -7,7 +7,7 @@ import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DestroyTargetEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.effects.common.counter.AddCountersAllEffect;
-import mage.abilities.effects.common.replacement.CreateTwiceThatManyTokensEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -42,7 +42,10 @@ public final class ElspethStormSlayer extends CardImpl {
         this.setStartingLoyalty(5);
 
         // If one or more tokens would be created under your control, twice that many of those tokens are created instead.
-        this.addAbility(new SimpleStaticAbility(new CreateTwiceThatManyTokensEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 2)
+            .setText("If one or more tokens would be created under your control, " +
+                        "twice that many of those tokens are created instead")
+        ));
 
         // +1: Create a 1/1 white Soldier creature token.
         this.addAbility(new LoyaltyAbility(new CreateTokenEffect(new SoldierToken()), 1));

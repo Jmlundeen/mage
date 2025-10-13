@@ -3,7 +3,7 @@ package mage.cards.j;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -45,10 +45,10 @@ public final class JinnieFayJetmirsSecond extends CardImpl {
     }
 }
 
-class JinnieFayJetmirsSecondEffect extends ReplacementEffectImpl {
+class JinnieFayJetmirsSecondEffect extends ReplaceTokenEffect {
 
     JinnieFayJetmirsSecondEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit, false);
+        super(Duration.WhileOnBattlefield, Outcome.Benefit, ModificationType.REPLACE);
         staticText = "if you would create one or more tokens, you may instead create that many 2/2 green " +
                 "Cat creature tokens with haste or that many 3/1 green Dog creature tokens with vigilance";
     }
@@ -63,17 +63,8 @@ class JinnieFayJetmirsSecondEffect extends ReplacementEffectImpl {
     }
 
     @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return source.isControlledBy(event.getPlayerId());
-    }
-
-    @Override
     public boolean replaceEvent(GameEvent event, Ability source, Game game) {
+        // TODO: add generic choice handling to remove need for this custom effect
         CreateTokenEvent tokenEvent = (CreateTokenEvent) event;
         Player player = game.getPlayer(source.getControllerId());
         int amount = tokenEvent.getTokens().values().stream().mapToInt(x -> x).sum();

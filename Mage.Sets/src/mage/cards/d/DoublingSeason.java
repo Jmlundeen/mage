@@ -3,6 +3,7 @@ package mage.cards.d;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -25,7 +26,9 @@ public final class DoublingSeason extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{4}{G}");
 
         // If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.
-        this.addAbility(new SimpleStaticAbility(new DoublingSeasonTokenEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 2)
+                .setText("If an effect would create one or more tokens under your control, " +
+                        "it creates twice that many of those tokens instead")));
 
         // If an effect would put one or more counters on a permanent you control, it puts twice that many of those counters on that permanent instead.
         this.addAbility(new SimpleStaticAbility(new DoublingSeasonCounterEffect()));

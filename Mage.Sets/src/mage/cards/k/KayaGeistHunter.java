@@ -5,7 +5,7 @@ import mage.abilities.LoyaltyAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
-import mage.abilities.effects.common.replacement.CreateTwiceThatManyTokensEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.abilities.keyword.DeathtouchAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -55,7 +55,10 @@ public final class KayaGeistHunter extends CardImpl {
         this.addAbility(ability);
 
         // −2: Until end of turn, if one or more tokens would be created under your control, twice that many of those tokens are created instead.
-        this.addAbility(new LoyaltyAbility(new CreateTwiceThatManyTokensEffect(Duration.EndOfTurn), -2));
+        this.addAbility(new LoyaltyAbility(new ReplaceTokenEffect(Duration.EndOfTurn, Outcome.Benefit, ReplaceTokenEffect.ModificationType.MULTIPLY, 2, null)
+                .setText("Until end of turn, if one or more tokens would be created under your control, twice that many of those tokens are created instead"),
+                -2)
+        );
 
         // −6: Exile all cards from all graveyards, then create a 1/1 white Spirit creature token with flying for each card exiled this way.
         this.addAbility(new LoyaltyAbility(new KayaGeistHunterEffect(), -6));

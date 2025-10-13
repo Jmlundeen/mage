@@ -3,8 +3,9 @@ package mage.cards.f;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.ReplacementEffect;
 import mage.abilities.effects.common.continuous.GainClassAbilitySourceEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.abilities.keyword.ClassLevelAbility;
 import mage.abilities.keyword.ClassReminderAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
@@ -13,20 +14,14 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.CardsImpl;
 import mage.constants.CardType;
-import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.game.Game;
-import mage.game.events.CreateTokenEvent;
-import mage.game.events.GameEvent;
 import mage.game.permanent.token.FishNoAbilityToken;
 import mage.game.permanent.token.OctopusToken;
 import mage.game.permanent.token.Shark33Token;
-import mage.game.permanent.token.Token;
 import mage.players.Player;
 
-import java.util.Iterator;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -49,13 +44,19 @@ public final class FishersTalent extends CardImpl {
         this.addAbility(new ClassLevelAbility(2, "{G}{U}"));
 
         // If you would create a Fish token, create a 3/3 blue Shark creature token instead.
-        this.addAbility(new SimpleStaticAbility(new GainClassAbilitySourceEffect(new SimpleStaticAbility(new FishersTalentLevel2Effect()), 2)));
+        ReplacementEffect sharkEffect = new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.REPLACE, 0, new Shark33Token())
+                .withTokenCondition((token, game) -> token.hasSubtype(SubType.FISH, game));
+        sharkEffect.setText("If you would create a Fish token, create a 3/3 blue Shark creature token instead");
+        this.addAbility(new SimpleStaticAbility(new GainClassAbilitySourceEffect(new SimpleStaticAbility(sharkEffect), 2)));
 
         // {2}{G}{U}: Level 3
         this.addAbility(new ClassLevelAbility(3, "{2}{G}{U}"));
 
         // If you would create a Shark token, create an 8/8 blue Octopus creature token instead.
-        this.addAbility(new SimpleStaticAbility(new GainClassAbilitySourceEffect(new SimpleStaticAbility(new FishersTalentLevel3Effect()), 3)));
+        ReplacementEffect octopusEffect = new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.REPLACE, 0, new OctopusToken())
+                .withTokenCondition((token, game) -> token.hasSubtype(SubType.SHARK, game));
+        octopusEffect.setText("If you would create a Shark token, create an 8/8 blue Octopus creature token instead");
+        this.addAbility(new SimpleStaticAbility(new GainClassAbilitySourceEffect(new SimpleStaticAbility(octopusEffect), 3)));
     }
 
     private FishersTalent(final FishersTalent card) {
@@ -103,109 +104,5 @@ class FishersTalentLevel1Effect extends OneShotEffect {
         }
         controller.drawCards(1, source, game);
         return true;
-    }
-}
-
-class FishersTalentLevel2Effect extends ReplacementEffectImpl {
-
-    FishersTalentLevel2Effect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        this.staticText = "If you would create a Fish token, create a 3/3 blue Shark creature token instead";
-    }
-
-    private FishersTalentLevel2Effect(final FishersTalentLevel2Effect effect) {
-        super(effect);
-    }
-
-    @Override
-    public FishersTalentLevel2Effect copy() {
-        return new FishersTalentLevel2Effect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        if (!(event instanceof CreateTokenEvent) || !event.getPlayerId().equals(source.getControllerId())) {
-            return false;
-        }
-        for (Token token : ((CreateTokenEvent) event).getTokens().keySet()) {
-            if (token.hasSubtype(SubType.FISH, game)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        int amount = 0;
-        Map<Token, Integer> tokens = ((CreateTokenEvent) event).getTokens();
-        for (Iterator<Map.Entry<Token, Integer>> iter = tokens.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry<Token, Integer> entry = iter.next();
-            Token token = entry.getKey();
-            if (token.hasSubtype(SubType.FISH, game)) {
-                amount += entry.getValue();
-                iter.remove();
-            }
-        }
-
-        tokens.put(new Shark33Token(), amount);
-        return false;
-    }
-}
-
-class FishersTalentLevel3Effect extends ReplacementEffectImpl {
-
-    FishersTalentLevel3Effect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        this.staticText = "If you would create a Shark token, create an 8/8 blue Octopus creature token instead";
-    }
-
-    private FishersTalentLevel3Effect(final FishersTalentLevel3Effect effect) {
-        super(effect);
-    }
-
-    @Override
-    public FishersTalentLevel3Effect copy() {
-        return new FishersTalentLevel3Effect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        if (!(event instanceof CreateTokenEvent) || !event.getPlayerId().equals(source.getControllerId())) {
-            return false;
-        }
-        for (Token token : ((CreateTokenEvent) event).getTokens().keySet()) {
-            if (token.hasSubtype(SubType.SHARK, game)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        int amount = 0;
-        Map<Token, Integer> tokens = ((CreateTokenEvent) event).getTokens();
-        for (Iterator<Map.Entry<Token, Integer>> iter = tokens.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry<Token, Integer> entry = iter.next();
-            Token token = entry.getKey();
-            if (token.hasSubtype(SubType.SHARK, game)) {
-                amount += entry.getValue();
-                iter.remove();
-            }
-        }
-
-        tokens.put(new OctopusToken(), amount);
-        return false;
     }
 }
