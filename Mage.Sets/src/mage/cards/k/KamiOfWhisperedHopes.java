@@ -5,7 +5,7 @@ import mage.Mana;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.dynamicvalue.common.SourcePermanentPowerValue;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.mana.DynamicManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -29,9 +29,12 @@ public final class KamiOfWhisperedHopes extends CardImpl {
         this.toughness = new MageInt(1);
 
         // If one or more +1/+1 counters would be put on a permanent you control, that many plus one +1/+1 counters are put on that permanent instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT, CounterType.P1P1
-        )));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_PERMANENT)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setText("if one or more +1/+1 counters would be put on a permanent you control, "
+                        + "that many plus one +1/+1 counters are put on that permanent instead")
+        ));
 
         // {T}: Add X mana of any one color, where X is Kami of Whispered Hopes's power.
         this.addAbility(new DynamicManaAbility(

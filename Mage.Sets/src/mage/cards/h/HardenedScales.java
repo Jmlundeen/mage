@@ -1,7 +1,7 @@
 package mage.cards.h;
 
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -19,9 +19,12 @@ public final class HardenedScales extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{G}");
 
         // If one or more +1/+1 counters would be put on a creature you control, that many plus one +1/+1 counters are put on it instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(
-                StaticFilters.FILTER_CONTROLLED_CREATURE, CounterType.P1P1
-        )));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_CREATURE)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setText("If one or more +1/+1 counters would be put on a creature you control, " +
+                        "that many plus one +1/+1 counters are put on it instead")
+        ));
 
     }
 

@@ -1,16 +1,14 @@
 package mage.cards.v;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.SubType;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
+import mage.filter.StaticFilters;
 
 import java.util.UUID;
 
@@ -28,7 +26,12 @@ public final class VizierOfRemedies extends CardImpl {
         this.toughness = new MageInt(1);
 
         // If one or more -1/-1 counters would be put on a creature you control, that many -1/-1 counters minus one are put on it instead.
-        addAbility(new SimpleStaticAbility(new VizierOfRemediesReplacementEffect()));
+        addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.SUBTRACT, 1)
+                .addValidCounterTypes(CounterType.M1M1)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_CREATURE)
+                .setText("If one or more -1/-1 counters would be put on a creature you control, " +
+                        "that many -1/-1 counters minus one are put on it instead")
+        ));
 
     }
 
@@ -39,46 +42,5 @@ public final class VizierOfRemedies extends CardImpl {
     @Override
     public VizierOfRemedies copy() {
         return new VizierOfRemedies(this);
-    }
-}
-
-class VizierOfRemediesReplacementEffect extends ReplacementEffectImpl {
-
-    VizierOfRemediesReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        staticText = "If one or more -1/-1 counters would be put on a creature you control, that many -1/-1 counters minus one are put on it instead";
-    }
-
-    private VizierOfRemediesReplacementEffect(final VizierOfRemediesReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public VizierOfRemediesReplacementEffect copy() {
-        return new VizierOfRemediesReplacementEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        event.setAmountForCounters(event.getAmount() - 1, true);
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        if (event.getAmount() <= 0 || !event.getData().equals(CounterType.M1M1.getName())) {
-            return false;
-        }
-        Permanent permanent = game.getPermanent(event.getTargetId());
-        if (permanent == null) {
-            permanent = game.getPermanentEntering(event.getTargetId());
-        }
-        return permanent != null && permanent.isControlledBy(source.getControllerId())
-                && permanent.isCreature(game);
     }
 }

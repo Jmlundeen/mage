@@ -1,28 +1,27 @@
 package mage.cards.i;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfCombatTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.effects.common.continuous.GainClassAbilitySourceEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.keyword.ClassLevelAbility;
 import mage.abilities.keyword.ClassReminderAbility;
 import mage.abilities.keyword.WardAbility;
+import mage.abilities.triggers.BeginningOfCombatTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
+import mage.constants.TargetController;
 import mage.counters.CounterType;
+import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.permanent.CounterAnyPredicate;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
-import mage.players.Player;
 import mage.target.common.TargetControlledCreaturePermanent;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -62,7 +61,11 @@ public final class InnkeepersTalent extends CardImpl {
         this.addAbility(new ClassLevelAbility(3, "{3}{G}"));
 
         // If you would put one or more counters on a permanent or player, put twice that many of each of those kinds of counters on that permanent or player instead.
-        this.addAbility(new SimpleStaticAbility(new GainClassAbilitySourceEffect(new InnkeepersTalentEffect(), 3)));
+        ReplaceCounterEffect replaceCounterEffect = new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.MULTIPLY, 2)
+                .setPermanentFilter(StaticFilters.FILTER_PERMANENT)
+                .setTargetPlayers(true)
+                .setEventController(TargetController.YOU);
+        this.addAbility(new SimpleStaticAbility(new GainClassAbilitySourceEffect(replaceCounterEffect, 3)));
     }
 
     private InnkeepersTalent(final InnkeepersTalent card) {
@@ -72,50 +75,5 @@ public final class InnkeepersTalent extends CardImpl {
     @Override
     public InnkeepersTalent copy() {
         return new InnkeepersTalent(this);
-    }
-}
-
-class InnkeepersTalentEffect extends ReplacementEffectImpl {
-
-    InnkeepersTalentEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.BoostCreature, false);
-        staticText = "if you would put one or more counters on a permanent or player, " +
-                "put twice that many of each of those kinds of counters on that permanent or player instead";
-    }
-
-    private InnkeepersTalentEffect(final InnkeepersTalentEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        event.setAmountForCounters(CardUtil.overflowMultiply(event.getAmount(), 2), true);
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Player targetPlayer = game.getPlayer(event.getTargetId());
-        Permanent targetPermanent = game.getPermanentEntering(event.getTargetId());
-        if (targetPermanent == null) {
-            targetPermanent = game.getPermanent(event.getTargetId());
-        }
-
-        // on a permanent or player
-        if (targetPlayer == null && targetPermanent == null) {
-            return false;
-        }
-
-        return source.isControlledBy(event.getPlayerId());
-    }
-
-    @Override
-    public InnkeepersTalentEffect copy() {
-        return new InnkeepersTalentEffect(this);
     }
 }

@@ -6,7 +6,7 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.keyword.CyclingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -29,9 +29,12 @@ public final class OzolithTheShatteredSpire extends CardImpl {
         this.supertype.add(SuperType.LEGENDARY);
 
         // If one or more +1/+1 counters would be put on an artifact or creature you control, that many plus one +1/+1 counters are put on it instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACT_OR_CREATURE, CounterType.P1P1
-        )));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACT_OR_CREATURE)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setText("If one or more +1/+1 counters would be put on an artifact or creature you control, " +
+                        "that many plus one +1/+1 counters are put on it instead")
+        ));
 
         // {1}{G}, {T}: Put a +1/+1 counter on target artifact or creature you control. Activate only as a sorcery.
         Ability ability = new ActivateAsSorceryActivatedAbility(

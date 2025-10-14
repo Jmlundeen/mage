@@ -9,7 +9,7 @@ import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -38,7 +38,11 @@ public final class BenevolentHydra extends CardImpl {
         ));
 
         // If one or more +1/+1 counters would be put on another creature you control, that many plus one +1/+1 counters are put on it instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(StaticFilters.FILTER_ANOTHER_CREATURE_YOU_CONTROL, CounterType.P1P1)));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                        .addValidCounterTypes(CounterType.P1P1)
+                        .setPermanentFilter(StaticFilters.FILTER_ANOTHER_CREATURE_YOU_CONTROL)
+                        .setText("If one or more +1/+1 counters would be put on another creature you control, that many plus one +1/+1 counters are put on it instead.")
+        ));
 
         // {T}, Remove a +1/+1 counter from Benevolent Hydra: Put a +1/+1 counter on another target creature you control.
         Ability ability = new SimpleActivatedAbility(new AddCountersTargetEffect(CounterType.P1P1.createInstance()).setText("Put a +1/+1 counter on another target creature you control"), new TapSourceCost());

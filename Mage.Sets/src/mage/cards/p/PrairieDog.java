@@ -1,22 +1,19 @@
 package mage.cards.p;
 
 import mage.MageInt;
-import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.condition.common.HaventCastSpellFromHandThisTurnCondition;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.ReplacementEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.keyword.LifelinkAbility;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
-import mage.util.CardUtil;
+import mage.filter.StaticFilters;
 
 import java.util.UUID;
 
@@ -42,7 +39,13 @@ public final class PrairieDog extends CardImpl {
         ).addHint(HaventCastSpellFromHandThisTurnCondition.hint));
 
         // {4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a creature you control, put that many plus one +1/+1 counters on it instead.
-        this.addAbility(new SimpleActivatedAbility(new PrairieDogReplacementEffect(), new ManaCostsImpl<>("{4}{W}")));
+        ReplacementEffect effect = new ReplaceCounterEffect(Duration.EndOfTurn, Outcome.Benefit, ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_CREATURE)
+                .setEventController(TargetController.YOU)
+                .setText("Until end of turn, if you would put one or more +1/+1 counters on a creature you control, " +
+                        "put that many plus one +1/+1 counters on it instead");
+
+        this.addAbility(new SimpleActivatedAbility(effect, new ManaCostsImpl<>("{4}{W}")));
     }
 
     private PrairieDog(final PrairieDog card) {
@@ -52,46 +55,5 @@ public final class PrairieDog extends CardImpl {
     @Override
     public PrairieDog copy() {
         return new PrairieDog(this);
-    }
-}
-
-class PrairieDogReplacementEffect extends ReplacementEffectImpl {
-
-    PrairieDogReplacementEffect() {
-        super(Duration.EndOfTurn, Outcome.BoostCreature, false);
-        staticText = "Until end of turn, "
-                + "if you would put one or more +1/+1 counters on a creature you control, "
-                + "put that many plus one +1/+1 counters on it instead";
-    }
-
-    private PrairieDogReplacementEffect(final PrairieDogReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public PrairieDogReplacementEffect copy() {
-        return new PrairieDogReplacementEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        event.setAmountForCounters(CardUtil.overflowInc(event.getAmount(), 1), true);
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Permanent permanent = game.getPermanent(event.getTargetId());
-        return event.getAmount() > 0
-                && source.isControlledBy(event.getPlayerId())
-                && permanent != null
-                && permanent.isCreature(game)
-                && permanent.isControlledBy(source.getControllerId())
-                && event.getData().equals(CounterType.P1P1.getName());
     }
 }

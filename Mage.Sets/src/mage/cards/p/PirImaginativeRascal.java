@@ -2,7 +2,7 @@ package mage.cards.p;
 
 import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.keyword.PartnerWithAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -37,7 +37,11 @@ public final class PirImaginativeRascal extends CardImpl {
         this.addAbility(new PartnerWithAbility("Toothy, Imaginary Friend", true));
 
         // If one or more counters would be put on a permanent your team controls, that many plus one of each of those kinds of counters are put on that permanent instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(filter, null)));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(filter)
+                .setText("If one or more counters would be put on a permanent your team controls, " +
+                        "that many plus one of each of those kinds of counters are put on that permanent instead.")
+        ));
     }
 
     private PirImaginativeRascal(final PirImaginativeRascal card) {

@@ -2,14 +2,13 @@ package mage.cards.m;
 
 import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.keyword.MenaceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
@@ -44,7 +43,11 @@ public final class MauhurUrukHaiCaptain extends CardImpl {
         this.addAbility(new MenaceAbility(false));
 
         // If one or more +1/+1 counters would be put on an Army, Goblin, or Orc you control, that many plus one +1/+1 counters are put on it instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(filter, CounterType.P1P1)));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(filter)
+                .setText("If one or more +1/+1 counters would be put on an Army, Goblin, or Orc you control, " +
+                        "that many plus one +1/+1 counters are put on it instead")
+        ));
     }
 
     private MauhurUrukHaiCaptain(final MauhurUrukHaiCaptain card) {

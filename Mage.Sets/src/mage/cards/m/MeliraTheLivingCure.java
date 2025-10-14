@@ -6,9 +6,9 @@ import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.WhenTargetDiesDelayedTriggeredAbility;
 import mage.abilities.costs.common.ExileSourceCost;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.ReturnFromGraveyardToBattlefieldTargetEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -72,10 +72,12 @@ public final class MeliraTheLivingCure extends CardImpl {
     }
 }
 
-class MeliraTheLivingCureReplacementEffect extends ReplacementEffectImpl {
+class MeliraTheLivingCureReplacementEffect extends ReplaceCounterEffect {
 
     MeliraTheLivingCureReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(ModificationType.SET, 1);
+        setValidPlayerTarget(TargetController.YOU);
+        addValidCounterTypes(CounterType.POISON);
         staticText = "if you would get one or more poison counters, instead you get " +
                 "one poison counter and you can't get additional poison counters this turn";
     }
@@ -87,57 +89,13 @@ class MeliraTheLivingCureReplacementEffect extends ReplacementEffectImpl {
     @Override
     public boolean replaceEvent(GameEvent event, Ability source, Game game) {
         event.setAmount(1);
-        game.addEffect(new MeliraTheLivingCurePreventionEffect(), source);
+        game.addEffect(new ReplaceCounterEffect(Duration.EndOfTurn, Outcome.Benefit, ModificationType.PREVENT, 0)
+                .addValidCounterTypes(CounterType.POISON), source);
         return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return source.isControlledBy(event.getTargetId())
-                && CounterType.POISON.getName().equals(event.getData())
-                && event.getAmount() > 0;
     }
 
     @Override
     public MeliraTheLivingCureReplacementEffect copy() {
         return new MeliraTheLivingCureReplacementEffect(this);
-    }
-}
-
-class MeliraTheLivingCurePreventionEffect extends ReplacementEffectImpl {
-
-    MeliraTheLivingCurePreventionEffect() {
-        super(Duration.EndOfTurn, Outcome.Benefit);
-    }
-
-    private MeliraTheLivingCurePreventionEffect(final MeliraTheLivingCurePreventionEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        return true;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return source.isControlledBy(event.getTargetId())
-                && CounterType.POISON.getName().equals(event.getData())
-                && event.getAmount() > 0;
-    }
-
-    @Override
-    public MeliraTheLivingCurePreventionEffect copy() {
-        return new MeliraTheLivingCurePreventionEffect(this);
     }
 }

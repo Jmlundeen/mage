@@ -27,6 +27,13 @@ public final class StaticFilters {
     private StaticFilters() {
     }
 
+    public static final FilterPermanent FILTER_SOURCE_PERMANENT = new FilterPermanent("{this}");
+
+    static {
+        FILTER_SOURCE_PERMANENT.add(IsSourcePredicate.instance);
+        FILTER_SOURCE_PERMANENT.setLockedFilter(true);
+    }
+
     public static final FilterCard FILTER_CARD = new FilterCard("card");
 
     static {
