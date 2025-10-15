@@ -1,7 +1,7 @@
 package mage.cards.s;
 
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
+import mage.abilities.effects.common.continuous.rulemodifying.PreventCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -29,13 +29,13 @@ public final class Solemnity extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{2}{W}");
 
         // Players can't get counters.
-        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.PREVENT)
+        this.addAbility(new SimpleStaticAbility(new PreventCountersEffect()
                 .setTargetPlayers(true)
                 .setText("Players can't get counters")
         ));
 
         // Counters can't be put on artifacts, creatures, enchantments, or lands.
-        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.PREVENT)
+        this.addAbility(new SimpleStaticAbility(new PreventCountersEffect()
                 .setPermanentFilter(filter)
                 .setText("Counters can't be put on artifacts, creatures, enchantments, or lands")
         ));

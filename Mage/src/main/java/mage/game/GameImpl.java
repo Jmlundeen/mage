@@ -5,7 +5,6 @@ import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.*;
 import mage.abilities.common.AttachableToRestrictedAbility;
-import mage.abilities.common.CantHaveMoreThanAmountCountersSourceAbility;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
@@ -16,6 +15,7 @@ import mage.abilities.effects.PreventionEffectData;
 import mage.abilities.effects.common.CopyEffect;
 import mage.abilities.effects.common.InfoEffect;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
+import mage.abilities.effects.common.continuous.rulemodifying.PreventCountersEffect;
 import mage.abilities.effects.keyword.FinalityCounterEffect;
 import mage.abilities.effects.keyword.ShieldCounterEffect;
 import mage.abilities.effects.keyword.StunCounterEffect;
@@ -2880,12 +2880,22 @@ public abstract class GameImpl implements Game {
             // If a permanent with an ability that says it can't have more than N counters of a certain kind on it
             // has more than N counters of that kind on it, all but N of those counters are removed from it.
             for (Ability ability : perm.getAbilities(this)) {
-                if (ability instanceof CantHaveMoreThanAmountCountersSourceAbility) {
-                    CantHaveMoreThanAmountCountersSourceAbility counterAbility = (CantHaveMoreThanAmountCountersSourceAbility) ability;
-                    int count = perm.getCounters(this).getCount(counterAbility.getCounterType());
-                    if (count > counterAbility.getAmount()) {
-                        perm.removeCounters(counterAbility.getCounterType().getName(), count - counterAbility.getAmount(), counterAbility, this);
-                        somethingHappened = true;
+                if (ability instanceof StaticAbility) {
+                    for (Effect effect : ability.getEffects()) {
+                        if (!(effect instanceof PreventCountersEffect)) {
+                            continue;
+                        }
+                        PreventCountersEffect preventCountersEffect = (PreventCountersEffect) effect;
+                        if (preventCountersEffect.getMaxCounters() == 0) {
+                            continue;
+                        }
+                        for (CounterType counterType : preventCountersEffect.getValidCounterTypes()) {
+                            int count = perm.getCounters(this).getCount(counterType);
+                            if (count > preventCountersEffect.getMaxCounters()) {
+                                perm.removeCounters(counterType.getName(), count - preventCountersEffect.getMaxCounters(), ability, this);
+                                somethingHappened = true;
+                            }
+                        }
                     }
                 }
             }

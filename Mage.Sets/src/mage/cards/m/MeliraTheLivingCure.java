@@ -8,6 +8,7 @@ import mage.abilities.common.delayed.WhenTargetDiesDelayedTriggeredAbility;
 import mage.abilities.costs.common.ExileSourceCost;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.ReturnFromGraveyardToBattlefieldTargetEffect;
+import mage.abilities.effects.common.continuous.rulemodifying.PreventCountersEffect;
 import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -89,8 +90,8 @@ class MeliraTheLivingCureReplacementEffect extends ReplaceCounterEffect {
     @Override
     public boolean replaceEvent(GameEvent event, Ability source, Game game) {
         event.setAmount(1);
-        game.addEffect(new ReplaceCounterEffect(Duration.EndOfTurn, Outcome.Benefit, ModificationType.PREVENT, 0)
-                .addValidCounterTypes(CounterType.POISON), source);
+        game.addEffect(new PreventCountersEffect(Duration.EndOfTurn, Outcome.Benefit, 0, CounterType.POISON)
+                .setValidPlayerTarget(TargetController.YOU), source);
         return false;
     }
 

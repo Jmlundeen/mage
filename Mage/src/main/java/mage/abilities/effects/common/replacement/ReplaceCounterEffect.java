@@ -27,7 +27,6 @@ import java.util.Set;
  * <br> - Subtracting counters (e.g., Vizier of Remedies)
  * <br> - Setting counter amounts to a specific value (e.g., Melira)
  * <br> - Replacing counter types (e.g., replacing -1/-1 counters with +1/+1 counters)
- * <br> - Preventing specific counters entirely (e.g., Solemnity)
  * <p>
  * @author Jmlundeen
  */
@@ -123,9 +122,9 @@ public class ReplaceCounterEffect extends ReplacementEffectImpl {
     }
 
     /**
-     * Creates a counter replacement effect for REPLACE or PREVENT types (no factor needed).
+     * Creates a counter replacement effect for REPLACE types (no factor needed).
      *
-     * @param modificationType the type of modification (should be REPLACE or PREVENT)
+     * @param modificationType the type of modification (should be REPLACE)
      */
     public ReplaceCounterEffect(ModificationType modificationType) {
         this(Duration.WhileOnBattlefield, Outcome.Benefit, modificationType, 0, false);
@@ -322,10 +321,6 @@ public class ReplaceCounterEffect extends ReplacementEffectImpl {
                     event.setData(replacementCounterType.getName());
                 }
                 break;
-
-            case PREVENT:
-                // Prevent the counters entirely
-                return true;
 
             default:
                 break;
