@@ -107,8 +107,7 @@ class RunadiBehemothCallerCounterEffect extends ReplacementEffectImpl {
             Spell spell = game.getSpellOrLKIStack(creature.getId());
             if (spell != null) {
                 int countersToAdd = spell.getManaValue() - 4;
-                creature.addCounters(CounterType.P1P1.createInstance(countersToAdd),
-                        source.getControllerId(), source, game, event.getAppliedEffects());
+                game.addEnterWithCounters(creature.getId(), CounterType.P1P1.createInstance(countersToAdd));
             }
         }
         return false;

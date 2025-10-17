@@ -29,6 +29,7 @@ import mage.cards.decks.DeckCardInfo;
 import mage.choices.Choice;
 import mage.collectors.DataCollectorServices;
 import mage.constants.*;
+import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.designations.Designation;
@@ -4113,6 +4114,30 @@ public abstract class GameImpl implements Game {
     @Override
     public Counters getEnterWithCounters(UUID sourceId) {
         return enterWithCounters.get(sourceId);
+    }
+
+    @Override
+    public void addEnterWithCounters(UUID cardId, Counters counters) {
+        Counters existing = enterWithCounters.get(cardId);
+        if (existing != null) {
+            for (Counter counter : counters.values()) {
+                existing.addCounter(counter);
+            }
+        } else {
+            enterWithCounters.put(cardId, counters);
+        }
+    }
+
+    @Override
+    public void addEnterWithCounters(UUID cardId, Counter counter) {
+        Counters existing = enterWithCounters.get(cardId);
+        if (existing != null) {
+            existing.addCounter(counter);
+        } else {
+            Counters counters = new Counters();
+            counters.addCounter(counter);
+            enterWithCounters.put(cardId, counters);
+        }
     }
 
     private Map<String, Serializable> addMessageToOptions(MessageToClient message, Map<String, Serializable> options) {

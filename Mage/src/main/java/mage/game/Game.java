@@ -17,6 +17,7 @@ import mage.cards.MeldCard;
 import mage.cards.decks.Deck;
 import mage.choices.Choice;
 import mage.constants.*;
+import mage.counters.Counter;
 import mage.counters.Counters;
 import mage.game.combat.Combat;
 import mage.game.command.*;
@@ -669,6 +670,16 @@ public interface Game extends MageItem, Serializable, Copyable<Game> {
     void setEnterWithCounters(UUID sourceId, Counters counters);
 
     Counters getEnterWithCounters(UUID sourceId);
+
+    /**
+     * Use when you need to add counters to a card. Ensures that replacement effects are applied correctly.
+     */
+    void addEnterWithCounters(UUID cardId, Counters counters);
+
+    /**
+     * Use when you need to add counters to a card. Ensures that replacement effects are applied correctly.
+     */
+    void addEnterWithCounters(UUID cardId, Counter counter);
 
     /**
      * Get the UUID of the current player who is the Monarch, or null if nobody has it.
