@@ -3,8 +3,7 @@ package mage.cards.b;
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.condition.common.MorbidCondition;
-import mage.abilities.decorator.ConditionalOneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.MorbidHint;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.PlotAbility;
@@ -32,9 +31,9 @@ public final class BlacksnagBuzzard extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Blacksnag Buzzard enters the battlefield with a +1/+1 counter on it if a creature died this turn.
-        this.addAbility(new EntersBattlefieldAbility(new ConditionalOneShotEffect(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance()), MorbidCondition.instance, ""
-        ), "with a +1/+1 counter on it if a creature died this turn").addHint(MorbidHint.instance));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                MorbidCondition.instance,
+                "{this} enters with a +1/+1 counter on it if a creature died this turn.").addHint(MorbidHint.instance));
 
         // Plot {1}{B}
         this.addAbility(new PlotAbility("{1}{B}"));

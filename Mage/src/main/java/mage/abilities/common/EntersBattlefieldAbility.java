@@ -32,6 +32,10 @@ public class EntersBattlefieldAbility extends StaticAbility {
         this(effect, null, null, effectText);
     }
 
+    public EntersBattlefieldAbility(Effect effect, Condition condition, String abilityRule) {
+        this(effect, false, condition, abilityRule, null);
+    }
+
     public EntersBattlefieldAbility(Effect effect, Condition condition, String abilityRule, String effectText) {
         this(effect, false, condition, abilityRule, effectText);
     }

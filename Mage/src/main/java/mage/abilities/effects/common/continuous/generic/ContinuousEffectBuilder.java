@@ -41,7 +41,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     protected FilterPermanent permanentFilter;
     protected FilterCard cardFilter;
     protected TargetController cardsControlledBy = TargetController.YOU;
-    protected ContinuousAffected affected = ContinuousAffected.STATIC;
+    protected ContinuousAffected affected = ContinuousAffected.STATIC_OR_DYNAMIC;
     protected List<MageObjectReference> staticAffectedObjects;
     protected List<Zone> affectedZones;
     protected List<Ability> gainedAbilities;
@@ -194,7 +194,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     @Override
     public void init(Ability source, Game game) {
         super.init(source, game);
-        if (getAffectedObjectsSet() && affected == ContinuousAffected.STATIC && getTargetPointer().getTargets(game, source).isEmpty()) {
+        if (getAffectedObjectsSet() && affected == ContinuousAffected.STATIC_OR_DYNAMIC && getTargetPointer().getTargets(game, source).isEmpty()) {
             // for static affected objects, set affected objects only once at init
 
             List<MageItem> affectedObjects = new ArrayList<>();
@@ -488,6 +488,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     private void handleSuperTypes(Game game, MageObject mageObject) {
+        if (removedSuperTypes != null) {
+            for (SuperType superType : removedSuperTypes) {
+                mageObject.removeSuperType(game, superType);
+            }
+        }
         if (addedSuperTypes != null) {
             for (SuperType superType : addedSuperTypes) {
                 mageObject.addSuperType(game, superType);
@@ -549,7 +554,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
             return !affectedObjects.isEmpty();
         }
-        if (affected != ContinuousAffected.STATIC) {
+        if (affected != ContinuousAffected.STATIC_OR_DYNAMIC) {
             return handleSpecialAffected(source, game, controller, affectedObjects);
         }
 

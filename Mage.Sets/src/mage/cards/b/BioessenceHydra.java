@@ -1,11 +1,11 @@
 package mage.cards.b;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
-import mage.abilities.effects.Effect;
+import mage.abilities.dynamicvalue.common.CountersCount;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -14,7 +14,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.counters.CounterType;
-import mage.filter.StaticFilters;
+import mage.filter.common.FilterControlledPlaneswalkerPermanent;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -25,6 +25,8 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class BioessenceHydra extends CardImpl {
+
+    private static final DynamicValue xValue = new CountersCount(CounterType.LOYALTY, new FilterControlledPlaneswalkerPermanent("planeswalkers you control"));
 
     public BioessenceHydra(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{3}{G}{U}");
@@ -38,10 +40,7 @@ public final class BioessenceHydra extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Bioessence Hydra enters the battlefield with a +1/+1 counter on it for each loyalty counter on planeswalkers you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), BioessenceHydraDynamicValue.instance, true
-        ), "with a +1/+1 counter on it for each loyalty counter on planeswalkers you control."
-        ));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)));
 
         // Whenever one or more loyalty counters are put on planeswalkers you control, put that many +1/+1 counters on Bioessence Hydra.
         this.addAbility(new BioessenceHydraTriggeredAbility());
@@ -54,33 +53,6 @@ public final class BioessenceHydra extends CardImpl {
     @Override
     public BioessenceHydra copy() {
         return new BioessenceHydra(this);
-    }
-}
-
-enum BioessenceHydraDynamicValue implements DynamicValue {
-    instance;
-
-    @Override
-    public int calculate(Game game, Ability sourceAbility, Effect effect) {
-        int counter = 0;
-        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(
-                StaticFilters.FILTER_PERMANENT_PLANESWALKER, sourceAbility.getControllerId(), game
-        )) {
-            if (permanent != null) {
-                counter += permanent.getCounters(game).getCount(CounterType.LOYALTY);
-            }
-        }
-        return counter;
-    }
-
-    @Override
-    public DynamicValue copy() {
-        return instance;
-    }
-
-    @Override
-    public String getMessage() {
-        return "";
     }
 }
 
@@ -127,6 +99,6 @@ class BioessenceHydraTriggeredAbility extends TriggeredAbilityImpl {
 
     @Override
     public String getRule() {
-        return "Whenever one or more loyalty counters are put on a planeswalker you control, put that many +1/+1 counters on {this}.";
+        return "Whenever one or more loyalty counters are put on planeswalkers you control, put that many +1/+1 counters on {this}.";
     }
 }

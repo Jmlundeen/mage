@@ -4,12 +4,15 @@ package mage.cards.b;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DevourAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
+import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
@@ -33,7 +36,10 @@ public final class BloodsporeThrinax extends CardImpl {
         this.addAbility(new DevourAbility(1));
         
         // Each other creature you control enters the battlefield with an additional X +1/+1 counters on it, where X is the number of +1/+1 counters on Bloodspire Thrinax.
-        this.addAbility(new SimpleStaticAbility(new BloodsporeThrinaxEntersBattlefieldEffect()));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1, new CountersSourceCount(CounterType.P1P1))
+                .setFilter(StaticFilters.FILTER_OTHER_CONTROLLED_CREATURE)
+                .setText("Each other creature you control enters with an additional X +1/+1 counters on it, where X is the number of +1/+1 counters on {this}")
+        ));
     }
 
     private BloodsporeThrinax(final BloodsporeThrinax card) {

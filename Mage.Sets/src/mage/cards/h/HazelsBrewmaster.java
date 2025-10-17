@@ -43,7 +43,7 @@ public final class HazelsBrewmaster extends CardImpl {
         // Foods you control have all activated abilities of all creature cards exiled with Hazel's Brewmaster.
         this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
                 Duration.WhileOnBattlefield,
-                ContinuousAffected.STATIC,
+                ContinuousAffected.STATIC_OR_DYNAMIC,
                 StaticFilters.FILTER_ACTIVATED_ABILITY,
                 "Foods you control have all activated abilities of all creature cards exiled with {this}")
                 .fromSourceExiled()

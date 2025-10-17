@@ -4,7 +4,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldControlledTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.token.ClueAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -33,11 +33,11 @@ public class AgentsToolkit extends CardImpl {
         this.subtype.add(SubType.CLUE);
 
         // Agent’s Toolkit enters the battlefield with a +1/+1 counter, a flying counter, a deathtouch counter, and a shield counter on it.
-        Ability counterETBAbility = new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(1)).setText("with a +1/+1 counter"));
-        counterETBAbility.addEffect(new AddCountersSourceEffect(CounterType.FLYING.createInstance(1)).setText("a flying counter").concatBy(","));
-        counterETBAbility.addEffect(new AddCountersSourceEffect(CounterType.DEATHTOUCH.createInstance(1)).setText("a deathtouch counter").concatBy(","));
-        counterETBAbility.addEffect(new AddCountersSourceEffect(CounterType.SHIELD.createInstance(1)).setText("and a shield counter on it").concatBy(","));
-        this.addAbility(counterETBAbility);
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())
+                .withAdditionalCounters(CounterType.FLYING.createInstance())
+                .withAdditionalCounters(CounterType.DEATHTOUCH.createInstance())
+                .withAdditionalCounters(CounterType.SHIELD.createInstance())
+        ));
 
         // Whenever a creature you control enters,
         // you may move a counter from Agent’s Toolkit onto that creature.

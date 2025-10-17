@@ -49,7 +49,7 @@ public final class KasminaEnigmaSage extends CardImpl {
 
         // Each other planeswalker you control has the loyalty abilities of Kasmina, Enigma Sage.
         this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield,
-                ContinuousAffected.STATIC, abilityFilter,
+                ContinuousAffected.STATIC_OR_DYNAMIC, abilityFilter,
                 "each other planeswalker you control has the loyalty abilities of {this}")
                 .fromSource()
                 .setAffectedZones(Zone.BATTLEFIELD)

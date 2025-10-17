@@ -3,15 +3,12 @@ package mage.cards.a;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.effects.common.CreateTokenEffect;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
 import mage.abilities.effects.common.continuous.CastAsThoughItHadFlashAllEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DayboundAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
-import mage.constants.SuperType;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
@@ -42,9 +39,8 @@ public final class ArlinnThePacksHope extends CardImpl {
         Ability ability = new LoyaltyAbility(new CastAsThoughItHadFlashAllEffect(
                 Duration.UntilYourNextTurn, filter
         ).setText("until your next turn, you may cast creature spells as though they had flash"), 1);
-        ability.addEffect(new EntersWithCountersControlledEffect(
-                StaticFilters.FILTER_PERMANENT_CREATURE, CounterType.P1P1.createInstance(), false
-        ).concatBy(", and"));
+        ability.addEffect(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(StaticFilters.FILTER_CONTROLLED_CREATURE).concatBy(", and"));
         this.addAbility(ability);
 
         // −3: Create two 2/2 green Wolf creature tokens.

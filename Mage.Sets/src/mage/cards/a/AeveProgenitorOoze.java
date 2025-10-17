@@ -1,25 +1,25 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.MageItem;
-import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.condition.Condition;
+import mage.abilities.condition.common.SourceMatchesFilterCondition;
+import mage.abilities.decorator.ConditionalContinuousEffect;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.ContinuousEffectImpl;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.StormAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
+import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
+import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
-import mage.game.permanent.PermanentToken;
+import mage.filter.predicate.permanent.TokenPredicate;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -27,10 +27,13 @@ import java.util.UUID;
  */
 public final class AeveProgenitorOoze extends CardImpl {
 
-    private static final FilterControlledPermanent filter = new FilterControlledPermanent(SubType.OOZE);
+    private static final FilterControlledPermanent filter = new FilterControlledPermanent(SubType.OOZE, "other Ooze you control");
+    private static final FilterPermanent tokenFilter = new FilterCreaturePermanent();
+    private static final Condition isToken = new SourceMatchesFilterCondition(tokenFilter);
 
     static {
         filter.add(AnotherPredicate.instance);
+        tokenFilter.add(TokenPredicate.TRUE);
     }
 
     public AeveProgenitorOoze(UUID ownerId, CardSetInfo setInfo) {
@@ -44,14 +47,16 @@ public final class AeveProgenitorOoze extends CardImpl {
         // Storm
         this.addAbility(new StormAbility());
 
-        // Aeve, Progenitor Ooze isn't legendary as long as it's a token.
-        this.addAbility(new SimpleStaticAbility(new AeveProgenitorOozeNonLegendaryEffect()));
+        // Aeve, Progenitor Ooze isn't legendary if it's a token.
+        this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
+                new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.Benefit, ContinuousAffected.SOURCE)
+                        .withRemovedSuperTypes(SuperType.LEGENDARY),
+                isToken,
+                "{this} isn't legendary if it's a token"
+        )));
 
         // Aeve enters the battlefield with a +1/+1 counter on it for each other Ooze you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), new PermanentsOnBattlefieldCount(filter), true
-        ), "with a +1/+1 counter on it for each other Ooze you control"
-        ));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, new PermanentsOnBattlefieldCount(filter))));
     }
 
     private AeveProgenitorOoze(final AeveProgenitorOoze card) {
@@ -61,39 +66,5 @@ public final class AeveProgenitorOoze extends CardImpl {
     @Override
     public AeveProgenitorOoze copy() {
         return new AeveProgenitorOoze(this);
-    }
-}
-
-class AeveProgenitorOozeNonLegendaryEffect extends ContinuousEffectImpl {
-
-    AeveProgenitorOozeNonLegendaryEffect() {
-        super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
-        this.staticText = "{this} isn't legendary if it's a token";
-    }
-
-    private AeveProgenitorOozeNonLegendaryEffect(final AeveProgenitorOozeNonLegendaryEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public AeveProgenitorOozeNonLegendaryEffect copy() {
-        return new AeveProgenitorOozeNonLegendaryEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            ((Permanent) object).removeSuperType(game, SuperType.LEGENDARY);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent instanceof PermanentToken) {
-            affectedObjects.add(permanent);
-            return true;
-        }
-        return false;
     }
 }

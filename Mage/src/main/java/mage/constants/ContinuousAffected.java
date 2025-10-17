@@ -4,6 +4,6 @@ public enum ContinuousAffected {
     SOURCE,
     EXILED_WITH_SOURCE,
     ATTACHED_TO,
-    STATIC,
+    STATIC_OR_DYNAMIC,
     TOP_OF_LIBRARY
 }

@@ -50,7 +50,7 @@ public final class AgathasSoulCauldron extends CardImpl {
         // Creatures you control with +1/+1 counters on them have all activated abilities of all creature cards exiled with Agatha's Soul Cauldron.
         this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
                 Duration.WhileOnBattlefield,
-                ContinuousAffected.STATIC,
+                ContinuousAffected.STATIC_OR_DYNAMIC,
                 StaticFilters.FILTER_ACTIVATED_ABILITY,
                 "creatures you control with +1/+1 counters on them have all activated abilities of all creature cards exiled with {this}")
                 .fromSourceExiled()

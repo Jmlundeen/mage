@@ -1,7 +1,6 @@
 
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
@@ -10,20 +9,24 @@ import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.common.CardsInAllGraveyardsCount;
 import mage.abilities.effects.common.DrawDiscardControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
+import mage.filter.FilterCard;
 import mage.filter.common.FilterInstantOrSorceryCard;
+
+import java.util.UUID;
 
 /**
  *
  * @author andyfries
  */
 public final class AcademyElite extends CardImpl {
+
+    private static final FilterCard filter = new FilterInstantOrSorceryCard("the number of instant and sorcery cards");
 
     public AcademyElite(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.CREATURE},"{3}{U}");
@@ -35,9 +38,9 @@ public final class AcademyElite extends CardImpl {
 
         // Academy Elite enters the battlefield with X +1/+1 counters on it, where X is the number of instant and
         // sorcery cards in all graveyards.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(),
-                new CardsInAllGraveyardsCount(new FilterInstantOrSorceryCard()), false),
-                "with X +1/+1 counters on it, where X is the number of instant and sorcery cards in all graveyards"));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, new CardsInAllGraveyardsCount(filter))
+                .withXText()
+        ));
 
         // {2}{U}, Remove a +1/+1 counter from Academy Elite: Draw a card, then discard a card.
         Ability ability = new SimpleActivatedAbility(new DrawDiscardControllerEffect(1, 1, false), new ManaCostsImpl<>("{2}{U}"));

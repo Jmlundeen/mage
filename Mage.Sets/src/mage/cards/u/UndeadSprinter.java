@@ -1,20 +1,17 @@
 package mage.cards.u;
 
-import java.util.UUID;
-
 import mage.MageIdentifier;
 import mage.MageInt;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.AsThoughEffectImpl;
-import mage.abilities.effects.common.counter.AddCounterEnteringCreatureEffect;
-import mage.cards.Card;
-import mage.constants.*;
-import mage.abilities.keyword.TrampleAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
+import mage.abilities.keyword.TrampleAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicates;
@@ -23,6 +20,8 @@ import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.stack.Spell;
 import mage.watchers.Watcher;
+
+import java.util.UUID;
 
 /**
  *
@@ -64,7 +63,8 @@ class UndeadSprinterEffect extends AsThoughEffectImpl {
 
     UndeadSprinterEffect() {
         super(AsThoughEffectType.CAST_FROM_NOT_OWN_HAND_ZONE, Duration.EndOfGame, Outcome.Benefit);
-        this.staticText = "You may cast this card from your graveyard if a non-Zombie creature died this turn";
+        this.staticText = "You may cast this card from your graveyard if a non-Zombie creature died this turn." +
+                "If you do, this creature enters with a +1/+1 counter on it.";
     }
 
     private UndeadSprinterEffect(final UndeadSprinterEffect effect) {
@@ -131,8 +131,7 @@ class UndeadSprinterAlternateCastWatcher extends Watcher {
                 && event.hasApprovingIdentifier(MageIdentifier.UndeadSprinterAlternateCast)) {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
-                game.getState().addEffect(new AddCounterEnteringCreatureEffect(new MageObjectReference(target.getCard(), game),
-                                CounterType.P1P1.createInstance(), Outcome.BoostCreature),
+                game.getState().addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance()),
                         target.getSpellAbility());
             }
         }

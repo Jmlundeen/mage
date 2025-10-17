@@ -37,7 +37,7 @@ public final class StewardOfTheHarvest extends CardImpl {
         this.addAbility(ability);
 
         // Creatures you control have all activated abilities of all land cards exiled with this creature.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield, ContinuousAffected.STATIC,
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield, ContinuousAffected.STATIC_OR_DYNAMIC,
                 StaticFilters.FILTER_ACTIVATED_ABILITY,
                 "Creatures you control have all activated abilities of all land cards exiled with this creature")
                 .fromSourceExiled()

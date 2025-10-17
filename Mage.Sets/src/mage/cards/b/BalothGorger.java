@@ -1,18 +1,19 @@
 
 package mage.cards.b;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  * @author CountAndromalius
@@ -31,10 +32,9 @@ public final class BalothGorger extends CardImpl {
 
         // If Baloth Gorger was kicked, it enters with three +1/+1 counters on it
         Ability ability = new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(3)),
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(3)),
                 KickedCondition.ONCE,
-                "If {this} was kicked, it enters with three +1/+1 counters on it.",
-                "");
+                "If {this} was kicked, it enters with three +1/+1 counters on it.");
         this.addAbility(ability);
     }
 

@@ -9,6 +9,7 @@ import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.DestroyAllEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.mana.ColorlessManaAbility;
 import mage.cards.CardImpl;
@@ -39,8 +40,7 @@ public final class BlastZone extends CardImpl {
 
         // Blast Zone enters the battlefield with a charge counter on it.
         this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.CHARGE.createInstance(1)),
-                "with a charge counter on it"
+                new EntersWithCountersEffect(CounterType.CHARGE.createInstance())
         ));
 
         // {T}: Add {C}.
