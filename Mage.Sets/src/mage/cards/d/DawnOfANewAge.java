@@ -1,12 +1,12 @@
 package mage.cards.d;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -30,9 +30,8 @@ public final class DawnOfANewAge extends CardImpl {
 
         // Dawn of a New Age enters the battlefield with a hope counter on it for each creature you control.
         DynamicValue numberCounters = new PermanentsOnBattlefieldCount(StaticFilters.FILTER_PERMANENT_CREATURE_CONTROLLED);
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.HOPE.createInstance(0), numberCounters, true),
-                "with a hope counter on it for each creature you control")
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(
+                CounterType.HOPE, numberCounters))
         );
 
         // At the beginning of your end step, remove a hope counter from Dawn of a New Age. If you do, draw a card. Then if Dawn of a New Age has no hope counters on it, sacrifice it and you gain 4 life.

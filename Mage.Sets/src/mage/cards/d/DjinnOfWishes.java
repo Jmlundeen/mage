@@ -10,7 +10,7 @@ import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.*;
 import mage.constants.CardType;
@@ -36,9 +36,11 @@ public final class DjinnOfWishes extends CardImpl {
         this.power = new MageInt(4);
         this.toughness = new MageInt(4);
 
+        // Flying
         this.addAbility(FlyingAbility.getInstance());
+
         // Djinn of Wishes enters the battlefield with three wish counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.WISH.createInstance(3)), "with three wish counters on it"));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.WISH.createInstance(3))));
 
         // {2}{U}{U}, Remove a wish counter from Djinn of Wishes: Reveal the top card of your library. You may play that card without paying its mana cost. If you don't, exile it.
         Ability ability = new SimpleActivatedAbility(new DjinnOfWishesEffect(), new ManaCostsImpl<>("{2}{U}{U}"));

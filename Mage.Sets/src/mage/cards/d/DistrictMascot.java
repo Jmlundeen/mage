@@ -8,6 +8,7 @@ import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.DestroyTargetEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.SaddleAbility;
 import mage.cards.CardImpl;
@@ -34,8 +35,7 @@ public final class DistrictMascot extends CardImpl {
 
         // This creature enters with a +1/+1 counter on it.
         this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(1)),
-                "with a +1/+1 counter on it"
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance())
         ));
 
         // {1}{G}, Remove two +1/+1 counters from this creature: Destroy target artifact.

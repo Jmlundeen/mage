@@ -93,7 +93,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
      */
     public ContinuousEffectBuilder(Outcome outcome, ContinuousAffected affected) {
-        this(Duration.EndOfGame, outcome, affected);
+        this(Duration.WhileOnBattlefield, outcome, affected);
     }
 
     /**

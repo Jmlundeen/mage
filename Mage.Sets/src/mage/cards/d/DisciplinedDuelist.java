@@ -2,7 +2,7 @@ package mage.cards.d;
 
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DoubleStrikeAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -30,7 +30,7 @@ public final class DisciplinedDuelist extends CardImpl {
 
         // Disciplined Duelist enters the battlefield with a shield counter on it.
         this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.SHIELD.createInstance(1)),
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance()),
                 "with a shield counter on it. <i>(If it would be dealt damage " +
                         "or destroyed, remove a shield counter from it instead.)</i>"
         ));

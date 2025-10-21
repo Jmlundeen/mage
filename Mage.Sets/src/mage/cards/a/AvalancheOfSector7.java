@@ -46,7 +46,7 @@ public final class AvalancheOfSector7 extends CardImpl {
         this.addAbility(new MenaceAbility());
 
         // Avalanche of Sector 7's power is equal to the number of artifacts your opponents control.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ContinuousEffectBuilder(Duration.EndOfGame, Outcome.BoostCreature, ContinuousAffected.SOURCE)
                 .withSetPower(xValue)
                 .setText("{this}'s power is equal to the number of " + xValue.getMessage())
         ));

@@ -1,6 +1,5 @@
 package mage.cards.d;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
@@ -13,22 +12,19 @@ import mage.abilities.costs.common.DiscardCardCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.EntersBattlefieldEffect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AbilityType;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -48,10 +44,12 @@ public final class DralnusPet extends CardImpl {
         kickerCosts.add(new ManaCostsImpl<>("{2}{B}"));
         kickerCosts.add(new DiscardCardCost(StaticFilters.FILTER_CARD_CREATURE));
         this.addAbility(new KickerAbility(kickerCosts));
+
         // If Dralnu's Pet was kicked, it enters with flying and with X +1/+1 counters on it, where X is the discarded card's converted mana cost.
         Ability ability = new EntersBattlefieldAbility(new DralnusPetEffect(), KickedCondition.ONCE,
                 "If {this} was kicked, it enters with flying and with X +1/+1 counters on it, where X is the discarded card's mana value.", "");
-        ability.addEffect(new GainAbilitySourceEffect(FlyingAbility.getInstance(), Duration.WhileOnBattlefield));
+        ability.addEffect(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                .withGainedAbilities(FlyingAbility.getInstance()));
         this.addAbility(ability);
     }
 
@@ -99,7 +97,7 @@ class DralnusPetEffect extends OneShotEffect {
                         cmc = ((DiscardCardCost) cost).getCards().get(0).getManaValue();
                     }
                     if (cmc > 0) {
-                        return new AddCountersSourceEffect(CounterType.P1P1.createInstance(cmc), true).apply(game, source);
+                        game.addEnterWithCounters(permanent.getId(), CounterType.P1P1.createInstance(cmc));
                     }
                 }
             }

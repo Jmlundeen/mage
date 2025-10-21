@@ -6,7 +6,7 @@ import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldAllTriggeredAbility;
 import mage.abilities.condition.common.SourceHasCountersCondition;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCounterChoiceSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -37,7 +37,11 @@ public class DenryKlinEditorInChief extends CardImpl {
 
         // Denry Klin, Editor in Chief enters the battlefield with your choice of a +1/+1, first strike, or vigilance counter on it.
         this.addAbility(new EntersBattlefieldAbility(
-                new AddCounterChoiceSourceEffect(CounterType.P1P1, CounterType.FIRST_STRIKE, CounterType.VIGILANCE)
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance())
+                        .withAdditionalCounters(CounterType.FIRST_STRIKE.createInstance())
+                        .withAdditionalCounters(CounterType.VIGILANCE.createInstance())
+                        .withChooseCounter()
+                        .setText("with your choice of a +1/+1, first strike, or vigilance counter on it")
         ));
 
         // Whenever a nontoken creature you control enters,

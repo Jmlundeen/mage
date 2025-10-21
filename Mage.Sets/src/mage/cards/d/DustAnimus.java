@@ -5,7 +5,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.PlotAbility;
 import mage.cards.CardImpl;
@@ -45,14 +45,14 @@ public final class DustAnimus extends CardImpl {
 
         // If you control five or more untapped lands, Dust Animus enters the battlefield with two +1/+1 counters and a lifelink counter on it.
         Ability ability = new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))
+                        .withAdditionalCounters(CounterType.LIFELINK.createInstance()),
                 condition,
                 "If you control five or more untapped lands, "
                         + "{this} enters with two +1/+1 counters "
                         + "and a lifelink counter on it.",
                 ""
         );
-        ability.addEffect(new AddCountersSourceEffect(CounterType.LIFELINK.createInstance()));
         this.addAbility(ability);
 
         // Plot {1}{W}

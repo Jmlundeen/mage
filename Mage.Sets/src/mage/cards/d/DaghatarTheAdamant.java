@@ -6,7 +6,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.MoveCounterTargetsEffect;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
@@ -46,8 +46,7 @@ public final class DaghatarTheAdamant extends CardImpl {
         this.addAbility(VigilanceAbility.getInstance());
 
         // Daghatar the Adamant enters the battlefield with four +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(4)),
-                "with four +1/+1 counters on it"));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(4))));
 
         // {1}{B/G}{B/G}: Move a +1/+1 counter from target creature onto a second target creature.
         Ability ability = new SimpleActivatedAbility(

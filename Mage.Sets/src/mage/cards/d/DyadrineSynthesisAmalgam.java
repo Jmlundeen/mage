@@ -10,7 +10,7 @@ import mage.abilities.dynamicvalue.common.ManaSpentToCastCount;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -46,8 +46,8 @@ public final class DyadrineSynthesisAmalgam extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Dyadrine enters with a number of +1/+1 counters on it equal to the amount of mana spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), ManaSpentToCastCount.instance, true
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(
+                CounterType.P1P1, ManaSpentToCastCount.instance
         ), "with a number of +1/+1 counters on it equal to the amount of mana spent to cast it"));
 
         // Whenever you attack, you may remove a +1/+1 counter from each of two creatures you control. If you do, draw a card and create a 2/2 colorless Robot artifact creature token.
