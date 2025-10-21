@@ -4,17 +4,16 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.condition.common.KickedCostCondition;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.EntersBattlefieldEffect;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FirstStrikeAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.counters.CounterType;
 
 import java.util.UUID;
@@ -38,19 +37,23 @@ public final class Cetavolver extends CardImpl {
         this.addAbility(kickerAbility);
 
         // If Cetavolver was kicked with its {1}{R} kicker, it enters with two +1/+1 counters on it and with first strike.
+        Effect gainFirstStrikeEffect = new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                .withGainedAbilities(FirstStrikeAbility.getInstance());
         EntersBattlefieldAbility ability1 = new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2),false),
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
                 new KickedCostCondition("{1}{R}"), "If {this} was kicked with its {1}{R} kicker, it enters with two +1/+1 counters on it and with first strike.",
                 "{this} enters with two +1/+1 counters on it and with first strike");
-        ((EntersBattlefieldEffect)ability1.getEffects().get(0)).addEffect(new GainAbilitySourceEffect(FirstStrikeAbility.getInstance(), Duration.WhileOnBattlefield));
+        ((EntersBattlefieldEffect)ability1.getEffects().get(0)).addEffect(gainFirstStrikeEffect);
         this.addAbility(ability1);
 
         // If Cetavolver was kicked with its {G} kicker, it enters with a +1/+1 counter on it and with trample.
+        Effect gainTrampleEffect = new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                .withGainedAbilities(TrampleAbility.getInstance());
         EntersBattlefieldAbility ability2 = new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(1),false), new KickedCostCondition("{G}"),
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()), new KickedCostCondition("{G}"),
                 "If {this} was kicked with its {G} kicker, it enters with a +1/+1 counter on it and with trample.",
                 "{this} enters with a +1/+1 counter on it and with trample");
-        ((EntersBattlefieldEffect)ability2.getEffects().get(0)).addEffect(new GainAbilitySourceEffect(TrampleAbility.getInstance(), Duration.WhileOnBattlefield));
+        ((EntersBattlefieldEffect)ability2.getEffects().get(0)).addEffect(gainTrampleEffect);
         this.addAbility(ability2);
     }
 

@@ -3,8 +3,7 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.condition.common.MorbidCondition;
-import mage.abilities.decorator.ConditionalOneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.MorbidHint;
 import mage.abilities.keyword.DeathtouchAbility;
 import mage.cards.CardImpl;
@@ -32,9 +31,11 @@ public final class CacklingSlasher extends CardImpl {
         this.addAbility(DeathtouchAbility.getInstance());
 
         // Cackling Slasher enters with a +1/+1 counter on it if a creature died this turn.
-        this.addAbility(new EntersBattlefieldAbility(new ConditionalOneShotEffect(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance()), MorbidCondition.instance, ""
-        ), "with a +1/+1 counter on it if a creature died this turn").addHint(MorbidHint.instance));
+        this.addAbility(new EntersBattlefieldAbility(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                MorbidCondition.instance,
+                "",
+                "with a +1/+1 counter on it if a creature died this turn").addHint(MorbidHint.instance));
     }
 
     private CacklingSlasher(final CacklingSlasher card) {

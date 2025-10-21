@@ -1,7 +1,6 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.PutCardIntoGraveFromAnywhereAllTriggeredAbility;
@@ -10,17 +9,16 @@ import mage.abilities.dynamicvalue.common.CardsInAllGraveyardsCount;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.ReturnSourceFromGraveyardToHandEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.SetTargetPointer;
-import mage.constants.TargetController;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.common.FilterLandCard;
+
+import java.util.UUID;
 
 /**
  *
@@ -40,7 +38,10 @@ public final class CentaurVinecrasher extends CardImpl {
         // Centaur Vinecrasher enters the battlefield with a number of +1/+1 counters on it equal to the number of land cards in all graveyards.
         Effect effect = new AddCountersSourceEffect(CounterType.P1P1.createInstance(0), new CardsInAllGraveyardsCount(new FilterLandCard()), true);
         effect.setText("with a number of +1/+1 counters on it equal to the number of land cards in all graveyards");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new EntersBattlefieldAbility(
+                new EntersWithCountersEffect(CounterType.P1P1, new CardsInAllGraveyardsCount(new FilterLandCard("land cards")))
+                        .withNumberOfText()
+        ));
         // Whenever a land card is put into a graveyard from anywhere, you may pay {G}{G}. If you do, return Centaur Vinecrasher from your graveyard to your hand.
         this.addAbility(new PutCardIntoGraveFromAnywhereAllTriggeredAbility(Zone.GRAVEYARD,
                 new DoIfCostPaid(new ReturnSourceFromGraveyardToHandEffect(), new ManaCostsImpl<>("{G}{G}")),

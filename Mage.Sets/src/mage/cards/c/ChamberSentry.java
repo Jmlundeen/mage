@@ -14,7 +14,7 @@ import mage.abilities.dynamicvalue.common.ColorsOfManaSpentToCastCount;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.DamageTargetEffect;
 import mage.abilities.effects.common.ReturnSourceFromGraveyardToHandEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -42,8 +42,7 @@ public final class ChamberSentry extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Chamber Sentry enters the battlefield with a +1/+1 counter on it for each color of mana spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(), ColorsOfManaSpentToCastCount.getInstance(), true),
-                "with a +1/+1 counter on it for each color of mana spent to cast it"));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, ColorsOfManaSpentToCastCount.getInstance())));
 
         // {X}, {T}, Remove X +1/+1 counters from Chamber Sentry: It deals X damage to any target.
         Ability ability = new SimpleActivatedAbility(new DamageTargetEffect(GetXValue.instance)

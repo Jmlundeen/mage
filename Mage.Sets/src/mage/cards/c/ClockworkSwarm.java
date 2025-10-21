@@ -2,6 +2,7 @@ package mage.cards.c;
 
 import mage.MageInt;
 import mage.abilities.Ability;
+import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.common.EndOfCombatTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleEvasionAbility;
@@ -9,10 +10,9 @@ import mage.abilities.condition.common.AttackedOrBlockedThisCombatSourceConditio
 import mage.abilities.condition.common.IsStepCondition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.combat.CantBeBlockedByCreaturesSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -50,8 +50,7 @@ public final class ClockworkSwarm extends CardImpl {
 
         // Clockwork Swarm enters the battlefield with four +1/+0 counters on it.
         this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P0.createInstance(4)),
-                "with four +1/+0 counters on it"
+                new EntersWithCountersEffect(CounterType.P1P0.createInstance(4))
         ));
 
         // Clockwork Swarm can't be blocked by Walls.

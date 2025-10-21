@@ -10,6 +10,7 @@ import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.common.CreateTokenEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
@@ -47,10 +48,9 @@ public final class BosssChauffeur extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Boss's Chauffeur enters the battlefield with a number of +1/+1 counters on it equal to one plus the number of other creatures you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), xValue, false
-        ), "with a number of +1/+1 counters on it equal to " +
-                "one plus the number of other creatures you control").addHint(hint));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue))
+                .addHint(hint)
+        );
 
         // Alliance — Whenever another creature you control enters, put a +1/+1 counter on Boss's Chauffeur.
         this.addAbility(new AllianceAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance())));

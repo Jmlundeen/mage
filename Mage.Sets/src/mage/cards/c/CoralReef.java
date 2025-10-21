@@ -10,6 +10,7 @@ import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.costs.common.TapTargetCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.cards.CardImpl;
@@ -43,8 +44,7 @@ public final class CoralReef extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{U}{U}");
 
         // Coral Reef enters the battlefield with four polyp counters on it.
-        Effect effect = new AddCountersSourceEffect(CounterType.POLYP.createInstance(4));
-        effect.setText("with four polyp counters on it");
+        Effect effect = new EntersWithCountersEffect(CounterType.POLYP.createInstance(4));
         this.addAbility(new EntersBattlefieldAbility(effect));
 
         // Sacrifice an Island: Put two polyp counters on Coral Reef.

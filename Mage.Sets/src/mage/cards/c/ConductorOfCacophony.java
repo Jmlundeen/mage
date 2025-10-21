@@ -8,7 +8,7 @@ import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.DamageAllEffect;
 import mage.abilities.effects.common.DamagePlayersEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -40,8 +40,7 @@ public final class ConductorOfCacophony extends CardImpl {
 
         // Conductor of Cacophony enters the battlefield with two +1/+1 counters on it.
         this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                "with two +1/+1 counters on it"
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))
         ));
 
         // {B}, Remove a +1/+1 counter from Conductor of Cacophony: It deals 1 damage to each other creature and each player.

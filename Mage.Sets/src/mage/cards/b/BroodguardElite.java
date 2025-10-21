@@ -4,8 +4,9 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.dynamicvalue.common.SourceXCostValue;
 import mage.abilities.effects.common.PutSourceCountersOnTargetEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.WarpAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -29,8 +30,8 @@ public final class BroodguardElite extends CardImpl {
         this.power = new MageInt(0);
         this.toughness = new MageInt(0);
 
-        // This creature enters with X+1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        // This creature enters with X +1/+1 counters on it.
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
 
         // When this creature leaves the battlefield, put its counters on target creature you control.
         Ability ability = new LeavesBattlefieldTriggeredAbility(new PutSourceCountersOnTargetEffect());
