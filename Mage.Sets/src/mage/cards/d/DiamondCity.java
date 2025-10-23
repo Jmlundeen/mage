@@ -3,7 +3,7 @@ package mage.cards.d;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -34,10 +34,10 @@ public final class DiamondCity extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
 
         // Diamond City enters the battlefield with a shield counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersWithCountersEffect(CounterType.SHIELD.createInstance(1)),
-                "with a shield counter on it. <i>(If it would be dealt damage " +
-                        "or destroyed, remove a shield counter from it instead.)</i>"
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance(1))
+                        .setText("{this} enters with a shield counter on it." +
+                                " <i>(If it would be dealt damage or destroyed, remove a shield counter from it instead.)</i>")
         ));
 
         // {T}: Add {C}.

@@ -12,7 +12,6 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
@@ -70,7 +69,7 @@ class AlteredEgoCopyApplier extends CopyApplier {
 
         if (!isCopyOfCopy(source, blueprint, copyToObjectId) && CardUtil.checkSourceCostsTagExists(game, source, "X")) {
             // except it enters with an additional X +1/+1 counters on it
-            blueprint.getAbilities().add(new EntersBattlefieldAbility(
+            blueprint.getAbilities().add(new SimpleStaticAbility(
                     new EntersWithCountersEffect(CounterType.P1P1.createInstance(CardUtil.getSourceCostsTagX(game, source, 0)))
             ));
 

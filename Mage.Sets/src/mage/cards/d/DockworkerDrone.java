@@ -3,7 +3,7 @@ package mage.cards.d;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.PutSourceCountersOnTargetEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
@@ -28,9 +28,7 @@ public final class DockworkerDrone extends CardImpl {
         this.toughness = new MageInt(1);
 
         // This creature enters with a +1/+1 counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersWithCountersEffect(CounterType.P1P1.createInstance())
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())));
 
         // When this creature dies, put its counters on target creature you control.
         Ability ability = new DiesSourceTriggeredAbility(new PutSourceCountersOnTargetEffect());

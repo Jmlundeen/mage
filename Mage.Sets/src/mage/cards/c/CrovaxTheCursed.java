@@ -2,8 +2,8 @@ package mage.cards.c;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.SacrificeControllerEffect;
@@ -36,7 +36,7 @@ public final class CrovaxTheCursed extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Crovax the Cursed enters the battlefield with four +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(4))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(4))));
 
         // At the beginning of your upkeep, you may sacrifice a creature. If you do, put a +1/+1 counter on Crovax. If you don't, remove a +1/+1 counter from Crovax.
         Ability ability = new BeginningOfUpkeepTriggeredAbility(new CrovaxTheCursedEffect());

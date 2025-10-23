@@ -11,6 +11,8 @@ import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEf
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
+import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.counters.CounterType;
 import mage.filter.common.FilterControlledCreaturePermanent;
@@ -34,7 +36,7 @@ public final class BannerOfKinship extends CardImpl {
 
         // As this artifact enters, choose a creature type. This artifact enters with a fellowship counter on it for each creature you control of the chosen type.
         AsEntersBattlefieldAbility ability = new AsEntersBattlefieldAbility(new ChooseCreatureTypeEffect(Outcome.BoostCreature));
-        ability.addEffect(new EntersWithCountersEffect(CounterType.FELLOWSHIP, xValue));
+        ability.addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.FELLOWSHIP, xValue));
         this.addAbility(ability);
 
         // Creatures you control of the chosen type get +1/+1 for each fellowship counter on this artifact.

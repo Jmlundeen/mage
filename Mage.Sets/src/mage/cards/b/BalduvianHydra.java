@@ -2,7 +2,6 @@ package mage.cards.b;
 
 import mage.MageInt;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.IsStepCondition;
@@ -17,7 +16,6 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 
 import java.util.UUID;
@@ -35,7 +33,7 @@ public final class BalduvianHydra extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Balduvian Hydra enters the battlefield with X +1/+0 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P0, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P0, SourceXCostValue.instance)));
 
         // Remove a +1/+0 counter from Balduvian Hydra: Prevent the next 1 damage that would be dealt to Balduvian Hydra this turn.
         this.addAbility(new SimpleActivatedAbility(

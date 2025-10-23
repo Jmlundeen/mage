@@ -1,8 +1,8 @@
 package mage.cards.b;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.RestrictionEffect;
@@ -39,7 +39,7 @@ public final class BraidedNet extends CardImpl {
         this.secondSideCardClazz = mage.cards.b.BraidedQuipu.class;
 
         // Braided Net enters the battlefield with three net counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.NET.createInstance(3))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.NET.createInstance(3))));
 
         // {T}, Remove a net counter from Braided Net: Tap another target nonland permanent. Its activated abilities can't be activated for as long as it remains tapped.
         Ability ability = new SimpleActivatedAbility(new TapTargetEffect(), new TapSourceCost());

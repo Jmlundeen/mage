@@ -1,8 +1,8 @@
 package mage.cards.a;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldControlledTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.token.ClueAbility;
@@ -33,7 +33,7 @@ public class AgentsToolkit extends CardImpl {
         this.subtype.add(SubType.CLUE);
 
         // Agent’s Toolkit enters the battlefield with a +1/+1 counter, a flying counter, a deathtouch counter, and a shield counter on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())
                 .withAdditionalCounters(CounterType.FLYING.createInstance())
                 .withAdditionalCounters(CounterType.DEATHTOUCH.createInstance())
                 .withAdditionalCounters(CounterType.SHIELD.createInstance())

@@ -19,7 +19,6 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ComparisonType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.target.common.TargetAnyTarget;
 
@@ -42,7 +41,7 @@ public final class ApocalypseHydra extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Apocalypse Hydra enters the battlefield with X +1/+1 counters on it. If X is 5 or more, it enters with an additional X +1/+1 counters on it.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ConditionalReplacementEffect(
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
                 new EntersWithCountersEffect(CounterType.P1P1, doubledXValue),
                 xIs5OrMore,
                 new EntersWithCountersEffect(CounterType.P1P1, xValue))

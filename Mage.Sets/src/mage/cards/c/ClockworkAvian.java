@@ -4,7 +4,7 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.common.EndOfCombatTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.AttackedOrBlockedThisCombatSourceCondition;
 import mage.abilities.condition.common.IsStepCondition;
 import mage.abilities.costs.common.TapSourceCost;
@@ -42,7 +42,7 @@ public final class ClockworkAvian extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Clockwork Avian enters the battlefield with four +1/+0 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P0.createInstance(4))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P0.createInstance(4))));
 
         // At end of combat, if Clockwork Avian attacked or blocked this combat, remove a +1/+0 counter from it.
         this.addAbility(new EndOfCombatTriggeredAbility(

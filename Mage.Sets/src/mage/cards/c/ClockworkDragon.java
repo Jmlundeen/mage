@@ -4,8 +4,8 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksOrBlocksTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.AtTheEndOfCombatDelayedTriggeredAbility;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.OneShotEffect;
@@ -35,9 +35,17 @@ public final class ClockworkDragon extends CardImpl {
         this.subtype.add(SubType.DRAGON);
         this.power = new MageInt(0);
         this.toughness = new MageInt(0);
+
+        // Flying
         this.addAbility(FlyingAbility.getInstance());
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(6))));
+
+        // Clockwork Dragon enters the battlefield with six +1/+1 counters on it.
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(6))));
+
+        // Whenever Clockwork Dragon attacks or blocks, remove a +1/+1 counter from it at end of combat.
         this.addAbility(new AttacksOrBlocksTriggeredAbility(new ClockworkDragonEffect(), false));
+
+        // {3}: Put a +1/+1 counter on Clockwork Dragon.
         this.addAbility(new SimpleActivatedAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance()), new GenericManaCost(3)));
     }
 

@@ -4,8 +4,8 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.common.EndOfCombatTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleEvasionAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.AttackedOrBlockedThisCombatSourceCondition;
 import mage.abilities.condition.common.IsStepCondition;
 import mage.abilities.costs.common.TapSourceCost;
@@ -48,7 +48,7 @@ public final class ClockworkSteed extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Clockwork Steed enters the battlefield with four +1/+0 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P0.createInstance(4))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P0.createInstance(4))));
 
         // Clockwork Steed can't be blocked by artifact creatures.
         this.addAbility(new SimpleEvasionAbility(new CantBeBlockedByCreaturesSourceEffect(filter, Duration.WhileOnBattlefield)));

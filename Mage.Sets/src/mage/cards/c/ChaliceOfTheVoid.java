@@ -2,7 +2,7 @@
 package mage.cards.c;
 
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.SourceXCostValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.CounterTargetEffect;
@@ -30,7 +30,7 @@ public final class ChaliceOfTheVoid extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{X}{X}");
 
         // Chalice of the Void enters the battlefield with X charge counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.CHARGE, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, SourceXCostValue.instance)));
 
         // Whenever a player casts a spell with converted mana cost equal to the number of charge counters on Chalice of the Void, counter that spell.
         this.addAbility(new ChaliceOfTheVoidTriggeredAbility());

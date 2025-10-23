@@ -3,7 +3,6 @@ package mage.cards.b;
 
 import mage.MageInt;
 import mage.ObjectColor;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -13,7 +12,6 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.FilterSpell;
 import mage.filter.predicate.mageobject.ColorPredicate;
@@ -44,7 +42,7 @@ public final class BelligerentHatchling extends CardImpl {
         // First strike
         this.addAbility(FirstStrikeAbility.getInstance());
         // Belligerent Hatchling enters the battlefield with four -1/-1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.M1M1.createInstance(4))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.M1M1.createInstance(4))));
         // Whenever you cast a red spell, remove a -1/-1 counter from Belligerent Hatchling.
         this.addAbility(new SpellCastControllerTriggeredAbility(new RemoveCounterSourceEffect(CounterType.M1M1.createInstance(1)), filterRedSpell, false));
         // Whenever you cast a white spell, remove a -1/-1 counter from Belligerent Hatchling.

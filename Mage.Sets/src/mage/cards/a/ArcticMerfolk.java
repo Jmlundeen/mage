@@ -2,9 +2,10 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
 import mage.abilities.costs.common.ReturnToHandChosenControlledPermanentCost;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
@@ -34,10 +35,10 @@ public final class ArcticMerfolk extends CardImpl {
         ));
 
         // If Arctic Merfolk was kicked, it enters with a +1/+1 counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
                 new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
-                KickedCondition.ONCE,
-                "If {this} was kicked, it enters with a +1/+1 counter on it."
+                KickedCondition.ONCE)
+                .setText("If {this} was kicked, it enters with a +1/+1 counter on it")
         ));
     }
 

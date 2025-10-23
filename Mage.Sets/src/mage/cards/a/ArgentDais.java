@@ -2,8 +2,8 @@ package mage.cards.a;
 
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
@@ -39,7 +39,7 @@ public final class ArgentDais extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{1}{W}");
 
         // Argent Dais enters the battlefield with two oil counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance(2))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance(2))));
 
         // Whenever two or more creatures attack, put an oil counter on Argent Dais.
         this.addAbility(new ArgentDaisTriggeredAbility());

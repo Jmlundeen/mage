@@ -3,7 +3,7 @@ package mage.cards.b;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.CreaturesDiedThisTurnCount;
@@ -42,7 +42,7 @@ public final class BoneDevourer extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // This creature enters with a number of +1/+1 counters on it equal to the number of creatures that died this turn.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesDiedThisTurnCount.instance)
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesDiedThisTurnCount.instance)
                 .withNumberOfText())
                 .addHint(CreaturesDiedThisTurnHint.instance)
         );

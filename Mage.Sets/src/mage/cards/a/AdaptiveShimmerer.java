@@ -1,7 +1,7 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlashAbility;
 import mage.cards.CardImpl;
@@ -28,9 +28,7 @@ public final class AdaptiveShimmerer extends CardImpl {
         this.addAbility(FlashAbility.getInstance());
 
         // Adaptive Shimmerer enters the battlefield with three +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))));
     }
 
     private AdaptiveShimmerer(final AdaptiveShimmerer card) {

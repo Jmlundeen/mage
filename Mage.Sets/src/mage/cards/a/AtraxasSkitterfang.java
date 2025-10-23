@@ -1,7 +1,6 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
@@ -17,7 +16,6 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.target.common.TargetControlledCreaturePermanent;
 
@@ -37,7 +35,7 @@ public final class AtraxasSkitterfang extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Atraxa's Skitterfang enters the battlefield with three oil counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance(3))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance(3))));
 
         // At the beginning of combat on your turn, you may remove an oil counter from Atraxa's Skitterfang. When you do, target creature you control gains your choice of flying, vigilance, deathtouch, or lifelink until end of turn.
         ReflexiveTriggeredAbility ability = new ReflexiveTriggeredAbility(new GainsChoiceOfAbilitiesEffect(

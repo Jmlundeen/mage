@@ -2,8 +2,8 @@ package mage.cards.c;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.MultipliedValue;
 import mage.abilities.dynamicvalue.common.EachTwoManaSpentToCastValue;
@@ -34,7 +34,7 @@ public final class ClayChampion extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Clay Champion enters the battlefield with three +1/+1 counters on it for each {G}{G} spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)));
 
         // When Clay Champion enters the battlefield, choose up to two other target creatures you control. For each {W}{W} spent to cast Clay Champion, put a +1/+1 counter on each of them.
         Ability ability = new EntersBattlefieldTriggeredAbility(

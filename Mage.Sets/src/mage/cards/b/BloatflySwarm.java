@@ -2,7 +2,6 @@ package mage.cards.b;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.PreventDamageAndRemoveCountersEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -36,7 +35,7 @@ public final class BloatflySwarm extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Bloatfly Swarm enters the battlefield with five +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(5))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(5))));
 
         // If damage would be dealt to Bloatfly Swarm while it has a +1/+1 counter on it, prevent that damage, remove that many +1/+1 counters from it, then give each player a rad counter for each +1/+1 counter removed this way.
         this.addAbility(new SimpleStaticAbility(new BloatflySwarmPreventionEffect()), PreventDamageAndRemoveCountersEffect.createWatcher());

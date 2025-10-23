@@ -3,8 +3,8 @@ package mage.cards.d;
 
 import mage.abilities.Ability;
 import mage.abilities.StateTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.SacrificeSourceEffect;
@@ -34,7 +34,7 @@ public final class DarkDepths extends CardImpl {
         this.supertype.add(SuperType.SNOW);
 
         // Dark Depths enters the battlefield with ten ice counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.ICE.createInstance(10))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.ICE.createInstance(10))));
 
         // {3}: Remove an ice counter from Dark Depths.
         this.addAbility(new SimpleActivatedAbility(new RemoveCounterSourceEffect(CounterType.ICE.createInstance(1)), new ManaCostsImpl<>("{3}")));

@@ -2,8 +2,8 @@ package mage.cards.c;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -39,12 +39,13 @@ public final class CarnifexDemon extends CardImpl {
         this.power = new MageInt(6);
         this.toughness = new MageInt(6);
 
+        // Flying
         this.addAbility(FlyingAbility.getInstance());
 
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersWithCountersEffect(CounterType.M1M1.createInstance(2))
-        ));
+        // Carnifex Demon enters the battlefield with two -1/-1 counters on it.
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.M1M1.createInstance(2))));
 
+        // {B}, Remove a -1/-1 counter from Carnifex Demon: Put a -1/-1 counter on each other creature.
         Ability ability = new SimpleActivatedAbility(
                 new AddCountersAllEffect(
                         CounterType.M1M1.createInstance(),

@@ -4,7 +4,7 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksOrBlocksTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.AtTheEndOfCombatDelayedTriggeredAbility;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
@@ -35,7 +35,7 @@ public final class ClockworkBeetle extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Clockwork Beetle enters the battlefield with two +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))));
 
         // Whenever Clockwork Beetle attacks or blocks, remove a +1/+1 counter from it at end of combat.
         this.addAbility(new AttacksOrBlocksTriggeredAbility(new ClockworkBeetleEffect(), false));

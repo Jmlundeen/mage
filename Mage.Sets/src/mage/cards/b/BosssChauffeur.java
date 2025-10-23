@@ -3,7 +3,7 @@ package mage.cards.b;
 import mage.MageInt;
 import mage.abilities.common.AllianceAbility;
 import mage.abilities.common.DiesSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.AdditiveDynamicValue;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
@@ -48,7 +48,7 @@ public final class BosssChauffeur extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Boss's Chauffeur enters the battlefield with a number of +1/+1 counters on it equal to one plus the number of other creatures you control.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue))
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue))
                 .addHint(hint)
         );
 

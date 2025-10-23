@@ -1,10 +1,11 @@
 package mage.cards.c;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.OpponentsLostLifeCondition;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.OpponentsLostLifeHint;
@@ -30,10 +31,10 @@ public final class CinderingCutthroat extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Cindering Cutthroat enters with a +1/+1 counter on it if an opponent lost life this turn.
-        this.addAbility(new EntersBattlefieldAbility(
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
                         new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
-                        OpponentsLostLifeCondition.instance, "",
-                "with a +1/+1 counter on it if an opponent lost life this turn"
+                        OpponentsLostLifeCondition.instance)
+                .setText("{this} enters with a +1/+1 counter on it if an opponent lost life this turn")
         ).addHint(OpponentsLostLifeHint.instance));
 
         // {1}{B/R}: Cindering Cutthroat gains menace until end of turn.

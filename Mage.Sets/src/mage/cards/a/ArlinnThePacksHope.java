@@ -39,7 +39,7 @@ public final class ArlinnThePacksHope extends CardImpl {
         Ability ability = new LoyaltyAbility(new CastAsThoughItHadFlashAllEffect(
                 Duration.UntilYourNextTurn, filter
         ).setText("until your next turn, you may cast creature spells as though they had flash"), 1);
-        ability.addEffect(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+        ability.addEffect(new EntersWithCountersEffect(Duration.UntilYourNextTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
                 .setFilter(StaticFilters.FILTER_CONTROLLED_CREATURE).concatBy(", and"));
         this.addAbility(ability);
 

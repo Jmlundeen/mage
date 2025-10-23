@@ -1,7 +1,6 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceMatchesFilterCondition;
@@ -56,7 +55,7 @@ public final class AeveProgenitorOoze extends CardImpl {
         )));
 
         // Aeve enters the battlefield with a +1/+1 counter on it for each other Ooze you control.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, new PermanentsOnBattlefieldCount(filter))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, new PermanentsOnBattlefieldCount(filter))));
     }
 
     private AeveProgenitorOoze(final AeveProgenitorOoze card) {

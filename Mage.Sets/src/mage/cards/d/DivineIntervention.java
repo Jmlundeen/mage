@@ -2,7 +2,7 @@ package mage.cards.d;
 
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
@@ -30,7 +30,7 @@ public final class DivineIntervention extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{6}{W}{W}");
 
         // Divine Intervention enters the battlefield with 2 intervention counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.INTERVENTION.createInstance(2))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.INTERVENTION.createInstance(2))));
 
         // At the beginning of your upkeep, remove an intervention counter from Divine Intervention.
         this.addAbility(new BeginningOfUpkeepTriggeredAbility(new RemoveCounterSourceEffect(CounterType.INTERVENTION.createInstance())));

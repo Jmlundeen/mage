@@ -1,8 +1,8 @@
 package mage.cards.c;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.dynamicvalue.common.ColorsOfManaSpentToCastCount;
@@ -32,9 +32,8 @@ public final class CrystallineCrawler extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Converge - Crystalline Crawler enters the battlefield with a +1/+1 counter on it for each color of mana spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersWithCountersEffect(CounterType.P1P1, ColorsOfManaSpentToCastCount.getInstance())
-                        .setText("with a +1/+1 counter on it for each color of mana spent to cast it"))
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, ColorsOfManaSpentToCastCount.getInstance())
+                        .setText("{this} enters with a +1/+1 counter on it for each color of mana spent to cast it"))
                 .withFlavorWord("Converge"));
 
         // Remove a +1/+1 counter from Crystalline Crawler: Add one mana of any color.

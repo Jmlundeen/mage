@@ -4,7 +4,7 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksOrBlocksTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.AtTheEndOfCombatDelayedTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -32,8 +32,14 @@ public final class ClockworkCondor extends CardImpl {
         this.subtype.add(SubType.BIRD);
         this.power = new MageInt(0);
         this.toughness = new MageInt(0);
+
+        // Flying
         this.addAbility(FlyingAbility.getInstance());
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))));
+
+        // Clockwork Condor enters the battlefield with three +1/+1 counters on it.
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))));
+
+        // Whenever Clockwork Condor attacks or blocks, remove a +1/+1 counter from it at end of combat.
         this.addAbility(new AttacksOrBlocksTriggeredAbility(new ClockworkCondorEffect(), false));
     }
 

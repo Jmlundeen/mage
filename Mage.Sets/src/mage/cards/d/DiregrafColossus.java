@@ -2,7 +2,7 @@
 package mage.cards.d;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CardsInControllerGraveyardCount;
@@ -41,8 +41,8 @@ public final class DiregrafColossus extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Diregraf Colossus enters the battlefield with a +1/+1 counter on it for each Zombie card in your graveyard.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue),
-                "with a +1/+1 counter on it for each Zombie card in your graveyard")
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)
+                .setText("{this} enters with a +1/+1 counter on it for each Zombie card in your graveyard"))
         );
 
         // Whenever you cast a Zombie spell, create a tapped 2/2 black Zombie creature token.

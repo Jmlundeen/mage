@@ -1,7 +1,7 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CountersCount;
 import mage.abilities.effects.common.DoubleCountersSourceEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -32,7 +32,7 @@ public final class AscendantAcolyte extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Ascendant Acolyte enters the battlefield with a +1/+1 counter on it for each +1/+1 counter among other creatures you control.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue))
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue))
                 .addHint(xValue.getHint())
         );
 

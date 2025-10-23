@@ -1,9 +1,10 @@
 package mage.cards.a;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.cards.CardImpl;
@@ -37,11 +38,11 @@ public final class AscendantPackleader extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Ascendant Packleader enters the battlefield with a +1/+1 counter on it if you control a permanent with mana value 4 or greater.
-        this.addAbility(new EntersBattlefieldAbility(
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
                 new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
-                new PermanentsOnTheBattlefieldCondition(filter),
-                null,
-                "with a +1/+1 counter on it if you control a permanent with mana value 4 or greater"
+                new PermanentsOnTheBattlefieldCondition(filter))
+                .setText("{this} enters the battlefield with a +1/+1 counter " +
+                        "on it if you control a permanent with mana value 4 or greater")
         ));
 
         // Whenever you cast a spell with mana value 4 or greater, put a +1/+1 counter on Ascendant Packleader.

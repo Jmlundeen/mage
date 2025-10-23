@@ -2,7 +2,6 @@ package mage.cards.a;
 
 import mage.abilities.Ability;
 import mage.abilities.StateTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.SacrificeSourceEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -30,7 +29,7 @@ public final class AfiyaGrove extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{1}{G}");
 
         // Afiya Grove enters the battlefield with three +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))));
 
         // At the beginning of your upkeep, move a +1/+1 counter from Afiya Grove onto target creature.
         Ability ability = new BeginningOfUpkeepTriggeredAbility(new MoveCountersFromSourceToTargetEffect());

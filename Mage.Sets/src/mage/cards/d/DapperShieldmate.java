@@ -31,10 +31,10 @@ public final class DapperShieldmate extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Dapper Shieldmate enters the battlefield with a shield counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersWithCountersEffect(CounterType.SHIELD.createInstance()),
-                "with a shield counter on it. <i>(If it would be dealt damage " +
-                        "or destroyed, remove a shield counter from it instead.)</i>"
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance())
+                    .setText("{this} enters with a shield counter on it. <i>(If it would be dealt damage " +
+                            "or destroyed, remove a shield counter from it instead.)</i>")
         ));
 
         // As long as it's your turn, Dapper Shieldmate gets +2/+0.

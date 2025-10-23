@@ -3,8 +3,9 @@ package mage.cards.b;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
@@ -31,10 +32,11 @@ public final class BalothGorger extends CardImpl {
         this.addAbility(new KickerAbility("{4}"));
 
         // If Baloth Gorger was kicked, it enters with three +1/+1 counters on it
-        Ability ability = new EntersBattlefieldAbility(
+        Ability ability = new SimpleStaticAbility(new ConditionalReplacementEffect(
                 new EntersWithCountersEffect(CounterType.P1P1.createInstance(3)),
-                KickedCondition.ONCE,
-                "If {this} was kicked, it enters with three +1/+1 counters on it.");
+                KickedCondition.ONCE)
+                .setText("If {this} was kicked, it enters with three +1/+1 counters on it.")
+        );
         this.addAbility(ability);
     }
 

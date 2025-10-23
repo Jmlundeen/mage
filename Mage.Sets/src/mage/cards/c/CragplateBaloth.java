@@ -2,8 +2,9 @@ package mage.cards.c;
 
 import mage.MageInt;
 import mage.abilities.common.CantBeCounteredSourceAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.HexproofAbility;
@@ -41,10 +42,10 @@ public final class CragplateBaloth extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // If Cragplate Baloth was kicked, it enters with four +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
                 new EntersWithCountersEffect(CounterType.P1P1.createInstance(4)),
-                KickedCondition.ONCE,
-                "If {this} was kicked, it enters with four +1/+1 counters on it.", ""
+                KickedCondition.ONCE)
+                .setText("If {this} was kicked, it enters with four +1/+1 counters on it.")
         ));
     }
 

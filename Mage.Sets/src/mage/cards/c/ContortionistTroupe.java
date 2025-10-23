@@ -2,7 +2,7 @@ package mage.cards.c;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.CovenCondition;
 import mage.abilities.dynamicvalue.common.SourceXCostValue;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -33,7 +33,7 @@ public final class ContortionistTroupe extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Contortionist Troupe enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
 
         // Coven — At the beginning of your end step, if you control three or more creatures with different powers, put a +1/+1 counter on target creature you control.
         Ability ability = new BeginningOfEndStepTriggeredAbility(

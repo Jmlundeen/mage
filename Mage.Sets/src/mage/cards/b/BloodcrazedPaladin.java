@@ -1,7 +1,7 @@
 package mage.cards.b;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CreaturesDiedThisTurnCount;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.CreaturesDiedThisTurnHint;
@@ -31,7 +31,7 @@ public final class BloodcrazedPaladin extends CardImpl {
         this.addAbility(FlashAbility.getInstance());
 
         // Bloodcrazed Paladin enters the battlefield with a +1/+1 counter on it for each creature that died this turn.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesDiedThisTurnCount.instance)
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesDiedThisTurnCount.instance)
         ).addHint(CreaturesDiedThisTurnHint.instance));
     }
 

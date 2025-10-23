@@ -1,22 +1,19 @@
 
 package mage.cards.c;
 
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.SourceXCostValue;
-import mage.abilities.effects.common.continuous.BecomesCreatureSourceEffect;
-import mage.abilities.effects.common.continuous.SetBasePowerToughnessSourceEffect;
+import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.counters.CounterType;
-import mage.game.permanent.token.custom.CreatureToken;
 
 import java.util.UUID;
 
@@ -29,16 +26,20 @@ public final class ChimericMass extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{X}");
 
         // Chimeric Mass enters the battlefield with X charge counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.CHARGE, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, SourceXCostValue.instance)));
 
         // {1}: Until end of turn, Chimeric Mass becomes a Construct artifact creature with "This creature's power and toughness are each equal to the number of charge counters on it."
         CountersSourceCount count = new CountersSourceCount(CounterType.CHARGE);
-        this.addAbility(new SimpleActivatedAbility(new BecomesCreatureSourceEffect(
-                new CreatureToken(0, 0, "Construct artifact creature with \"This creature's power and toughness are each equal to the number of charge counters on it.\"")
-                        .withType(CardType.ARTIFACT)
-                        .withSubType(SubType.CONSTRUCT)
-                        .withAbility(new SimpleStaticAbility(new SetBasePowerToughnessSourceEffect(count, Duration.WhileOnBattlefield))),
-                CardType.ARTIFACT, Duration.EndOfTurn).withDurationRuleAtStart(true), new GenericManaCost(1)));
+        Ability setPowerAbility = new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                .withSetPower(count)
+                .withSetToughness(count)
+                .setText("this creature's power and toughness are each equal to the number of charge counters on it"));
+        Effect effect = new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BecomeCreature, ContinuousAffected.SOURCE)
+                .withAddedCardTypes(CardType.ARTIFACT, CardType.CREATURE)
+                .withAddedSubTypes(SubType.CONSTRUCT)
+                .withGainedAbilities(setPowerAbility)
+                .setText("Until end of turn, {this} becomes a Construct artifact creature with \"This creature's power and toughness are each equal to the number of charge counters on it.\"");
+        this.addAbility(new SimpleActivatedAbility(effect, new GenericManaCost(1)));
     }
 
     private ChimericMass(final ChimericMass card) {

@@ -2,7 +2,6 @@ package mage.cards.a;
 
 import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.dynamicvalue.common.SourceXCostValue;
@@ -33,7 +32,7 @@ public final class AstralCornucopia extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{X}{X}{X}");
 
         // Astral Cornucopia enters the battlefield with X charge counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.CHARGE, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, SourceXCostValue.instance)));
 
         // {T}: Choose a color. Add one mana of that color for each charge counter on Astral Cornucopia.
         this.addAbility(new SimpleManaAbility(Zone.BATTLEFIELD, new AstralCornucopiaManaEffect(), new TapSourceCost()));

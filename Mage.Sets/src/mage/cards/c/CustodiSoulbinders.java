@@ -2,8 +2,8 @@ package mage.cards.c;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
@@ -39,9 +39,8 @@ public final class CustodiSoulbinders extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Custodi Soulbinders enters the battlefield with X +1/+1 counters on it, where X is the number of other creatures on the battlefield.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersWithCountersEffect(CounterType.P1P1, new PermanentsOnBattlefieldCount(filter))
-                        .setText("with X +1/+1 counters on it, where X is the number of other creatures on the battlefield")
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, new PermanentsOnBattlefieldCount(filter))
+                .setText("{this} enters with X +1/+1 counters on it, where X is the number of other creatures on the battlefield")
         ));
 
 
