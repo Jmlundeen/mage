@@ -39,6 +39,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
     protected boolean useXText = false;
     protected boolean useNumberOfText = false;
     protected boolean chooseCounter = false;
+    protected int chooseAmount = 1;
     protected EventCondition eventCondition;
     protected FilterPermanent filter;
 
@@ -121,6 +122,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
         this.useXText = effect.useXText;
         this.useNumberOfText = effect.useNumberOfText;
         this.chooseCounter = effect.chooseCounter;
+        this.chooseAmount = effect.chooseAmount;
         this.eventCondition = effect.eventCondition;
         this.filter = effect.filter;
     }
@@ -138,7 +140,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
             if (chooseCounter) {
                 Player controller = game.getPlayer(source.getControllerId());
                 List<String> choices = counters.stream().map(Counter::getName).collect(Collectors.toList());
-                List<Integer> chosen = controller.getMultiAmount(Outcome.BoostCreature, choices, 1, 1, 1, MultiAmountType.COUNTERS, game);
+                List<Integer> chosen = controller.getMultiAmount(Outcome.BoostCreature, choices, 1, chooseAmount, chooseAmount, MultiAmountType.ENTER_WITH_COUNTERS, game);
                 for (int i = 0; i < chosen.size(); i++) {
                     Counter counter = counters.get(i);
                     game.addEnterWithCounters(permanent.getId(), counter);
@@ -153,7 +155,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
             if (chooseCounter) {
                 Player controller = game.getPlayer(source.getControllerId());
                 List<String> choices = counterTypes.stream().map(CounterType::getName).collect(Collectors.toList());
-                List<Integer> chosen = controller.getMultiAmount(Outcome.BoostCreature, choices, 1, 1, 1, MultiAmountType.COUNTERS, game);
+                List<Integer> chosen = controller.getMultiAmount(Outcome.BoostCreature, choices, 1, chooseAmount, chooseAmount, MultiAmountType.ENTER_WITH_COUNTERS, game);
                 for (int i = 0; i < chosen.size(); i++) {
                     CounterType counterType = counterTypes.get(i);
                     if (chosen.get(i) > 0) {
@@ -267,6 +269,15 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
         return this;
     }
 
+    /**
+     * Enables the controller to choose the counter type, specifying the amount of counters to choose.
+     */
+    public EntersWithCountersEffect withChooseCounter(int amount) {
+        this.chooseCounter = true;
+        this.chooseAmount = amount;
+        return this;
+    }
+
     @Override
     public String getText(Mode mode) {
         if (staticText != null && !staticText.isEmpty()) {
@@ -295,6 +306,20 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
 
     private void appendCounters(StringBuilder sb) {
         String additional = getAdditionalText();
+
+        if (chooseCounter && chooseAmount > 1) {
+            sb.append("your choice of ")
+                    .append(CardUtil.numberToText(chooseAmount))
+                    .append(" different counters on it from among ");
+            for (int i = 0; i < counters.size(); i++) {
+                if (i > 0) {
+                    sb.append(i == counters.size() - 1 ? ", and " : ", ");
+                }
+                sb.append(counters.get(i).getName());
+            }
+            return;
+        }
+
         if (chooseCounter) {
             sb.append("your choice of ");
         }
@@ -317,9 +342,24 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
     private void appendCounterTypes(StringBuilder sb) {
         boolean xText = (useXText || amount instanceof SourceXCostValue) && !useNumberOfText;
         String additional = getAdditionalText();
+
+        if (chooseCounter && chooseAmount > 1) {
+            sb.append("your choice of ")
+                    .append(CardUtil.numberToText(chooseAmount))
+                    .append(" different counters on it from among ");
+            for (int i = 0; i < counterTypes.size(); i++) {
+                if (i > 0) {
+                    sb.append(i == counterTypes.size() - 1 ? ", and " : ", ");
+                }
+                sb.append(counterTypes.get(i).getName());
+            }
+            return;
+        }
+
         if (chooseCounter) {
             sb.append("your choice of ");
         }
+
         for (int i = 0; i < counterTypes.size(); i++) {
             appendSeparator(sb, i, counterTypes.size());
             CounterType type = counterTypes.get(i);
