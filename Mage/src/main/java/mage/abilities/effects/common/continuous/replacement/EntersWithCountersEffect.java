@@ -285,7 +285,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
 
     private void appendPrefix(StringBuilder sb) {
         if (affected == ContinuousAffected.SOURCE) {
-            sb.append("with ");
+            sb.append("{this} enters with ");
         } else if (affected == ContinuousAffected.STATIC_OR_DYNAMIC) {
             sb.append(filter != null
                     ? "each " + filter.getMessage() + " enters with "

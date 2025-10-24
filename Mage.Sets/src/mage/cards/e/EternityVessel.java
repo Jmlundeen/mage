@@ -1,20 +1,19 @@
 
 package mage.cards.e;
 
-import java.util.UUID;
-import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.LandfallAbility;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.ControllerLifeCount;
+import mage.abilities.dynamicvalue.common.CountersSourceCount;
+import mage.abilities.effects.common.SetPlayerLifeSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
-import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -26,10 +25,15 @@ public final class EternityVessel extends CardImpl {
         super(ownerId,setInfo,new CardType[]{CardType.ARTIFACT},"{6}");
 
         // Eternity Vessel enters the battlefield with X charge counters on it, where X is your life total.
-        this.addAbility(new EntersBattlefieldAbility(new EternityVesselEffect()));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, ControllerLifeCount.instance)
+                .withXText()
+        ));
 
         // Landfall - Whenever a land you control enters, you may have your life total become the number of charge counters on Eternity Vessel.
-        this.addAbility(new LandfallAbility(Zone.BATTLEFIELD, new EternityVesselEffect2(), true));
+        this.addAbility(new LandfallAbility(Zone.BATTLEFIELD, new SetPlayerLifeSourceEffect(new CountersSourceCount(CounterType.CHARGE))
+                .setText("have your life total become the number of charge counters on {this}"),
+                true)
+        );
     }
 
     private EternityVessel(final EternityVessel card) {
@@ -39,65 +43,5 @@ public final class EternityVessel extends CardImpl {
     @Override
     public EternityVessel copy() {
         return new EternityVessel(this);
-    }
-}
-
-class EternityVesselEffect extends OneShotEffect {
-
-    EternityVesselEffect() {
-        super(Outcome.Benefit);
-        staticText = "with X charge counters on it, where X is your life total";
-    }
-
-    private EternityVesselEffect(final EternityVesselEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent vessel = game.getPermanentEntering(source.getSourceId());
-        Player controller = game.getPlayer(source.getControllerId());
-        if (vessel != null && controller != null) {
-            int amount = controller.getLife();
-            if (amount > 0) {
-                vessel.addCounters(CounterType.CHARGE.createInstance(amount), source.getControllerId(), source, game);
-
-            }
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public EternityVesselEffect copy() {
-        return new EternityVesselEffect(this);
-    }
-}
-
-class EternityVesselEffect2 extends OneShotEffect {
-
-    public EternityVesselEffect2() {
-        super(Outcome.Benefit);
-        staticText = "you may have your life total become the number of charge counters on {this}";
-    }
-
-    private EternityVesselEffect2(final EternityVesselEffect2 effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent vessel = game.getPermanent(source.getSourceId());
-        Player controller = game.getPlayer(source.getControllerId());
-        if (vessel != null && controller != null) {
-            controller.setLife(vessel.getCounters(game).getCount(CounterType.CHARGE), game, source);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public EternityVesselEffect2 copy() {
-        return new EternityVesselEffect2(this);
     }
 }

@@ -3,15 +3,15 @@ package mage.cards.e;
 import mage.MageInt;
 import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.dynamicvalue.common.SunburstCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.effects.common.InfoEffect;
 import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.InfoEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -45,9 +45,11 @@ public final class EmblazonedGolem extends CardImpl {
         );
         
         // If Emblazoned Golem was kicked, it enters with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(),
-                EmblazonedGolemKickerValue.instance, false),
-                KickedCondition.ONCE, "If {this} was kicked, it enters with X +1/+1 counters on it.", ""));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1, EmblazonedGolemKickerValue.instance),
+                KickedCondition.ONCE)
+                .setText("If {this} was kicked, it enters with X +1/+1 counters on it.")
+        ));
     }
 
     private EmblazonedGolem(final EmblazonedGolem card) {

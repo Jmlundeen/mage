@@ -2,10 +2,10 @@ package mage.cards.e;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DeathtouchAbility;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
@@ -37,9 +37,9 @@ public final class EmbodimentOfAgonies extends CardImpl {
         this.addAbility(DeathtouchAbility.getInstance());
 
         // Embodiment of Agonies enters the battlefield with a +1/+1 counter on it for each different mana cost among nonland cards in your graveyard.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), EmbodimentOfAgoniesValue.instance, false
-        ), "with a +1/+1 counter on it for each different mana cost among nonland cards in your graveyard"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(
+                CounterType.P1P1, EmbodimentOfAgoniesValue.instance))
+        );
     }
 
     private EmbodimentOfAgonies(final EmbodimentOfAgonies card) {
@@ -78,7 +78,7 @@ enum EmbodimentOfAgoniesValue implements DynamicValue {
 
     @Override
     public String getMessage() {
-        return "";
+        return "different mana cost among nonland cards in your graveyard";
     }
 
     private static String getCosts(List<String> manaCostSymbols) {

@@ -1,11 +1,10 @@
 
 package mage.cards.e;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.DrawCardTargetEffect;
@@ -14,9 +13,10 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.target.TargetPlayer;
+
+import java.util.UUID;
 
 /**
  *
@@ -30,7 +30,11 @@ public final class EtchedMonstrosity extends CardImpl {
         this.subtype.add(SubType.GOLEM);
         this.power = new MageInt(10);
         this.toughness = new MageInt(10);
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.M1M1.createInstance(5)), " with five -1/-1 counters on it"));
+
+        // Etched Monstrosity enters the battlefield with five -1/-1 counters on it.
+        this.addAbility(new SimpleStaticAbility(new AddCountersSourceEffect(CounterType.M1M1.createInstance(5))));
+
+        // {W}{U}{B}{R}{G}, Remove five -1/-1 counters from Etched Monstrosity: Target player draws three cards.
         Ability ability = new SimpleActivatedAbility(new DrawCardTargetEffect(3), new ManaCostsImpl<>("{W}{U}{B}{R}{G}"));
         ability.addCost(new RemoveCountersSourceCost(CounterType.M1M1.createInstance(5)));
         ability.addTarget(new TargetPlayer());

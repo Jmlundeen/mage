@@ -3,11 +3,11 @@ package mage.cards.e;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.MonarchHint;
 import mage.abilities.keyword.DoubleStrikeAbility;
 import mage.cards.CardImpl;
@@ -52,13 +52,7 @@ public final class EomerKingOfRohan extends CardImpl {
         this.addAbility(DoubleStrikeAbility.getInstance());
 
         // Eomer, King of Rohan enters the battlefield with a +1/+1 counter on it for each other Human you control.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(
-                        CounterType.P1P1.createInstance(),
-                        new PermanentsOnBattlefieldCount(filter),
-                        true
-                ), "with a +1/+1 counter on it for each other Human you control"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, new PermanentsOnBattlefieldCount(filter))));
 
         // When Eomer enters the battlefield, target player becomes the monarch. Eomer deals damage equal to its power to any target.
         TriggeredAbility trigger = new EntersBattlefieldTriggeredAbility(
@@ -85,7 +79,7 @@ class EomerKingOfRohanEffect extends OneShotEffect {
 
     EomerKingOfRohanEffect() {
         super(Outcome.Benefit);
-        staticText = "target player becomes the monarch. {this} deals equal to its power to any target.";
+        staticText = "target player becomes the monarch. {this} deals damage equal to its power to any target.";
     }
 
     private EomerKingOfRohanEffect(final EomerKingOfRohanEffect effect) {

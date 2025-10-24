@@ -5,14 +5,12 @@ import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.*;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
-import mage.abilities.effects.common.continuous.BoostSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
@@ -33,18 +31,17 @@ public class EvolvingAdaptive extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Evolving Adaptive enters the battlefield with an oil counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.OIL.createInstance()),
-                "with an oil counter on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance())));
 
         // Evolving Adaptive gets +1/+1 for each oil counter on it.
         DynamicValue oilCounters = new CountersSourceCount(CounterType.OIL);
-        this.addAbility(new SimpleStaticAbility(new BoostSourceEffect(oilCounters, oilCounters, Duration.WhileOnBattlefield)
+
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                .withAddPower(oilCounters)
+                .withAddToughness(oilCounters)
                 .setText("{this} gets +1/+1 for each oil counter on it")));
 
-        // Whenever another creature you control enters, if that creature has greater power or
-        // toughness than Evolving Adaptive, put an oil counter on Evolving Adaptive.
+        // Whenever another creature you control enters, if that creature has greater power or toughness than Evolving Adaptive, put an oil counter on Evolving Adaptive.
         this.addAbility(new EvolvingAdaptiveTriggeredAbility());
     }
 

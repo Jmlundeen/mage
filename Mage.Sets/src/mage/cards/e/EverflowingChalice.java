@@ -2,18 +2,19 @@
 
 package mage.cards.e;
 
-import java.util.UUID;
 import mage.Mana;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.MultikickerCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.MultikickerAbility;
 import mage.abilities.mana.DynamicManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 
 
@@ -23,8 +24,6 @@ import mage.counters.CounterType;
  */
 public final class EverflowingChalice extends CardImpl {
 
-    protected static final String rule = "Everflowing Chalice enters the battlefield with a charge counter on it for each time it was kicked.";
-
     public EverflowingChalice(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.ARTIFACT},"{0}");
 
@@ -32,9 +31,7 @@ public final class EverflowingChalice extends CardImpl {
         this.addAbility(new MultikickerAbility("{2}"));
 
         // Everflowing Chalice enters the battlefield with a charge counter on it for each time it was kicked.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.CHARGE.createInstance(0), MultikickerCount.instance, true),
-                "with a charge counter on it for each time it was kicked"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, MultikickerCount.instance)));
 
         // {T}: Add {C} for each charge counter on Everflowing Chalice.
         this.addAbility(new DynamicManaAbility(Mana.ColorlessMana(1), new CountersSourceCount(CounterType.CHARGE)));
