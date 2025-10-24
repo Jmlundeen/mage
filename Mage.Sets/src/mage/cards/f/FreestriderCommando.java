@@ -2,10 +2,10 @@ package mage.cards.f;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
-import mage.abilities.decorator.ConditionalOneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.PlotAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -32,11 +32,10 @@ public final class FreestriderCommando extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Freestrider Commando enters the battlefield with two +1/+1 counters on it if it wasn't cast or no mana was spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new ConditionalOneShotEffect(
-                        new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                        FreestriderCommandoCondition.instance, ""
-                ), "with two +1/+1 counters on it if it wasn't cast or no mana was spent to cast it"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                        new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                        FreestriderCommandoCondition.instance
+                ).setText("{this} enters with two +1/+1 counters on it if it wasn't cast or no mana was spent to cast it")
         ));
 
         // Plot {3}{G}

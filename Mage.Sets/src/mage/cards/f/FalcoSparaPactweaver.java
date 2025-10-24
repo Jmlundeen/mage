@@ -3,7 +3,6 @@ package mage.cards.f;
 import mage.MageIdentifier;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.Costs;
@@ -11,7 +10,7 @@ import mage.abilities.costs.CostsImpl;
 import mage.abilities.costs.common.RemoveCounterCost;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.common.continuous.LookAtTopCardOfLibraryAnyTimeEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.Card;
@@ -46,10 +45,10 @@ public final class FalcoSparaPactweaver extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Falco Spara, Pactweaver enters the battlefield with a shield counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.SHIELD.createInstance(1)),
-                "with a shield counter on it. <i>(If it would be dealt damage "
-                        + "or destroyed, remove a shield counter from it instead.)</i>"
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance(1))
+                        .setText("with a shield counter on it. <i>(If it would be dealt damage "
+                                + "or destroyed, remove a shield counter from it instead.)</i>")
         ));
 
         // You may look at the top card of your library any time.

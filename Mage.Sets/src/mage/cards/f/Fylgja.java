@@ -1,26 +1,23 @@
 package mage.cards.f;
 
-import java.util.UUID;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.PreventDamageToAttachedEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.EnchantAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AttachmentType;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -41,9 +38,7 @@ public final class Fylgja extends CardImpl {
         this.addAbility(ability);
 
         // Fylgja enters the battlefield with four healing counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.HEALING.createInstance(4))
-                        .setText("with four healing counters on it.")));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.HEALING.createInstance(4))));
 
         // Remove a healing counter from Fylgja: Prevent the next 1 damage that would be dealt to enchanted creature this turn.
         this.addAbility(new SimpleActivatedAbility(new PreventDamageToAttachedEffect(Duration.EndOfTurn, AttachmentType.AURA, 1, false)
