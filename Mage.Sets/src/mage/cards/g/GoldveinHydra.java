@@ -2,10 +2,11 @@ package mage.cards.g;
 
 import mage.MageInt;
 import mage.abilities.common.DiesSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.SourcePermanentPowerValue;
+import mage.abilities.dynamicvalue.common.SourceXCostValue;
 import mage.abilities.effects.common.CreateTokenEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.abilities.keyword.VigilanceAbility;
@@ -40,9 +41,7 @@ public final class GoldveinHydra extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // Goldvein Hydra enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
 
         // When Goldvein Hydra dies, create a number of tapped Treasure tokens equal to its power.
         this.addAbility(new DiesSourceTriggeredAbility(new CreateTokenEffect(

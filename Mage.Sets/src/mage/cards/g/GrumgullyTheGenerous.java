@@ -2,16 +2,18 @@ package mage.cards.g;
 
 import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
-import mage.filter.common.FilterCreaturePermanent;
+import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.Predicates;
+import mage.filter.predicate.mageobject.AnotherPredicate;
 
 import java.util.UUID;
 
@@ -20,10 +22,11 @@ import java.util.UUID;
  */
 public final class GrumgullyTheGenerous extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterCreaturePermanent("non-Human creature");
+    private static final FilterPermanent filter = new FilterControlledCreaturePermanent("other non-Human creature you control");
 
     static {
         filter.add(Predicates.not(SubType.HUMAN.getPredicate()));
+        filter.add(AnotherPredicate.instance);
     }
 
     public GrumgullyTheGenerous(UUID ownerId, CardSetInfo setInfo) {
@@ -36,9 +39,8 @@ public final class GrumgullyTheGenerous extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Each other non-Human creature you control enters the battlefield with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                filter, CounterType.P1P1.createInstance(), true
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(filter)));
     }
 
     private GrumgullyTheGenerous(final GrumgullyTheGenerous card) {

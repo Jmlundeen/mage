@@ -2,13 +2,13 @@ package mage.cards.g;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.CastSourceTriggeredAbility;
 import mage.abilities.effects.common.SacrificeAllEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.TrampleAbility;
@@ -38,9 +38,10 @@ public final class GluttonousHellkite extends CardImpl {
 
         // When you cast this spell, each player sacrifices X creatures. Gluttonous Hellkite enters the battlefield with two +1/+1 counters on it for each creature sacrificed this way.
         this.addAbility(new CastSourceTriggeredAbility(new SacrificeAllEffect(GetXValue.instance, StaticFilters.FILTER_PERMANENT_CREATURES)));
-        Ability ability = new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(0), GluttonousHellkiteDynamicValue.instance, true),
-                "with two +1/+1 counters on it for each creature sacrificed this way");
+        Ability ability = new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.P1P1, GluttonousHellkiteDynamicValue.instance)
+                        .setText("with two +1/+1 counters on it for each creature sacrificed this way")
+        );
         ability.addHint(new ValueHint("Will get +1/+1 counters on ETB", GluttonousHellkiteDynamicValue.instance));
         //ability.setRuleVisible(false);
         this.addAbility(ability);

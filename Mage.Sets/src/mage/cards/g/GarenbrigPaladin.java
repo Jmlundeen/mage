@@ -1,9 +1,10 @@
 package mage.cards.g;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.AdamantCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DauntAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -27,11 +28,13 @@ public final class GarenbrigPaladin extends CardImpl {
         this.toughness = new MageInt(4);
 
         // Adamant — If at least three green mana was spent to cast this spell, Garenbrig Paladin enters the battlefield with a +1/+1 counter on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance()), AdamantCondition.GREEN,
-                "<br><i>Adamant</i> &mdash; If at least three green mana was spent to cast this spell, " +
-                        "{this} enters with a +1/+1 counter on it.", ""
-        ));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(
+                CounterType.P1P1.createInstance()), AdamantCondition.GREEN)
+                .setText("if at least three green mana was spent to cast this spell, " +
+                        "{this} enters with a +1/+1 counter on it."))
+                .withFlavorWord("Adamant")
+        );
 
         // Garenbrig Paladin can't be blocked by creatures with power 2 or less.
         this.addAbility(new DauntAbility());

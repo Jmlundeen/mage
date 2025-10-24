@@ -1,9 +1,10 @@
 package mage.cards.g;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.abilities.keyword.LifelinkAbility;
@@ -38,9 +39,10 @@ public final class GhastlyGloomhunter extends CardImpl {
         this.addAbility(LifelinkAbility.getInstance());
 
         // If Ghastly Gloomhunter was kicked, it enters with two +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)), KickedCondition.ONCE,
-                "If {this} was kicked, it enters with two +1/+1 counters on it.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                KickedCondition.ONCE)
+                .setText("If {this} was kicked, it enters with two +1/+1 counters on it.")
         ));
     }
 

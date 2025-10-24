@@ -13,7 +13,6 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 
@@ -35,11 +34,11 @@ public final class GnarlidColony extends CardImpl {
         this.addAbility(new KickerAbility("{2}{G}"));
 
         // If Gnarlid Colony was kicked, it enters with two +1/+1 counters on it.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ConditionalReplacementEffect(
-                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))
-                        .setText("if {this} was kicked, it enters with two +1/+1 counters on it"),
-                KickedCondition.ONCE
-        )));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with two +1/+1 counters on it")
+        ));
 
         // Each creature you control with a +1/+1 counter on it has trample.
         this.addAbility(new SimpleStaticAbility(new GainAbilityAllEffect(
