@@ -1,20 +1,16 @@
 package mage.cards.i;
 
 import mage.abilities.ActivatedAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.LimitedTimesPerTurnActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.TimingRule;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
@@ -28,7 +24,7 @@ import java.util.UUID;
  */
 public final class InvigoratingHotSpring extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterControlledCreaturePermanent("modified creatures");
+    private static final FilterPermanent filter = new FilterControlledCreaturePermanent("modified creatures you control");
 
     static {
         filter.add(ModifiedPredicate.instance);
@@ -38,14 +34,13 @@ public final class InvigoratingHotSpring extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{1}{R}{G}");
 
         // Invigorating Hot Spring enters the battlefield with four +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(4)
-        ), "with four +1/+1 counters on it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(4))));
 
         // Modified creatures you control have haste.
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
-                HasteAbility.getInstance(), Duration.WhileOnBattlefield, filter
-        )));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.AddAbility, filter)
+                .withGainedAbilities(HasteAbility.getInstance())
+                .setText(filter.getMessage() + " have haste.")
+        ));
 
         // Remove a +1/+1 counter from Invigoration Hot Springs: Put a +1/+1 counter on target creature you control. Activate only as a sorcery and only once each turn.
         ActivatedAbility ability = new LimitedTimesPerTurnActivatedAbility(

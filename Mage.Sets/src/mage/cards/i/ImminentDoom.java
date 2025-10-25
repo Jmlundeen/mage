@@ -1,14 +1,13 @@
 
 package mage.cards.i;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -21,6 +20,8 @@ import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.target.common.TargetAnyTarget;
 
+import java.util.UUID;
+
 /**
  *
  * @author jeffwadsworth
@@ -31,7 +32,7 @@ public final class ImminentDoom extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{2}{R}");
 
         // Imminent Doom enters the battlefield with a doom counter on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.DOOM.createInstance(1)), "with a doom counter on it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.DOOM.createInstance(1))));
 
         // Whenever you cast a spell with converted mana cost equal to the number of doom counters on Imminent Doom, Imminent Doom deals that much damage to any target. Then put a doom counter on Imminent Doom.
         Ability ability = new ImminentDoomTriggeredAbility();
@@ -52,10 +53,9 @@ public final class ImminentDoom extends CardImpl {
 
 class ImminentDoomTriggeredAbility extends TriggeredAbilityImpl {
 
-    private String rule = "Whenever you cast a spell with mana value equal to the number of doom counters on {this}, {this} deals that much damage to any target. Then put a doom counter on {this}.";
-
     public ImminentDoomTriggeredAbility() {
         super(Zone.BATTLEFIELD, new ImminentDoomEffect());
+        setTriggerPhrase("Whenever you cast a spell with mana value equal to the number of doom counters on {this}, ");
     }
 
     private ImminentDoomTriggeredAbility(final ImminentDoomTriggeredAbility ability) {
@@ -86,17 +86,13 @@ class ImminentDoomTriggeredAbility extends TriggeredAbilityImpl {
             }
         return false;
     }
-
-    @Override
-    public String getRule() {
-        return rule;
-    }
 }
 
 class ImminentDoomEffect extends OneShotEffect {
 
     ImminentDoomEffect() {
         super(Outcome.Detriment);
+        this.staticText = "{this} deals that much damage to any target. Then put a doom counter on {this}";
     }
 
     private ImminentDoomEffect(final ImminentDoomEffect effect) {
