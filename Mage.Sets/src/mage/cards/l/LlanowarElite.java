@@ -1,13 +1,12 @@
 
 package mage.cards.l;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.decorator.ConditionalOneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -15,6 +14,8 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -35,9 +36,11 @@ public final class LlanowarElite extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
         
         // If Llanowar Elite was kicked, it enters with five +1/+1 counters on it.
-        Ability ability = new EntersBattlefieldAbility(
-                new ConditionalOneShotEffect(new AddCountersSourceEffect(CounterType.P1P1.createInstance(5)), KickedCondition.ONCE, ""),
-                  "If {this} was kicked, it enters with five +1/+1 counters on it.");
+        Ability ability = new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(5)),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with five +1/+1 counters on it")
+        );
         this.addAbility(ability);
         
     }
