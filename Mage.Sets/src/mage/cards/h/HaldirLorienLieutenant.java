@@ -6,7 +6,7 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
-import mage.abilities.dynamicvalue.common.SourceXCostValue;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -43,7 +43,7 @@ public final class HaldirLorienLieutenant extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Haldir, Lorien Lieutenant enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
         // Vigilance
         this.addAbility(VigilanceAbility.getInstance());

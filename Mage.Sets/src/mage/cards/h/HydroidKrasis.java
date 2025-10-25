@@ -4,8 +4,8 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.dynamicvalue.common.HalfValue;
-import mage.abilities.dynamicvalue.common.SourceXCostValue;
 import mage.abilities.effects.common.CastSourceTriggeredAbility;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.GainLifeEffect;
@@ -25,7 +25,7 @@ import java.util.UUID;
  */
 public final class HydroidKrasis extends CardImpl {
 
-    private static final DynamicValue halfX = new HalfValue(SourceXCostValue.instance, false);
+    private static final DynamicValue halfX = new HalfValue(GetXValue.instance, false);
 
     public HydroidKrasis(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{X}{G}{U}");
@@ -39,7 +39,7 @@ public final class HydroidKrasis extends CardImpl {
         // When you cast this spell, you gain half X life and draw half X cards. Round down each time.
         Ability castTrigger = new CastSourceTriggeredAbility(new GainLifeEffect(halfX)
                 .setText("you gain half X life"), false);
-        castTrigger.addEffect(new DrawCardSourceControllerEffect(SourceXCostValue.instance)
+        castTrigger.addEffect(new DrawCardSourceControllerEffect(GetXValue.instance)
                 .concatBy("and")
                 .setText("draw half X cards. Round down each time"));
         this.addAbility(castTrigger);
@@ -51,7 +51,7 @@ public final class HydroidKrasis extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Hydroid Krasis enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
     }
 
     private HydroidKrasis(final HydroidKrasis card) {

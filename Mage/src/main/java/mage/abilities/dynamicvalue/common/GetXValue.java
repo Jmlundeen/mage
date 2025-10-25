@@ -11,7 +11,7 @@ public enum GetXValue implements DynamicValue {
 
     @Override
     public int calculate(Game game, Ability sourceAbility, Effect effect) {
-        return CardUtil.getSourceCostsTag(game, sourceAbility, "X", 0);
+        return CardUtil.getSourceCostsTagX(game, sourceAbility, 0);
     }
 
     @Override
@@ -26,6 +26,6 @@ public enum GetXValue implements DynamicValue {
 
     @Override
     public String getMessage() {
-        return "";
+        return "X";
     }
 }

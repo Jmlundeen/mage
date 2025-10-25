@@ -11,7 +11,7 @@ import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.MultipliedValue;
-import mage.abilities.dynamicvalue.common.SourceXCostValue;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.DamageTargetEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
@@ -29,8 +29,8 @@ import java.util.UUID;
  */
 public final class ApocalypseHydra extends CardImpl {
 
-    private static final DynamicValue xValue = SourceXCostValue.instance;
-    private static final DynamicValue doubledXValue = new MultipliedValue(SourceXCostValue.instance, 2);
+    private static final DynamicValue xValue = GetXValue.instance;
+    private static final DynamicValue doubledXValue = new MultipliedValue(GetXValue.instance, 2);
     private static final Condition xIs5OrMore = new DynamicValueCompareCondition(xValue, ComparisonType.OR_GREATER, 5);
 
     public ApocalypseHydra(UUID ownerId, CardSetInfo setInfo) {

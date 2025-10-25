@@ -7,7 +7,7 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.dynamicvalue.common.SourceXCostValue;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.combat.CantAttackBlockTargetEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
@@ -29,7 +29,7 @@ public final class BribersPurse extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{X}");
 
         // Briber's Purse enters the battlefield with X gem counters on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.GEM, SourceXCostValue.instance)));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.GEM, GetXValue.instance)));
 
         // {1}, {T}, Remove a gem counter from Briber's Purse: Target creature can't attack or block this turn.
         Ability ability = new SimpleActivatedAbility(new CantAttackBlockTargetEffect(Duration.EndOfTurn), new GenericManaCost(1));

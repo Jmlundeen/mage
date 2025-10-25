@@ -3,7 +3,7 @@ package mage.abilities.effects.common.continuous.replacement;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.dynamicvalue.DynamicValue;
-import mage.abilities.dynamicvalue.common.SourceXCostValue;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.constants.ContinuousAffected;
@@ -341,7 +341,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
     }
 
     private void appendCounterTypes(StringBuilder sb) {
-        boolean xText = (useXText || amount instanceof SourceXCostValue) && !useNumberOfText;
+        boolean xText = (useXText || amount instanceof GetXValue) && !useNumberOfText;
         String additional = getAdditionalText();
 
         if (chooseCounter && chooseAmount > 1) {
@@ -395,7 +395,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
     }
 
     private void appendAmountSuffix(StringBuilder sb, boolean xText) {
-        if (xText && !(amount instanceof SourceXCostValue)) {
+        if (xText && !(amount instanceof GetXValue)) {
             sb.append(", where X is ").append(amount.getMessage());
         } else if (useNumberOfText) {
             sb.append(" equal to the number of ").append(makePlural(amount.getMessage()));
