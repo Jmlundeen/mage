@@ -1,25 +1,15 @@
 package mage.cards.k;
 
-import java.util.UUID;
-
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.GetXValue;
+import mage.abilities.dynamicvalue.common.SourceXCostValue;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
-import mage.constants.CardType;
-import mage.constants.ComparisonType;
-import mage.constants.Outcome;
-import mage.constants.PutCards;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
+import mage.cards.*;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterEnchantmentCard;
@@ -27,6 +17,8 @@ import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
+
+import java.util.UUID;
 
 /**
  *
@@ -42,7 +34,7 @@ public final class KnickknackOuphe extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Knickknack Ouphe enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
 
         // When Knickknack Ouphe enters the battlefield, reveal the top X cards of your library. You may put any number of Aura cards with mana value X or less from among them onto the battlefield. Then put all cards revealed this way that weren't put onto the battlefield on the bottom of your library in a random order.
         this.addAbility(new EntersBattlefieldTriggeredAbility(new KnickknackOuphePutOntoBattlefieldEffect()));

@@ -2,9 +2,10 @@
 package mage.cards.k;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.ConvokeAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
@@ -34,10 +35,12 @@ public final class KavuPrimarch extends CardImpl {
         // Convoke (Each creature you tap while casting this spell reduces its cost by {1} or by one mana of that creature's color.)
         this.addAbility(new ConvokeAbility());
 
-
         // If Kavu Primarch was kicked, it enters with four +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(4)),KickedCondition.ONCE,
-                "If {this} was kicked, it enters with four +1/+1 counters on it.", ""));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(4)),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with four +1/+1 counters on it")
+        ));
     }
 
     private KavuPrimarch(final KavuPrimarch card) {

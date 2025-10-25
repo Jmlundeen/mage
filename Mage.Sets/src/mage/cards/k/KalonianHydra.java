@@ -2,8 +2,8 @@ package mage.cards.k;
 
 import mage.MageInt;
 import mage.abilities.common.AttacksTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.DoubleCounterOnEachPermanentEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -31,9 +31,7 @@ public final class KalonianHydra extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Kalonian Hydra enters the battlefield with four +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(4), true
-        ), "with four +1/+1 counters on it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(4))));
 
         // Whenever Kalonian Hydra attacks, double the number of +1/+1 counters on each creature you control.
         this.addAbility(new AttacksTriggeredAbility(

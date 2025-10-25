@@ -4,6 +4,7 @@ import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.SourceXCostValue;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.constants.ContinuousAffected;
 import mage.constants.Duration;
@@ -29,7 +30,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
      * Functional interface for helping to filter events.
      */
     public interface EventCondition {
-        boolean apply(GameEvent event, Ability source, Game game);
+        boolean apply(GameEvent event, Ability source, Game game, Effect effect);
     }
 
     protected ContinuousAffected affected;
@@ -203,7 +204,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
                 return false;
         }
         if (eventCondition != null) {
-            return eventCondition.apply(event, source, game);
+            return eventCondition.apply(event, source, game, this);
         }
         return true;
     }

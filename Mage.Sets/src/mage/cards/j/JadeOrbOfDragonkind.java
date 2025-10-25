@@ -41,7 +41,7 @@ public final class JadeOrbOfDragonkind extends CardImpl {
         // {T}: Add {G}. When you spend this mana to cast a Dragon creature spell, it enters with an additional +1/+1 counter on it and gains hexproof until your next turn.
         BasicManaAbility ability = new GreenManaAbility();
         Effect additionalCounterEffect = new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
-                .withEventCondition((event, source, game) -> {
+                .withEventCondition((event, source, game, effect) -> {
                     if (!(source instanceof ManaSpentDelayedTriggeredAbility)) {
                         return false;
                     }

@@ -1,16 +1,14 @@
 package mage.abilities.common.delayed;
 
 import mage.abilities.Ability;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
+import mage.constants.ContinuousAffected;
 import mage.constants.Duration;
-import mage.constants.Outcome;
 import mage.counters.CounterType;
 import mage.filter.FilterSpell;
 import mage.filter.StaticFilters;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.util.CardUtil;
 
@@ -28,7 +26,16 @@ public class AddCounterNextSpellDelayedTriggeredAbility extends CastNextSpellDel
     }
 
     public AddCounterNextSpellDelayedTriggeredAbility(int amount, FilterSpell filter) {
-        super(new AddCounterNextSpellEffect(amount), filter, false);
+        super(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(amount))
+                .withEventCondition((event, source, game, effect) -> {
+                    Spell spell = (Spell) effect.getValue("spellCast");
+                    return spell != null && event.getTargetId().equals(spell.getCard().getId());
+                })
+                .setText("that creature enters with " + CardUtil.numberToText(amount, "an") +
+                        " additional +1/+1 counter" + (amount > 1 ? "s" : "") + " on it"),
+                filter,
+                false
+        );
     }
 
     private AddCounterNextSpellDelayedTriggeredAbility(final AddCounterNextSpellDelayedTriggeredAbility ability) {
@@ -41,45 +48,22 @@ public class AddCounterNextSpellDelayedTriggeredAbility extends CastNextSpellDel
     }
 }
 
-class AddCounterNextSpellEffect extends ReplacementEffectImpl {
-
-    private final int amount;
+class AddCounterNextSpellEffect extends EntersWithCountersEffect {
 
     AddCounterNextSpellEffect(int amount) {
-        super(Duration.EndOfStep, Outcome.BoostCreature);
-        this.amount = amount;
+        super(Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(amount));
         staticText = "that creature enters with " + CardUtil.numberToText(amount, "an") +
                 " additional +1/+1 counter" + (amount > 1 ? "s" : "") + " on it";
     }
 
     private AddCounterNextSpellEffect(AddCounterNextSpellEffect effect) {
         super(effect);
-        this.amount = effect.amount;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
     }
 
     @Override
     public boolean applies(GameEvent event, Ability source, Game game) {
         Spell spell = (Spell) getValue("spellCast");
         return spell != null && event.getTargetId().equals(spell.getCard().getId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (creature == null) {
-            return false;
-        }
-        creature.addCounters(
-                CounterType.P1P1.createInstance(amount), source.getControllerId(),
-                source, game, event.getAppliedEffects()
-        );
-        discard();
-        return false;
     }
 
     @Override

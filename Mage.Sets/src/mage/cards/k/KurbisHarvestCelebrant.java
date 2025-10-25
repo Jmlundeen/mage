@@ -2,12 +2,12 @@ package mage.cards.k;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.dynamicvalue.common.ManaSpentToCastCount;
 import mage.abilities.effects.common.PreventDamageToTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -44,9 +44,9 @@ public final class KurbisHarvestCelebrant extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Kurbis, Harvest Celebrant enters the battlefield with a number of +1/+1 counters on it equal to the amount of mana spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), ManaSpentToCastCount.instance, true
-        ), "with a number of +1/+1 counters on it equal to the amount of mana spent to cast it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, ManaSpentToCastCount.instance)
+                .setText("{this} enters with a number of +1/+1 counters on it equal to the amount of mana spent to cast it")
+        ));
 
         // Remove a +1/+1 counter from Kurbis: Prevent all damage that would be dealt this turn to another target creature with a +1/+1 counter on it.
         Ability ability = new SimpleActivatedAbility(
