@@ -1,8 +1,9 @@
 package mage.cards.h;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.counter.AddCounterChoiceSourceEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.StaticValue;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -25,8 +26,10 @@ public final class HelicaGlider extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Helica Glider enters the battlfield with your choice of a flying counter or a first strike counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCounterChoiceSourceEffect(CounterType.FLYING, CounterType.FIRST_STRIKE)
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.FLYING, StaticValue.get(1))
+                        .withAdditionalCounters(CounterType.FIRST_STRIKE)
+                        .withChooseCounter()
         ));
     }
 

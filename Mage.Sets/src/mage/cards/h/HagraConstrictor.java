@@ -10,7 +10,6 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 
@@ -29,7 +28,7 @@ public final class HagraConstrictor extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Hagra Constrictor enters the battlefield with two +1/+1 counters on it.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))));
 
         // Each creature you control with a +1/+1 counter on it has menace.
         this.addAbility(new SimpleStaticAbility(new GainAbilityAllEffect(

@@ -2,22 +2,21 @@ package mage.cards.h;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.dynamicvalue.common.HalfValue;
+import mage.abilities.dynamicvalue.common.SourceXCostValue;
 import mage.abilities.effects.common.CastSourceTriggeredAbility;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.DrawCardSourceControllerEffect;
+import mage.abilities.effects.common.GainLifeEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.players.Player;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -25,6 +24,8 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class HydroidKrasis extends CardImpl {
+
+    private static final DynamicValue halfX = new HalfValue(SourceXCostValue.instance, false);
 
     public HydroidKrasis(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{X}{G}{U}");
@@ -36,7 +37,12 @@ public final class HydroidKrasis extends CardImpl {
         this.toughness = new MageInt(0);
 
         // When you cast this spell, you gain half X life and draw half X cards. Round down each time.
-        this.addAbility(new CastSourceTriggeredAbility(new HydroidKrasisEffect(), false));
+        Ability castTrigger = new CastSourceTriggeredAbility(new GainLifeEffect(halfX)
+                .setText("you gain half X life"), false);
+        castTrigger.addEffect(new DrawCardSourceControllerEffect(SourceXCostValue.instance)
+                .concatBy("and")
+                .setText("draw half X cards. Round down each time"));
+        this.addAbility(castTrigger);
 
         // Flying
         this.addAbility(FlyingAbility.getInstance());
@@ -45,9 +51,7 @@ public final class HydroidKrasis extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Hydroid Krasis enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, SourceXCostValue.instance)));
     }
 
     private HydroidKrasis(final HydroidKrasis card) {
@@ -57,38 +61,5 @@ public final class HydroidKrasis extends CardImpl {
     @Override
     public HydroidKrasis copy() {
         return new HydroidKrasis(this);
-    }
-}
-
-class HydroidKrasisEffect extends OneShotEffect {
-
-    HydroidKrasisEffect() {
-        super(Outcome.Benefit);
-        staticText = "you gain half X life and draw half X cards. Round down each time.";
-    }
-
-    private HydroidKrasisEffect(final HydroidKrasisEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public HydroidKrasisEffect copy() {
-        return new HydroidKrasisEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
-        Object obj = getValue(CastSourceTriggeredAbility.SOURCE_CAST_SPELL_ABILITY);
-        if (!(obj instanceof SpellAbility)) {
-            return false;
-        }
-        int halfCost = Math.floorDiv(CardUtil.getSourceCostsTag(game, ((SpellAbility) obj), "X", 0), 2);
-        player.drawCards(halfCost, source, game);
-        player.gainLife(halfCost, game, source);
-        return true;
     }
 }

@@ -1,33 +1,30 @@
 package mage.cards.h;
 
-import java.util.UUID;
-
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.AbilityImpl;
-import mage.abilities.SpellAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.MayCastFromGraveyardSourceAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.CastFromGraveyardSourceCondition;
-import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.decorator.ConditionalContinuousEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
-import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.EntersBattlefieldEffect;
 import mage.abilities.effects.common.continuous.BoostSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
-import mage.cards.Card;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+
+import java.util.UUID;
 
 /**
  *
@@ -56,8 +53,9 @@ public final class HundredBattleVeteran extends CardImpl {
         // You may cast this card from your graveyard. If you do, it enters with a finality counter on it.
         AbilityImpl ability = new MayCastFromGraveyardSourceAbility();
         ability.appendToRule(" If you do, it enters with a finality counter on it.");
-        Effect effect1 = new AddCountersSourceEffect(CounterType.FINALITY.createInstance(), StaticValue.get(1));
-        ability.addSubAbility(new EntersBattlefieldAbility(effect1, CastFromGraveyardSourceCondition.instance, "", "")
+        ability.addSubAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.FINALITY.createInstance()),
+                CastFromGraveyardSourceCondition.instance))
                 .setRuleVisible(false));
         this.addAbility(ability);
 

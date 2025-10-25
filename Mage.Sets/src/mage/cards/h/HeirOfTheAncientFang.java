@@ -1,10 +1,11 @@
 package mage.cards.h;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.ConditionHint;
 import mage.abilities.hint.Hint;
 import mage.cards.CardImpl;
@@ -41,9 +42,10 @@ public final class HeirOfTheAncientFang extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Heir of the Ancient Fang enters the battlefield with a +1/+1 counter on it if you control a modified creature.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance()), condition,
-                null, "with a +1/+1 counter on it if you control a modified creature"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                condition)
+                .setText("{this} enters with a +1/+1 counter on it if you control a modified creature")
         ).addHint(hint));
     }
 
