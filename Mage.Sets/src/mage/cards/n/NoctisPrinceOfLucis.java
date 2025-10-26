@@ -2,7 +2,6 @@ package mage.cards.n;
 
 import mage.MageIdentifier;
 import mage.MageInt;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
@@ -10,7 +9,7 @@ import mage.abilities.costs.Costs;
 import mage.abilities.costs.CostsImpl;
 import mage.abilities.costs.common.PayLifeCost;
 import mage.abilities.effects.AsThoughEffectImpl;
-import mage.abilities.effects.common.counter.AddCounterEnteringCreatureEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.LifelinkAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -118,10 +117,8 @@ class NoctisPrinceOfLucisWatcher extends Watcher {
         }
         Spell target = game.getSpell(event.getTargetId());
         if (target != null) {
-            game.getState().addEffect(new AddCounterEnteringCreatureEffect(
-                    new MageObjectReference(target.getCard(), game),
-                    CounterType.FINALITY.createInstance(), Outcome.UnboostCreature
-            ), target.getSpellAbility());
+            game.getState().addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.FINALITY.createInstance()),
+                    target.getSpellAbility());
         }
     }
 }

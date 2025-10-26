@@ -3,14 +3,15 @@ package mage.cards.n;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.CastFromEverywhereSourceCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.ReturnSourceFromGraveyardToBattlefieldWithCounterEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -36,10 +37,10 @@ public final class NineLivesFamiliar extends CardImpl {
         this.toughness = new MageInt(1);
 
         // This creature enters with eight revival counters on it if you cast it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.REVIVAL.createInstance(8)),
-                CastFromEverywhereSourceCondition.instance, null,
-                "with eight revival counters on it if you cast it"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.REVIVAL.createInstance(8)),
+                CastFromEverywhereSourceCondition.instance)
+                .setText("{this} enters with eight revival counters on it if you cast it")
         ));
 
         // When this creature dies, if it had a revival counter on it, return it to the battlefield with one fewer revival counter on it at the beginning of the next end step.
