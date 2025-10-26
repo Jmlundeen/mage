@@ -6,7 +6,7 @@ import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
 import mage.abilities.decorator.ConditionalOneShotEffect;
@@ -15,8 +15,8 @@ import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DamageMultiEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.hint.ConditionHint;
 import mage.abilities.hint.Hint;
 import mage.cards.Card;
@@ -43,6 +43,7 @@ import java.util.UUID;
 public final class RalLeylineProdigy extends CardImpl {
 
     private static final FilterPermanent filter = new FilterPermanent("blue permanent other than {this}");
+    private static final FilterCard spellFilter = new FilterInstantOrSorceryCard("instant and sorcery spells");
     private static final Condition condition = new PermanentsOnTheBattlefieldCondition(filter, true);
     private static final Hint hint = new ConditionHint(condition, "you control another blue permanent");
 
@@ -63,15 +64,17 @@ public final class RalLeylineProdigy extends CardImpl {
         this.nightCard = true;
 
         // Ral, Leyline Prodigy enters the battlefield with an additional loyalty counter on him for each instant and sorcery spell you've cast this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.LOYALTY.createInstance(), InstantAndSorceryCastThisTurn.YOU,
-                    false)
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.LOYALTY, InstantAndSorceryCastThisTurn.YOU)
                         .setText("with an additional loyalty counter on him for each instant and sorcery spell you've cast this turn"))
-                            .addHint(InstantAndSorceryCastThisTurn.YOU.getHint())
+                .addHint(InstantAndSorceryCastThisTurn.YOU.getHint())
         );
 
         // +1: Until your next turn, instant and sorcery spells you cast cost {1} less to cast.
-        this.addAbility(new LoyaltyAbility(new RalLeylineProdigyCostReductionEffect(), 1));
+        SpellsCostReductionControllerEffect effect = new SpellsCostReductionControllerEffect(spellFilter, 1);
+        effect.setDuration(Duration.UntilYourNextTurn);
+        effect.setText("Until your next turn, instant and sorcery spells you cast cost {1} less to cast");
+        this.addAbility(new LoyaltyAbility(effect, 1));
 
         // -2: Ral deals 2 damage divided as you choose among one or two targets. Draw a card if you control a blue permanent other than Ral.
         Ability ability = new LoyaltyAbility(new DamageMultiEffect(), -2);
@@ -95,33 +98,6 @@ public final class RalLeylineProdigy extends CardImpl {
     @Override
     public RalLeylineProdigy copy() {
         return new RalLeylineProdigy(this);
-    }
-}
-
-class RalLeylineProdigyCostReductionEffect extends OneShotEffect {
-
-    private static final FilterCard filter = new FilterInstantOrSorceryCard("instant and sorcery spells");
-
-    RalLeylineProdigyCostReductionEffect() {
-        super(Outcome.Benefit);
-        this.staticText = "Until your next turn, instant and sorcery spells you cast cost {1} less to cast";
-    }
-
-    private RalLeylineProdigyCostReductionEffect(final RalLeylineProdigyCostReductionEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public RalLeylineProdigyCostReductionEffect copy() {
-        return new RalLeylineProdigyCostReductionEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        SpellsCostReductionControllerEffect effect = new SpellsCostReductionControllerEffect(filter, 1);
-        effect.setDuration(Duration.UntilYourNextTurn);
-        game.addEffect(effect, source);
-        return true;
     }
 }
 

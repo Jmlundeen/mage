@@ -1,5 +1,6 @@
 package mage.abilities.dynamicvalue;
 
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.effects.Effect;
 import mage.game.Game;
@@ -28,6 +29,11 @@ public class AdditiveDynamicValue implements DynamicValue {
 
     private AdditiveDynamicValue(final AdditiveDynamicValue value) {
         this.dynamicValues = CardUtil.deepCopyObject(value.dynamicValues);
+    }
+
+    @Override
+    public int calculate(Game game, Ability sourceAbility, Effect effect, MageObject mageObject) {
+        return dynamicValues.stream().mapToInt(d -> d.calculate(game, sourceAbility, effect, mageObject)).sum();
     }
 
     @Override

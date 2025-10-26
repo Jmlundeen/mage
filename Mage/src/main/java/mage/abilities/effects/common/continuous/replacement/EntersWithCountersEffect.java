@@ -152,7 +152,7 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
                 game.addEnterWithCounters(permanent.getId(), counter);
             }
         } else if (!counterTypes.isEmpty()) {
-            int amountValue = amount.calculate(game, source, this);
+            int amountValue = amount.calculate(game, source, this, permanent);
             if (chooseCounter) {
                 Player controller = game.getPlayer(source.getControllerId());
                 List<String> choices = counterTypes.stream().map(CounterType::getName).collect(Collectors.toList());

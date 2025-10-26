@@ -1,17 +1,18 @@
 package mage.cards.r;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.decorator.ConditionalContinuousEffect;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
+import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 
@@ -33,15 +34,17 @@ public final class RhoxPummeler extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Rhox Pummeler enters the battlefield with a shield counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.SHIELD.createInstance(1)),
-                "with a shield counter on it. <i>(If it would be dealt damage " +
-                        "or destroyed, remove a shield counter from it instead.)</i>"
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance(1))
+                        .setText("with a shield counter on it. <i>(If it would be dealt damage " +
+                        "or destroyed, remove a shield counter from it instead.)</i>")
         ));
 
         // As long as Rhox Pummeler has a shield counter on it, it has trample.
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
-                new GainAbilitySourceEffect(TrampleAbility.getInstance()), condition,
+                new ContinuousEffectBuilder(Outcome.AddAbility, ContinuousAffected.SOURCE)
+                        .withGainedAbilities(TrampleAbility.getInstance()),
+                condition,
                 "{this} has trample as long as it has a shield counter on it"
         )));
     }

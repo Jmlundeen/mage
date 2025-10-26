@@ -5,6 +5,7 @@ import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.game.Game;
+import mage.game.stack.Spell;
 
 public enum ObjectManaValue implements DynamicValue {
 
@@ -13,6 +14,12 @@ public enum ObjectManaValue implements DynamicValue {
     @Override
     public int calculate(Game game, Ability sourceAbility, Effect effect, MageObject mageObject) {
         if (mageObject != null) {
+            if (!(mageObject instanceof Spell)) {
+                mageObject = game.getSpellOrLKIStack(mageObject.getId());
+                if (mageObject == null) {
+                    return 0;
+                }
+            }
             return mageObject.getManaValue();
         }
         return 0;

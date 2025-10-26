@@ -3,13 +3,13 @@ package mage.cards.r;
 import mage.MageInt;
 import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.effects.common.PreventDamageToSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.continuous.rulemodifying.PreventCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.mana.SimpleManaAbility;
@@ -44,10 +44,7 @@ public final class RasputinDreamweaver extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Rasputin Dreamweaver enters the battlefield with seven dream counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.DREAM.createInstance(7)),
-                "with seven dream counters on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.DREAM.createInstance(7))));
 
         // Remove a dream counter from Rasputin: Add {C}.
         this.addAbility(new SimpleManaAbility(
