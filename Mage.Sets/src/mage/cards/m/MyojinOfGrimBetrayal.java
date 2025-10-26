@@ -2,14 +2,15 @@ package mage.cards.m;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.CastFromHandSourcePermanentCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CardsInAllGraveyardsCount;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.cards.CardImpl;
@@ -46,10 +47,10 @@ public class MyojinOfGrimBetrayal extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Myojin of Grim Betrayal enters the battlefield with an indestructible counter on it if you cast it from your hand.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.INDESTRUCTIBLE.createInstance()),
-                CastFromHandSourcePermanentCondition.instance, null,
-                "with an indestructible counter on it if you cast it from your hand"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.INDESTRUCTIBLE.createInstance()),
+                CastFromHandSourcePermanentCondition.instance)
+                .setText("{this} enters with an indestructible counter on it if you cast it from your hand")
         ), new CastFromHandWatcher());
 
         // Remove an indestructible counter from Myojin of Grim Betrayal:

@@ -1,12 +1,12 @@
 
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.ObjectColor;
 import mage.abilities.common.CantBeCounteredSourceAbility;
 import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.dynamicvalue.common.GetXValue;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.ProtectionAbility;
 import mage.cards.CardImpl;
@@ -14,6 +14,8 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -30,12 +32,15 @@ public final class MistcutterHydra extends CardImpl {
 
         // Mistcutter Hydra can't be countered.
         this.addAbility(new CantBeCounteredSourceAbility());
+
         // Haste
         this.addAbility(HasteAbility.getInstance());
+
         // protection from blue
         this.addAbility(ProtectionAbility.from(ObjectColor.BLUE));
+
         // Mistcutter Hydra enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
     }
 
     private MistcutterHydra(final MistcutterHydra card) {

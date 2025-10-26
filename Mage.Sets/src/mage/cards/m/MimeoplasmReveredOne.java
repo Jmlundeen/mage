@@ -1,7 +1,5 @@
 package mage.cards.m;
 
-import java.util.UUID;
-
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -24,6 +22,8 @@ import mage.target.targetadjustment.TargetAdjuster;
 import mage.util.CardUtil;
 import mage.util.functions.CopyApplier;
 
+import java.util.UUID;
+
 /**
  *
  * @author Jmlundeen
@@ -40,6 +40,7 @@ public final class MimeoplasmReveredOne extends CardImpl {
 
         // As Mimeoplasm enters, exile up to X creature cards from your graveyard. It enters with three +1/+1 counters on it for each creature card exiled this way.
         this.addAbility(new AsEntersBattlefieldAbility(new MimeoplasmReveredOneEntersEffect()));
+
         // {2}: Mimeoplasm becomes a copy of target creature card exiled with it, except it's 0/0 and has this ability.
         Ability ability2 = new SimpleActivatedAbility(new MimeoplasmReveredOneEffect(), new ManaCostsImpl<>("{2}"));
         ability2.setTargetAdjuster(MimeoPlasmReveredOneTargetAdjuster.instance);
@@ -111,7 +112,7 @@ class MimeoplasmReveredOneEntersEffect extends OneShotEffect {
             return false;
         }
         int counters = cards.count(StaticFilters.FILTER_CARD_CREATURE, game) * 3;
-        mimeoplasm.addCounters(CounterType.P1P1.createInstance(counters), controller.getId(), source, game);
+        game.addEnterWithCounters(mimeoplasm.getId(), CounterType.P1P1.createInstance(counters));
         return true;
     }
 }

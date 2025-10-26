@@ -38,7 +38,7 @@ public final class MossPitSkeleton extends CardImpl {
         this.addAbility(new KickerAbility("{3}"));
 
         // If Moss-Pit Skeleton was kicked, it enters with three +1/+1 counters on it.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ConditionalReplacementEffect(
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
                 new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))
                         .setText("if {this} was kicked, it enters with three +1/+1 counters on it"),
                 KickedCondition.ONCE)

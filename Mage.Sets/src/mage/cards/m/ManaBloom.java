@@ -1,11 +1,12 @@
 package mage.cards.m;
 
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.ReturnToHandSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
@@ -29,7 +30,7 @@ public final class ManaBloom extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{X}{G}");
 
         // Mana Bloom enters the battlefield with X charge counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.CHARGE.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, GetXValue.instance)));
 
         // Remove a charge counter from Mana Bloom: Add one mana of any color. Activate this ability only once each turn.
         this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(

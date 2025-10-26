@@ -2,22 +2,19 @@ package mage.cards.m;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.DestroyTargetEffect;
-import mage.abilities.effects.common.continuous.BoostSourceEffect;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.MenaceAbility;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
-import mage.constants.SuperType;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.target.TargetPermanent;
@@ -39,24 +36,22 @@ public final class MiglozMazeCrusher extends CardImpl {
         this.toughness = new MageInt(4);
 
         // Migloz, Maze Crusher enters the battlefield with five oil counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.OIL.createInstance(5)),
-                "with five oil counters on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance(5))));
 
         // {1}, Remove an oil counter from Migloz: It gains vigilance and menace until end of turn.
-        Ability ability = new SimpleActivatedAbility(new GainAbilitySourceEffect(
-                VigilanceAbility.getInstance(), Duration.EndOfTurn
-        ).setText("it gains vigilance"), new GenericManaCost(1));
+        Effect gainAbilitiesEffect = new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                .withGainedAbilities(VigilanceAbility.getInstance(), new MenaceAbility(false))
+                .setText("it gains vigilance and menace until end of turn");
+        Ability ability = new SimpleActivatedAbility(gainAbilitiesEffect, new GenericManaCost(1));
         ability.addCost(new RemoveCountersSourceCost(CounterType.OIL.createInstance()));
-        ability.addEffect(new GainAbilitySourceEffect(new MenaceAbility(false), Duration.EndOfTurn)
-                .setText("and menace until end of turn"));
         this.addAbility(ability);
 
         // {2}, Remove two oil counters from Migloz: It gets +2/+2 until end of turn.
-        ability = new SimpleActivatedAbility(new BoostSourceEffect(
-                2, 2, Duration.EndOfTurn, "it"
-        ), new GenericManaCost(2));
+        Effect boostEffect = new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                .withAddPower(2)
+                .withAddToughness(2)
+                .setText("it gets +2/+2 until end of turn");
+        ability = new SimpleActivatedAbility(boostEffect, new GenericManaCost(2));
         ability.addCost(new RemoveCountersSourceCost(CounterType.OIL.createInstance(2)));
         this.addAbility(ability);
 

@@ -1,20 +1,18 @@
 
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.CastFromHandSourcePermanentCondition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.decorator.ConditionalContinuousEffect;
-import mage.abilities.decorator.ConditionalOneShotEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.IndestructibleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -26,6 +24,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
 import mage.watchers.common.CastFromHandWatcher;
+
+import java.util.UUID;
 
 /**
  * @author LevelX
@@ -43,11 +43,20 @@ public final class MyojinOfLifesWeb extends CardImpl {
         this.getSpellAbility().addWatcher(new CastFromHandWatcher());
 
         // Myojin of Life's Web enters the battlefield with a divinity counter on it if you cast it from your hand.
-        this.addAbility(new EntersBattlefieldAbility(new ConditionalOneShotEffect(new AddCountersSourceEffect(CounterType.DIVINITY.createInstance()), CastFromHandSourcePermanentCondition.instance, ""), "with a divinity counter on it if you cast it from your hand"));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.DIVINITY.createInstance()),
+                CastFromHandSourcePermanentCondition.instance)
+                .setText("{this} enters with a divinity counter on it if you cast it from your hand")
+        ), new CastFromHandWatcher());
+
         // Myojin of Life's Web has indestructible as long as it has a divinity counter on it.
-        this.addAbility(new SimpleStaticAbility(
-                new ConditionalContinuousEffect(new GainAbilitySourceEffect(IndestructibleAbility.getInstance(), Duration.WhileOnBattlefield),
-                        new SourceHasCounterCondition(CounterType.DIVINITY), "{this} has indestructible as long as it has a divinity counter on it")));
+        this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
+                new ContinuousEffectBuilder(Outcome.AddAbility, ContinuousAffected.SOURCE)
+                        .withGainedAbilities(IndestructibleAbility.getInstance()),
+                new SourceHasCounterCondition(CounterType.DIVINITY),
+                "{this} has indestructible as long as it has a divinity counter on it")
+        ));
+
         // Remove a divinity counter from Myojin of Life's Web: Put any number of creature cards from your hand onto the battlefield.
         Ability ability = new SimpleActivatedAbility(new MyojinOfLifesWebPutCreatureOnBattlefieldEffect(), new RemoveCountersSourceCost(CounterType.DIVINITY.createInstance()));
 

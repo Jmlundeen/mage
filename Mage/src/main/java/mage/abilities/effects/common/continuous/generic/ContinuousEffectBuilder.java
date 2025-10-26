@@ -22,6 +22,7 @@ import mage.game.command.Commander;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.players.Player;
+import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
 
 import java.util.*;
@@ -42,7 +43,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     protected FilterCard cardFilter;
     protected TargetController cardsControlledBy = TargetController.YOU;
     protected ContinuousAffected affected = ContinuousAffected.STATIC_OR_DYNAMIC;
-    protected List<MageObjectReference> staticAffectedObjects;
     protected List<Zone> affectedZones;
     protected List<Ability> gainedAbilities;
     protected List<Layer> additionalLayers;
@@ -155,7 +155,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.permanentFilter = effect.permanentFilter;
         this.cardFilter = effect.cardFilter;
         this.cardsControlledBy = effect.cardsControlledBy;
-        this.staticAffectedObjects = effect.staticAffectedObjects;
         this.affected = effect.affected;
         this.affectedZones = effect.affectedZones;
         this.gainedAbilities = effect.gainedAbilities;
@@ -199,12 +198,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
             List<MageItem> affectedObjects = new ArrayList<>();
             queryAffectedObjects(layer, source, game, affectedObjects);
-            if (staticAffectedObjects == null && !affectedObjects.isEmpty()) {
-                staticAffectedObjects = new ArrayList<>();
-            }
-            for (MageItem object : affectedObjects) {
-                staticAffectedObjects.add(new MageObjectReference((MageObject) object, game));
-            }
+            this.setTargetPointer(new FixedTargets(affectedObjects.stream()
+                    .filter(mageItem -> mageItem instanceof MageObject)
+                    .map(mageItem -> new MageObjectReference((MageObject) mageItem, game))
+                    .collect(Collectors.toList()))
+            );
         }
     }
 
@@ -403,8 +401,16 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             // 205.1a. ...Similarly, when an effect sets one or more of an object's subtypes,
             // the new subtype(s) replaces any existing subtypes from the appropriate set
             // (creature types, land types, artifact types, enchantment types, planeswalker types, or spell types).
+            // 205.1b. Some effects change an object's card type, supertype, or subtype but specify that the object
+            // retains a prior card type, supertype, or subtype. In such cases, all the object's prior card types, supertypes, and subtypes are retained.
+            // This rule applies to effects that use phrases such as "in addition to its other types" or that state that something is "still a [type, supertype, or subtype]."
+            // Some effects state that an object becomes an "artifact creature"; these effects also allow the object to retain all of its prior card types and subtypes.
+            // Some effects state that an object becomes a "[creature type or types] artifact creature"; these effects also allow the object to retain all of its prior card types and subtypes other than creature types, but replace any existing creature types.
+            boolean artifactCreatureCondition = addedCardTypes != null
+                    && addedCardTypes.contains(CardType.ARTIFACT)
+                    && addedCardTypes.contains(CardType.CREATURE);
             for (SubTypeSet set : setsToRemove) {
-                if (removeOtherSubtypes || set == SubTypeSet.CreatureType) {
+                if (removeOtherSubtypes || (set == SubTypeSet.CreatureType && artifactCreatureCondition)) {
                     mageObject.removeAllSubTypes(game, set);
                 }
             }
@@ -541,16 +547,15 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             affectedObjects.addAll(source.getAffectedObjects());
             return true;
         }
-        if (staticAffectedObjects != null && !staticAffectedObjects.isEmpty()) {
-            affectedObjects.addAll(getStaticAffectedObjects(game));
-            return !affectedObjects.isEmpty();
-        }
         if (!getTargetPointer().getTargets(game, source).isEmpty()) {
             for (UUID uuid : getTargetPointer().getTargets(game, source)) {
                 MageItem object = game.getObject(uuid);
                 if (object != null) {
                     affectedObjects.add(object);
                 }
+            }
+            if (affectedObjects.isEmpty()) {
+                discard();
             }
             return !affectedObjects.isEmpty();
         }
@@ -679,32 +684,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                 }
                 break;
         }
-    }
-
-    /**
-     * Get the static affected objects, removing any that are no longer valid.
-     */
-    private List<MageItem> getStaticAffectedObjects(Game game) {
-        List<MageItem> affectedObjects = new ArrayList<>();
-        if (staticAffectedObjects != null && !staticAffectedObjects.isEmpty()) {
-            for (Iterator<MageObjectReference> it = staticAffectedObjects.iterator(); it.hasNext(); ) {
-                MageObjectReference mor = it.next();
-                MageObject object;
-                if (affectedZones.contains(Zone.BATTLEFIELD)) {
-                    object = mor.getPermanentOrLKIBattlefield(game);
-                } else if (affectedZones.contains(Zone.STACK)) {
-                    object = mor.getSpell(game);
-                } else {
-                    object = mor.getCard(game);
-                }
-                if (object != null) {
-                    affectedObjects.add(object);
-                } else {
-                    it.remove();
-                }
-            }
-        }
-        return affectedObjects;
     }
 
     /**
@@ -981,8 +960,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
-    public ContinuousEffectBuilder withGainChosenCreatureType(boolean removeOtherCardTypes) {
-        this.removeOtherSubtypes = removeOtherCardTypes;
+    public ContinuousEffectBuilder withGainChosenCreatureType(boolean removeOtherSubTypes) {
+        this.removeOtherSubtypes = removeOtherSubTypes;
         this.addLayer(Layer.TypeChangingEffects_4);
         this.useChosenCreatureType = true;
         return this;

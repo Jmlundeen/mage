@@ -4,20 +4,20 @@ package mage.cards.m;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.costs.VariableCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.costs.mana.VariableManaCost;
-import mage.abilities.dynamicvalue.common.ManaSpentToCastCount;
 import mage.abilities.dynamicvalue.common.GetXValue;
+import mage.abilities.dynamicvalue.common.ManaSpentToCastCount;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -28,10 +28,10 @@ import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+import mage.game.permanent.token.ElementalXXGreenToken;
 import mage.players.Player;
 import mage.target.common.TargetAnyTarget;
 import mage.target.common.TargetCreaturePermanent;
-import mage.game.permanent.token.ElementalXXGreenToken;
 
 import java.util.UUID;
 
@@ -50,12 +50,12 @@ public final class MarathWillOfTheWild extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Marath, Will of the Wild enters the battlefield with a number of +1/+1 counters on it equal to the amount of mana spent to cast it.
-        Effect effect = new AddCountersSourceEffect(CounterType.P1P1.createInstance(0), ManaSpentToCastCount.instance, true);
-        effect.setText("with a number of +1/+1 counters on it equal to the amount of mana spent to cast it");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, ManaSpentToCastCount.instance)
+                .setText("{this} enters with a number of +1/+1 counters on it equal to the amount of mana spent to cast it")
+        ));
 
         // {X}, Remove X +1/+1 counters from Marath: Choose one - Put X +1/+1 counters on target creature;
-        effect = new AddCountersTargetEffect(CounterType.P1P1.createInstance(0), GetXValue.instance);
+        Effect effect = new AddCountersTargetEffect(CounterType.P1P1.createInstance(0), GetXValue.instance);
         effect.setText("Put X +1/+1 counters on target creature");
         Ability ability = new SimpleActivatedAbility(effect, new ManaCostsImpl<>("{X}"));
         ability.addCost(new MarathWillOfTheWildRemoveCountersCost());

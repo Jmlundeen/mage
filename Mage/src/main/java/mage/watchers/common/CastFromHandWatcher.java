@@ -1,16 +1,18 @@
 package mage.watchers.common;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 import mage.constants.WatcherScope;
 import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.events.GameEvent;
+import mage.game.events.ZoneChangeEvent;
 import mage.game.stack.Spell;
 import mage.game.turn.Step;
 import mage.watchers.Watcher;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 public class CastFromHandWatcher extends Watcher {
 
@@ -24,16 +26,18 @@ public class CastFromHandWatcher extends Watcher {
 
     @Override
     public void watch(GameEvent event, Game game) {
-        /**
-         * This does still not handle if a spell is cast from hand and comes to
-         * play from other zones during the same step. But at least the state is
-         * reset if the game comes to a new step
-         */
-
         if (step != null && !Objects.equals(game.getTurn().getStep(), step)) {
             spellsCastFromHand.clear();
             step = null;
         }
+
+        if (step != null && event.getType() == GameEvent.EventType.ZONE_CHANGE) {
+            ZoneChangeEvent zEvent = (ZoneChangeEvent) event;
+            if (zEvent.getFromZone() != Zone.STACK && spellsCastFromHand.contains(zEvent.getTargetId())) {
+                spellsCastFromHand.remove(zEvent.getTargetId());
+            }
+        }
+
         if (event.getType() == GameEvent.EventType.SPELL_CAST && event.getZone() == Zone.HAND) {
             if (step == null) {
                 step = game.getTurn().getStep();

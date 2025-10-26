@@ -1,9 +1,10 @@
 package mage.cards.m;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.OpponentsLostLifeCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.OpponentsLostLifeHint;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -31,10 +32,10 @@ public final class MountedDreadknight extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Mounted Dreadknight enters the battlefield with a +1/+1 counter on it if an opponent lost life this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance()),
-                OpponentsLostLifeCondition.instance, null,
-                "with a +1/+1 counter on it if an opponent lost life this turn"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                OpponentsLostLifeCondition.instance)
+                .setText("{this} enters with a +1/+1 counter on it if an opponent lost life this turn")
         ).addHint(OpponentsLostLifeHint.instance));
     }
 

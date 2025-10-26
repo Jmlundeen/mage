@@ -1,27 +1,29 @@
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.cards.Card;
-import mage.cards.Cards;
-import mage.constants.SubType;
 import mage.abilities.keyword.DelveAbility;
 import mage.abilities.keyword.FlyingAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.Cards;
 import mage.constants.CardType;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -43,10 +45,7 @@ public final class MurktideRegent extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Murktide Regent enters the battlefield with a +1/+1 counter on it for each instant and sorcery card exiled with it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(), MurktideRegentValue.instance, false),
-                "with a +1/+1 counter on it for each instant and sorcery card exiled with it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, MurktideRegentValue.instance)));
 
         // Whenever an instant or sorcery card leaves your graveyard, put a +1/+1 counter on Murktide Regent.
         this.addAbility(new MurktideRegentTriggeredAbility());

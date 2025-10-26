@@ -2,6 +2,7 @@ package org.mage.test.cards.single.nec;
 
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
+import mage.counters.CounterType;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
@@ -67,5 +68,24 @@ public class MyojinOfGrimBetrayalTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Archfiend of Ifnir", 1);
         assertPermanentCount(playerA, "Banehound", 1);
         assertPermanentCount(playerA, "Llanowar Elves", 1);
+    }
+
+    @Test
+    public void testMyojinFlicker() {
+        addCard(Zone.BATTLEFIELD, playerA, "Scrubland", 10);
+        addCard(Zone.HAND, playerA, "Myojin of Grim Betrayal");
+        addCard(Zone.HAND, playerA, "Ephemerate");
+
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Myojin of Grim Betrayal");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN, playerA);
+        checkPermanentCounters("Myojin indestructible counter", 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Myojin of Grim Betrayal", CounterType.INDESTRUCTIBLE, 1);
+
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Ephemerate", "Myojin of Grim Betrayal");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN, playerA);
+        checkPermanentCounters("Myojin indestructible counter after flicker", 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Myojin of Grim Betrayal", CounterType.INDESTRUCTIBLE, 0);
+
+        setStrictChooseMode(true);
+        setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
+        execute();
     }
 }
