@@ -2,12 +2,13 @@ package mage.cards.p;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
 import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.continuous.BecomesBasicLandTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
@@ -41,10 +42,10 @@ public final class PixieIllusionist extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // If Pixie Illusionist was kicked, it enters with two +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                KickedCondition.ONCE, "If {this} was kicked, " +
-                "it enters the battlefield with two +1/+1 counters on it.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters the battlefield with two +1/+1 counters on it")
         ));
 
         // {T}: Target land you control becomes the basic land type of your choice until end of turn.
