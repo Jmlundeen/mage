@@ -35,7 +35,7 @@ public final class RunadiBehemothCaller extends CardImpl {
 
     private static final FilterSpell filterSpell = new FilterSpell("a creature spell with mana value 5 or greater");
     private static final DynamicValue manaValue = new AdditiveDynamicValue(
-            ObjectManaValue.instance,
+            ObjectManaValue.SPELL,
             StaticValue.get(-4)
     );
     static {

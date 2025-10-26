@@ -6,7 +6,8 @@ import mage.abilities.dynamicvalue.common.ObjectManaValue;
 import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
 import mage.filter.common.FilterArtifactPermanent;
 import mage.filter.predicate.Predicates;
 
@@ -29,10 +30,10 @@ public final class MarchOfTheMachines extends CardImpl {
 
         // Each noncreature artifact is an artifact creature with power and toughness each equal to its converted mana cost.
         this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.BecomeCreature, filter)
-                .withSetPower(ObjectManaValue.instance)
-                .withSetToughness(ObjectManaValue.instance)
+                .withSetPower(ObjectManaValue.PERMANENT)
+                .withSetToughness(ObjectManaValue.PERMANENT)
                 .withAddedCardTypes(CardType.ARTIFACT, CardType.CREATURE)
-                .setText("Each noncreature artifact is an artifact creature with power and toughness each equal to " + ObjectManaValue.instance.getMessage())
+                .setText("Each noncreature artifact is an artifact creature with power and toughness each equal to " + ObjectManaValue.PERMANENT.getMessage())
         ));
     }
 

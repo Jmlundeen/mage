@@ -1,21 +1,17 @@
 
 package mage.cards.k;
 
-import mage.MageItem;
-import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.common.ObjectManaValue;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.Outcome;
 import mage.filter.common.FilterArtifactPermanent;
 import mage.filter.predicate.Predicates;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -36,8 +32,8 @@ public final class KarnsTouch extends CardImpl {
         // Target noncreature artifact becomes an artifact creature with power and toughness each equal to its converted mana cost until end of turn.
         this.getSpellAbility().addEffect(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.BecomeCreature)
                 .withAddedCardTypes(CardType.ARTIFACT, CardType.CREATURE)
-                .withSetPower(ObjectManaValue.instance)
-                .withSetToughness(ObjectManaValue.instance)
+                .withSetPower(ObjectManaValue.PERMANENT)
+                .withSetToughness(ObjectManaValue.PERMANENT)
                 .setText("Target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value until end of turn")
         );
         this.getSpellAbility().addTarget(new TargetPermanent(filter));

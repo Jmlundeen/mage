@@ -9,12 +9,13 @@ import mage.game.stack.Spell;
 
 public enum ObjectManaValue implements DynamicValue {
 
-    instance;
+    SPELL,
+    PERMANENT;
 
     @Override
     public int calculate(Game game, Ability sourceAbility, Effect effect, MageObject mageObject) {
         if (mageObject != null) {
-            if (!(mageObject instanceof Spell)) {
+            if (this == SPELL && !(mageObject instanceof Spell)) {
                 mageObject = game.getSpellOrLKIStack(mageObject.getId());
                 if (mageObject == null) {
                     return 0;
@@ -32,7 +33,7 @@ public enum ObjectManaValue implements DynamicValue {
 
     @Override
     public DynamicValue copy() {
-        return ObjectManaValue.instance;
+        return this;
     }
 
     @Override
