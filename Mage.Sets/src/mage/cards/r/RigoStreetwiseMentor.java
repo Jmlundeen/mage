@@ -36,8 +36,8 @@ public final class RigoStreetwiseMentor extends CardImpl {
 
         // Rigo, Streetwise Mentor enters the battlefield with a shield counter on it.
         this.addAbility(new SimpleStaticAbility(
-                new EntersWithCountersEffect(CounterType.SHIELD.createInstance(1))
-                        .setText("with a shield counter on it. <i>(If it would be dealt damage " +
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance())
+                        .setText("{this} enters with a shield counter on it. <i>(If it would be dealt damage " +
                                 "or destroyed, remove a shield counter from it instead.)</i>")
         ));
 

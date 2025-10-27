@@ -1,23 +1,22 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -32,9 +31,7 @@ public final class SpittingHydra extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Spitting Hydra enters the battlefield with four +1/+1 counters on it.
-        Effect effect = new AddCountersSourceEffect(CounterType.P1P1.createInstance(4));
-        effect.setText("with four +1/+1 counters on it");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(4))));
         
         // {1}{R}, Remove a +1/+1 counter from Spitting Hydra: Spitting Hydra deals 1 damage to target creature.
         Ability ability = new SimpleActivatedAbility(new DamageTargetEffect(1, "it"), new ManaCostsImpl<>("{1}{R}"));

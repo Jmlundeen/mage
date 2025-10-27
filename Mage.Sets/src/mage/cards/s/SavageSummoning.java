@@ -5,8 +5,9 @@ import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.CantBeCounteredSourceAbility;
 import mage.abilities.effects.AsThoughEffectImpl;
-import mage.abilities.effects.ContinuousRuleModifyingEffectImpl;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.ContinuousEffect;
+import mage.abilities.effects.common.CantBeCounteredSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -14,13 +15,13 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.command.Commander;
-import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.watchers.Watcher;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author LevelX2
@@ -38,8 +39,6 @@ public final class SavageSummoning extends CardImpl {
         // The next creature card you cast this turn can be cast as though it had flash.
         // That spell can't be countered. That creature enters the battlefield with an additional +1/+1 counter on it.
         this.getSpellAbility().addEffect(new SavageSummoningAsThoughEffect());
-        this.getSpellAbility().addEffect(new SavageSummoningCantCounterEffect());
-        this.getSpellAbility().addEffect(new SavageSummoningEntersBattlefieldEffect());
         this.getSpellAbility().addWatcher(new SavageSummoningWatcher());
 
     }
@@ -61,7 +60,8 @@ class SavageSummoningAsThoughEffect extends AsThoughEffectImpl {
 
     public SavageSummoningAsThoughEffect() {
         super(AsThoughEffectType.CAST_AS_INSTANT, Duration.EndOfTurn, Outcome.Benefit);
-        staticText = "The next creature spell you cast this turn can be cast as though it had flash";
+        staticText = "The next creature spell you cast this turn can be cast as though it had flash." +
+                "That spell can't be countered. That creature enters with an additional +1/+1 counter on it.";
     }
 
     private SavageSummoningAsThoughEffect(final SavageSummoningAsThoughEffect effect) {
@@ -98,14 +98,10 @@ class SavageSummoningAsThoughEffect extends AsThoughEffectImpl {
             MageObject mageObject = game.getBaseObject(objectId);
             if (mageObject instanceof Commander) {
                 Commander commander = (Commander) mageObject;
-                if (commander.isCreature(game) && commander.isControlledBy(source.getControllerId())) {
-                    return true;
-                }
+                return commander.isCreature(game) && commander.isControlledBy(source.getControllerId());
             } else if (mageObject instanceof Card) {
                 Card card = (Card) mageObject;
-                if (card.isCreature(game) && card.isOwnedBy(source.getControllerId())) {
-                    return true;
-                }
+                return card.isCreature(game) && card.isOwnedBy(source.getControllerId());
             }
         }
         return false;
@@ -115,9 +111,7 @@ class SavageSummoningAsThoughEffect extends AsThoughEffectImpl {
 
 class SavageSummoningWatcher extends Watcher {
 
-    private Set<String> savageSummoningSpells = new HashSet<>();
-    private Map<UUID, Set<String>> spellsCastWithSavageSummoning = new LinkedHashMap<>();
-    private Map<String, Set<String>> cardsCastWithSavageSummoning = new LinkedHashMap<>();
+    private final Set<String> savageSummoningSpells = new HashSet<>();
 
     public SavageSummoningWatcher() {
         super(WatcherScope.PLAYER);
@@ -129,9 +123,10 @@ class SavageSummoningWatcher extends Watcher {
             if (isSavageSummoningSpellActive() && event.getPlayerId().equals(getControllerId())) {
                 Spell spell = game.getStack().getSpell(event.getTargetId());
                 if (spell != null && spell.isCreature(game)) {
-                    spellsCastWithSavageSummoning.put(spell.getId(), new HashSet<>(savageSummoningSpells));
-                    String cardKey = spell.getCard().getId().toString() + '_' + spell.getCard().getZoneChangeCounter(game);
-                    cardsCastWithSavageSummoning.put(cardKey, new HashSet<>(savageSummoningSpells));
+                    ContinuousEffect counterEffect = new CantBeCounteredSourceEffect();
+                    game.addEffect(counterEffect, spell.getSpellAbility());
+                    ContinuousEffect counterETBEffect = new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance());
+                    game.addEffect(counterETBEffect, spell.getSpellAbility());
                     savageSummoningSpells.clear();
                 }
             }
@@ -147,138 +142,10 @@ class SavageSummoningWatcher extends Watcher {
         return !savageSummoningSpells.isEmpty();
     }
 
-    public boolean isSpellCastWithThisSavageSummoning(UUID spellId, UUID cardId, int zoneChangeCounter) {
-        String cardKey = cardId.toString() + '_' + zoneChangeCounter;
-        Set<String> savageSpells = spellsCastWithSavageSummoning.get(spellId);
-        return savageSpells != null && savageSpells.contains(cardKey);
-    }
-
-    public boolean isCardCastWithThisSavageSummoning(Card card, UUID cardId, int zoneChangeCounter, Game game) {
-        String creatureCardKey = card.getId().toString() + '_' + (card.getZoneChangeCounter(game));
-        // add one because card is now gone to battlefield as creature
-        String cardKey = cardId.toString() + '_' + zoneChangeCounter;
-        Set<String> savageSpells = cardsCastWithSavageSummoning.get(creatureCardKey);
-        return savageSpells != null && savageSpells.contains(cardKey);
-    }
-
     @Override
     public void reset() {
         super.reset();
         savageSummoningSpells.clear();
-        spellsCastWithSavageSummoning.clear();
-        cardsCastWithSavageSummoning.clear();
-    }
-
-}
-
-class SavageSummoningCantCounterEffect extends ContinuousRuleModifyingEffectImpl {
-
-    private SavageSummoningWatcher watcher;
-    private int zoneChangeCounter;
-
-    public SavageSummoningCantCounterEffect() {
-        super(Duration.EndOfTurn, Outcome.Benefit);
-        staticText = "That spell can't be countered";
-    }
-
-    private SavageSummoningCantCounterEffect(final SavageSummoningCantCounterEffect effect) {
-        super(effect);
-        this.watcher = effect.watcher;
-        this.zoneChangeCounter = effect.zoneChangeCounter;
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        watcher = game.getState().getWatcher(SavageSummoningWatcher.class, source.getControllerId());
-        Card card = game.getCard(source.getSourceId());
-        if (watcher == null || card == null) {
-            throw new IllegalArgumentException("Consume Savage watcher or card could not be found");
-        }
-        this.zoneChangeCounter = card.getZoneChangeCounter(game);
-    }
-
-    @Override
-    public SavageSummoningCantCounterEffect copy() {
-        return new SavageSummoningCantCounterEffect(this);
-    }
-
-    @Override
-    public String getInfoMessage(Ability source, GameEvent event, Game game) {
-        MageObject sourceObject = game.getObject(source);
-        if (sourceObject != null) {
-            return "This creature spell can't be countered (" + sourceObject.getName() + ").";
-        }
-        return null;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.COUNTER;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Spell spell = game.getStack().getSpell(event.getTargetId());
-        if (spell != null && watcher.isSpellCastWithThisSavageSummoning(spell.getId(), source.getSourceId(), zoneChangeCounter)) {
-            return true;
-        }
-        return false;
-    }
-
-}
-
-class SavageSummoningEntersBattlefieldEffect extends ReplacementEffectImpl {
-
-    private SavageSummoningWatcher watcher;
-    private int zoneChangeCounter;
-
-    public SavageSummoningEntersBattlefieldEffect() {
-        super(Duration.EndOfTurn, Outcome.Benefit);
-        staticText = "That creature enters the battlefield with an additional +1/+1 counter on it";
-    }
-
-    private SavageSummoningEntersBattlefieldEffect(final SavageSummoningEntersBattlefieldEffect effect) {
-        super(effect);
-        this.watcher = effect.watcher;
-        this.zoneChangeCounter = effect.zoneChangeCounter;
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        watcher = game.getState().getWatcher(SavageSummoningWatcher.class, source.getControllerId());
-        Card card = game.getCard(source.getSourceId());
-        if (watcher == null || card == null) {
-            throw new IllegalArgumentException("Consume Savage watcher or card could not be found");
-        }
-        this.zoneChangeCounter = card.getZoneChangeCounter(game);
-    }
-
-    @Override
-    public SavageSummoningEntersBattlefieldEffect copy() {
-        return new SavageSummoningEntersBattlefieldEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (creature != null) {
-            creature.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game, event.getAppliedEffects());
-        }
-        discard();
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Card card = game.getCard(event.getTargetId());
-        return card != null && watcher.isCardCastWithThisSavageSummoning(card, source.getSourceId(), zoneChangeCounter, game);
     }
 
 }

@@ -127,10 +127,10 @@ class SemestersEndReturnEffect extends OneShotEffect {
         }
         cards.stream().map(game::getPermanent).filter(Objects::nonNull).forEach(p -> {
             if (p.isCreature(game)) {
-                p.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game);
+                game.addEnterWithCounters(p.getId(), CounterType.P1P1.createInstance());
             }
             if (p.isPlaneswalker(game)) {
-                p.addCounters(CounterType.LOYALTY.createInstance(), source.getControllerId(), source, game);
+                game.addEnterWithCounters(p.getId(), CounterType.LOYALTY.createInstance());
             }
         });
         return true;

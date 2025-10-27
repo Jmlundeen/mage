@@ -1,8 +1,9 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.GetXValue;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.CardImpl;
@@ -33,7 +34,7 @@ public final class ShivanDevastator extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // Shivan Devastator enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
     }
 
     private ShivanDevastator(final ShivanDevastator card) {

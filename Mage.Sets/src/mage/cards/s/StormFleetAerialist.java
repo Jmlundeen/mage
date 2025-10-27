@@ -1,9 +1,10 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.RaidCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.RaidHint;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
@@ -33,13 +34,14 @@ public final class StormFleetAerialist extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Raid - Storm Fleet Aerialist enters the battlefield with a +1/+1 counter on it if you attacked this turn.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(1), false),
-                        RaidCondition.instance,
-                        "{this} enters with a +1/+1 counter on it if you attacked this turn.",
-                        "{this} enters with a +1/+1 counter")
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                        RaidCondition.instance)
+                        .setText("{this} enters with a +1/+1 counter on it if you attacked this turn"))
                         .setAbilityWord(AbilityWord.RAID)
                         .addHint(RaidHint.instance),
-                new PlayerAttackedWatcher());
+                new PlayerAttackedWatcher()
+        );
     }
 
     private StormFleetAerialist(final StormFleetAerialist card) {

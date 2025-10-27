@@ -46,9 +46,9 @@ public final class FalcoSparaPactweaver extends CardImpl {
 
         // Falco Spara, Pactweaver enters the battlefield with a shield counter on it.
         this.addAbility(new SimpleStaticAbility(
-                new EntersWithCountersEffect(CounterType.SHIELD.createInstance(1))
-                        .setText("with a shield counter on it. <i>(If it would be dealt damage "
-                                + "or destroyed, remove a shield counter from it instead.)</i>")
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance())
+                        .setText("{this} enters with a shield counter on it. <i>(If it would be dealt damage " +
+                                "or destroyed, remove a shield counter from it instead.)</i>")
         ));
 
         // You may look at the top card of your library any time.

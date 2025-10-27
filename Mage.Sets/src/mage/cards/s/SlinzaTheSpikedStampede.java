@@ -6,19 +6,17 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.DoWhenCostPaid;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
 import mage.abilities.effects.common.FightTargetSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.ComparisonType;
-import mage.constants.SubType;
-import mage.constants.SuperType;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
+import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.PowerPredicate;
 import mage.target.TargetPermanent;
@@ -31,7 +29,7 @@ import java.util.UUID;
 public final class SlinzaTheSpikedStampede extends CardImpl {
 
     private static final FilterCard filter = new FilterCard("Beast spells");
-    private static final FilterPermanent filter2 = new FilterCreaturePermanent(SubType.BEAST, "Beast creature");
+    private static final FilterPermanent filter2 = new FilterControlledCreaturePermanent(SubType.BEAST, "other Beast creature you control");
     private static final FilterPermanent filter3 = new FilterCreaturePermanent("creature with power 4 or greater");
 
     static {
@@ -51,9 +49,9 @@ public final class SlinzaTheSpikedStampede extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new SpellsCostReductionControllerEffect(filter, 2)));
 
         // Each other Beast creature you control enters with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                filter2, CounterType.P1P1.createInstance(), true
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(filter2)
+        ));
 
         // Whenever Slinza or another creature with power 4 or greater enters, you may pay {1}{R/G}. When you do, Slinza fights target creature you don't control.
         ReflexiveTriggeredAbility ability = new ReflexiveTriggeredAbility(new FightTargetSourceEffect(), false);

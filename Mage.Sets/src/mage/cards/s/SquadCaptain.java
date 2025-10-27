@@ -1,10 +1,10 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -21,7 +21,7 @@ import java.util.UUID;
 public final class SquadCaptain extends CardImpl {
 
     private static final DynamicValue xValue
-            = new PermanentsOnBattlefieldCount(StaticFilters.FILTER_CONTROLLED_CREATURE);
+            = new PermanentsOnBattlefieldCount(StaticFilters.FILTER_OTHER_CONTROLLED_CREATURE);
 
     public SquadCaptain(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{4}{W}");
@@ -35,9 +35,7 @@ public final class SquadCaptain extends CardImpl {
         this.addAbility(VigilanceAbility.getInstance());
 
         // Squad Captain enters the battlefield with a +1/+1 counter on it for each other creature you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), xValue, false
-        ).setText("with a +1/+1 counter on it for each other creature you control")));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)));
     }
 
     private SquadCaptain(final SquadCaptain card) {

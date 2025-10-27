@@ -1,16 +1,16 @@
 package mage.cards.s;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.decorator.ConditionalOneShotEffect;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.ReplacementEffectImpl;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
 import mage.abilities.effects.common.SacrificeSourceEffect;
 import mage.abilities.effects.common.continuous.DontLoseByZeroOrLessLifeEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -39,7 +39,7 @@ public final class SoulEcho extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{X}{W}{W}");
 
         // Soul Echo enters the battlefield with X echo counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.ECHO.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.ECHO, GetXValue.instance)));
 
         // You don't lose the game for having 0 or less life.
         this.addAbility(new SimpleStaticAbility(new DontLoseByZeroOrLessLifeEffect(Duration.WhileOnBattlefield)));

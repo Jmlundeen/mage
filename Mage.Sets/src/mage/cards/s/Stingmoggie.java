@@ -1,24 +1,24 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.DestroyTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 import mage.target.TargetPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -42,7 +42,7 @@ public final class Stingmoggie extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Stingmoggie enters the battlefield with two +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),"with two +1/+1 counters on it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))));
         
         // {3}{R}, Remove a +1/+1 counter from Stingmoggie: Destroy target artifact or land.
         Ability ability = new SimpleActivatedAbility(new DestroyTargetEffect(), new ManaCostsImpl<>("{3}{R}"));

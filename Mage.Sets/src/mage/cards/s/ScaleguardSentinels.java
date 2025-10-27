@@ -1,10 +1,11 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.RevealedOrControlledDragonCondition;
 import mage.abilities.costs.common.RevealDragonFromHandCost;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -30,11 +31,11 @@ public final class ScaleguardSentinels extends CardImpl {
         this.getSpellAbility().addCost(new RevealDragonFromHandCost());
 
         // Scaleguard Sentinels enters the battlefield with a +1/+1 counter on it if you revealed a Dragon card or controlled a Dragon as you cast Scaleguard Sentinels.
-        this.addAbility(new EntersBattlefieldAbility(
-                        new AddCountersSourceEffect(CounterType.P1P1.createInstance()),
-                        RevealedOrControlledDragonCondition.instance, "{this} enters " +
-                        "with a +1/+1 counter on it if you revealed a Dragon card " +
-                        "or controlled a Dragon as you cast this spell.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                RevealedOrControlledDragonCondition.instance)
+                .setText("{this} enters with a +1/+1 counter on it if you revealed a Dragon card " +
+                        "or controlled a Dragon as you cast this spell")
                 ), new DragonOnTheBattlefieldWhileSpellWasCastWatcher()
         );
     }

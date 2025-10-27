@@ -1,12 +1,12 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.dynamicvalue.common.GetXValue;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.DoubleStrikeAbility;
 import mage.cards.CardImpl;
@@ -15,6 +15,8 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -33,7 +35,7 @@ public final class SavagebornHydra extends CardImpl {
         this.addAbility(DoubleStrikeAbility.getInstance());
 
         // Savageborn Hydra enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
         // {1}{RG}: Put a +1/+1 counter on Savageborn Hydra. Activate this ability only any time you could cast a sorcery.
         this.addAbility(new ActivateAsSorceryActivatedAbility(Zone.BATTLEFIELD, new AddCountersSourceEffect(CounterType.P1P1.createInstance()), new ManaCostsImpl<>("{1}{R/G}")));

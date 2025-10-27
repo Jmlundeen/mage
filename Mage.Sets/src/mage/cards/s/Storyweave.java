@@ -109,11 +109,7 @@ class StoryweaveReplacementEffect extends ReplacementEffectImpl {
     public boolean replaceEvent(GameEvent event, Ability source, Game game) {
         Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
         if (creature != null) {
-            creature.addCounters(
-                    CounterType.P1P1.createInstance(2),
-                    source.getControllerId(), source,
-                    game, event.getAppliedEffects()
-            );
+            game.addEnterWithCounters(creature.getId(), CounterType.P1P1.createInstance(2));
         }
         return false;
     }

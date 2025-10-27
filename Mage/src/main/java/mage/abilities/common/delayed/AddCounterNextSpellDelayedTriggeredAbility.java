@@ -1,14 +1,11 @@
 package mage.abilities.common.delayed;
 
-import mage.abilities.Ability;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.constants.ContinuousAffected;
 import mage.constants.Duration;
 import mage.counters.CounterType;
 import mage.filter.FilterSpell;
 import mage.filter.StaticFilters;
-import mage.game.Game;
-import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.util.CardUtil;
 
@@ -45,29 +42,5 @@ public class AddCounterNextSpellDelayedTriggeredAbility extends CastNextSpellDel
     @Override
     public AddCounterNextSpellDelayedTriggeredAbility copy() {
         return new AddCounterNextSpellDelayedTriggeredAbility(this);
-    }
-}
-
-class AddCounterNextSpellEffect extends EntersWithCountersEffect {
-
-    AddCounterNextSpellEffect(int amount) {
-        super(Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(amount));
-        staticText = "that creature enters with " + CardUtil.numberToText(amount, "an") +
-                " additional +1/+1 counter" + (amount > 1 ? "s" : "") + " on it";
-    }
-
-    private AddCounterNextSpellEffect(AddCounterNextSpellEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Spell spell = (Spell) getValue("spellCast");
-        return spell != null && event.getTargetId().equals(spell.getCard().getId());
-    }
-
-    @Override
-    public AddCounterNextSpellEffect copy() {
-        return new AddCounterNextSpellEffect(this);
     }
 }

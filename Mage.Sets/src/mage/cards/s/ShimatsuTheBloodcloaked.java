@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -19,6 +18,8 @@ import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetControlledPermanent;
 
+import java.util.UUID;
+
 /**
  *
  * @author LevelX2
@@ -35,7 +36,7 @@ public final class ShimatsuTheBloodcloaked extends CardImpl {
         this.toughness = new MageInt(0);
 
         // As Shimatsu the Bloodcloaked enters the battlefield, sacrifice any number of permanents. Shimatsu enters the battlefield with that many +1/+1 counters on it.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ShimatsuTheBloodcloakedEffect()));
+        this.addAbility(new SimpleStaticAbility(new ShimatsuTheBloodcloakedEffect()));
     }
 
     private ShimatsuTheBloodcloaked(final ShimatsuTheBloodcloaked card) {
@@ -93,7 +94,7 @@ class ShimatsuTheBloodcloakedEffect extends ReplacementEffectImpl {
                         return false;
                     }
                 }
-                creature.addCounters(CounterType.P1P1.createInstance(sacrificedCreatures), source.getControllerId(), source, game);
+                game.addEnterWithCounters(creature.getId(), CounterType.P1P1.createInstance(sacrificedCreatures));
             }
         }
         return false;

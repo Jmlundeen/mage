@@ -2,14 +2,15 @@ package mage.cards.s;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.effects.common.RegenerateSourceWithReflexiveEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -35,8 +36,7 @@ public final class SkeletonScavengers extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Skeleton Scavengers enters the battlefield with a +1/+1 counter on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance()),
-                "with a +1/+1 counter on it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())));
 
         // Pay {1} for each +1/+1 counter on Skeleton Scavengers: Regenerate Skeleton Scavengers. When it regenerates this way, put a +1/+1 counter on it.
         this.addAbility(new SimpleActivatedAbility(

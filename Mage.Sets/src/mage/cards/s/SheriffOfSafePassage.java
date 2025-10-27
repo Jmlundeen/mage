@@ -1,11 +1,11 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.IntPlusDynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.PlotAbility;
@@ -36,14 +36,9 @@ public final class SheriffOfSafePassage extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Sheriff of Safe Passage enters the battlefield with a +1/+1 counter on it plus an additional +1/+1 counter on it for each other creature you control.
-        this.addAbility(
-                new EntersBattlefieldAbility(
-                        new AddCountersSourceEffect(
-                                CounterType.P1P1.createInstance(),
-                                xValue, false
-                        ),
-                        "with a +1/+1 counter on it plus an additional +1/+1 counter on it for each other creature you control"
-                ).addHint(hint)
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)
+                .setText("{this} enters with a +1/+1 counter on it plus an additional +1/+1 counter on it for each other creature you control"))
+                .addHint(hint)
         );
 
         // Plot {1}{W}
