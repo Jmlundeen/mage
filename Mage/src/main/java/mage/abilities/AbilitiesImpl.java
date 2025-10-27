@@ -6,6 +6,7 @@ import mage.abilities.costs.Cost;
 import mage.abilities.keyword.ProtectionAbility;
 import mage.abilities.mana.ActivatedManaAbilityImpl;
 import mage.abilities.mana.ManaAbility;
+import mage.constants.SpellAbilityType;
 import mage.constants.Zone;
 import mage.game.Game;
 import mage.util.CardUtil;
@@ -73,7 +74,7 @@ public class AbilitiesImpl<T extends Ability> extends ArrayList<T> implements Ab
                 continue;
             }
             if (ability instanceof SpellAbility) {
-                if (ability.getAdditionalCostsRuleVisible() && !ability.getCosts().isEmpty()) {
+                if (ability.getAdditionalCostsRuleVisible() && !ability.getCosts().isEmpty() && ((SpellAbility) ability).getSpellAbilityType() == SpellAbilityType.BASE) {
                     StringBuilder sbRule = threadLocalBuilder.get();
                     for (Cost cost : ability.getCosts()) {
                         if (cost.getText() != null && !cost.getText().isEmpty()) {
