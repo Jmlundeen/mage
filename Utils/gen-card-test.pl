@@ -42,8 +42,8 @@ sub fixCost {
 # Resolve a user-provided card name to the canonical card key in %cards.
 # Tries:
 # 1) exact key
-# 2) case-insensitive exact match
-# 3) case-insensitive substring match (if single match => use it, if multiple => warn and return undef)
+# 2) case-insensitive exact match (ignoring punctuation)
+# 3) case-insensitive substring match (ignoring punctuation, if single match => use it, if multiple => warn and return undef)
 sub resolveCardName {
     my ($input) = @_;
     return undef unless defined $input;
@@ -52,14 +52,23 @@ sub resolveCardName {
     return $input if exists $cards{$input};
 
     my $lc_input = lc $input;
+    # Remove punctuation for matching
+    my $normalized_input = $lc_input;
+    $normalized_input =~ s/[^\w\s]//g;  # Remove all non-alphanumeric except spaces
 
-    # case-insensitive exact
+    # case-insensitive exact (ignoring punctuation)
     foreach my $k (keys %cards) {
-        return $k if lc($k) eq $lc_input;
+        my $normalized_k = lc $k;
+        $normalized_k =~ s/[^\w\s]//g;
+        return $k if $normalized_k eq $normalized_input;
     }
 
-    # substring (partial) matches
-    my @matches = grep { index(lc($_), $lc_input) != -1 } keys %cards;
+    # substring (partial) matches (ignoring punctuation)
+    my @matches = grep {
+        my $normalized = lc $_;
+        $normalized =~ s/[^\w\s]//g;
+        index($normalized, $normalized_input) != -1
+    } keys %cards;
     if (@matches == 1) {
         return $matches[0];
     } elsif (@matches > 1) {

@@ -21,12 +21,95 @@ sub toCamelCase {
     $string;
 }
 
+# Resolve a user-provided card name to the canonical card key in %cards.
+# Tries:
+# 1) exact key
+# 2) case-insensitive exact match (ignoring punctuation)
+# 3) case-insensitive substring match (ignoring punctuation, if single match => use it, if multiple => prompt user)
+sub resolveCardName {
+    my ($input) = @_;
+    return undef unless defined $input;
+    # trim whitespace
+    $input =~ s/^\s+|\s+$//g;
+    return $input if exists $cards{$input};
+
+    my $lc_input = lc $input;
+    # Remove punctuation for matching
+    my $normalized_input = $lc_input;
+    $normalized_input =~ s/[^\w\s]//g;  # Remove all non-alphanumeric except spaces
+
+    # case-insensitive exact (ignoring punctuation)
+    foreach my $k (keys %cards) {
+        my $normalized_k = lc $k;
+        $normalized_k =~ s/[^\w\s]//g;
+        return $k if $normalized_k eq $normalized_input;
+    }
+
+    # substring (partial) matches (ignoring punctuation)
+    my @matches = grep {
+        my $normalized = lc $_;
+        $normalized =~ s/[^\w\s]//g;
+        index($normalized, $normalized_input) != -1
+    } keys %cards;
+    if (@matches == 1) {
+        return $matches[0];
+    } elsif (@matches > 1) {
+        @matches = sort @matches;
+        # If not interactive, don't block; print candidates and return undef
+        unless (-t STDIN) {
+            warn "Multiple matches found for '$input' (non-interactive):\n";
+            foreach my $m (@matches) { warn "  $m\n"; }
+            warn "Please be more specific.\n";
+            return undef;
+        }
+
+        print "Multiple matches found for '$input':\n";
+        my $i = 0;
+        foreach my $m (@matches) {
+            $i++;
+            print "  $i) $m\n";
+        }
+
+        while (1) {
+            print "Select a number (1-$i) or 0 to cancel: ";
+            my $choice = <STDIN>;
+            unless (defined $choice) { print "\nNo selection (EOF). Skipping.\n"; return undef; }
+            chomp $choice;
+            $choice =~ s/^\s+|\s+$//g;
+
+            # numeric choice
+            if ($choice =~ /^\d+$/) {
+                my $num = int($choice);
+                if ($num == 0) {
+                    return undef;
+                } elsif ($num >= 1 && $num <= $i) {
+                    return $matches[$num - 1];
+                }
+            } else {
+                # try exact name match among candidates (case-insensitive)
+                foreach my $m (@matches) {
+                    return $m if lc($m) eq lc($choice);
+                }
+            }
+
+            print "Invalid selection, please try again.\n";
+        }
+    }
+
+    return undef;
+}
+
 sub printCardInfo {
     my ($cardName, $infoTemplate) = @_;
 
+    # attempt to resolve loosely if direct lookup fails
     if (!exists $cards{$cardName}) {
-        print "Card name doesn't exist: $cardName\n\n";
-        return;
+        my $resolved = resolveCardName($cardName);
+        if (!defined $resolved) {
+            print "Card name doesn't exist: $cardName (skipping)\n\n";
+            return;
+        }
+        $cardName = $resolved;
     }
 
     my %vars;
@@ -42,14 +125,22 @@ sub printCardInfo {
     $vars{'manaCost'} = $card[4];
     $vars{'typeLine'} = $card[5];
 
-    # Combine power and toughness if they exist
-    my $powerToughness = "";
-    if ($card[6] && $card[7] && $card[6] ne "" && $card[7] ne "") {
-        $powerToughness = "$card[6]/$card[7]";
-    }
-    $vars{'powerToughness'} = $powerToughness;
+    # Check if this is a planeswalker
+    my $isPlaneswalker = $card[5] =~ /Planeswalker/i;
 
-    my $cardAbilities = $card[8];
+    my $cardAbilities;
+    if ($isPlaneswalker) {
+        # For planeswalkers: field 6 is loyalty, field 7 is abilities
+        $vars{'loyalty'} = $card[6] if $card[6];  # loyalty
+        $cardAbilities = $card[7];
+    } else {
+        # For non-planeswalkers: field 6/7 is power/toughness, field 8 is abilities
+        if ($card[6]) {
+            $vars{'powerToughness'} = "$card[6]/$card[7]";
+        }
+        $cardAbilities = $card[8];
+    }
+
     my @abilities = split(/\$/, $cardAbilities);
     my $abilitiesFormatted = join("\n    ", @abilities);
     $vars{'abilities'} = $abilitiesFormatted;
