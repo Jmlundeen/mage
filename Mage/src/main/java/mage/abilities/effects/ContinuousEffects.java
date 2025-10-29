@@ -255,13 +255,23 @@ public class ContinuousEffects implements Serializable {
      * @param layerEffects
      */
     private synchronized void updateTimestamps(boolean clearEffects, List<ContinuousEffect> layerEffects) {
+        List<ContinuousEffect> toAdd = new ArrayList<>();
         for (ContinuousEffect continuousEffect : layerEffects) {
             // check if it's new, then set order
-            if (!lastEffectList.contains(continuousEffect)) {
-                setOrder(continuousEffect);
-                lastEffectList.add(continuousEffect);
+            boolean found = false;
+            for (ContinuousEffect lastEffect : lastEffectList) {
+                if (lastEffect.getId() == continuousEffect.getId()) {
+                    found = true;
+                    break;
+                }
             }
+            if (found) {
+                continue;
+            }
+            setOrder(continuousEffect);
+            toAdd.add(continuousEffect);
         }
+        lastEffectList.addAll(toAdd);
         if (clearEffects) {
             if (layerEffects.size() != lastEffectList.size()) {
                 layerDependencies.clear();
