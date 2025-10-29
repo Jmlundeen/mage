@@ -81,7 +81,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object or permanent source is attached to.
-     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
+     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets or a specific affected, such as
+     * {@link ContinuousAffected#SOURCE} or {@link ContinuousAffected#ATTACHED_TO}
      */
     public ContinuousEffectBuilder(Duration duration, Outcome outcome, ContinuousAffected affected) {
         super(duration, outcome);
@@ -90,7 +91,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     /**
      * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object or permanent source is attached to.
-     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
+     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets or a specific affected, such as
+     * {@link ContinuousAffected#SOURCE} or {@link ContinuousAffected#ATTACHED_TO}
      */
     public ContinuousEffectBuilder(Outcome outcome, ContinuousAffected affected) {
         this(Duration.WhileOnBattlefield, outcome, affected);
