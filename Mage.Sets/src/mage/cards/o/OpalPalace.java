@@ -76,7 +76,7 @@ class OpalPalaceWatcher extends Watcher {
                             if (player != null) {
                                 // need check all card parts (example: mdf cards)
                                 if (game.getCommandersIds(player, CommanderCardType.COMMANDER_OR_OATHBREAKER, true).contains(card.getId())) {
-                                    game.getState().addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1, OpalPalaceValue.instance),
+                                    game.addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1, OpalPalaceValue.instance),
                                             spell.getSpellAbility());
                                     break;
                                 }

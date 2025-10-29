@@ -107,7 +107,7 @@ class WorldheartPhoenixWatcher extends Watcher {
                 && event.hasApprovingIdentifier(MageIdentifier.WorldheartPhoenixAlternateCast)) {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
-                game.getState().addEffect(new AddCounterEnteringCreatureEffect(new MageObjectReference(target.getCard(), game),
+                game.addEffect(new AddCounterEnteringCreatureEffect(new MageObjectReference(target.getCard(), game),
                                 CounterType.P1P1.createInstance(2), Outcome.BoostCreature),
                         target.getSpellAbility());
             }

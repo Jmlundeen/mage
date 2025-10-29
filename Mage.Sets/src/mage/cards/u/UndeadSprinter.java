@@ -131,7 +131,7 @@ class UndeadSprinterAlternateCastWatcher extends Watcher {
                 && event.hasApprovingIdentifier(MageIdentifier.UndeadSprinterAlternateCast)) {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
-                game.getState().addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance()),
+                game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance()),
                         target.getSpellAbility());
             }
         }

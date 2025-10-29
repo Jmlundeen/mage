@@ -169,7 +169,7 @@ class CastFromGraveyardOnceWatcher extends Watcher {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
                 MageObjectReference mor = new MageObjectReference(target, game);
-                game.getState().addEffect(
+                game.addEffect(
                         new SpellMorEnteringTappedEffect(mor),
                         event.getApprovingObject().getApprovingAbility() // ability that approved the cast is the source of the tapping.
                 );

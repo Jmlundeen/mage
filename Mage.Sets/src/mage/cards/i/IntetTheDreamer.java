@@ -87,7 +87,7 @@ class IntetTheDreamerExileEffect extends OneShotEffect {
             card.setFaceDown(true, game);
             ContinuousEffect effect = new IntetTheDreamerAsThoughEffect();
             effect.setTargetPointer(new FixedTarget(card.getId(), game.getState().getZoneChangeCounter(card.getId())));
-            game.getState().addEffect(effect, source);
+            game.addEffect(effect, source);
             effect = new MayLookAtTargetCardEffect(controller.getId());
             effect.setTargetPointer(new FixedTarget(card, game));
             game.addEffect(effect, source);

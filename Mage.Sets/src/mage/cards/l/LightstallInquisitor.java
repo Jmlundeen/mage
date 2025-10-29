@@ -176,7 +176,7 @@ class LightstallInquisitorWatcher extends Watcher {
             return;
         }
         MageObjectReference mor = new MageObjectReference(landCard, game);
-        game.getState().addEffect(
+        game.addEffect(
                 new CardMorEnteringTappedEffect(mor),
                 event.getApprovingObject().getApprovingAbility() // ability that approved the cast is the source of the tapping.
         );

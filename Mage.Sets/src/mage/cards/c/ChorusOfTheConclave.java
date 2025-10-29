@@ -3,7 +3,6 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
@@ -16,6 +15,7 @@ import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.players.Player;
+import mage.target.targetpointer.FixedTarget;
 import mage.util.ManaUtil;
 
 import java.util.UUID;
@@ -94,11 +94,10 @@ class ChorusOfTheConclaveReplacementEffect extends ReplacementEffectImpl {
                 if (xCost <= 0) {
                     return false;
                 }
-                SpellAbility spellAbility;
                 MageObject spellObject = game.getObject(event.getSourceId());
                 if (spellObject instanceof Card) {
-                    spellAbility = ((Card) spellObject).getSpellAbility();
-                    game.addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance(xCost)), spellAbility);
+                    game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(xCost))
+                            .setTargetPointer(new FixedTarget(spellObject.getId(), game.getState().getZoneChangeCounter(spellObject.getId()) + 1)), source);
                 }
             }
         }

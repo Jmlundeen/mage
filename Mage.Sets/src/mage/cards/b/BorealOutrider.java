@@ -32,7 +32,7 @@ public final class BorealOutrider extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Whenever you cast a creature spell, if {S} of any of that spell's color was spent to cast it, that creature enters the battlefield with an additional +1/+1 counter on it.
-        Effect entersWithCountersEffect = new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+        Effect entersWithCountersEffect = new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
                 .withEventCondition((event, source, game, effect) -> {
                     Spell spell = (Spell) source.getEffects().get(0).getValue("spellCast");
                     return spell != null && event.getTargetId().equals(spell.getCard().getId());

@@ -23,7 +23,7 @@ public class AddCounterNextSpellDelayedTriggeredAbility extends CastNextSpellDel
     }
 
     public AddCounterNextSpellDelayedTriggeredAbility(int amount, FilterSpell filter) {
-        super(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(amount))
+        super(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(amount))
                 .withEventCondition((event, source, game, effect) -> {
                     Spell spell = (Spell) effect.getValue("spellCast");
                     return spell != null && event.getTargetId().equals(spell.getCard().getId());
@@ -31,7 +31,7 @@ public class AddCounterNextSpellDelayedTriggeredAbility extends CastNextSpellDel
                 .setText("that creature enters with " + CardUtil.numberToText(amount, "an") +
                         " additional +1/+1 counter" + (amount > 1 ? "s" : "") + " on it"),
                 filter,
-                false
+                true
         );
     }
 
