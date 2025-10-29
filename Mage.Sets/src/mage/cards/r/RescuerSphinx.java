@@ -35,7 +35,7 @@ public final class RescuerSphinx extends CardImpl {
 
         // As Rescuer Sphinx enters the battlefield, you may return a nonland permanent you control to its owner's hand. If you do, Rescuer Sphinx enters the battlefield with a +1/+1 counter on it.
         this.addAbility(new AsEntersBattlefieldAbility(new DoIfCostPaid(
-                new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance()),
+                new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance()),
                 new ReturnToHandChosenControlledPermanentCost(new TargetControlledPermanent(StaticFilters.FILTER_CONTROLLED_PERMANENT_NON_LAND)),
                 "Return a nonland permanent you control to its owner's hand for an additional counter?",
                 true

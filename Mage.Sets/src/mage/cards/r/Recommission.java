@@ -9,6 +9,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
+import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
@@ -72,9 +73,8 @@ class RecommissionEffect extends OneShotEffect {
         if (controller == null || card == null) {
             return false;
         }
-        game.addEffect(new EntersWithCountersEffect(
-                Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC,
-                CounterType.P1P1.createInstance()),
+        game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                        .setFilter(StaticFilters.FILTER_PERMANENT_CREATURE),
                 source);
         controller.moveCards(card, Zone.BATTLEFIELD, source, game);
         return true;

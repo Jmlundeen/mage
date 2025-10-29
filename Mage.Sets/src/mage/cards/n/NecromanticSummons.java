@@ -26,7 +26,7 @@ public final class NecromanticSummons extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.SORCERY}, "{4}{B}");
 
         this.getSpellAbility().addEffect(new ConditionalReplacementEffect(
-                new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(2)),
+                new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(2)),
                 SpellMasteryCondition.instance).setText(" ")
         );// has to be added before the moving effect
         // Put target creature card from a graveyard onto the battlefield under your control.

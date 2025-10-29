@@ -12,7 +12,6 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ContinuousAffected;
-import mage.constants.Duration;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.watchers.common.CastFromHandWatcher;
@@ -33,7 +32,7 @@ public final class Epochrasite extends CardImpl {
 
         // Epochrasite enters the battlefield with three +1/+1 counters on it if you didn't cast it from your hand.
         this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
-                        new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance(3)),
+                        new EntersWithCountersEffect(ContinuousAffected.SOURCE, CounterType.P1P1.createInstance(3)),
                         new InvertCondition(CastFromHandSourcePermanentCondition.instance))
                         .setText("{this} enters with three +1/+1 counters on it if you didn't cast it from your hand")),
                 new CastFromHandWatcher());

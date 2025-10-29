@@ -16,6 +16,7 @@ import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
+import mage.target.targetpointer.FixedTarget;
 import mage.watchers.Watcher;
 
 import java.util.UUID;
@@ -64,7 +65,8 @@ class GuildmagesForumWatcher extends Watcher {
                     && event.getSourceId().equals(this.getSourceId())
                     && target != null && target.isCreature(game) && target.getColor(game).isMulticolored()
                     && event.getFlag()) {
-                    game.getState().addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1.createInstance()),
+                    game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                                    .setTargetPointer(new FixedTarget(target, game)),
                         target.getSpellAbility());
             }
         }

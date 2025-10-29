@@ -17,6 +17,7 @@ import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
 import java.util.ArrayList;
@@ -24,6 +25,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * @author jmlundeen
+ */
 public class EntersWithCountersEffect extends ReplacementEffectImpl {
 
     /**
@@ -181,32 +185,37 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
 
     @Override
     public boolean applies(GameEvent event, Ability source, Game game) {
+        boolean result = false;
+        if (eventCondition != null) {
+            result = eventCondition.apply(event, source, game, this);
+        }
         switch (affected) {
             case SOURCE:
-                if (!event.getTargetId().equals(source.getSourceId())) {
-                    return false;
+                if (getTargetPointer() instanceof FixedTarget) {
+                    if (getTargetPointer().getFirst(game, source) == null) {
+                        discard();
+                        return false;
+                    }
                 }
+                result = getTargetPointer().getFirst(game, source) == event.getTargetId()
+                        || source.getSourceId().equals(event.getTargetId());
                 break;
             case STATIC_OR_DYNAMIC:
                 for (UUID targetId : getTargetPointer().getTargets(game, source)) {
                     if (event.getTargetId().equals(targetId)) {
-                        return true;
+                        result = true;
+                        break;
                     }
                 }
                 if (filter != null) {
                     Permanent permanent = game.getPermanentEntering(event.getTargetId());
-                    if (permanent == null || !filter.match(permanent, source.getControllerId(), source, game)) {
-                        return false;
-                    }
+                    result = permanent != null && filter.match(permanent, source.getControllerId(), source, game);
                 }
                 break;
             default:
                 return false;
         }
-        if (eventCondition != null) {
-            return eventCondition.apply(event, source, game, this);
-        }
-        return true;
+        return result;
     }
 
     @Override
@@ -410,6 +419,14 @@ public class EntersWithCountersEffect extends ReplacementEffectImpl {
 
     private String getAdditionalText() {
         return useNumberOfText ? " number of additional " : " additional ";
+    }
+
+    @Override
+    public void init(Ability source, Game game, UUID activePlayerId) {
+        super.init(source, game, activePlayerId);
+        if (affected == ContinuousAffected.SOURCE) {
+            this.setTargetPointer(new FixedTarget(source.getSourceId(), game));
+        }
     }
 
     @Override

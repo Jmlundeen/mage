@@ -120,7 +120,7 @@ class IntrepidPaleontologistWatcher extends Watcher {
                 && event.hasApprovingIdentifier(MageIdentifier.IntrepidPaleontologistWatcher)) {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
-                game.getState().addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.FINALITY.createInstance()),
+                game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.SOURCE, CounterType.FINALITY.createInstance()),
                         target.getSpellAbility());
             }
         }

@@ -21,6 +21,7 @@ import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
+import mage.target.targetpointer.FixedTarget;
 import mage.watchers.Watcher;
 
 import java.util.UUID;
@@ -115,7 +116,8 @@ class OsteomancerAdeptWatcher extends Watcher {
                 && event.hasApprovingIdentifier(MageIdentifier.OsteomancerAdeptAlternateCast)) {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
-                game.getState().addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.FINALITY.createInstance()),
+                game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.FINALITY.createInstance())
+                                .setTargetPointer(new FixedTarget(target, game)),
                         target.getSpellAbility());
             }
         }
