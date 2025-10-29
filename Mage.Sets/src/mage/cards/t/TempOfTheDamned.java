@@ -1,22 +1,25 @@
 
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
+import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.DoIfCostPaid;
+import mage.abilities.effects.common.SacrificeSourceEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -34,7 +37,14 @@ public final class TempOfTheDamned extends CardImpl {
         this.addAbility(new AsEntersBattlefieldAbility(new TempOfTheDamnedEffect()));
         
         // At the beginning of your upkeep, remove a funk counter from Temp of the Damned. If you can't, sacrifice it.
-        this.addAbility(new BeginningOfUpkeepTriggeredAbility(new TempOfTheDamnedUpkeepEffect()));
+        this.addAbility(new BeginningOfUpkeepTriggeredAbility(new DoIfCostPaid(
+                null,
+                new SacrificeSourceEffect(),
+                new RemoveCountersSourceCost(CounterType.FUNK.createInstance()),
+                "Remove a funk counter from {this}? If you can't, sacrifice it.",
+                false)
+                .setText("remove a funk counter from {this}. If you can't, sacrifice it")
+        ));
     }
 
     private TempOfTheDamned(final TempOfTheDamned card) {
@@ -47,6 +57,7 @@ public final class TempOfTheDamned extends CardImpl {
     }
 }
 
+// TODO: allow for roll dice effect -> remember result -> use dynamic value for result. So no custom effect needed.
 class TempOfTheDamnedEffect extends OneShotEffect {
 
     TempOfTheDamnedEffect() {
@@ -65,42 +76,12 @@ class TempOfTheDamnedEffect extends OneShotEffect {
 
     @Override
     public boolean apply(Game game, Ability source) {
+        Permanent permanent = game.getPermanentEntering(source.getSourceId());
         Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            return new AddCountersSourceEffect(CounterType.FUNK.createInstance(controller.rollDice(Outcome.Benefit, source, game, 6))).apply(game, source);
+        if (permanent != null && controller != null) {
+            int amount = controller.rollDice(outcome, source, game, 6);
+            game.addEnterWithCounters(permanent.getId(), CounterType.FUNK.createInstance(amount));
         }
         return false;
-    }
-}
-
-class TempOfTheDamnedUpkeepEffect extends OneShotEffect {
-
-    TempOfTheDamnedUpkeepEffect() {
-        super(Outcome.Sacrifice);
-        staticText = "remove a funk counter from {this}. If you can't, sacrifice it";
-    }
-
-    private TempOfTheDamnedUpkeepEffect(final TempOfTheDamnedUpkeepEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent != null) {
-            int amount = permanent.getCounters(game).getCount(CounterType.FUNK);
-            if (amount > 0) {
-                permanent.removeCounters(CounterType.FUNK.createInstance(), source, game);
-            } else {
-                permanent.sacrifice(source, game);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public TempOfTheDamnedUpkeepEffect copy() {
-        return new TempOfTheDamnedUpkeepEffect(this);
     }
 }

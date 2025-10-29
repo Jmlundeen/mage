@@ -5,7 +5,7 @@ import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.effects.common.SacrificeSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.constants.Zone;
@@ -24,7 +24,7 @@ public class VanishingAbility extends EntersBattlefieldAbility {
     private final int amount;
 
     public VanishingAbility(int amount) {
-        super(new AddCountersSourceEffect(CounterType.TIME.createInstance(amount)));
+        super(new EntersWithCountersEffect(CounterType.TIME.createInstance(amount)));
         this.amount = amount;
         this.addSubAbility(new BeginningOfUpkeepTriggeredAbility(
                 new RemoveCounterSourceEffect(CounterType.TIME.createInstance())

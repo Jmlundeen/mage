@@ -2,12 +2,12 @@ package mage.cards.t;
 
 import mage.MageInt;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.MultipliedValue;
 import mage.abilities.dynamicvalue.common.CommanderCastCountValue;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -42,10 +42,10 @@ public final class TheSwarmlord extends CardImpl {
         this.toughness = new MageInt(5);
 
         // Rapid Regeneration -- The Swarmlord enters the battlefield with two +1/+1 counters on it for each time you've cast your commander from the command zone this game.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(0), xValue, true),
-                "with two +1/+1 counters on it for each time you've cast your commander from the command zone this game"
-        ).addHint(CommanderCastCountValue.getHint()).withFlavorWord("Rapid Regeneration"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)
+                .setText("{this} enters with two +1/+1 counters on it for each time you've cast your commander from the command zone this game"))
+                .addHint(CommanderCastCountValue.getHint()).withFlavorWord("Rapid Regeneration")
+        );
 
         // Xenos Cunning -- Whenever a creature you control with a counter on it dies, draw a card.
         this.addAbility(new DiesCreatureTriggeredAbility(

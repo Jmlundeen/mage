@@ -8,8 +8,8 @@ import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.RemoveCounterCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
 import mage.abilities.effects.common.MillCardsControllerEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.choices.Choice;
@@ -49,10 +49,8 @@ public final class TayamLuminousEnigma extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Each other creature you control enters the battlefield with an additional vigilance counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                StaticFilters.FILTER_PERMANENT_CREATURE,
-                CounterType.VIGILANCE.createInstance(), true
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.VIGILANCE.createInstance())
+                .setFilter(StaticFilters.FILTER_OTHER_CONTROLLED_CREATURE)));
 
         // {3}, Remove three counters from among creatures you control: Put the top three cards of your library into your graveyard, then return a permanent card with converted mana cost 3 or less from your graveyard to the battlefield.
         Ability ability = new SimpleActivatedAbility(

@@ -2,16 +2,16 @@ package mage.cards.t;
 
 import mage.MageInt;
 import mage.abilities.common.AttacksTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.dynamicvalue.DynamicValue;
-import mage.abilities.dynamicvalue.common.HalfValue;
 import mage.abilities.dynamicvalue.common.GetXValue;
+import mage.abilities.dynamicvalue.common.HalfValue;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -44,9 +44,7 @@ public final class TheGooseMother extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // The Goose Mother enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
         // When The Goose Mother enters the battlefield, create half X Food tokens, rounded up.
         this.addAbility(new EntersBattlefieldTriggeredAbility(

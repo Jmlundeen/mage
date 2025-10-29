@@ -1,18 +1,19 @@
 package mage.cards.t;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
-import mage.abilities.effects.common.continuous.BoostSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.ContinuousAffected;
+import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
@@ -38,13 +39,12 @@ public final class TrawlerDrake extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Trawler Drake enters the battlefield with an oil counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.OIL.createInstance()),
-                "with an oil counter on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance())));
 
         // Trawler Drake gets +1/+1 for each oil counter on it.
-        this.addAbility(new SimpleStaticAbility(new BoostSourceEffect(xValue, xValue, Duration.WhileOnBattlefield)
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                .withAddPower(xValue)
+                .withAddToughness(xValue)
                 .setText("{this} gets +1/+1 for each oil counter on it")));
 
         // Whenever you cast a noncreature spell, put an oil counter on Trawler Drake.

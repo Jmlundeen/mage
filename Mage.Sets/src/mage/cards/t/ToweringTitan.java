@@ -3,13 +3,13 @@ package mage.cards.t;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.continuous.GainAbilityAllEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DefenderAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -23,7 +23,6 @@ import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.mageobject.AbilityPredicate;
 import mage.game.Game;
-import mage.target.common.TargetControlledPermanent;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -48,9 +47,9 @@ public final class ToweringTitan extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Towering Titan enters the battlefield with X +1/+1 counters on it, where X is the total toughness of other creatures you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), ToweringTitanCount.instance, false
-        ), "with X +1/+1 counters on it, where X is the total toughness of other creatures you control"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, ToweringTitanCount.instance)
+                .withXText()
+        ));
 
         // Sacrifice a creature with defender: All creatures gain trample until end of turn.
         this.addAbility(new SimpleActivatedAbility(
@@ -94,7 +93,12 @@ enum ToweringTitanCount implements DynamicValue {
     }
 
     @Override
+    public String toString() {
+        return "X";
+    }
+
+    @Override
     public String getMessage() {
-        return "";
+        return "the total toughness of other creatures you control";
     }
 }

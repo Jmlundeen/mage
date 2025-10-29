@@ -3,12 +3,12 @@ package mage.cards.t;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.SourcePermanentPowerValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlashAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -36,10 +36,9 @@ public final class ThoughtSponge extends CardImpl {
         this.addAbility(FlashAbility.getInstance());
 
         // Thought Sponge enters the battlefield with a number of +1/+1 counters on it equal to the greatest number of cards an opponent has drawn this turn.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), ThoughtSpongeValue.instance, false
-        ), "with a number of +1/+1 counters on it equal to " +
-                "the greatest number of cards an opponent has drawn this turn"
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, ThoughtSpongeValue.instance)
+                        .setText("{this} enters with a number of +1/+1 counters on it equal to " +
+                "the greatest number of cards an opponent has drawn this turn")
         ));
 
         // When Thought Sponge dies, draw cards equal to its power.

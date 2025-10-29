@@ -4,7 +4,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.dynamicvalue.common.LandsYouControlCount;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -13,8 +13,6 @@ import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -91,51 +89,12 @@ class TheFirstTyrannicWarFirstEffect extends OneShotEffect {
             return false;
         }
         if (card.getManaCostSymbols().stream().anyMatch(s -> s.contains("{X}"))) {
-            game.addEffect(new TheFirstTyrannicWarReplacementEffect()
+            game.addEffect(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1, LandsYouControlCount.instance)
                     .setTargetPointer(new FixedTarget(card, game)), source);
         }
         return player.moveCards(card, Zone.BATTLEFIELD, source, game);
     }
 }
-
-class TheFirstTyrannicWarReplacementEffect extends ReplacementEffectImpl {
-
-    TheFirstTyrannicWarReplacementEffect() {
-        super(Duration.EndOfStep, Outcome.BoostCreature);
-    }
-
-    private TheFirstTyrannicWarReplacementEffect(final TheFirstTyrannicWarReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return event.getTargetId().equals(getTargetPointer().getFirst(game, source));
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (creature != null) {
-            creature.addCounters(CounterType.P1P1.createInstance(
-                    LandsYouControlCount.instance.calculate(game, source, this)
-            ), source.getControllerId(), source, game, event.getAppliedEffects());
-            discard();
-        }
-        return false;
-    }
-
-    @Override
-    public TheFirstTyrannicWarReplacementEffect copy() {
-        return new TheFirstTyrannicWarReplacementEffect(this);
-    }
-}
-
 
 class TheFirstTyrannicWarSecondEffect extends OneShotEffect {
 
