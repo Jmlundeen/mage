@@ -39,7 +39,7 @@ public class LookAtAndPlayExiledWithThisTest extends CardTestPlayerBase {
     }
 
     private void checkExiledCardView(String expectedCardName, boolean shouldOppSee) {
-        Card card = currentGame.getExile().getAllCards(currentGame, playerB.getId()).get(0);
+        Card card = currentGame.getExile().getCardsOwned(currentGame, playerB.getId()).get(0);
         GameView gameView = getGameView(playerA);
         CardView controllerView = gameView.getExile()
                 .stream()

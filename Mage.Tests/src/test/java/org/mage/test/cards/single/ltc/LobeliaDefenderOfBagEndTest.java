@@ -33,7 +33,7 @@ public class LobeliaDefenderOfBagEndTest extends CardTestPlayerBase {
         waitStackResolved(2, PhaseStep.PRECOMBAT_MAIN);
 
         runCode("face down exile", 2, PhaseStep.PRECOMBAT_MAIN, playerB, ((info, player, game) -> {
-            Card card = currentGame.getExile().getAllCards(currentGame, playerB.getId()).get(0);
+            Card card = currentGame.getExile().getCardsOwned(currentGame, playerB.getId()).get(0);
             GameView gameView = getGameView(playerA);
             CardView ownerView = gameView.getExile()
                     .stream()
