@@ -1537,7 +1537,7 @@ public final class CardUtil {
         } else {
             chosenAbility = player.chooseAbilityForCast(cardToCast, game, true);
         }
-        boolean result = false;
+        boolean result;
         if (chosenAbility instanceof SpellAbility) {
             result = player.cast(
                     (SpellAbility) chosenAbility,
@@ -1546,6 +1546,8 @@ public final class CardUtil {
         } else if (playLand && chosenAbility instanceof PlayLandAbility) {
             Card land = game.getCard(chosenAbility.getSourceId());
             result = player.playLand(land, game, true);
+        } else {
+            result = false;
         }
         partsToCast.forEach(card -> game.getState().setValue("PlayFromNotOwnHandZone" + card.getId(), null));
         if (result && spellCastTracker != null) {

@@ -2546,6 +2546,7 @@ public class ScryfallImageSupportTokens {
 
             // DSK
             put("DSK/Beast", "https://api.scryfall.com/cards/tdsk/3?format=image");
+            put("DSK/Demon", "https://api.scryfall.com/cards/tdsk/9?format=image");
             put("DSK/Emblem Kaito", "https://api.scryfall.com/cards/tdsk/17/en?format=image");
             put("DSK/Everywhere", "https://api.scryfall.com/cards/tdsk/16?format=image");
             put("DSK/Glimmer", "https://api.scryfall.com/cards/tdsk/4?format=image");
@@ -2558,6 +2559,7 @@ public class ScryfallImageSupportTokens {
             put("DSK/Spider", "https://api.scryfall.com/cards/tdsk/12?format=image");
             put("DSK/Spirit/1", "https://api.scryfall.com/cards/tdsk/6?format=image");
             put("DSK/Spirit/2", "https://api.scryfall.com/cards/tdsk/8?format=image");
+            put("DSK/Toy", "https://api.scryfall.com/cards/tdsk/7?format=image");
             put("DSK/Treasure", "https://api.scryfall.com/cards/tdsk/15?format=image");
 
             // DSC
@@ -2817,6 +2819,14 @@ public class ScryfallImageSupportTokens {
             put("EOC/Phyrexian", "https://api.scryfall.com/cards/teoc/15/en?format=image&face=back");
             put("EOC/Shapeshifter", "https://api.scryfall.com/cards/teoc/2/en?format=image");
             put("EOC/Thopter", "https://api.scryfall.com/cards/teoc/16/en?format=image");
+
+            // SPM
+            put("SPM/Food", "https://api.scryfall.com/cards/tspm/5?format=image");
+            put("SPM/Human", "https://api.scryfall.com/cards/tspm/4?format=image");
+            put("SPM/Illusion", "https://api.scryfall.com/cards/tspm/2?format=image");
+            put("SPM/Robot", "https://api.scryfall.com/cards/tspm/6?format=image");
+            put("SPM/Spider", "https://api.scryfall.com/cards/tspm/3?format=image");
+            put("SPM/Treasure", "https://api.scryfall.com/cards/tspm/7?format=image");
 
             // JVC
             put("JVC/Elemental Shaman", "https://api.scryfall.com/cards/tjvc/4?format=image");
