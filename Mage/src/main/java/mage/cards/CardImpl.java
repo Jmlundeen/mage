@@ -595,41 +595,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
-    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
-        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
-        if (!game.replaceEvent(event)) {
-            setFaceDown(false);
-            for (Ability ability : abilities) { // abilities that were set to not visible face down must be set to visible again
-                if (ability.getWorksFaceDown() && !ability.getRuleVisible()) {
-                    ability.setRuleVisible(true);
-                }
-            }
-            // The current face down implementation is just setting a boolean, so any trigger checking for a
-            // permanent property once being turned face up is not seeing the right face up data.
-            // For instance triggers looking for specific subtypes being turned face up (Detectives in MKM set)
-            // are broken without that processAction call.
-            // This is somewhat a band-aid on the special action nature of turning a permanent face up.
-            // 708.8. As a face-down permanent is turned face up, its copiable values revert to its normal copiable values.
-            // Any effects that have been applied to the face-down permanent still apply to the face-up permanent.
-            game.processAction();
-            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_UP, getId(), source, playerId));
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
-        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_DOWN, getId(), source, playerId);
-        if (!game.replaceEvent(event)) {
-            setFaceDown(true);
-            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_DOWN, getId(), source, playerId));
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public boolean isTransformable() {
         // warning, not all multifaces cards can be transformable (meld, mdfc)
         // mtg rules method: here

@@ -773,15 +773,7 @@ public class Spell extends StackObjectImpl implements Card {
         faceDown = value;
     }
 
-    @Override
-    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
-        throw new IllegalStateException("Spells un-support turn face up commands");
-    }
 
-    @Override
-    public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
-        throw new IllegalStateException("Spells un-support turn face up commands");
-    }
 
     @Override
     public boolean isFaceDown() {

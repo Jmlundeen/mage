@@ -12,11 +12,11 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.RequirementEffect;
 import mage.abilities.effects.RestrictionEffect;
 import mage.abilities.effects.common.RegenerateSourceEffect;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.hint.HintUtils;
 import mage.abilities.keyword.*;
 import mage.cards.Card;
 import mage.cards.CardImpl;
+import mage.cards.CardsImpl;
 import mage.constants.*;
 import mage.counters.Counter;
 import mage.counters.CounterType;
@@ -1253,12 +1253,6 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     public boolean entersBattlefield(Ability source, Game game, Zone fromZone, boolean fireEvent) {
         controlledFromStartOfControllerTurn = false;
 
-        BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.findFaceDownType(game, this);
-        if (faceDownType != null) {
-            // remove some attributes here, because first apply effects comes later otherwise abilities (e.g. color related) will unintended trigger
-            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, null, this, faceDownType, null);
-        }
-
         // own etb event
         // 616.1a
         // If any of the replacement and/or prevention effects are self-replacement effects (see rule 614.15),
@@ -2142,5 +2136,43 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
+        if (!this.getBasicMageObject().isPermanent()){
+            // 701.34g. If a manifested permanent that's represented by an instant or sorcery card would turn face up,
+            //   its controller reveals it and leaves it face down. Abilities that trigger whenever a permanent
+            //   is turned face up won't trigger.
+            Player player = game.getPlayer(source.getControllerId());
+            if (player != null) {
+                player.revealCards(source, new CardsImpl(this), game);
+            }
+            return false;
+        }
+        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
+        if (!game.replaceEvent(event)) {
+            setFaceDown(false);
+            setManifested(false);
+            setMorphed(false);
+            setDisguised(false);
+            setCloaked(false);
+            this.reset(game);
+            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_UP, getId(), source, playerId));
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
+        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_DOWN, getId(), source, playerId);
+        if (!game.replaceEvent(event)) {
+            setFaceDown(true);
+            this.reset(game);
+            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_DOWN, getId(), source, playerId));
+            return true;
+        }
+        return false;
     }
 }

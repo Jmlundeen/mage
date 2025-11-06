@@ -11,7 +11,6 @@ import mage.cards.*;
 import mage.constants.SpellAbilityType;
 import mage.game.Game;
 import mage.game.events.ZoneChangeEvent;
-import mage.players.Player;
 
 import java.util.UUID;
 
@@ -59,6 +58,8 @@ public class PermanentCard extends PermanentImpl {
         // face down cards allows in any forms (only face up restricted for non-permanents)
         if (card.isFaceDown()) {
             goodForBattlefield = true;
+            this.faceDown = true;
+            this.faceDownValues = card.getFaceDownValues();
         }
 
         if (!goodForBattlefield) {
@@ -106,27 +107,40 @@ public class PermanentCard extends PermanentImpl {
     public void reset(Game game) {
         // when the permanent is reset, copy all original values from the card
         // must copy card each reset so that the original values don't get modified
-        copyFromCard(card, game);
         power.resetToBaseValue();
         toughness.resetToBaseValue();
+        copyFromCard(card, game);
         super.reset(game);
     }
 
     protected void copyFromCard(final Card card, final Game game) {
         // TODO: must research - is it copy all fields or something miss
-        this.name = card.getName();
-        this.abilities.clear();
         if (this.faceDown) {
-            for (Ability ability : card.getAbilities()) {
-                if (ability.getWorksFaceDown()) {
-                    this.abilities.add(ability.copy());
-                }
-            }
-        } else {
-            // copy only own abilities; all dynamic added abilities must be added in the parent call
-            this.abilities = card.getAbilities().copy();
-            this.spellAbility = null; // will be set on first getSpellAbility call if card has one.
+            this.name = faceDownValues.getName();
+            this.manaCost = faceDownValues.getManaCost().copy();
+            this.color = faceDownValues.getColor().copy();
+            this.cardType.clear();
+            this.cardType.addAll(faceDownValues.getCardType());
+            this.supertype.clear();
+            this.supertype.addAll(faceDownValues.getSuperType());
+            this.subtype.copyFrom(faceDownValues.getSubtype());
+            this.abilities = faceDownValues.getAbilities().copy();
+            this.abilities.setControllerId(this.controllerId);
+            this.abilities.setSourceId(objectId);
+            this.power.setModifiedBaseValue(faceDownValues.getPower().getValue());
+            this.toughness.setModifiedBaseValue(faceDownValues.getToughness().getValue());
+            this.setExpansionSetCode(faceDownValues.getExpansionSetCode());
+            this.setUsesVariousArt(faceDownValues.getUsesVariousArt());
+            this.setCardNumber(faceDownValues.getCardNumber());
+            this.setImageFileName(faceDownValues.getImageFileName());
+            this.setImageNumber(faceDownValues.getImageNumber());
+            return;
         }
+        this.name = card.getName();
+        // copy only own abilities; all dynamic added abilities must be added in the parent call
+        this.abilities = card.getAbilities().copy();
+        this.spellAbility = null; // will be set on first getSpellAbility call if card has one.
+
         this.abilities.setControllerId(this.controllerId);
         this.abilities.setSourceId(objectId);
         this.cardType.clear();
@@ -178,30 +192,7 @@ public class PermanentCard extends PermanentImpl {
         return this.maxLevelCounters;
     }
 
-    @Override
-    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
-        if (!this.getBasicMageObject().isPermanent()){
-            // 701.34g. If a manifested permanent that's represented by an instant or sorcery card would turn face up,
-            //   its controller reveals it and leaves it face down. Abilities that trigger whenever a permanent
-            //   is turned face up won't trigger.
-            Player player = game.getPlayer(source.getControllerId());
-            if (player != null) {
-                player.revealCards(source, new CardsImpl(this), game);
-            }
-            return false;
-        }
-        if (super.turnFaceUp(source, game, playerId)) {
-            // TODO: miss types, abilities, color and other things for restore?!
-            power.setModifiedBaseValue(power.getBaseValue());
-            toughness.setModifiedBaseValue(toughness.getBaseValue());
-            setManifested(false);
-            setMorphed(false);
-            setDisguised(false);
-            setCloaked(false);
-            return true;
-        }
-        return false;
-    }
+
 
     @Override
     public ManaCosts<ManaCost> getManaCost() {

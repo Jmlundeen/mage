@@ -484,6 +484,12 @@ public interface Permanent extends Card, Controllable {
 
     boolean unlockDoor(Game game, Ability source, boolean isLeftDoor);
     
+
+    boolean turnFaceUp(Ability source, Game game, UUID playerId);
+
+    // TODO: need research, is it lost morph and other face down statuses?
+    boolean turnFaceDown(Ability source, Game game, UUID playerId);
+
     @Override
     Permanent copy();
 
