@@ -9,6 +9,7 @@ import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.mana.ActivatedManaAbilityImpl;
+import mage.cards.CopiableValues;
 import mage.cards.FrameStyle;
 import mage.cards.mock.MockCard;
 import mage.constants.*;
@@ -53,6 +54,7 @@ public abstract class MageObjectImpl implements MageObject {
 
     protected boolean copy;
     protected MageObject copyFrom; // copied card INFO (used to call original adjusters)
+    protected CopiableValues faceDownValues = new CopiableValues();
     protected boolean faceDown;
 
     public MageObjectImpl() {
@@ -93,6 +95,7 @@ public abstract class MageObjectImpl implements MageObject {
         supertype.addAll(object.supertype);
         this.copy = object.copy;
         this.copyFrom = (object.copyFrom != null ? object.copyFrom.copy() : null);
+        this.faceDownValues = object.faceDownValues.copy();
         this.faceDown = object.faceDown;
     }
 
@@ -408,6 +411,9 @@ public abstract class MageObjectImpl implements MageObject {
     }
 
     @Override
+    public CopiableValues getFaceDownValues() {
+        return faceDownValues;
+    }
 
     @Override
     public boolean isFaceDown() {

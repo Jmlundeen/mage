@@ -3,6 +3,7 @@ package mage.abilities.effects.common.continuous;
 import mage.MageObject;
 import mage.MageObjectReference;
 import mage.ObjectColor;
+import mage.abilities.Abilities;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.TurnFaceUpAbility;
@@ -13,18 +14,17 @@ import mage.abilities.costs.CostsImpl;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.InfoEffect;
+import mage.abilities.keyword.DisguiseAbility;
+import mage.abilities.keyword.MorphAbility;
 import mage.abilities.keyword.WardAbility;
 import mage.cards.Card;
-import mage.cards.CardImpl;
+import mage.cards.CopiableValues;
 import mage.cards.ModalDoubleFacedCard;
 import mage.cards.repository.TokenInfo;
 import mage.cards.repository.TokenRepository;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
-import mage.game.permanent.token.EmptyToken;
-import mage.game.permanent.token.Token;
-import mage.util.CardUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -250,76 +250,43 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
     public static void makeFaceDownObject(Game game, UUID sourceId, MageObject object, FaceDownType faceDownType, List<Ability> additionalAbilities) {
         String originalObjectInfo = object.toString();
 
-        // warning, it's a direct changes to the object (without game state, so no game param here)
-        object.setName(EmptyNames.FACE_DOWN_CREATURE.getObjectName());
-        object.removeAllSuperTypes();
-        object.getSubtype().clear();
-        object.removeAllCardTypes();
-        object.addCardType(CardType.CREATURE);
-        object.getColor().setColor(ObjectColor.COLORLESS);
+        CopiableValues faceDownValues = object.getFaceDownValues();
+        faceDownValues.clear();
 
-        // remove wrong abilities
-        Card card = game.getCard(object.getId());
-        List<Ability> abilitiesToRemove = new ArrayList<>();
-        for (Ability ability : object.getAbilities()) {
+        faceDownValues.setName(EmptyNames.FACE_DOWN_CREATURE.getObjectName());
+        faceDownValues.getCardType().add(CardType.CREATURE);
+        faceDownValues.getColor().setColor(ObjectColor.COLORLESS);
 
-            // keep gained abilities from other sources, removes only own (card text)
-            if (card != null && !card.getAbilities().contains(ability) && !object.isCopy()) {
-                continue;
-            }
+        Abilities<Ability> abilities = object instanceof Permanent
+                ? ((Permanent) object).getCopiableValues().getAbilities()
+                : object.getAbilities();
+        for (Ability ability : abilities) {
 
             // 701.33c
             // If a card with morph is manifested, its controller may turn that card face up using
             // either the procedure described in rule 702.36e to turn a face-down permanent with morph face up
             // or the procedure described above to turn a manifested permanent face up.
 
-            // keep face down abilities active, but hide it from rules description
-            if (ability.getWorksFaceDown()) {
-
-                // example: When Dog Walker is turned face up, create two tapped 1/1 white Dog creature tokens
-                ability.setRuleVisible(false);
-
-                // becomes a 2/2 face-down creature - it hides a real ability too, but adds fake rule, see
-                if (!ability.getEffects().isEmpty()) {
-                    if (ability.getEffects().get(0) instanceof BecomesFaceDownCreatureEffect) {
-                        // enable for stack
-                        ability.setRuleVisible(true);
-                    }
+            // Add a turn face up ability if there is a morph/disguise ability
+            if (ability instanceof MorphAbility || ability instanceof DisguiseAbility) {
+                Costs<Cost> faceUpCosts;
+                if (ability instanceof MorphAbility) {
+                    faceUpCosts = ((MorphAbility) ability).getFaceUpCosts();
+                } else {
+                    faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
+                    faceUpCosts = ((DisguiseAbility) ability).getFaceUpCosts();
                 }
-                continue;
-            }
-
-            // all other can be removed
-            abilitiesToRemove.add(ability);
-        }
-
-        // add additional abilities like face up (real ability hidden and duplicated with information without cost data)
-        if (object instanceof Permanent) {
-            // as permanent
-            Permanent permanentObject = (Permanent) object;
-            permanentObject.removeAbilities(abilitiesToRemove, sourceId, game);
-            if (additionalAbilities != null) {
-                additionalAbilities.forEach(blueprintAbility -> {
-                    Ability newAbility = blueprintAbility.copy();
-                    newAbility.setRuleVisible(CardUtil.isInformationAbility(newAbility));
-                    permanentObject.addAbility(newAbility, sourceId, game);
-                });
-            }
-        } else if (object instanceof CardImpl) {
-            // as card
-            CardImpl cardObject = (CardImpl) object;
-            cardObject.getAbilities().removeAll(abilitiesToRemove);
-            if (additionalAbilities != null) {
-                additionalAbilities.forEach(blueprintAbility -> {
-                    Ability newAbility = blueprintAbility.copy();
-                    newAbility.setRuleVisible(CardUtil.isInformationAbility(newAbility));
-                    cardObject.addAbility(newAbility);
-                });
+                boolean isMegaMorph = (ability instanceof MorphAbility && ((MorphAbility) ability).isMegamorph());
+                TurnFaceUpAbility turnFaceUpAbility = new TurnFaceUpAbility(faceUpCosts, isMegaMorph);
+                faceDownValues.getAbilities().add(turnFaceUpAbility);
             }
         }
+        if (faceDownType == FaceDownType.CLOAKED) {
+            faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
+        }
 
-        object.getPower().setModifiedBaseValue(2);
-        object.getToughness().setModifiedBaseValue(2);
+        faceDownValues.getPower().setModifiedBaseValue(2);
+        faceDownValues.getToughness().setModifiedBaseValue(2);
 
         // image
         String tokenName;
@@ -344,25 +311,20 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
                 throw new IllegalArgumentException("Un-supported face down type for image: " + faceDownType);
         }
 
-        Token faceDownToken = new EmptyToken();
         TokenInfo faceDownInfo = TokenRepository.instance.findPreferredTokenInfoForXmage(tokenName, object.getId());
         if (faceDownInfo != null) {
-            faceDownToken.setExpansionSetCode(faceDownInfo.getSetCode());
-            faceDownToken.setUsesVariousArt(false);
-            faceDownToken.setCardNumber("0");
-            faceDownToken.setImageFileName(faceDownInfo.getName());
-            faceDownToken.setImageNumber(faceDownInfo.getImageNumber());
+            faceDownValues.setImageFileName(faceDownInfo.getName());
+            faceDownValues.setExpansionSetCode(faceDownInfo.getSetCode());
+            faceDownValues.setUsesVariousArt(false);
+            faceDownValues.setCardNumber("0");
+            faceDownValues.setImageNumber(faceDownInfo.getImageNumber());
         } else {
             logger.error("Can't find face down image for " + tokenName + ": " + originalObjectInfo);
             // TODO: add default image like backface (warning, missing image info must be visible in card popup)?
         }
+        // TODO: fix copySetAndCardNumber method to work with copiable values
+//        CardUtil.copySetAndCardNumber(object, faceDownToken);
 
-        CardUtil.copySetAndCardNumber(object, faceDownToken);
-
-        // hide rarity info
-        if (object instanceof Card) {
-            ((Card) object).setRarity(Rarity.SPECIAL);
-        }
     }
 
     /**

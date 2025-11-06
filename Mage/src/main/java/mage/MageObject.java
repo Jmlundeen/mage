@@ -4,7 +4,9 @@ import mage.abilities.Abilities;
 import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.cards.Card;
+import mage.cards.CopiableValues;
 import mage.cards.FrameStyle;
 import mage.constants.CardType;
 import mage.constants.SubType;
@@ -619,6 +621,12 @@ public interface MageObject extends MageItem, Serializable, Copyable<MageObject>
     void setIsAllNonbasicLandTypes(Game game, boolean value);
 
     void removePTCDA();
+
+    /**
+     * Get the face down characteristics of this object
+     * @return {@link CopiableValues}
+     */
+    CopiableValues getFaceDownValues();
 
     /**
      * Denotes if the object is face down
