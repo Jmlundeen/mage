@@ -350,12 +350,18 @@ public interface Permanent extends Card, Controllable {
      * Removes this permanent from combat
      *
      * @param game
-     * @param withEvent true if removed from combat by an effect (default)
-     *                  false if removed because it left the battlefield
      * @return true if permanent was attacking or blocking
      */
     boolean removeFromCombat(Game game);
 
+    /**
+     * Removes this permanent from combat
+     *
+     * @param game
+     * @param withEvent true if removed from combat by an effect (default)
+     *                  false if removed because it left the battlefield
+     * @return true if permanent was attacking or blocking
+     */
     boolean removeFromCombat(Game game, boolean withEvent);
 
     boolean isDeathtouched();
