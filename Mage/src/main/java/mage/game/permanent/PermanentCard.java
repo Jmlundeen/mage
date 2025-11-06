@@ -57,7 +57,7 @@ public class PermanentCard extends PermanentImpl {
         }
 
         // face down cards allows in any forms (only face up restricted for non-permanents)
-        if (card.isFaceDown(game)) {
+        if (card.isFaceDown()) {
             goodForBattlefield = true;
         }
 

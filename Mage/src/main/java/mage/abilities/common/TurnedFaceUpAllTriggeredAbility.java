@@ -58,7 +58,7 @@ public class TurnedFaceUpAllTriggeredAbility extends TriggeredAbilityImpl {
         if (!event.getTargetId().equals(getSourceId())) {
             MageObject sourceObj = this.getSourceObject(game);
             if (sourceObj != null) {
-                if (sourceObj instanceof Card && ((Card) sourceObj).isFaceDown(game)) {
+                if (sourceObj instanceof Card && ((Card) sourceObj).isFaceDown()) {
                     // if face down and it's not itself that is turned face up, it does not trigger
                     return false;
                 }

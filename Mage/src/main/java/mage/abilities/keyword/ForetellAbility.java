@@ -146,7 +146,7 @@ public class ForetellAbility extends SpecialAction {
         // All card types (including lands) must be exiled
         UUID exileId = CardUtil.getExileZoneId(card.getMainCard().getId().toString() + "foretellAbility", game);
         controller.moveCardsToExile(card, source, game, false, exileId, " Foretell Turn Number: " + game.getTurnNum());
-        card.setFaceDown(true, game);
+        card.setFaceDown(true);
 
         // all done pre-processing so stick the foretell cost effect onto the main card
         // note that the card is not foretell'd into exile, it is put into exile and made foretold
@@ -221,7 +221,7 @@ class ForetellExileEffect extends OneShotEffect {
                 effect.setWithName(false);
                 effect.setTargetPointer(new FixedTarget(card.getId(), game));
                 effect.apply(game, source);
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
                 game.getExile().getExileZone(exileId)
                         .letPlayerSeeCards(controller.getId(), card);
                 game.addEffect(new ForetellAddCostEffect(new MageObjectReference(card, game)), source);

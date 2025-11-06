@@ -595,20 +595,10 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
-    public void setFaceDown(boolean value, Game game) {
-        game.getState().getCardState(objectId).setFaceDown(value);
-    }
-
-    @Override
-    public boolean isFaceDown(Game game) {
-        return game.getState().getCardState(objectId).isFaceDown();
-    }
-
-    @Override
     public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
         GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
         if (!game.replaceEvent(event)) {
-            setFaceDown(false, game);
+            setFaceDown(false);
             for (Ability ability : abilities) { // abilities that were set to not visible face down must be set to visible again
                 if (ability.getWorksFaceDown() && !ability.getRuleVisible()) {
                     ability.setRuleVisible(true);
@@ -632,7 +622,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
         GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_DOWN, getId(), source, playerId);
         if (!game.replaceEvent(event)) {
-            setFaceDown(true, game);
+            setFaceDown(true);
             game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_DOWN, getId(), source, playerId));
             return true;
         }

@@ -184,7 +184,7 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
                 permanent = game.getPermanent(source.getSourceId());
             }
             if (permanent != null) {
-                permanent.setFaceDown(true, game);
+                permanent.setFaceDown(true);
             }
         }
     }
@@ -198,7 +198,7 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             permanent = game.getPermanent(source.getSourceId());
         }
 
-        if (permanent != null && permanent.isFaceDown(game)) {
+        if (permanent != null && permanent.isFaceDown()) {
             if (!foundPermanent) {
                 foundPermanent = true;
                 switch (faceDownType) {
@@ -237,7 +237,7 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             return BecomesFaceDownCreatureEffect.FaceDownType.MANIFESTED;
         } else if (permanent.isCloaked()) {
             return BecomesFaceDownCreatureEffect.FaceDownType.CLOAKED;
-        } else if (permanent.isFaceDown(game)) {
+        } else if (permanent.isFaceDown()) {
             return BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
         } else {
             return null;

@@ -91,7 +91,7 @@ class CrowdControlWardenReplacementEffect extends ReplacementEffectImpl {
         if (event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD) {
             if (event.getTargetId().equals(source.getSourceId())) {
                 Permanent sourcePermanent = ((EntersTheBattlefieldEvent) event).getTarget();
-                if (sourcePermanent != null && !sourcePermanent.isFaceDown(game)) {
+                if (sourcePermanent != null && !sourcePermanent.isFaceDown()) {
                     return true;
                 }
             }

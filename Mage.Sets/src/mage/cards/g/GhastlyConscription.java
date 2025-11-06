@@ -8,11 +8,11 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
-import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetPlayer;
+import mage.util.CardUtil;
 
 import java.util.*;
 
@@ -69,8 +69,7 @@ class GhastlyConscriptionEffect extends OneShotEffect {
         List<Card> cardsToManifest = new ArrayList<>();
         for (Card card : targetPlayer.getGraveyard().getCards(StaticFilters.FILTER_CARD_CREATURE, game)) {
             cardsToManifest.add(card);
-            controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.GRAVEYARD, true);
-            card.setFaceDown(true, game);
+            CardUtil.moveCardsToExileFaceDown(game, source, controller, card, false);
         }
         if (cardsToManifest.isEmpty()) {
             return true;

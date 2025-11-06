@@ -59,7 +59,7 @@ public class GontiNightMinisterTest extends CardTestCommander4Players {
         runCode("only playerA can see fugitive wizard", 1, PhaseStep.POSTCOMBAT_MAIN, playerA, (info, player, game) -> {
             for (ExileZone zone : game.getExile().getExileZones()) {
                 for (Card card : zone.getCards(game)) {
-                    if (card.isFaceDown(game)) {
+                    if (card.isFaceDown()) {
                         assertTrue("player A can see the card", zone.isPlayerAllowedToSeeCard(playerA.getId(), card));
                         assertFalse("player B can not see the card", zone.isPlayerAllowedToSeeCard(playerB.getId(), card));
                         assertFalse("player C can not see the card", zone.isPlayerAllowedToSeeCard(playerC.getId(), card));
@@ -74,7 +74,7 @@ public class GontiNightMinisterTest extends CardTestCommander4Players {
         runCode("only playerD can see fugitive wizard", 2, PhaseStep.POSTCOMBAT_MAIN, playerA, (info, player, game) -> {
             for (ExileZone zone : game.getExile().getExileZones()) {
                 for (Card card : zone.getCards(game)) {
-                    if (card.isFaceDown(game)) {
+                    if (card.isFaceDown()) {
                         assertTrue("player D can see the card", zone.isPlayerAllowedToSeeCard(playerD.getId(), card));
                         assertFalse("player A can not see the card", zone.isPlayerAllowedToSeeCard(playerA.getId(), card));
                         assertFalse("player B can not see the card", zone.isPlayerAllowedToSeeCard(playerB.getId(), card));

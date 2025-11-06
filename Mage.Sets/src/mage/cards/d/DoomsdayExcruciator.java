@@ -88,8 +88,7 @@ class DoomsdayExcruciatorEffect extends OneShotEffect {
         }
         controller.moveCards(cards, Zone.EXILED, source, game);
         cards.getCards(game)
-                .stream()
-                .forEach(card -> card.setFaceDown(true, game));
+                .forEach(card -> card.setFaceDown(true));
         return true;
     }
 }

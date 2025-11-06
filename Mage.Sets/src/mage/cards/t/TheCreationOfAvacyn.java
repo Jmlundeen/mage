@@ -80,12 +80,12 @@ class TheCreationOfAvacynOneEffect extends OneShotEffect {
             Card card = controller.getLibrary().getCard(target.getFirstTarget(), game);
             if (card != null) {
                 // exile it face down
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
                 UUID exileId = CardUtil.getExileZoneId(game, source);
                 MageObject sourceObject = source.getSourceObject(game);
                 String exileName = sourceObject != null ? sourceObject.getName() : "";
                 controller.moveCardsToExile(card, source, game, false, exileId, exileName);
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
 
                 // then shuffle
                 controller.shuffleLibrary(source, game);
@@ -127,7 +127,7 @@ class TheCreationOfAvacynTwoEffect extends OneShotEffect {
         boolean creatureCard = false;
         int mv = 0;
         for (Card card : exileZone.getCards(game)) {
-            card.setFaceDown(false, game);
+            card.setFaceDown(false);
             creatureCard |= card.isCreature(game);
             mv += card.getManaValue();
         }

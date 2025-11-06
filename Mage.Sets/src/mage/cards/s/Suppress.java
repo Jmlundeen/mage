@@ -74,7 +74,7 @@ class SuppressEffect extends OneShotEffect {
         cards.getCards(game)
                 .stream()
                 .filter(card -> game.getState().getZone(card.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true, game));
+                .forEach(card -> card.setFaceDown(true));
         DelayedTriggeredAbility ability = new AtTheBeginOfPlayersNextEndStepDelayedTriggeredAbility(
                 new ReturnFromExileEffect(Zone.HAND).setText("that player returns those cards to their hand"), player.getId()
         ).setTriggerPhrase("At the beginning of the end step of that player's next turn, ");

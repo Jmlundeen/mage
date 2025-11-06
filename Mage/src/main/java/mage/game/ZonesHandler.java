@@ -389,7 +389,7 @@ public final class ZonesHandler {
 
         // TODO: is it buggy? Card characteristics are global - if you change face down then it will be
         //  changed in original card too, not in blueprint only
-        card.setFaceDown(info.faceDown, game);
+        card.setFaceDown(info.faceDown);
 
         boolean success = false;
         if (!game.replaceEvent(event)) {
@@ -430,13 +430,6 @@ public final class ZonesHandler {
                     if (spell != null) {
                         permanent.setPrototyped(spell.isPrototyped());
                     }
-                }
-
-                permanent.setFaceDown(info.faceDown, game);
-                if (info.faceDown) {
-                    // TODO: need research cards with "setFaceDown(false"
-                    // TODO: delete after new release and new face down bugs (old code remove face down status from a card for unknown reason), 2024-02-20
-                    //card.setFaceDown(false, game);
                 }
 
                 // make sure the controller of all continuous effects of this card are switched to the current controller
@@ -512,7 +505,7 @@ public final class ZonesHandler {
             Spell spell = game.getStack().getSpell(event.getTargetId());
 
             // old version
-            if (false && spell != null && !spell.isFaceDown(game)) {
+            if (false && spell != null && !spell.isFaceDown()) {
                 if (!card.getColor(game).equals(spell.getColor(game))) {
                     // the card that is referenced to in the permanent is copied and the spell attributes are set to this copied card
                     card.getColor(game).setColor(spell.getColor(game));
@@ -522,7 +515,7 @@ public final class ZonesHandler {
             // new version
             if (true && spell != null && spell.getSpellAbility() != null) {
                 Card characteristics = spell.getSpellAbility().getCharacteristics(game);
-                if (!characteristics.isFaceDown(game)) {
+                if (!characteristics.isFaceDown()) {
                     if (!card.getColor(game).equals(characteristics.getColor(game))) {
                         // TODO: don't work with prototyped spells (setColor can't set colorless color)
                         card.getColor(game).setColor(characteristics.getColor(game));

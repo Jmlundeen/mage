@@ -1388,7 +1388,7 @@ public class HumanPlayer extends PlayerImpl {
                         }
 
                         if (object instanceof Card
-                                && ((Card) object).isFaceDown(game)
+                                && object.isFaceDown()
                                 && lookAtFaceDownCard((Card) object, game, useableAbilities.size())) {
                             result = true;
                         } else {

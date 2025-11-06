@@ -74,7 +74,7 @@ class CloneShellEffect extends OneShotEffect {
                 if (card != null) {
                     cards.remove(card);
                     controller.moveCardsToExile(card, source, game, false, CardUtil.getCardExileZoneId(game, source), CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
-                    card.setFaceDown(true, game);
+                    card.setFaceDown(true);
                     Permanent permanent = game.getPermanentOrLKIBattlefield(source.getSourceId());
                     if (permanent != null) {
                         permanent.imprint(card.getId(), game);
@@ -117,7 +117,7 @@ class CloneShellDiesEffect extends OneShotEffect {
                     for (UUID imprintedId : imprinted) {
                         Card imprintedCard = game.getCard(imprintedId);
                         if (imprintedCard != null) {
-                            imprintedCard.setFaceDown(false, game);
+                            imprintedCard.setFaceDown(false);
                             if (imprintedCard.isCreature(game)) {
                                 controller.moveCards(imprintedCard, Zone.BATTLEFIELD, source, game);
                             }

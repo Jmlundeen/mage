@@ -89,7 +89,7 @@ class JeskaiInfiltratorEffect extends OneShotEffect {
             return false;
         }
         for (Card card : cardsToManifest) {
-            card.setFaceDown(true, game);
+            card.setFaceDown(true);
         }
         Collections.shuffle(cardsToManifest);
         game.informPlayers(controller.getLogName() + " shuffles the face-down pile");

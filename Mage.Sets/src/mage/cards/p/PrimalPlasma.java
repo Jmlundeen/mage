@@ -72,7 +72,7 @@ public final class PrimalPlasma extends CardImpl {
         public boolean applies(GameEvent event, Ability source, Game game) {
             if (event.getTargetId().equals(source.getSourceId())) {
                 Permanent sourcePermanent = ((EntersTheBattlefieldEvent) event).getTarget();
-                return sourcePermanent != null && !sourcePermanent.isFaceDown(game);
+                return sourcePermanent != null && !sourcePermanent.isFaceDown();
             }
             return false;
         }

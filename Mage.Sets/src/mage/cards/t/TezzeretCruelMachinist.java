@@ -127,7 +127,7 @@ class TezzeretCruelMachinistCardTypeEffect extends ContinuousEffectImpl {
         boolean flag = false;
         for (UUID targetId : getTargetPointer().getTargets(game, source)) {
             Permanent target = game.getPermanent(targetId);
-            if (target == null || !target.isFaceDown(game)) {
+            if (target == null || !target.isFaceDown()) {
                 continue;
             }
             flag = true;

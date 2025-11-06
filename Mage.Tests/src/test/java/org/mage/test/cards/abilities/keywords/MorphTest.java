@@ -423,7 +423,7 @@ public class MorphTest extends CardTestPlayerBase {
 
         for (Card card : currentGame.getExile().getAllCards(currentGame)) {
             if (card.getName().equals("Birchlore Rangers")) {
-                Assert.assertFalse("Birchlore Rangers has to be face up in exile", card.isFaceDown(currentGame));
+                Assert.assertFalse("Birchlore Rangers has to be face up in exile", card.isFaceDown());
                 break;
             }
         }
@@ -462,7 +462,7 @@ public class MorphTest extends CardTestPlayerBase {
 
         for (Card card : playerA.getGraveyard().getCards(currentGame)) {
             if (card.getName().equals("Ashcloud Phoenix")) {
-                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown(currentGame));
+                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown());
                 break;
             }
         }
@@ -498,7 +498,7 @@ public class MorphTest extends CardTestPlayerBase {
 
         for (Card card : playerA.getGraveyard().getCards(currentGame)) {
             if (card.getName().equals("Ashcloud Phoenix")) {
-                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown(currentGame));
+                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown());
                 break;
             }
         }

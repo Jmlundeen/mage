@@ -71,7 +71,7 @@ class IgnorantBlissEffect extends OneShotEffect {
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(card -> game.getState().getZone(card.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true, game));
+                .forEach(card -> card.setFaceDown(true));
         DelayedTriggeredAbility ability = new AtTheBeginOfNextEndStepDelayedTriggeredAbility(new ReturnFromExileEffect(Zone.HAND));
         ability.addEffect(new DrawCardSourceControllerEffect(1));
         game.addDelayedTriggeredAbility(ability, source);

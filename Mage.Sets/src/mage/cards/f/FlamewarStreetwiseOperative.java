@@ -87,8 +87,8 @@ class FlamewarStreetwiseOperativeEffect extends OneShotEffect {
         Cards cards = new CardsImpl(player.getLibrary().getTopCards(game, damage));
         player.moveCards(cards, Zone.EXILED, source, game);
         cards.retainZone(Zone.EXILED, game);
-        cards.getCards(game).stream().forEach(card -> {
-            card.setFaceDown(true, game);
+        cards.getCards(game).forEach(card -> {
+            card.setFaceDown(true);
             card.addCounters(CounterType.INTEL.createInstance(), source, game);
         });
         return true;

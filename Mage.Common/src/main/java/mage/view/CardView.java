@@ -322,8 +322,8 @@ public class CardView extends SimpleCardView {
             card = ((Spell) card).getSpellAbility().getCharacteristics(game);
         }
 
-        // use isFaceDown(game) only here to find real status, all other code must use this.faceDown
-        this.faceDown = game != null && sourceCard.isFaceDown(game);
+        // use isFaceDown() only here to find real status, all other code must use this.faceDown
+        this.faceDown = game != null && sourceCard.isFaceDown();
         boolean showFaceUp = !this.faceDown;
 
         // show real name and day/night button for controller or any player at the game's end
@@ -393,7 +393,7 @@ public class CardView extends SimpleCardView {
                     }
                     if (stackObjectTarget != null) {
                         String idName = stackObjectTarget.getIdName();
-                        if (stackObjectTarget instanceof Spell && ((Spell) stackObjectTarget).isFaceDown(game)
+                        if (stackObjectTarget instanceof Spell && stackObjectTarget.isFaceDown()
                             && card.getControllerId() != stackObjectTarget.getControllerId()) {
                             idName = "face down spell " + "[" + stackObjectTarget.getId().toString().substring(0, 3) + "]";
                         }
@@ -591,16 +591,11 @@ public class CardView extends SimpleCardView {
             this.power = "";
             this.toughness = "";
             this.cardTypes = new ArrayList<>();
-            this.subTypes = new SubTypes();
-            this.superTypes = new ArrayList<>();
-            this.color = new ObjectColor();
             this.rules = new ArrayList<>();
         }
-        else if (sourceCard.isCopy()) {
-            this.subTypes = new SubTypes();
-            this.superTypes = new ArrayList<>();
-            this.color = new ObjectColor();
-        }
+        this.subTypes = new SubTypes();
+        this.superTypes = new ArrayList<>();
+        this.color = new ObjectColor();
 
         // can show face up card name for controller or game end
         // TODO: add exception on non empty name of the faced-down card here
@@ -714,7 +709,7 @@ public class CardView extends SimpleCardView {
         });
 
         // icon - face down
-        if (permanent.isFaceDown(game)) {
+        if (permanent.isFaceDown()) {
             this.cardIcons.add(CardIconImpl.FACE_DOWN);
         }
 

@@ -30,7 +30,7 @@ public enum NoAbilityPredicate implements Predicate<MageObject> {
         Abilities<Ability> abilities;
         if (input instanceof Card) {
             abilities = ((Card) input).getAbilities(game);
-            isFaceDown = ((Card) input).isFaceDown(game);
+            isFaceDown = ((Card) input).isFaceDown();
         } else {
             abilities = input.getAbilities();
         }

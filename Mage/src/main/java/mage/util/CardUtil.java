@@ -2381,7 +2381,7 @@ public final class CardUtil {
         }
         ExileZone exile = game.getExile().getExileZone(zoneId);
         cards.forEach(card -> {
-            card.setFaceDown(true, game);
+            card.setFaceDown(true);
             if (canLookAtCard) {
                 exile.letPlayerSeeCards(controller.getId(), card);
             }

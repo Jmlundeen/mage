@@ -89,7 +89,7 @@ class InducedAmnesiaExileEffect extends OneShotEffect {
         cards.getCards(game)
                 .stream()
                 .filter(card -> game.getState().getZone(card.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true, game));
+                .forEach(card -> card.setFaceDown(true));
         targetPlayer.drawCards(numberOfCards, source, game);
         return true;
     }

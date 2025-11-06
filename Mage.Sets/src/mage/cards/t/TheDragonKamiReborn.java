@@ -86,7 +86,7 @@ class TheDragonKamiRebornEffect extends OneShotEffect {
         Card card = game.getCard(target.getFirstTarget());
         if (card != null) {
             player.moveCards(card, Zone.EXILED, source, game);
-            card.setFaceDown(true, game);
+            card.setFaceDown(true);
             card.addCounters(CounterType.HATCHLING.createInstance(), source, game);
         }
         cards.retainZone(Zone.LIBRARY, game);

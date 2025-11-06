@@ -77,7 +77,7 @@ class BottledCloisterExileEffect extends OneShotEffect {
         cards.getCards(game)
                 .stream()
                 .filter(c -> game.getState().getZone(c.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true, game));
+                .forEach(card -> card.setFaceDown(true));
         return true;
     }
 }

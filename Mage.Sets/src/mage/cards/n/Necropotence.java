@@ -111,7 +111,7 @@ class NecropotenceEffect extends OneShotEffect {
             if (card != null && controller.moveCardsToExile(card, source, game, false,
                     CardUtil.getCardExileZoneId(game, source),
                     CardUtil.createObjectRelatedWindowTitle(source, game, null))) {
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
                 Effect returnToHandEffect = new ReturnToHandTargetEffect();
                 returnToHandEffect.setText("put that face down card into your hand");
                 returnToHandEffect.setTargetPointer(new FixedTarget(card, game));

@@ -84,7 +84,7 @@ class TriumphOfSaintKatherineEffect extends OneShotEffect {
         player.moveCards(cards, Zone.EXILED, source, game);
         cards.getCards(game)
                 .stream()
-                .forEach(c -> c.setFaceDown(true, game));
+                .forEach(c -> c.setFaceDown(true));
         player.putCardsOnTopOfLibrary(cards, game, source, false);
         return true;
     }

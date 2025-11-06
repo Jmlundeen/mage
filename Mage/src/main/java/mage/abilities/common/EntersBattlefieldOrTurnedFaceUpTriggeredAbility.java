@@ -6,7 +6,6 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -50,8 +49,7 @@ public class EntersBattlefieldOrTurnedFaceUpTriggeredAbility extends TriggeredAb
             case ENTERS_THE_BATTLEFIELD:
                 return Optional
                         .ofNullable(getSourcePermanentIfItStillExists(game))
-                        .filter(Objects::nonNull)
-                        .map(permanent -> !permanent.isFaceDown(game))
+                        .map(permanent -> !permanent.isFaceDown())
                         .orElse(false);
         }
         return false;

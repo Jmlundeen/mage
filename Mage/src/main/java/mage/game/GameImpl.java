@@ -1584,7 +1584,7 @@ public abstract class GameImpl implements Game {
             // inform players about face down cards
             state.getBattlefield().getAllPermanents()
                     .stream()
-                    .filter(permanent -> permanent.isFaceDown(this))
+                    .filter(MageObject::isFaceDown)
                     .map(permanent -> {
                         Player player = this.getPlayer(permanent.getControllerId());
                         Card card = permanent.getMainCard();

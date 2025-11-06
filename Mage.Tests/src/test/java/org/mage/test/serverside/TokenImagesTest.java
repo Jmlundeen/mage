@@ -324,7 +324,7 @@ public class TokenImagesTest extends CardTestPlayerBase {
     private void assert_FaceDownMorphImageNumber(List<Integer> needUniqueImages) {
         Set<Integer> serverStats = currentGame.getBattlefield().getAllPermanents()
                 .stream()
-                .filter(card -> card.isFaceDown(currentGame))
+                .filter(card -> card.isFaceDown())
                 .filter(card -> {
                     Assert.assertEquals("server side - wrong set code - " + card, TokenRepository.XMAGE_TOKENS_SET_CODE, card.getExpansionSetCode());
                     return true;
@@ -803,7 +803,7 @@ public class TokenImagesTest extends CardTestPlayerBase {
             //CardView debugViewController = new CardView(spell, currentGame, true, false);
 
             // server side (full data)
-            Assert.assertTrue("server - wrong face down status", spell.isFaceDown(game));
+            Assert.assertTrue("server - wrong face down status", spell.isFaceDown());
             Assert.assertEquals("server - wrong color", spell.getColor(game), new ObjectColor());
             Assert.assertEquals("server - wrong name", cardName, spell.getName());
             //
@@ -905,7 +905,7 @@ public class TokenImagesTest extends CardTestPlayerBase {
             // server side (full data)
             // TODO: possible bugged?! Other abilities must not see faced-down card as real on server side!
             String needName = "Forest";
-            Assert.assertTrue("server side - must be face down", card.isFaceDown(currentGame));
+            Assert.assertTrue("server side - must be face down", card.isFaceDown());
             Assert.assertEquals("server side - wrong name", needName, card.getName());
             Assert.assertTrue("server side - wrong abilities", card.getAbilities(currentGame).stream().anyMatch(a -> !CardUtil.isInformationAbility(a))); // play + add mana
 
@@ -958,7 +958,7 @@ public class TokenImagesTest extends CardTestPlayerBase {
             // server side (full data)
             // TODO: possible bugged?! Other abilities must not see faced-down card as real on server side!
             String needName = "Behold the Multiverse";
-            Assert.assertTrue("server side - must be face down", card.isFaceDown(currentGame));
+            Assert.assertTrue("server side - must be face down", card.isFaceDown());
             Assert.assertEquals("server side - wrong name", needName, card.getName());
             Assert.assertTrue("server side - wrong abilities", card.getAbilities(currentGame).stream().anyMatch(a -> !CardUtil.isInformationAbility(a)));
 

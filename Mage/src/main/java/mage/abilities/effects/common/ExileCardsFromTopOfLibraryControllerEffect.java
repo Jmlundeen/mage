@@ -86,9 +86,9 @@ public class ExileCardsFromTopOfLibraryControllerEffect extends OneShotEffect {
 
         boolean exiledSuccessfully = false;
         for (Card card : cards) {
-            card.setFaceDown(faceDown, game);
+            card.setFaceDown(faceDown);
             exiledSuccessfully |= controller.moveCardsToExile(card, source, game, !faceDown, exileZoneId, exileZoneName);
-            card.setFaceDown(faceDown, game);
+            card.setFaceDown(faceDown);
         }
         return exiledSuccessfully;
     }

@@ -113,7 +113,7 @@ class YedoraGraveGardenerContinuousEffect extends ContinuousEffectImpl {
     @Override
     public boolean apply(Game game, Ability source) {
         Permanent target = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (target == null || !target.isFaceDown(game)) {
+        if (target == null || !target.isFaceDown()) {
             discard();
             return false;
         }

@@ -81,7 +81,7 @@ class BecomeAnonymousEffect extends OneShotEffect {
             return true;
         }
         Set<Card> cardSet = cards.getCards(game);
-        cardSet.stream().forEach(card -> card.setFaceDown(true, game));
+        cardSet.stream().forEach(card -> card.setFaceDown(true));
         game.processAction();
         return !ManifestEffect.doManifestCards(game, source, player, cardSet, true, true).isEmpty();
     }

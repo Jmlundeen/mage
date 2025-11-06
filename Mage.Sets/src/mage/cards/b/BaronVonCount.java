@@ -1,7 +1,6 @@
 
 package mage.cards.b;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -11,20 +10,17 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Outcome;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -134,7 +130,7 @@ class BaronVonCountTriggeredAbility extends TriggeredAbilityImpl {
             if (doomNumber == null || doomNumber == 0) {
                 return false;
             }
-            if (!spell.isFaceDown(game)) {
+            if (!spell.isFaceDown()) {
                 String doomString = doomNumber.toString();
                 if (spell.getCard().getManaCost().getText().contains(doomString)
                         || String.valueOf(spell.getPower().getBaseValue()).contains(doomString)

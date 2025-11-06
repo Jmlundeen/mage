@@ -1924,7 +1924,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             int last = cards.size();
             for (Card card : cards.getCards(game)) {
                 current++;
-                if (card instanceof PermanentCard && card.isFaceDown(game)) {
+                if (card instanceof PermanentCard && card.isFaceDown()) {
                     sb.append(GameLog.getColoredObjectName(card.getMainCard()));
                 } else {
                     sb.append(GameLog.getColoredObjectName(card)); // TODO: see same usage in OfferingAbility for hide card's id (is it needs for reveal too?!)
@@ -5000,7 +5000,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 for (Card card : cards) {
                     fromZone = game.getState().getZone(card.getId());
                     boolean hideCard = fromZone == Zone.LIBRARY
-                            || (card.isFaceDown(game)
+                            || (card.isFaceDown()
                             && fromZone != Zone.STACK
                             && fromZone != Zone.BATTLEFIELD);
                     if (moveCardToHandWithInfo(card, source, game, !hideCard)) {
@@ -5025,7 +5025,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     fromZone = game.getState().getZone(card.getId());
                     boolean withName = (fromZone == Zone.BATTLEFIELD
                             || fromZone == Zone.STACK)
-                            || !card.isFaceDown(game);
+                            || !card.isFaceDown();
 
                     if (moveCardToExileWithInfo(card, null, "", source, game, fromZone, withName)) {
                         successfulMovedCards.add(card);
@@ -5113,7 +5113,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             }
             if (!game.isSimulation()) {
                 game.informPlayers(getLogName() + " puts "
-                        + (withName ? card.getLogName() : (card.isFaceDown(game) ? "a face down card" : "a card"))
+                        + (withName ? card.getLogName() : (card.isFaceDown() ? "a face down card" : "a card"))
                         + " from " + fromZone.toString().toLowerCase(Locale.ENGLISH) + ' '
                         + (card.isOwnedBy(this.getId()) ? "into their hand" : "into its owner's hand"
                         + CardUtil.getSourceLogName(game, source, card.getId()))

@@ -94,7 +94,7 @@ class AsmodeusTheArchfiendReplacementEffect extends ReplacementEffectImpl {
                 UUID exileZoneId = CardUtil.getExileZoneId(game, sourcePermanent.getId(), sourcePermanent.getZoneChangeCounter(game));
                 String exileName = CardUtil.createObjectRelatedWindowTitle(source, game, null);
                 controller.moveCardsToExile(card, source, game, false, exileZoneId, exileName);
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
             }
         }
         return true;

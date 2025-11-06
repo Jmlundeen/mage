@@ -1,7 +1,6 @@
 package mage.constants;
 
 import mage.abilities.SpellAbility;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.BestowAbility;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.cards.Card;
@@ -82,12 +81,7 @@ public enum SpellAbilityCastMode {
                     // TODO: research - is it possible to apply face down code to spell instead workaround with card
                     cardCopy = ((Spell) cardCopy).getCard().copy();
                 }
-                BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
-                if (this == DISGUISE) {
-                    faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
-                }
-                // no needs in additional abilities for spell
-                BecomesFaceDownCreatureEffect.makeFaceDownObject(game, null, cardCopy, faceDownType, null);
+                card.getFaceDownValues().applyTo(cardCopy);
                 break;
             case NORMAL:
             case MADNESS:

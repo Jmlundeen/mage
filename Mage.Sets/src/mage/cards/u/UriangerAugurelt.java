@@ -98,7 +98,7 @@ class UriangerAugureltExileEffect extends OneShotEffect {
                 CardUtil.getExileZoneId(game, source),
                 CardUtil.getSourceName(game, source)
         );
-        card.setFaceDown(true, game);
+        card.setFaceDown(true);
         game.addEffect(new MayLookAtTargetCardEffect(source.getControllerId())
                 .setTargetPointer(new FixedTarget(card, game)), source);
         return true;

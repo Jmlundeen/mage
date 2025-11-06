@@ -13,34 +13,26 @@ import mage.cards.repository.ExpansionInfo;
 import mage.cards.repository.ExpansionRepository;
 import mage.client.MageFrame;
 import mage.client.cards.BigCard;
-import mage.client.game.PlayAreaPanel;
 import mage.client.game.PlayerPanelExt;
 import mage.client.themes.ThemeType;
 import mage.client.util.*;
 import mage.client.util.Event;
-import mage.client.util.GUISizeHelper;
-import mage.client.util.Listener;
-import mage.constants.MultiplayerAttackOption;
 import mage.constants.RangeOfInfluence;
 import mage.constants.Zone;
 import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.designations.CitysBlessing;
-import mage.designations.Monarch;
-import mage.game.*;
+import mage.game.FakeGame;
+import mage.game.FakeMatch;
+import mage.game.Game;
 import mage.game.command.Dungeon;
 import mage.game.command.Emblem;
 import mage.game.command.Plane;
-import mage.game.match.*;
-import mage.game.mulligan.Mulligan;
-import mage.game.mulligan.MulliganType;
+import mage.game.match.Match;
 import mage.game.permanent.PermanentCard;
 import mage.game.permanent.PermanentMeld;
 import mage.game.permanent.PermanentToken;
-import mage.game.permanent.token.IncubatorToken;
-import mage.game.permanent.token.Phyrexian00Token;
 import mage.game.permanent.token.Token;
-import mage.game.permanent.token.ZombieToken;
 import mage.players.Player;
 import mage.players.StubPlayer;
 import mage.util.CardUtil;
@@ -52,8 +44,8 @@ import org.mage.card.arcane.CardPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * App GUI: debug only, testing card renders and manipulations
@@ -178,7 +170,7 @@ public class TestCardRenderDialog extends MageDialog {
         Card permCard = CardUtil.getDefaultCardSideForBattlefield(game, newCard);
 
         PermanentCard perm = new PermanentCard(permCard, controllerId, game);
-        perm.setFaceDown(true, game);
+        perm.setFaceDown(true);
         perm.setMorphed(isMorphed);
         perm.setManifested(isManifested);
         perm.removeSummoningSickness();
@@ -188,7 +180,7 @@ public class TestCardRenderDialog extends MageDialog {
         }
 
         // workaround to apply face down image and other settings
-        if (perm.isFaceDown(game)) {
+        if (perm.isFaceDown()) {
             BecomesFaceDownCreatureEffect.makeFaceDownObject(
                     game,
                     null,

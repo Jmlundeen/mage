@@ -129,7 +129,7 @@ class BellBorcaSpectralSergeantWatcher extends Watcher {
             return;
         }
         Card card = game.getCard(event.getTargetId());
-        if (card == null || card.isFaceDown(game)) {
+        if (card == null || card.isFaceDown()) {
             return;
         }
         int cmc = card.getManaValue();

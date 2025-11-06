@@ -54,7 +54,7 @@ public class LookAtAndPlayExiledWithThisTest extends CardTestPlayerBase {
                 .orElse(null);
         String controllerName = "Face Down: " + expectedCardName;
         String opponentName = "Face Down" + (shouldOppSee ? ": " + expectedCardName : "");
-        Assert.assertTrue("Card should be face down", card.isFaceDown(currentGame));
+        Assert.assertTrue("Card should be face down", card.isFaceDown());
         Assert.assertTrue("Controller - can't play", card.getAbilities(currentGame).stream().anyMatch(ability -> !CardUtil.isInformationAbility(ability)));
         Assert.assertEquals("Controller - wrong name", controllerName, controllerView.getName());
         Assert.assertEquals("Opponent - wrong name", opponentName, opponentView.getName());

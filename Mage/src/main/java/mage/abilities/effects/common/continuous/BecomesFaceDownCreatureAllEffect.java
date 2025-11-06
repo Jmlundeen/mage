@@ -48,9 +48,9 @@ public class BecomesFaceDownCreatureAllEffect extends ContinuousEffectImpl {
 
         // save permanents to become face down (one time usage on resolve)
         for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-            if (!perm.isFaceDown(game) && !perm.isTransformable() && !(((PermanentCard) perm).getCard() instanceof ModalDoubleFacedCardHalf)) {
+            if (!perm.isFaceDown() && !perm.isTransformable() && !(((PermanentCard) perm).getCard() instanceof ModalDoubleFacedCardHalf)) {
                 affectedObjectList.add(new MageObjectReference(perm, game));
-                perm.setFaceDown(true, game);
+                perm.setFaceDown(true);
             }
         }
     }
@@ -61,7 +61,7 @@ public class BecomesFaceDownCreatureAllEffect extends ContinuousEffectImpl {
         List<MageObjectReference> objectsToRemove = new ArrayList<>();
         for (MageObjectReference mor : affectedObjectList) {
             Permanent permanent = mor.getPermanent(game);
-            if (permanent == null || !permanent.isFaceDown(game)) {
+            if (permanent == null || !permanent.isFaceDown()) {
                 objectsToRemove.add(mor);
                 continue;
             }

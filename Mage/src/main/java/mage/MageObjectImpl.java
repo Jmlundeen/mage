@@ -53,6 +53,7 @@ public abstract class MageObjectImpl implements MageObject {
 
     protected boolean copy;
     protected MageObject copyFrom; // copied card INFO (used to call original adjusters)
+    protected boolean faceDown;
 
     public MageObjectImpl() {
         this(UUID.randomUUID());
@@ -92,6 +93,7 @@ public abstract class MageObjectImpl implements MageObject {
         supertype.addAll(object.supertype);
         this.copy = object.copy;
         this.copyFrom = (object.copyFrom != null ? object.copyFrom.copy() : null);
+        this.faceDown = object.faceDown;
     }
 
     @Override
@@ -403,6 +405,18 @@ public abstract class MageObjectImpl implements MageObject {
                 }
             }
         }
+    }
+
+    @Override
+
+    @Override
+    public boolean isFaceDown() {
+        return faceDown;
+    }
+
+    @Override
+    public void setFaceDown(boolean faceDown) {
+        this.faceDown = faceDown;
     }
 
     @Override

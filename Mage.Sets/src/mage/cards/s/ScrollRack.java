@@ -69,7 +69,7 @@ class ScrollRackEffect extends OneShotEffect {
                     for (UUID targetId : target.getTargets()) {
                         Card card = game.getCard(targetId);
                         if (card != null) {
-                            card.setFaceDown(true, game);
+                            card.setFaceDown(true);
                             amountExiled++;
                         }
                     }
@@ -77,7 +77,7 @@ class ScrollRackEffect extends OneShotEffect {
                     ExileZone exileZone = game.getExile().getExileZone(source.getSourceId());
                     if (exileZone != null) {
                         for (Card card : exileZone.getCards(game)) {
-                            card.setFaceDown(true, game);
+                            card.setFaceDown(true);
                         }
                     }
                 }

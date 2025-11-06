@@ -451,12 +451,12 @@ public class ContinuousEffects implements Serializable {
             }
         } else if (object instanceof PermanentCard) {
             PermanentCard permanent = (PermanentCard) object;
-            if (permanent.isFaceDown(game) && !ability.getWorksFaceDown()) {
+            if (permanent.isFaceDown() && !ability.getWorksFaceDown()) {
                 return false;
             }
         } else if (object instanceof Spell) {
             Spell spell = (Spell) object;
-            if (spell.isFaceDown(game) && !ability.getWorksFaceDown()) {
+            if (spell.isFaceDown() && !ability.getWorksFaceDown()) {
                 return false;
             }
         }

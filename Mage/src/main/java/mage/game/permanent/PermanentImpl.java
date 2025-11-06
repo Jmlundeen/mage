@@ -641,16 +641,6 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     }
 
     @Override
-    public void setFaceDown(boolean value, Game game) {
-        this.faceDown = value;
-    }
-
-    @Override
-    public boolean isFaceDown(Game game) {
-        return faceDown;
-    }
-
-    @Override
     public boolean isFlipped() {
         return flipped;
     }

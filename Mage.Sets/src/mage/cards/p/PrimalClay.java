@@ -73,7 +73,7 @@ public final class PrimalClay extends CardImpl {
                 return false;
             }
             Permanent sourcePermanent = ((EntersTheBattlefieldEvent) event).getTarget();
-            return sourcePermanent != null && !sourcePermanent.isFaceDown(game);
+            return sourcePermanent != null && !sourcePermanent.isFaceDown();
         }
 
         @Override

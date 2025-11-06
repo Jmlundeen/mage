@@ -5,6 +5,7 @@ import mage.abilities.*;
 import mage.abilities.costs.mana.ActivationManaAbilityStep;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.BestowAbility;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.abilities.keyword.TransformAbility;
@@ -92,7 +93,7 @@ public class Spell extends StackObjectImpl implements Card {
 
         this.card = affectedCard;
         this.manaCost = affectedCard.getManaCost().copy();
-        this.color = affectedCard.getColor(null).copy();
+        this.color = ability.getSpellAbilityCastMode().isFaceDown() ? new ObjectColor() : affectedCard.getColor(null).copy();
         this.frameColor = affectedCard.getFrameColor(null).copy();
         this.frameStyle = affectedCard.getFrameStyle();
         this.startingLoyalty = affectedCard.getStartingLoyalty();
@@ -103,12 +104,16 @@ public class Spell extends StackObjectImpl implements Card {
         this.ability.setControllerId(controllerId);
 
         if (ability.getSpellAbilityCastMode().isFaceDown()) {
-            // TODO: need research:
-            //  - why it use game param for color and subtype (possible bug?)
-            //  - is it possible to use BecomesFaceDownCreatureEffect.makeFaceDownObject or like that?
             this.faceDown = true;
-            this.getColor(game).setColor(null);
-            game.getState().getCreateMageObjectAttribute(this.getCard(), game).getSubtype().clear();
+            BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
+            if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.MORPH) {
+                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
+            } else if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.DISGUISE){
+                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
+            } else {
+                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
+            }
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, ability.getId(), card, faceDownType, null);
         }
         if (ability.getSpellAbilityType() == SpellAbilityType.SPLIT_FUSED) {
             // if this spell is going to be a copy, these abilities will be copied in copySpell
@@ -563,9 +568,7 @@ public class Spell extends StackObjectImpl implements Card {
     @Override
     public List<CardType> getCardType(Game game) {
         if (faceDown) {
-            List<CardType> cardTypes = new ArrayList<>();
-            cardTypes.add(CardType.CREATURE);
-            return cardTypes;
+            return card.getCardType(game);
         }
         if (SpellAbilityCastMode.BESTOW.equals(this.getSpellAbility().getSpellAbilityCastMode())) {
             Card modifiedCard = this.getSpellAbility().getSpellAbilityCastMode().getTypeModifiedCardObjectCopy(card, this.getSpellAbility(), game);
@@ -766,7 +769,7 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
-    public void setFaceDown(boolean value, Game game) {
+    public void setFaceDown(boolean value) {
         faceDown = value;
     }
 
@@ -781,7 +784,7 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
-    public boolean isFaceDown(Game game) {
+    public boolean isFaceDown() {
         return faceDown;
     }
 
@@ -1180,6 +1183,11 @@ public class Spell extends StackObjectImpl implements Card {
     @Override
     public void setIsAllNonbasicLandTypes(Game game, boolean value) {
         card.setIsAllNonbasicLandTypes(game, value);
+    }
+
+    @Override
+    public CopiableValues getFaceDownValues() {
+        return card.getFaceDownValues();
     }
 
     @Override

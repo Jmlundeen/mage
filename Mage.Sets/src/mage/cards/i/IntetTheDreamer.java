@@ -82,9 +82,9 @@ class IntetTheDreamerExileEffect extends OneShotEffect {
         }
         UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), sourceObject.getZoneChangeCounter(game));
         String exileName = sourceObject.getIdName() + " (" + sourceObject.getZoneChangeCounter(game) + ")";
-        card.setFaceDown(true, game);
+        card.setFaceDown(true);
         if (controller.moveCardsToExile(card, source, game, false, exileId, exileName)) {
-            card.setFaceDown(true, game);
+            card.setFaceDown(true);
             ContinuousEffect effect = new IntetTheDreamerAsThoughEffect();
             effect.setTargetPointer(new FixedTarget(card.getId(), game.getState().getZoneChangeCounter(card.getId())));
             game.getState().addEffect(effect, source);

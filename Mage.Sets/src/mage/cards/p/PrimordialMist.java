@@ -96,7 +96,7 @@ class PrimordialMistCost extends CostImpl {
                                 && targetCard != null) {
                             String exileName = sourcePermanent.getIdName() + " <this card may be played the turn it was exiled>";
                             controller.moveCardsToExile(targetPermanent, source, game, true, source.getSourceId(), exileName);
-                            targetPermanent.setFaceDown(false, game);
+                            targetPermanent.setFaceDown(false);
                             PrimordialMistCastFromExileEffect effect = new PrimordialMistCastFromExileEffect();
                             effect.setTargetPointer(new FixedTarget(targetCard.getId()));
                             game.addEffect(effect, ability);

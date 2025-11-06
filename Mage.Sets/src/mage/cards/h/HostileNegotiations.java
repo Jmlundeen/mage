@@ -61,7 +61,7 @@ class HostileNegotiationsEffect extends OneShotEffect {
         for (Card card : toExile) {
             UUID cardId = card.getId();
             if (game.getState().getZone(cardId) == Zone.EXILED) {
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
                 exiled.add(cardId);
             }
         }
@@ -72,7 +72,7 @@ class HostileNegotiationsEffect extends OneShotEffect {
         for (UUID cardId : cards) {
             Card card = game.getCard(cardId);
             if (card != null) {
-                card.setFaceDown(false, game);
+                card.setFaceDown(false);
             }
         }
     }

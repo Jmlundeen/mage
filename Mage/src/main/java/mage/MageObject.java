@@ -619,4 +619,11 @@ public interface MageObject extends MageItem, Serializable, Copyable<MageObject>
     void setIsAllNonbasicLandTypes(Game game, boolean value);
 
     void removePTCDA();
+
+    /**
+     * Denotes if the object is face down
+     */
+    boolean isFaceDown();
+
+    void setFaceDown(boolean value);
 }

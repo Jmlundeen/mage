@@ -20,7 +20,7 @@ public class RevealedView implements Serializable {
     public RevealedView(String name, Cards cards, Game game) {
         this.name = name;
         for (Card card : cards.getCards(game)) {
-            if (card instanceof PermanentCard && card.isFaceDown(game)) {
+            if (card instanceof PermanentCard && card.isFaceDown()) {
                 this.cards.put(card.getId(), new CardView(card.getMainCard())); // do not use game param, so it will take default card
             } else {
                 this.cards.put(card.getId(), new CardView(card, game));

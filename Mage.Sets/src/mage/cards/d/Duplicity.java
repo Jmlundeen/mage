@@ -82,7 +82,7 @@ class DuplicityEffect extends OneShotEffect {
                 Set<Card> cardsToExile = controller.getLibrary().getTopCards(game, 5);
                 for (Card card : cardsToExile) {
                     controller.moveCardsToExile(card, source, game, true, exileId, sourceObject.getName());
-                    card.setFaceDown(true, game);
+                    card.setFaceDown(true);
                 }
             }
             return true;
@@ -120,7 +120,7 @@ class DuplicityExileHandEffect extends OneShotEffect {
                 Set<Card> cardsFromHandToExile = controller.getHand().getCards(game);
                 for (Card card : cardsFromHandToExile) {
                     controller.moveCardsToExile(card, source, game, true, exileId, sourceObject.getName());
-                    card.setFaceDown(true, game);
+                    card.setFaceDown(true);
                 }
                 Set<Card> cardsToReturnToHandFromExile = new HashSet<>();
                 for (Card card : cardsInExile) {

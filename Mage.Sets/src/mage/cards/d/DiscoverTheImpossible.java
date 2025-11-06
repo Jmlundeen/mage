@@ -83,7 +83,7 @@ class DiscoverTheImpossibleEffect extends OneShotEffect {
             return true;
         }
         player.moveCards(card, Zone.EXILED, source, game);
-        card.setFaceDown(true, game);
+        card.setFaceDown(true);
         cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);
         return CardUtil.castSpellWithAttributesForFree(player, source, game, new CardsImpl(card), filter)

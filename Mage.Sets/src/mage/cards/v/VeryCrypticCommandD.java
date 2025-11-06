@@ -26,7 +26,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.TargetStackObject;
-import mage.target.common.TargetCreaturePermanent;
 
 import java.util.UUID;
 
@@ -112,7 +111,7 @@ class TurnOverEffect extends OneShotEffect {
             // breaking apart and forming two separate creatures, but they’ll probably just get right back together.
             // Turning B.F.M. (Big Furry Monster) over is the same as turning a combined creature over.
             // (2018-01-19)
-            if (creature.isFaceDown(game)) {
+            if (creature.isFaceDown()) {
                 // face down -> face up
                 creature.turnFaceUp(source, game, source.getControllerId());
             } else {

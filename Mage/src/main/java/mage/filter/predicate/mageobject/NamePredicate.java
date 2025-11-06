@@ -70,7 +70,7 @@ public class NamePredicate implements Predicate<MageObject> {
                     card.getRightHalfCard().getName(),
                     card.getName()
             });
-        } else if (input instanceof Spell && ((Spell) input).isFaceDown(game)) {
+        } else if (input instanceof Spell && ((Spell) input).isFaceDown()) {
             // face down spells don't have names, so it's not equal, see https://github.com/magefree/mage/issues/6569
             return false;
         } else {

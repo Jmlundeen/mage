@@ -14,7 +14,6 @@ import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
@@ -98,7 +97,7 @@ class ParallelThoughtsSearchEffect extends OneShotEffect {
                 String exileName = permanent.getIdName() + " (" + game.getState().getZoneChangeCounter(source.getSourceId()) + ")";
                 for (Card card : cardsInExilePile.getCards(game)) {
                     controller.moveCardsToExile(card, source, game, false, CardUtil.getCardExileZoneId(game, source), exileName);
-                    card.setFaceDown(true, game);
+                    card.setFaceDown(true);
                 }
 
                 // shuffle controller library

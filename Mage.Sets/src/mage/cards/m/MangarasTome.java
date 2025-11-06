@@ -76,7 +76,7 @@ class MangarasTomeSearchEffect extends OneShotEffect {
                     Card card = controller.getLibrary().getCard(targetId, game);
                     if (card != null) {
                         controller.moveCardsToExile(card, source, game, false, CardUtil.getCardExileZoneId(game, source), permanent.getName());
-                        card.setFaceDown(true, game);
+                        card.setFaceDown(true);
                     }
                 }
             }

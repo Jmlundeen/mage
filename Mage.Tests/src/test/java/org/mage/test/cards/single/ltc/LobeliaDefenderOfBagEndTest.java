@@ -47,7 +47,7 @@ public class LobeliaDefenderOfBagEndTest extends CardTestPlayerBase {
                     .findFirst()
                     .orElse(null);
             String expectedName = "Face Down: Bear Cub";
-            Assert.assertTrue("Card should be face down", card.isFaceDown(currentGame));
+            Assert.assertTrue("Card should be face down", card.isFaceDown());
             Assert.assertTrue("Owner - can't play", card.getAbilities(currentGame).stream().anyMatch(ability -> !CardUtil.isInformationAbility(ability)));
             Assert.assertEquals("Owner - wrong name", expectedName, ownerView.getName());
             Assert.assertEquals("Opponent - wrong name", expectedName, opponentView.getName());

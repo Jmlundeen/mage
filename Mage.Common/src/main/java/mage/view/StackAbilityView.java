@@ -96,7 +96,7 @@ public class StackAbilityView extends CardView {
                     for (UUID uuid : uniqueTargets) {
                         MageObject mageObject = game.getObject(uuid);
                         if (mageObject != null) {
-                            if ((mageObject instanceof Card) && ((Card) mageObject).isFaceDown(game)) {
+                            if ((mageObject instanceof Card) && ((Card) mageObject).isFaceDown()) {
                                 continue;
                             }
                             String newName = GameLog.getColoredObjectIdNameForTooltip(mageObject);

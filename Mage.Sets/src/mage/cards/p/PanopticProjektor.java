@@ -117,7 +117,7 @@ class PanopticProjektorWatcher extends Watcher {
             return;
         }
         Spell spell = game.getSpell(event.getSourceId());
-        if (spell != null && spell.isCreature(game) && spell.isFaceDown(game)) {
+        if (spell != null && spell.isCreature(game) && spell.isFaceDown()) {
             playerMap.compute(event.getPlayerId(), CardUtil::setOrIncrementValue);
         }
     }

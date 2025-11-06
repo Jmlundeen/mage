@@ -75,9 +75,9 @@ public class ExileFaceDownYouMayPlayAsLongAsExiledTargetEffect extends OneShotEf
         MageObject sourceObject = source.getSourceObject(game);
         String exileName = sourceObject == null ? "" : sourceObject.getIdName();
         for (Card card : cards.getCards(game)) {
-            card.setFaceDown(true, game);
+            card.setFaceDown(true);
             if (controller.moveCardsToExile(card, source, game, false, exileZoneId, exileName)) {
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
                 switch (manaAdjustment) {
                     case NONE:
                         CardUtil.makeCardPlayable(game, source, card, useCastSpellOnly, Duration.Custom, false, controller.getId(), null);

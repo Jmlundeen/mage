@@ -53,10 +53,6 @@ public interface Card extends MageObject, Ownerable {
      */
     void applyEnterWithCounters(Permanent permanent, Ability source, Game game);
 
-    void setFaceDown(boolean value, Game game);
-
-    boolean isFaceDown(Game game);
-
     boolean turnFaceUp(Ability source, Game game, UUID playerId);
 
     // TODO: need research, is it lost morph and other face down statuses?
