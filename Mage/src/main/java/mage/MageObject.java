@@ -4,7 +4,6 @@ import mage.abilities.Abilities;
 import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.cards.Card;
 import mage.cards.CopiableValues;
 import mage.cards.FrameStyle;
