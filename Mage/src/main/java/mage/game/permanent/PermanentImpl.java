@@ -90,7 +90,6 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     protected int turnsOnBattlefield;
     protected boolean phasedIn = true;
     protected boolean indirectPhase = false;
-    protected boolean faceDown;
     protected boolean attacking;
     protected int blocking;
     // number of creatures the permanent can block
