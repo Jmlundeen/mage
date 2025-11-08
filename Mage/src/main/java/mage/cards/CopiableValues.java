@@ -14,6 +14,7 @@ import mage.constants.Rarity;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.game.Game;
+import mage.game.stack.Spell;
 import mage.util.SubTypes;
 
 import java.util.ArrayList;
@@ -117,11 +118,13 @@ public class CopiableValues {
         mageObject.getToughness().setModifiedBaseValue(this.getToughness().getValue());
         mageObject.setStartingLoyalty(this.startingLoyalty);
         mageObject.setStartingDefense(this.startingDefense);
-        mageObject.setExpansionSetCode(this.expansionSetCode);
-        mageObject.setUsesVariousArt(this.usesVariousArt);
-        mageObject.setCardNumber(this.cardNumber);
-        mageObject.setImageFileName(this.imageFileName);
-        mageObject.setImageNumber(this.imageNumber);
+        if (!(mageObject instanceof Spell)) {
+            mageObject.setExpansionSetCode(this.expansionSetCode);
+            mageObject.setUsesVariousArt(this.usesVariousArt);
+            mageObject.setCardNumber(this.cardNumber);
+            mageObject.setImageFileName(this.imageFileName);
+            mageObject.setImageNumber(this.imageNumber);
+        }
     }
 
     public void clear() {
