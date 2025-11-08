@@ -8,6 +8,7 @@ import mage.abilities.costs.mana.ManaCosts;
 import mage.abilities.keyword.NightboundAbility;
 import mage.abilities.keyword.TransformAbility;
 import mage.cards.*;
+import mage.cards.repository.TokenRepository;
 import mage.constants.SpellAbilityType;
 import mage.game.Game;
 import mage.game.events.ZoneChangeEvent;
@@ -124,15 +125,27 @@ public class PermanentCard extends PermanentImpl {
             this.supertype.clear();
             this.supertype.addAll(faceDownValues.getSuperType());
             this.subtype.copyFrom(faceDownValues.getSubtype());
-            this.abilities = faceDownValues.getAbilities().copy();
-            this.abilities.setControllerId(this.controllerId);
-            this.abilities.setSourceId(objectId);
+            this.abilities.clear();
+            for (Ability ability : faceDownValues.getAbilities()) {
+                this.addAbility(ability, this.getId(), game, false);
+            }
             this.power.setModifiedBaseValue(faceDownValues.getPower().getValue());
             this.toughness.setModifiedBaseValue(faceDownValues.getToughness().getValue());
             this.setExpansionSetCode(faceDownValues.getExpansionSetCode());
             this.setUsesVariousArt(faceDownValues.getUsesVariousArt());
             this.setCardNumber(faceDownValues.getCardNumber());
             this.setImageFileName(faceDownValues.getImageFileName());
+            switch (getImageFileName()) {
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_MORPH:
+                    this.setMorphed(true);
+                    break;
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_DISGUISE:
+                    this.setDisguised(true);
+                    break;
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_CLOAK:
+                    this.setCloaked(true);
+                    break;
+            }
             this.setImageNumber(faceDownValues.getImageNumber());
             return;
         }
