@@ -1,16 +1,12 @@
 package mage.abilities.effects.keyword;
 
-import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.abilities.costs.mana.ManaCosts;
-import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect.FaceDownType;
 import mage.cards.Card;
-import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
@@ -126,53 +122,28 @@ public class ManifestEffect extends OneShotEffect {
             return Collections.emptyList();
         }
 
-        // prepare source ability
-        // TODO: looks buggy, must not change source ability!
-        // TODO: looks buggy, if target player manifested then source's controllerId will be wrong (not who manifested)
-        //  so BecomesFaceDownCreatureEffect will see wrong source.controllerId
-        //  (possible bugs: keep manifested after player leave/lose?)
-        Ability newSource = source.copy();
-        newSource.setWorksFaceDown(true);
+        List<Permanent> manifested = new ArrayList<>();
 
         // prepare face down effect for battlefield permanents
-        // TODO: need research - why it add effect before move?!
         for (Card card : cardsToManifest) {
             Card battlefieldCard = BecomesFaceDownCreatureEffect.findDefaultCardSideForFaceDown(game, card);
 
-            // search mana cost for a face up ability (look at face side of the double side card)
-            ManaCosts manaCosts = null;
-            if (battlefieldCard.isCreature(game)) {
-                manaCosts = battlefieldCard.getSpellAbility() != null ? battlefieldCard.getSpellAbility().getManaCosts() : null;
-                if (manaCosts == null) {
-                    manaCosts = new ManaCostsImpl<>("{0}");
-                }
-            }
+            // set face down characteristics
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), battlefieldCard, cloakNotManifest ? FaceDownType.CLOAKED : FaceDownType.MANIFESTED, null);
+            battlefieldCard.setFaceDown(true);
 
-            // zcc + 1 for use case with Rally the Ancestors (see related test)
-            MageObjectReference objectReference = new MageObjectReference(battlefieldCard.getId(), battlefieldCard.getZoneChangeCounter(game) + 1, game);
-            game.addEffect(new BecomesFaceDownCreatureEffect(manaCosts, objectReference, Duration.Custom, cloakNotManifest ? FaceDownType.CLOAKED : FaceDownType.MANIFESTED), newSource);
-        }
+            // move to the battlefield
+            manifestPlayer.moveCards(battlefieldCard, Zone.BATTLEFIELD, source, game, tapped, true, false, null);
 
-        List<Permanent> manifested = new ArrayList<>();
-        // move cards to battlefield as face down
-        // TODO: possible buggy for multiple cards, see rule 701.34e - it require manifest one by one (card to check: Omarthis, Ghostfire Initiate)
-        manifestPlayer.moveCards(cardsToManifest, Zone.BATTLEFIELD, source, game, tapped, true, false, null);
-        for (Card card : cardsToManifest) {
-            Card battlefieldCard = BecomesFaceDownCreatureEffect.findDefaultCardSideForFaceDown(game, card);
-
+            // set face down status
             Permanent permanent = game.getPermanent(battlefieldCard.getId());
             if (permanent != null) {
-                // TODO: permanent already has manifested status, so code can be deleted later
-                // TODO: add test with battlefield trigger/watcher (must not see normal card, must not see face down status without manifest)
                 if (cloakNotManifest) {
                     permanent.setCloaked(true);
                 } else {
                     permanent.setManifested(true);
                 }
                 manifested.add(permanent);
-            } else {
-                // TODO: looks buggy, card can't be moved to battlefield, but face down effect already active
-                //  or it can be face down on another move to battlefield
             }
         }
 

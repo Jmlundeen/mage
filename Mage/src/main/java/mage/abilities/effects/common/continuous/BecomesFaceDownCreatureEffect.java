@@ -25,6 +25,7 @@ import mage.cards.repository.TokenRepository;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+import mage.game.stack.Spell;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -257,32 +258,64 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
         faceDownValues.getCardType().add(CardType.CREATURE);
         faceDownValues.getColor().setColor(ObjectColor.COLORLESS);
 
-        Abilities<Ability> abilities = object instanceof Permanent
-                ? ((Permanent) object).getCopiableValues().getAbilities()
-                : object.getAbilities();
-        for (Ability ability : abilities) {
+        if (object instanceof Spell) {
+            faceDownValues.getAbilities().add(new SimpleStaticAbility(new InfoEffect(
+                    "{this} becomes a 2/2 face-down creature, with no text, no name, no subtypes, and no mana cost"
+            )));
+        } else {
+            Abilities<Ability> abilities = object instanceof Permanent
+                    ? ((Permanent) object).getCopiableValues().getAbilities()
+                    : object.getAbilities();
+            for (Ability ability : abilities) {
+                // 701.33c
+                // If a card with morph is manifested, its controller may turn that card face up using
+                // either the procedure described in rule 702.36e to turn a face-down permanent with morph face up
+                // or the procedure described above to turn a manifested permanent face up.
 
-            // 701.33c
-            // If a card with morph is manifested, its controller may turn that card face up using
-            // either the procedure described in rule 702.36e to turn a face-down permanent with morph face up
-            // or the procedure described above to turn a manifested permanent face up.
-
-            // Add a turn face up ability if there is a morph/disguise ability
-            if (ability instanceof MorphAbility || ability instanceof DisguiseAbility) {
-                Costs<Cost> faceUpCosts;
-                if (ability instanceof MorphAbility) {
-                    faceUpCosts = ((MorphAbility) ability).getFaceUpCosts();
-                } else {
-                    faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
-                    faceUpCosts = ((DisguiseAbility) ability).getFaceUpCosts();
+                // Add a turn face up ability if there is a morph/disguise ability with rule hidden
+                if (ability instanceof MorphAbility || ability instanceof DisguiseAbility) {
+                    Costs<Cost> faceUpCosts;
+                    CostAdjuster costAdjuster = null;
+                    if (ability instanceof MorphAbility) {
+                        faceUpCosts = ((MorphAbility) ability).getFaceUpCosts();
+                    } else {
+                        faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
+                        faceUpCosts = ((DisguiseAbility) ability).getFaceUpCosts();
+                        costAdjuster = ((DisguiseAbility) ability).getFaceUpCostAdjuster();
+                    }
+                    boolean isMegaMorph = (ability instanceof MorphAbility && ((MorphAbility) ability).isMegamorph());
+                    TurnFaceUpAbility turnFaceUpAbility = new TurnFaceUpAbility(faceUpCosts, isMegaMorph);
+                    turnFaceUpAbility.setRuleVisible(false);
+                    if (costAdjuster != null) {
+                        turnFaceUpAbility.setCostAdjuster(costAdjuster);
+                    }
+                    faceDownValues.getAbilities().add(turnFaceUpAbility);
                 }
-                boolean isMegaMorph = (ability instanceof MorphAbility && ((MorphAbility) ability).isMegamorph());
-                TurnFaceUpAbility turnFaceUpAbility = new TurnFaceUpAbility(faceUpCosts, isMegaMorph);
-                faceDownValues.getAbilities().add(turnFaceUpAbility);
             }
-        }
-        if (faceDownType == FaceDownType.CLOAKED) {
-            faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
+            if (faceDownType == FaceDownType.CLOAKED) {
+                faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
+            }
+            if (faceDownType == FaceDownType.MANIFESTED && object.isCreature()) {
+                // allow creatures to be turned face up for their mana cost when manifested
+                Costs<Cost> faceUpCosts = new CostsImpl<>();
+                faceUpCosts.add(object.getManaCost());
+                faceDownValues.getAbilities().add(new TurnFaceUpAbility(faceUpCosts));
+            }
+            // Add an info ability stating it can be turned face up for its face up costs
+            String ruleText = "Turn it face up any time for its";
+            switch (faceDownType) {
+                case MORPHED:
+                case MEGAMORPHED:
+                    ruleText += " morph cost.";
+                    break;
+                case DISGUISED:
+                    ruleText += " disguise cost.";
+                    break;
+                default:
+                    ruleText += " mana cost if it's a creature card.";
+                    break;
+            }
+            faceDownValues.getAbilities().add(new SimpleStaticAbility(Zone.ALL, new InfoEffect(ruleText)));
         }
 
         faceDownValues.getPower().setModifiedBaseValue(2);
@@ -322,9 +355,6 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             logger.error("Can't find face down image for " + tokenName + ": " + originalObjectInfo);
             // TODO: add default image like backface (warning, missing image info must be visible in card popup)?
         }
-        // TODO: fix copySetAndCardNumber method to work with copiable values
-//        CardUtil.copySetAndCardNumber(object, faceDownToken);
-
     }
 
     /**
