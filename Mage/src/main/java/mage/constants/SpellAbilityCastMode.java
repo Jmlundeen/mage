@@ -1,11 +1,11 @@
 package mage.constants;
 
 import mage.abilities.SpellAbility;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.BestowAbility;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.cards.Card;
 import mage.game.Game;
-import mage.game.stack.Spell;
 
 /**
  * @author LevelX2
@@ -76,12 +76,11 @@ public enum SpellAbilityCastMode {
                 break;
             case MORPH:
             case DISGUISE:
-                if (cardCopy instanceof Spell) {
-                    //Spell doesn't support setName, so make a copy of the card (we're blowing it away anyway)
-                    // TODO: research - is it possible to apply face down code to spell instead workaround with card
-                    cardCopy = ((Spell) cardCopy).getCard().copy();
-                }
-                card.getFaceDownValues().applyTo(cardCopy);
+                BecomesFaceDownCreatureEffect.FaceDownType faceDownType = this == MORPH
+                        ? BecomesFaceDownCreatureEffect.FaceDownType.MORPHED
+                        : BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(game, spellAbility.getId(), cardCopy, faceDownType, null);
+                cardCopy.getFaceDownValues().applyTo(cardCopy);
                 break;
             case NORMAL:
             case MADNESS:
