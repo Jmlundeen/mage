@@ -770,10 +770,8 @@ public class Spell extends StackObjectImpl implements Card {
 
     @Override
     public void setFaceDown(boolean value) {
-        faceDown = value;
+        card.setFaceDown(value);
     }
-
-
 
     @Override
     public boolean isFaceDown() {
