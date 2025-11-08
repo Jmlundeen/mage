@@ -81,11 +81,10 @@ public class DisguiseTest extends CardTestPlayerBase {
             Assert.assertEquals("server side: wrong power", "2", permanent.getPower().toString());
             Assert.assertEquals("server side: wrong toughness", "2", permanent.getToughness().toString());
 
-            // make sure real abilities exists
+            // make sure real abilities don't exist
             // trigger
             Ability ability = permanent.getAbilities(currentGame).stream().filter(a -> a instanceof TurnedFaceUpSourceTriggeredAbility).findFirst().orElse(null);
-            Assert.assertNotNull("server side: must have face up triggered ability", ability);
-            Assert.assertFalse("server side: face up triggered ability must be hidden", ability.getRuleVisible());
+            Assert.assertNull("server side: must not have face up triggered ability", ability);
             // face up
             ability = permanent.getAbilities(currentGame).stream().filter(a -> a instanceof TurnFaceUpAbility).findFirst().orElse(null);
             Assert.assertNotNull("server side: must have turn face up ability", ability);
@@ -106,7 +105,8 @@ public class DisguiseTest extends CardTestPlayerBase {
             Assert.assertEquals("client side - controller: wrong power", "2", permanentView.getPower());
             Assert.assertEquals("client side - controller: wrong toughness", "2", permanentView.getToughness());
             // make sure rules visible
-            assertRuleExist("client side, controller: face down spell - show", permanentView.getRules(), FACE_DOWN_SPELL, true);
+            assertRuleExist("client side, controller: turn face up - show", permanentView.getRules(), "face up any time", true);
+            assertRuleExist("client side, controller: face down spell - hide", permanentView.getRules(), FACE_DOWN_SPELL, false);
             assertRuleExist("client side, controller: face up - hide", permanentView.getRules(), FACE_DOWN_FACE_UP, false);
             assertRuleExist("client side, controller: triggered ability - hide", permanentView.getRules(), FACE_DOWN_TRIGGER, false);
             assertRuleExist("client side, controller: {R/W} cost hide", permanentView.getRules(), "{R/W}", false);
@@ -130,7 +130,8 @@ public class DisguiseTest extends CardTestPlayerBase {
             Assert.assertEquals("client side - opponent: wrong power", "2", permanentView.getPower());
             Assert.assertEquals("client side - opponent: wrong toughness", "2", permanentView.getToughness());
             // make sure rules visible
-            assertRuleExist("client side, opponent: face down spell - show", permanentView.getRules(), FACE_DOWN_SPELL, true);
+            assertRuleExist("client side, opponent: turn face up - show", permanentView.getRules(), "face up any time", true);
+            assertRuleExist("client side, opponent: face down spell - hide", permanentView.getRules(), FACE_DOWN_SPELL, false);
             assertRuleExist("client side, opponent: face up - hide", permanentView.getRules(), FACE_DOWN_FACE_UP, false);
             assertRuleExist("client side, opponent: triggered ability - hide", permanentView.getRules(), FACE_DOWN_TRIGGER, false);
             assertRuleExist("client side, opponent: {R/W} cost hide", permanentView.getRules(), "{R/W}", false);
