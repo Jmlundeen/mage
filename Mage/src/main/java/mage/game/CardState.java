@@ -1,15 +1,14 @@
 package mage.game;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import mage.abilities.Abilities;
 import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.counters.Counter;
 import mage.counters.Counters;
 import mage.util.Copyable;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * @author BetaSteward
