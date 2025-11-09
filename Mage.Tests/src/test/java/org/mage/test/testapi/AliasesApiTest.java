@@ -65,7 +65,7 @@ public class AliasesApiTest extends CardTestPlayerBase {
         Card bearCard = CardRepository.instance.findCard("Balduvian Bears").createCard();
         Spell normalSpell = new Spell(bearCard, bearCard.getSpellAbility(), playerA.getId(), Zone.HAND, currentGame);
         Spell faceDownSpell = new Spell(bearCard, bearCard.getSpellAbility(), playerA.getId(), Zone.HAND, currentGame);
-        faceDownSpell.setFaceDown(true, currentGame);
+        faceDownSpell.setFaceDown(true);
         // normal spell
         Assert.assertFalse(CardUtil.haveSameNames(normalSpell, "", currentGame));
         Assert.assertFalse(CardUtil.haveSameNames(normalSpell, "Other", currentGame));
