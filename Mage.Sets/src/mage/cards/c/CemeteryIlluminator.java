@@ -150,7 +150,7 @@ class CemeteryIlluminatorPlayTopEffect extends AsThoughEffectImpl {
         }
         // need to check characteristics of spell rather than card (e.g. adventure, morph, etc.)
         Card cardToCast = ((SpellAbility) affectedAbility).getCharacteristics(game);
-        if (cardToCast.getManaCost().isEmpty()) {
+        if (cardToCast.getManaCost().isEmpty() && !((SpellAbility) affectedAbility).getSpellAbilityCastMode().isFaceDown()) {
             return false;
         }
         Set<CardType> cardTypes = new HashSet<>(cardToCast.getCardType(game));
