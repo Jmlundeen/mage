@@ -155,6 +155,7 @@ public class CopyEffect extends ContinuousEffectImpl {
 
         CardUtil.copySetAndCardNumber(permanent, copyFromObject);
 
+        permanent.saveCopiableValues(game);
         return true;
     }
 

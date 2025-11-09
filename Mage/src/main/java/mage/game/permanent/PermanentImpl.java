@@ -5,6 +5,7 @@ import mage.MageObject;
 import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Abilities;
+import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.effects.ContinuousEffect;
@@ -17,6 +18,7 @@ import mage.abilities.keyword.*;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardsImpl;
+import mage.cards.CopiableValues;
 import mage.constants.*;
 import mage.counters.Counter;
 import mage.counters.CounterType;
@@ -120,6 +122,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     protected int createOrder;
     protected boolean legendRuleApplies = true;
     protected boolean prototyped;
+    protected CopiableValues copiableValues = new CopiableValues();
 
     private static final List<UUID> emptyList = Collections.unmodifiableList(new ArrayList<>());
 
@@ -201,6 +204,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
         this.createOrder = permanent.createOrder;
         this.prototyped = permanent.prototyped;
         this.canBeSacrificed = permanent.canBeSacrificed;
+        this.copiableValues = permanent.copiableValues.copy();
     }
 
     @Override
@@ -421,6 +425,17 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     @Override
     public Abilities<Ability> getAbilities(Game game) {
         return super.getAbilities(game);
+    }
+
+    @Override
+    public Abilities<Ability> getDynamicAbilities() {
+        Abilities<Ability> result = new AbilitiesImpl<>();
+        for (Ability ability : abilities) {
+            if (!copiableValues.getAbilities().contains(ability)) {
+                result.add(ability);
+            }
+        }
+        return result;
     }
 
     /**
@@ -2138,6 +2153,16 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     }
 
     @Override
+    public void saveCopiableValues(Game game) {
+        this.copiableValues.copyFrom(this, game);
+    }
+
+    @Override
+    public CopiableValues getCopiableValues() {
+        return copiableValues;
+    }
+
+    @Override
     public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
         if (!this.getBasicMageObject().isPermanent()){
             // 701.34g. If a manifested permanent that's represented by an instant or sorcery card would turn face up,
@@ -2149,6 +2174,10 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
             }
             return false;
         }
+        Abilities<Ability> dynamicAbilities = this.getDynamicAbilities();
+        setFaceDown(false);
+        this.reset(game);
+        this.getAbilities().addAll(dynamicAbilities);
         GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
         if (!game.replaceEvent(event)) {
             setFaceDown(false);
@@ -2156,9 +2185,13 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
             setMorphed(false);
             setDisguised(false);
             setCloaked(false);
-            this.reset(game);
             game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_UP, getId(), source, playerId));
             return true;
+        } else {
+            // revert face down change
+            setFaceDown(true);
+            this.reset(game);
+            this.getAbilities().addAll(dynamicAbilities);
         }
         return false;
     }

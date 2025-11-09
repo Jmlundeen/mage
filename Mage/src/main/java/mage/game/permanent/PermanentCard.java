@@ -108,9 +108,10 @@ public class PermanentCard extends PermanentImpl {
     public void reset(Game game) {
         // when the permanent is reset, copy all original values from the card
         // must copy card each reset so that the original values don't get modified
+        copyFromCard(card, game);
         power.resetToBaseValue();
         toughness.resetToBaseValue();
-        copyFromCard(card, game);
+        this.saveCopiableValues(game);
         super.reset(game);
     }
 
@@ -129,8 +130,8 @@ public class PermanentCard extends PermanentImpl {
             for (Ability ability : faceDownValues.getAbilities()) {
                 this.addAbility(ability, this.getId(), game, false);
             }
-            this.power.setModifiedBaseValue(faceDownValues.getPower().getValue());
-            this.toughness.setModifiedBaseValue(faceDownValues.getToughness().getValue());
+            this.power = faceDownValues.getPower().copy();
+            this.toughness = faceDownValues.getToughness().copy();
             this.setExpansionSetCode(faceDownValues.getExpansionSetCode());
             this.setUsesVariousArt(faceDownValues.getUsesVariousArt());
             this.setCardNumber(faceDownValues.getCardNumber());
@@ -165,6 +166,8 @@ public class PermanentCard extends PermanentImpl {
         if (card instanceof PermanentCard) {
             this.maxLevelCounters = ((PermanentCard) card).maxLevelCounters;
         }
+        this.power = card.getPower().copy();
+        this.toughness = card.getToughness().copy();
         this.subtype.copyFrom(card.getSubtype());
         this.supertype.clear();
         this.supertype.addAll(card.getSuperType());
