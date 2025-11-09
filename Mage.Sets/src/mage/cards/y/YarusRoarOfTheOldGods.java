@@ -1,11 +1,9 @@
 package mage.cards.y;
 
-import java.util.UUID;
 import mage.MageInt;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.abilities.common.OneOrMoreCombatDamagePlayerTriggeredAbility;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
+import mage.abilities.common.OneOrMoreCombatDamagePlayerTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
@@ -13,15 +11,9 @@ import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.Card;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.SuperType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.TargetController;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.card.FaceDownPredicate;
@@ -29,6 +21,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -101,13 +95,7 @@ class YarusRoarOfTheOldGodsEffect extends OneShotEffect {
             return false;
         }
 
-        Ability newSource = source.copy();
-        newSource.setWorksFaceDown(true);
-        MageObjectReference mor = new MageObjectReference(card.getId(),
-                card.getZoneChangeCounter(game) + 1, game);
-        game.addEffect(new BecomesFaceDownCreatureEffect(
-                null, mor, Duration.Custom,
-                BecomesFaceDownCreatureEffect.FaceDownType.MANUAL), newSource);
+        BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
         controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, true, true, null);
 
         Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
