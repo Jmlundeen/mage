@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageInt;
 import mage.MageObject;
 import mage.MageObjectReference;
 import mage.ObjectColor;
@@ -318,8 +319,8 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             faceDownValues.getAbilities().add(new SimpleStaticAbility(Zone.ALL, new InfoEffect(ruleText)));
         }
 
-        faceDownValues.getPower().setModifiedBaseValue(2);
-        faceDownValues.getToughness().setModifiedBaseValue(2);
+        faceDownValues.setPower(new MageInt(2));
+        faceDownValues.setToughness(new MageInt(2));
 
         // image
         String tokenName;
