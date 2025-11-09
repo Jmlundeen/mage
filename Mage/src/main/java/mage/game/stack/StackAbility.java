@@ -17,6 +17,7 @@ import mage.abilities.effects.Effects;
 import mage.abilities.hint.Hint;
 import mage.abilities.icon.CardIcon;
 import mage.cards.Card;
+import mage.cards.CopiableValues;
 import mage.cards.FrameStyle;
 import mage.constants.*;
 import mage.filter.predicate.mageobject.MageObjectReferencePredicate;
@@ -780,6 +781,21 @@ public class StackAbility extends StackObjectImpl implements Ability {
 
     @Override
     public void setIsAllNonbasicLandTypes(Game game, boolean value) {
+    }
+
+    @Override
+    public CopiableValues getFaceDownValues() {
+        return null;
+    }
+
+    @Override
+    public boolean isFaceDown() {
+        return false;
+    }
+
+    @Override
+    public void setFaceDown(boolean value) {
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     @Override
