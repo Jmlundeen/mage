@@ -5,8 +5,6 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.TurnFaceUpAbility;
 import mage.abilities.effects.common.cost.CostModificationEffectImpl;
-import mage.abilities.keyword.MorphAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -67,22 +65,7 @@ class ExiledDoomsayerEffect extends CostModificationEffectImpl {
             return false;
         }
         Permanent permanent = game.getPermanent(abilityToModify.getSourceId());
-        if (permanent == null) {
-            return false;
-        }
-        Card card = game.getCard(permanent.getId());
-        if (card == null) {
-            return false;
-        }
-        for (Ability ability : card.getAbilities(game)) {
-            if (ability instanceof MorphAbility) {
-                // does not apply to e.g. manifest
-                // TODO: this is a workaround technique that will incorrectly increase manifest cost if a card with morph is manifested
-                // need for TurnFaceUpAbility to track if it got added from MorphAbility, or if permanent was cast via MorphAbility
-                return true;
-            }
-        }
-        return false;
+        return permanent != null && permanent.isMorphed();
     }
 
     @Override
