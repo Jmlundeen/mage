@@ -591,11 +591,16 @@ public class CardView extends SimpleCardView {
             this.power = "";
             this.toughness = "";
             this.cardTypes = new ArrayList<>();
+            this.subTypes = new SubTypes();
+            this.superTypes = new ArrayList<>();
+            this.color = new ObjectColor();
             this.rules = new ArrayList<>();
         }
-        this.subTypes = new SubTypes();
-        this.superTypes = new ArrayList<>();
-        this.color = new ObjectColor();
+        else if (sourceCard.isCopy()) {
+            this.subTypes = new SubTypes();
+            this.superTypes = new ArrayList<>();
+            this.color = new ObjectColor();
+        }
 
         // can show face up card name for controller or game end
         // TODO: add exception on non empty name of the faced-down card here
