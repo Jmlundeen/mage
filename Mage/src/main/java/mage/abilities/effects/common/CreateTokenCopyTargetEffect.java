@@ -1,13 +1,11 @@
 package mage.abilities.effects.common;
 
-import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.Mode;
 import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbility;
 import mage.abilities.common.delayed.AtTheEndOfCombatDelayedTriggeredAbility;
-import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.FlyingAbility;
@@ -20,9 +18,7 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.Token;
 import mage.target.targetpointer.FixedTarget;
 import mage.target.targetpointer.FixedTargets;
-import mage.util.functions.CopyApplier;
 import mage.util.functions.CopyTokenFunction;
-import mage.util.functions.EmptyCopyApplier;
 
 import java.util.*;
 
@@ -176,46 +172,21 @@ public class CreateTokenCopyTargetEffect extends OneShotEffect {
         }
 
         // can target card or permanent
-        Card copyFrom = null;
-        CopyApplier applier = null;
+        Card copyFrom;
         if (permanent != null) {
             // handle copies of copies
-            Permanent copyFromPermanent = permanent;
-            for (ContinuousEffect effect : game.getState().getContinuousEffects().getLayeredEffects(game)) {
-                if (effect instanceof CopyEffect) {
-                    CopyEffect copyEffect = (CopyEffect) effect;
-                    // there is another copy effect that our targetPermanent copies stats from
-                    if (copyEffect.getSourceId().equals(permanent.getId())) {
-                        MageObject object = ((CopyEffect) effect).getTarget();
-                        if (object instanceof Permanent) {
-                            copyFromPermanent = (Permanent) object;
-                            if (copyEffect.getApplier() != null) {
-                                applier = copyEffect.getApplier();
-                            }
-                        }
-                    }
-                }
-            }
-            // check if permanent was copying, but copy effect is no longer active
-            if (applier == null) {
-                if (permanent.isCopy() && permanent.getCopyFrom() instanceof Permanent) {
-                    copyFromPermanent = (Permanent) permanent.getCopyFrom();
-                }
-                applier = new EmptyCopyApplier();
-            }
+            Permanent copyFromPermanent = permanent.copy();
+            permanent.getCopiableValues().applyTo(copyFromPermanent);
             copyFrom = copyFromPermanent;
         } else {
             copyFrom = game.getCard(getTargetPointer().getFirst(game, source));
-            applier = new EmptyCopyApplier();
         }
-
         if (copyFrom == null) {
             return false;
         }
 
         // create token and modify all attributes permanently (without game usage)
         Token token = CopyTokenFunction.createTokenCopy(copyFrom, game); // needed so that entersBattlefield triggered abilities see the attributes (e.g. Master Biomancer)
-        applier.apply(game, token, source, targetId);
         if (becomesArtifact) {
             token.addCardType(CardType.ARTIFACT);
         }
