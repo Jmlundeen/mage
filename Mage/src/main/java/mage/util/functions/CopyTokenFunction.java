@@ -6,6 +6,7 @@ import mage.abilities.Ability;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.cards.Card;
+import mage.cards.CopiableValues;
 import mage.constants.CardType;
 import mage.constants.SuperType;
 import mage.game.Game;
@@ -76,20 +77,19 @@ public class CopyTokenFunction {
         if (source instanceof PermanentCard) {
             // create token from non-token permanent
 
-            // apply face down status
             PermanentCard sourcePermanent = (PermanentCard) source;
             BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.findFaceDownType(game, sourcePermanent);
             if (faceDownType != null) {
                 BecomesFaceDownCreatureEffect.makeFaceDownObject(game, null, target, faceDownType, null);
+                target.getFaceDownValues().applyTo(target);
                 return;
             }
 
             // must use real card side, e.g. half from MDFC (not main)
             Card sourceObj = sourcePermanent.getCard();
-            target.setCopySourceCard(sourceObj);
+            target.setCopySourceCard(sourcePermanent);
             // main side
-            copyToToken(target, sourceObj, game);
-            CardUtil.copySetAndCardNumber(target, sourceObj);
+            copyToToken(target, sourcePermanent, game);
             // second side
             if (sourceObj.isTransformable()) {
                 copyToToken(target.getBackFace(), sourceObj.getSecondCardFace(), game);
@@ -128,8 +128,41 @@ public class CopyTokenFunction {
 
     private static void copyToToken(Token target, MageObject sourceObj, Game game) {
         // modify all attributes permanently (without game usage)
+        if (sourceObj instanceof Permanent) {
+            // if permanent, use the copiable values
+            CopiableValues copiableValues = ((Permanent) sourceObj).getCopiableValues();
+            target.setName(copiableValues.getName());
+            target.getColor().setColor(copiableValues.getColor());
+            target.getManaCost().clear();
+            target.getManaCost().add(copiableValues.getManaCost().copy());
+            target.removeAllCardTypes();
+            target.getCardType().addAll(copiableValues.getCardType());
+            target.getSubtype().copyFrom(copiableValues.getSubtype());
+            target.getSuperType().clear();
+            target.getSuperType().addAll(copiableValues.getSuperType());
+            target.getAbilities().clear();
+            for (Ability ability0 : copiableValues.getAbilities()) {
+                Ability ability = ability0.copy();
+
+                // The token is independant from the copy from object so it need a new original Id,
+                // otherwise there are problems to check for created continuous effects to check if
+                // the source (the Token) has still this ability
+                ability.newOriginalId();
+                //Don't re-add subabilities since they've already in sourceObj's abilities list
+                target.addAbility(ability, true);
+            }
+            target.setPower(copiableValues.getPower().getValue());
+            target.setToughness(copiableValues.getToughness().getValue());
+            target.setStartingLoyalty(copiableValues.getStartingLoyalty());
+            target.setStartingDefense(copiableValues.getStartingDefense());
+            target.setExpansionSetCode(copiableValues.getExpansionSetCode());
+            target.setCardNumber(copiableValues.getCardNumber());
+            target.setImageFileName(copiableValues.getImageFileName());
+            target.setImageNumber(copiableValues.getImageNumber());
+            target.setUsesVariousArt(copiableValues.getUsesVariousArt());
+            return;
+        }
         // ignore images settings here, it will be setup later due needs in face down
-        // (after copy or after put to battlefield)
         target.setName(sourceObj.getName());
         target.getColor().setColor(sourceObj.getColor());
         target.getManaCost().clear();
