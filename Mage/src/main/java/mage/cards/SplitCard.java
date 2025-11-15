@@ -131,6 +131,13 @@ public abstract class SplitCard extends CardImpl implements CardWithHalves {
     }
 
     @Override
+    public void setFaceDown(boolean faceDown) {
+        super.setFaceDown(faceDown);
+        leftHalfCard.setFaceDown(faceDown);
+        rightHalfCard.setFaceDown(faceDown);
+    }
+
+    @Override
     public boolean cast(Game game, Zone fromZone, SpellAbility ability, UUID controllerId) {
         switch (ability.getSpellAbilityType()) {
             case SPLIT_LEFT:

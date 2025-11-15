@@ -387,10 +387,6 @@ public final class ZonesHandler {
             return false;
         }
 
-        // TODO: is it buggy? Card characteristics are global - if you change face down then it will be
-        //  changed in original card too, not in blueprint only
-        card.setFaceDown(info.faceDown);
-
         boolean success = false;
         if (!game.replaceEvent(event)) {
             Zone fromZone = event.getFromZone();

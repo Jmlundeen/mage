@@ -90,6 +90,12 @@ public abstract class CardWithSpellOption extends CardImpl {
     }
 
     @Override
+    public void setFaceDown(boolean faceDown) {
+        super.setFaceDown(faceDown);
+        spellCard.setFaceDown(faceDown);
+    }
+
+    @Override
     public Abilities<Ability> getAbilities() {
         Abilities<Ability> allAbilities = new AbilitiesImpl<>();
         allAbilities.addAll(spellCard.getAbilities());

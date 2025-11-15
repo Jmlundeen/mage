@@ -54,7 +54,7 @@ public abstract class MageObjectImpl implements MageObject {
 
     protected boolean copy;
     protected MageObject copyFrom; // copied card INFO (used to call original adjusters)
-    protected CopiableValues faceDownValues = new CopiableValues();
+    protected CopiableValues faceDownValues = new CopiableValues(true);
     protected boolean faceDown;
 
     public MageObjectImpl() {
@@ -106,6 +106,9 @@ public abstract class MageObjectImpl implements MageObject {
 
     @Override
     public String getName() {
+        if (faceDown) {
+            return faceDownValues.getName();
+        }
         return name;
     }
 
@@ -121,6 +124,10 @@ public abstract class MageObjectImpl implements MageObject {
 
     @Override
     public void setName(String name) {
+        if (faceDown) {
+            faceDownValues.setName(name);
+            return;
+        }
         this.name = name;
     }
 
@@ -133,6 +140,9 @@ public abstract class MageObjectImpl implements MageObject {
                 return mageObjectAttribute.getCardType();
             }
         }
+        if (faceDown) {
+            return faceDownValues.getCardType();
+        }
 
         // static
         return cardType;
@@ -140,7 +150,7 @@ public abstract class MageObjectImpl implements MageObject {
 
     @Override
     public SubTypes getSubtype() {
-        return subtype;
+        return getSubtype(null);
     }
 
     @Override
@@ -150,6 +160,9 @@ public abstract class MageObjectImpl implements MageObject {
             if (mageObjectAttribute != null) {
                 return mageObjectAttribute.getSubtype();
             }
+        }
+        if (this.isFaceDown()) {
+            return faceDownValues.getSubtype();
         }
         return subtype;
     }
@@ -163,11 +176,17 @@ public abstract class MageObjectImpl implements MageObject {
                 return mageObjectAttribute.getSuperType();
             }
         }
+        if (this.isFaceDown()) {
+            return faceDownValues.getSuperType();
+        }
         return supertype;
     }
 
     @Override
     public Abilities<Ability> getAbilities() {
+        if (this.isFaceDown()) {
+            return faceDownValues.getAbilities();
+        }
         return abilities;
     }
 
@@ -182,37 +201,57 @@ public abstract class MageObjectImpl implements MageObject {
 
     @Override
     public MageInt getPower() {
+        if (faceDown) {
+            return faceDownValues.getPower();
+        }
         return power;
     }
 
     @Override
     public MageInt getToughness() {
+        if (faceDown) {
+            return faceDownValues.getToughness();
+        }
         return toughness;
     }
 
     @Override
     public int getStartingLoyalty() {
+        if (faceDown) {
+            return faceDownValues.getStartingLoyalty();
+        }
         return startingLoyalty;
     }
 
     @Override
     public void setStartingLoyalty(int startingLoyalty) {
+        if (faceDown) {
+            faceDownValues.setStartingLoyalty(startingLoyalty);
+            return;
+        }
         this.startingLoyalty = startingLoyalty;
     }
 
     @Override
     public int getStartingDefense() {
+        if (faceDown) {
+            return faceDownValues.getStartingDefense();
+        }
         return startingDefense;
     }
 
     @Override
     public void setStartingDefense(int startingDefense) {
+        if (faceDown) {
+            faceDownValues.setStartingDefense(startingDefense);
+            return;
+        }
         this.startingDefense = startingDefense;
     }
 
     @Override
     public ObjectColor getColor() {
-        return color;
+        return getColor(null);
     }
 
     @Override
@@ -222,6 +261,9 @@ public abstract class MageObjectImpl implements MageObject {
             if (mageObjectAttribute != null) {
                 return mageObjectAttribute.getColor();
             }
+        }
+        if (faceDown) {
+            return faceDownValues.getColor();
         }
         return color;
     }
@@ -257,66 +299,111 @@ public abstract class MageObjectImpl implements MageObject {
 
     @Override
     public String getExpansionSetCode() {
+        if (faceDown) {
+            return faceDownValues.getExpansionSetCode();
+        }
         return expansionSetCode;
     }
 
     @Override
     public void setExpansionSetCode(String expansionSetCode) {
+        if (faceDown) {
+            faceDownValues.setExpansionSetCode(expansionSetCode);
+            return;
+        }
         this.expansionSetCode = expansionSetCode;
     }
 
     @Override
     public boolean getUsesVariousArt() {
+        if (faceDown) {
+            return faceDownValues.getUsesVariousArt();
+        }
         return usesVariousArt;
     }
 
     @Override
     public void setUsesVariousArt(boolean usesVariousArt) {
+        if (faceDown) {
+            faceDownValues.setUsesVariousArt(usesVariousArt);
+            return;
+        }
         this.usesVariousArt = usesVariousArt;
     }
 
     @Override
     public String getCardNumber() {
+        if (faceDown) {
+            return faceDownValues.getCardNumber();
+        }
         return cardNumber;
     }
 
     @Override
     public void setCardNumber(String cardNumber) {
+        if (faceDown) {
+            faceDownValues.setCardNumber(cardNumber);
+            return;
+        }
         this.cardNumber = cardNumber;
     }
 
     @Override
     public String getImageFileName() {
+        if (faceDown) {
+            return faceDownValues.getImageFileName();
+        }
         return imageFileName;
     }
 
     @Override
     public void setImageFileName(String imageFileName) {
+        if (faceDown) {
+            faceDownValues.setImageFileName(imageFileName);
+            return;
+        }
         this.imageFileName = imageFileName;
     }
 
     @Override
     public Integer getImageNumber() {
+        if (faceDown) {
+            return faceDownValues.getImageNumber();
+        }
         return imageNumber;
     }
 
     @Override
     public void setImageNumber(Integer imageNumber) {
+        if (faceDown) {
+            faceDownValues.setImageNumber(imageNumber);
+            return;
+        }
         this.imageNumber = imageNumber;
     }
 
     @Override
     public ManaCosts<ManaCost> getManaCost() {
+        if (faceDown) {
+            return faceDownValues.getManaCost();
+        }
         return manaCost;
     }
 
     @Override
     public void setManaCost(ManaCosts<ManaCost> costs) {
+        if (faceDown) {
+            faceDownValues.setManaCost(costs);
+            return;
+        }
         this.manaCost = costs.copy();
     }
 
     @Override
     public int getManaValue() {
+        if (faceDown) {
+            return faceDownValues.getManaCost().manaValue();
+        }
         if (manaCost != null) {
             return manaCost.manaValue();
         }

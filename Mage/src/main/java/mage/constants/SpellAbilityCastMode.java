@@ -6,6 +6,7 @@ import mage.abilities.keyword.BestowAbility;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.cards.Card;
 import mage.game.Game;
+import mage.game.stack.Spell;
 
 /**
  * @author LevelX2
@@ -76,6 +77,11 @@ public enum SpellAbilityCastMode {
                 break;
             case MORPH:
             case DISGUISE:
+                if (cardCopy instanceof Spell) {
+                    //Spell doesn't support setName, so make a copy of the card (we're blowing it away anyway)
+                    // TODO: research - is it possible to apply face down code to spell instead workaround with card
+                    cardCopy = ((Spell) cardCopy).getCard().copy();
+                }
                 BecomesFaceDownCreatureEffect.FaceDownType faceDownType = this == MORPH
                         ? BecomesFaceDownCreatureEffect.FaceDownType.MORPHED
                         : BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;

@@ -59,7 +59,6 @@ public class Spell extends StackObjectImpl implements Card {
     private UUID controllerId;
     private boolean copy;
     private MageObject copyFrom; // copied card INFO (used to call original adjusters)
-    private boolean faceDown;
     private boolean countered;
     private boolean resolving = false;
     private UUID commandedByPlayerId = null; // controller of the spell resolve, example: Word of Command
@@ -91,6 +90,21 @@ public class Spell extends StackObjectImpl implements Card {
             this.prototyped = true;
         }
 
+        if (ability.getSpellAbilityCastMode().isFaceDown()) {
+            affectedCard.setFaceDown(true);
+            BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
+            if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.MORPH) {
+                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
+            } else if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.DISGUISE){
+                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
+            } else {
+                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
+            }
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, ability.getId(), card, faceDownType, null);
+        } else if (card.isFaceDown()) {
+            // in case card was turned face down before casting
+            affectedCard.setFaceDown(false);
+        }
         this.card = affectedCard;
         this.manaCost = affectedCard.getManaCost().copy();
         this.color = ability.getSpellAbilityCastMode().isFaceDown() ? new ObjectColor() : affectedCard.getColor(null).copy();
@@ -103,18 +117,6 @@ public class Spell extends StackObjectImpl implements Card {
         this.ability = ability;
         this.ability.setControllerId(controllerId);
 
-        if (ability.getSpellAbilityCastMode().isFaceDown()) {
-            this.faceDown = true;
-            BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
-            if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.MORPH) {
-                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
-            } else if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.DISGUISE){
-                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
-            } else {
-                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
-            }
-            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, ability.getId(), card, faceDownType, null);
-        }
         if (ability.getSpellAbilityType() == SpellAbilityType.SPLIT_FUSED) {
             // if this spell is going to be a copy, these abilities will be copied in copySpell
             if (!isCopy) {
@@ -156,7 +158,6 @@ public class Spell extends StackObjectImpl implements Card {
         this.controllerId = spell.controllerId;
         this.copy = spell.copy;
         this.copyFrom = (spell.copyFrom != null ? spell.copyFrom.copy() : null);
-        this.faceDown = spell.faceDown;
         this.countered = spell.countered;
         this.resolving = spell.resolving;
         this.commandedByPlayerId = spell.commandedByPlayerId;
@@ -363,7 +364,7 @@ public class Spell extends StackObjectImpl implements Card {
                     permId = card.getId();
                     MageObjectReference mor = new MageObjectReference(getSpellAbility());
                     game.storePermanentCostsTags(mor, getSpellAbility());
-                    permanentCreated = controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, faceDown, false, null);
+                    permanentCreated = controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, isFaceDown(), false, null);
                 }
                 if (permanentCreated) {
                     if (bestow) {
@@ -396,7 +397,7 @@ public class Spell extends StackObjectImpl implements Card {
             if (bestow) {
                 MageObjectReference mor = new MageObjectReference(getSpellAbility());
                 game.storePermanentCostsTags(mor, getSpellAbility());
-                return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, faceDown, false, null);
+                return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, isFaceDown(), false, null);
             } else {
                 //20091005 - 608.2b
                 if (!game.isSimulation()) {
@@ -413,7 +414,7 @@ public class Spell extends StackObjectImpl implements Card {
         } else {
             MageObjectReference mor = new MageObjectReference(getSpellAbility());
             game.storePermanentCostsTags(mor, getSpellAbility());
-            return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, faceDown, false, null);
+            return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, isFaceDown(), false, null);
         }
     }
 
@@ -545,7 +546,7 @@ public class Spell extends StackObjectImpl implements Card {
 
     @Override
     public String getLogName() {
-        if (faceDown) {
+        if (isFaceDown()) {
             return GameLog.getNeutralObjectIdName("face down spell", getId());
         }
         return GameLog.getColoredObjectIdName(card);
@@ -567,7 +568,7 @@ public class Spell extends StackObjectImpl implements Card {
 
     @Override
     public List<CardType> getCardType(Game game) {
-        if (faceDown) {
+        if (isFaceDown()) {
             return card.getCardType(game);
         }
         if (SpellAbilityCastMode.BESTOW.equals(this.getSpellAbility().getSpellAbilityCastMode())) {
@@ -677,7 +678,7 @@ public class Spell extends StackObjectImpl implements Card {
     @Override
     public int getManaValue() {
         int cmc = 0;
-        if (faceDown) {
+        if (isFaceDown()) {
             return 0;
         }
         for (SpellAbility spellAbility : spellAbilities) {
@@ -775,7 +776,7 @@ public class Spell extends StackObjectImpl implements Card {
 
     @Override
     public boolean isFaceDown() {
-        return faceDown;
+        return card.isFaceDown();
     }
 
     @Override

@@ -271,7 +271,11 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
 
         // basic
         if (!cardState.hasLostAllAbilities()) {
-            all.addAll(abilities);
+            if (isFaceDown()) {
+                all.addAll(faceDownValues.getAbilities());
+            } else {
+                all.addAll(abilities);
+            }
         }
 
         // dynamic

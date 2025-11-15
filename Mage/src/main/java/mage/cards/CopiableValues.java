@@ -9,6 +9,8 @@ import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.cards.repository.TokenInfo;
+import mage.cards.repository.TokenRepository;
 import mage.constants.CardType;
 import mage.constants.Rarity;
 import mage.constants.SubType;
@@ -17,10 +19,11 @@ import mage.game.Game;
 import mage.game.stack.Spell;
 import mage.util.SubTypes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CopiableValues {
+public class CopiableValues implements Serializable {
 
     // MTG copiable values
     protected String name = "";
@@ -42,7 +45,20 @@ public class CopiableValues {
     protected String imageFileName;
     protected int imageNumber;
 
-    public CopiableValues() {
+    public CopiableValues(boolean faceDown) {
+        if (faceDown) {
+            TokenInfo tokenInfo = TokenRepository.instance.findPreferredTokenInfoForXmage(
+                    TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_MANUAL,
+                    null
+            );
+            if (tokenInfo != null) {
+                this.expansionSetCode = tokenInfo.getSetCode();
+                this.usesVariousArt = false;
+                this.cardNumber = "0";
+                this.imageFileName = tokenInfo.getName();
+                this.imageNumber = tokenInfo.getImageNumber();
+            }
+        }
     }
 
     public CopiableValues(MageObject mageObject, Game game) {

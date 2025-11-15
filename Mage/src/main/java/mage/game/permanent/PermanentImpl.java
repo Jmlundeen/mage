@@ -122,7 +122,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     protected int createOrder;
     protected boolean legendRuleApplies = true;
     protected boolean prototyped;
-    protected CopiableValues copiableValues = new CopiableValues();
+    protected CopiableValues copiableValues = new CopiableValues(false);
 
     private static final List<UUID> emptyList = Collections.unmodifiableList(new ArrayList<>());
 

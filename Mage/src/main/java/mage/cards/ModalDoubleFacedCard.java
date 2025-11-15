@@ -209,6 +209,13 @@ public abstract class ModalDoubleFacedCard extends CardImpl implements CardWithH
     }
 
     @Override
+    public void setFaceDown(boolean faceDown) {
+        super.setFaceDown(faceDown);
+        leftHalfCard.setFaceDown(faceDown);
+        rightHalfCard.setFaceDown(faceDown);
+    }
+
+    @Override
     public Counters getCounters(Game game) {
         return getCounters(game.getState());
     }
