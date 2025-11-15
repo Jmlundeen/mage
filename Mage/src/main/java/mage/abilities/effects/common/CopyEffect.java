@@ -96,13 +96,8 @@ public class CopyEffect extends ContinuousEffectImpl {
     }
 
     protected boolean copyToPermanent(Permanent permanent, Game game, Ability source) {
-        if (copyFromObject.getCopyFrom() != null) {
-            // copy from temp blueprints (they are already copies)
-            permanent.setCopy(true, copyFromObject.getCopyFrom());
-        } else {
-            // copy object to object
-            permanent.setCopy(true, copyFromObject);
-        }
+        // copy object to object
+        permanent.setCopy(true, copyFromObject);
         permanent.setName(copyFromObject.getName());
         permanent.getColor(game).setColor(copyFromObject.getColor(game));
         permanent.getManaCost().clear();
