@@ -901,11 +901,10 @@ public class TokenImagesTest extends CardTestPlayerBase {
                     .orElse(null);
 
             // server side (full data)
-            // TODO: possible bugged?! Other abilities must not see faced-down card as real on server side!
-            String needName = "Forest";
+            String needName = EmptyNames.FACE_DOWN_CARD.getObjectName();
             Assert.assertTrue("server side - must be face down", card.isFaceDown());
             Assert.assertEquals("server side - wrong name", needName, card.getName());
-            Assert.assertTrue("server side - wrong abilities", card.getAbilities(currentGame).stream().anyMatch(a -> !CardUtil.isInformationAbility(a))); // play + add mana
+            Assert.assertTrue("server side - wrong abilities", card.getAbilities(currentGame).isEmpty());
 
             // client side - controller (hidden data + original name)
             needName = "Face Down: Forest";
