@@ -1,9 +1,13 @@
 package org.mage.test.cards.single.khc;
 
+import mage.abilities.keyword.ForetellAbility;
+import mage.cards.Card;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link mage.cards.e.EtherealValkyrie Ethereal Valkyrie}
@@ -36,6 +40,8 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
     private static final String alloyMyr = "Alloy Myr";
     // Land
     private static final String exoticOrchard = "Exotic Orchard";
+    // Creature with foretell {4}{R}
+    private static final String doomskarTitan = "Doomskar Titan";
 
     /**
      * Test that a regular card is playable.
@@ -201,5 +207,32 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(3, PhaseStep.PRECOMBAT_MAIN);
         execute();
+    }
+
+    @Test
+    public void testCardWithForetell() {
+        addCard(Zone.BATTLEFIELD, playerA, "Plains", 1);
+        addCard(Zone.BATTLEFIELD, playerA, "Island", 1);
+        addCard(Zone.BATTLEFIELD, playerA, "Island", 4);
+        addCard(Zone.HAND, playerA, etherealValkyrie);
+        addCard(Zone.HAND, playerA, doomskarTitan);
+
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, etherealValkyrie);
+        addTarget(playerA, doomskarTitan);
+
+        setStrictChooseMode(true);
+        setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
+        execute();
+
+        assertExileCount(playerA, 1);
+        for (Card card : currentGame.getExile().getCardsOwned(currentGame, playerA.getId())) {
+            if (card.getAbilities(currentGame).containsClass(ForetellAbility.class)) {
+                assertEquals(2, card.getAbilities(currentGame).stream()
+                        .filter(ability -> ability instanceof ForetellAbility)
+                        .count(),
+                        "The exiled Doomskar Titan should have 2 Foretell abilities"
+                );
+            }
+        }
     }
 }
