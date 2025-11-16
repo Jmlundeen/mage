@@ -61,6 +61,8 @@ public class PermanentCard extends PermanentImpl {
             goodForBattlefield = true;
             this.faceDown = true;
             this.faceDownValues = card.getFaceDownValues();
+            // turn reference card face up to access original values
+            card.setFaceDown(false);
         }
 
         if (!goodForBattlefield) {
