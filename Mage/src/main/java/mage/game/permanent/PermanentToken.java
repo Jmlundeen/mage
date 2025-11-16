@@ -7,6 +7,7 @@ import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.keyword.ChangelingAbility;
 import mage.abilities.keyword.TransformAbility;
 import mage.cards.Card;
+import mage.cards.repository.TokenRepository;
 import mage.constants.EmptyNames;
 import mage.game.Game;
 import mage.game.events.ZoneChangeEvent;
@@ -79,6 +80,39 @@ public class PermanentToken extends PermanentImpl {
 
     private void copyFromToken(Token token, Game game, boolean reset) {
         // modify all attributes permanently (without game usage)
+        if (this.faceDown) {
+            this.name = faceDownValues.getName();
+            this.manaCost = faceDownValues.getManaCost().copy();
+            this.color = faceDownValues.getColor().copy();
+            this.cardType.clear();
+            this.cardType.addAll(faceDownValues.getCardType());
+            this.supertype.clear();
+            this.supertype.addAll(faceDownValues.getSuperType());
+            this.subtype.copyFrom(faceDownValues.getSubtype());
+            this.abilities.clear();
+            for (Ability ability : faceDownValues.getAbilities()) {
+                this.addAbility(ability, this.getId(), game, false);
+            }
+            this.power = faceDownValues.getPower().copy();
+            this.toughness = faceDownValues.getToughness().copy();
+            this.setExpansionSetCode(faceDownValues.getExpansionSetCode());
+            this.setUsesVariousArt(faceDownValues.getUsesVariousArt());
+            this.setCardNumber(faceDownValues.getCardNumber());
+            this.setImageFileName(faceDownValues.getImageFileName());
+            switch (getImageFileName()) {
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_MORPH:
+                    this.setMorphed(true);
+                    break;
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_DISGUISE:
+                    this.setDisguised(true);
+                    break;
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_CLOAK:
+                    this.setCloaked(true);
+                    break;
+            }
+            this.setImageNumber(faceDownValues.getImageNumber());
+            return;
+        }
         this.name = token.getName();
         this.abilities.clear();
         if (reset) {
@@ -112,6 +146,7 @@ public class PermanentToken extends PermanentImpl {
         }
 
         CardUtil.copySetAndCardNumber(this, token);
+        this.saveCopiableValues(game);
     }
 
     @Override
@@ -155,6 +190,12 @@ public class PermanentToken extends PermanentImpl {
         // isn’t represented by a transforming token or a transforming double-faced card,
         // nothing happens.
         return token.getBackFace() != null;
+    }
+
+    @Override
+    public void setFaceDown(boolean faceDown) {
+        super.setFaceDown(faceDown);
+        getToken().setFaceDown(faceDown);
     }
 
     @Override
