@@ -113,6 +113,11 @@ public abstract class MageObjectImpl implements MageObject {
     }
 
     @Override
+    public String getOriginalName() {
+        return name;
+    }
+
+    @Override
     public String getIdName() {
         return getName() + " [" + getId().toString().substring(0, 3) + ']';
     }

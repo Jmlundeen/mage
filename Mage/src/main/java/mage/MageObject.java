@@ -53,6 +53,8 @@ public interface MageObject extends MageItem, Serializable, Copyable<MageObject>
 
     String getName();
 
+    String getOriginalName();
+
     /**
      * Warning, don't use it as a key - multiple objects can have same parts of the id in rare use cases
      *
