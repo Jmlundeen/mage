@@ -2,7 +2,6 @@ package mage.cards.a;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -14,15 +13,14 @@ import mage.abilities.effects.common.continuous.BoostSourceEffect;
 import mage.abilities.effects.keyword.ScryEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.ForetellAbility;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.card.OwnerIdPredicate;
-import mage.filter.predicate.mageobject.AbilityPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
 import mage.players.Player;
-import mage.util.CardUtil;
 
 import java.util.Collection;
 import java.util.Set;
@@ -135,15 +133,11 @@ enum AlrundGodOfTheCosmosValue implements DynamicValue {
             Cards cardsForetoldInExileZones = new CardsImpl();
             FilterCard filter = new FilterCard();
             filter.add(new OwnerIdPredicate(controller.getId()));
-            filter.add(new AbilityPredicate(ForetellAbility.class));
             for (ExileZone exile : exileZones) {
                 for (Card card : exile.getCards(filter, game)) {
                     // verify that the card is actually Foretold
-                    UUID exileId = CardUtil.getExileZoneId(card.getId().toString() + "foretellAbility", game);
-                    if (exileId != null) {
-                        if (game.getState().getExile().getExileZone(exileId) != null) {
-                            cardsForetoldInExileZones.add(card);
-                        }
+                    if (ForetellAbility.isCardInForetell(card, game)) {
+                        cardsForetoldInExileZones.add(card);
                     }
                 }
             }
