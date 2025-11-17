@@ -62,7 +62,9 @@ public class PermanentView extends CardView {
             // face down card must be hidden from opponent, but shown on game end for all
             boolean showFaceDownInfo = controlled || (game != null && game.hasEnded());
             if (card != null && showFaceDownInfo) {
-                original = new CardView(card.copy(), (Game) null);
+                Card copyCard = card.copy();
+                copyCard.setFaceDown(false); // original is always face up
+                original = new CardView(copyCard, (Game) null);
             } else {
                 original = null;
             }
