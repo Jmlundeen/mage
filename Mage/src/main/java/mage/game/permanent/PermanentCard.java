@@ -132,8 +132,8 @@ public class PermanentCard extends PermanentImpl {
             for (Ability ability : faceDownValues.getAbilities()) {
                 this.addAbility(ability, this.getId(), game, false);
             }
-            this.power = faceDownValues.getPower().copy();
-            this.toughness = faceDownValues.getToughness().copy();
+            this.power = faceDownValues.getPower();
+            this.toughness = faceDownValues.getToughness();
             this.setExpansionSetCode(faceDownValues.getExpansionSetCode());
             this.setUsesVariousArt(faceDownValues.getUsesVariousArt());
             this.setCardNumber(faceDownValues.getCardNumber());
