@@ -424,7 +424,15 @@ public class TestPlayer implements Player {
                 foundObject = true;
                 foundAbility = ability.toString().equals(nameOrAlias);
             } else {
-                foundObject = hasObjectTargetNameOrAlias(game.getObject(ability.getSourceId()), searchObject);
+                MageObject mageObject = game.getObject(ability.getSourceId());
+                if (mageObject == null) {
+                    foundObject = false;
+                } else if (mageObject.isFaceDown()) {
+                    // if checking a cast for a face down card, it should be properly approved, so just make sure the name matches the original
+                    foundObject = mageObject.getOriginalName().equals(searchObject);
+                } else {
+                    foundObject = hasObjectTargetNameOrAlias(game.getObject(ability.getSourceId()), searchObject);
+                }
                 foundAbility = searchObject.startsWith(ALIAS_PREFIX) || ability.toString().equals(nameOrAlias);
             }
         } else if (nameOrAlias.startsWith(ALIAS_PREFIX)) {
@@ -456,6 +464,16 @@ public class TestPlayer implements Player {
         // must search any names, even empty (face down cards)
         if (CardUtil.haveSameNames(nameOrAlias, object.getName(), true)) {
             return true;
+        }
+
+        // if card owner, check original name
+        if (object instanceof Card) {
+            Card card = (Card) object;
+            if (card.getOwnerId() != null && card.getOwnerId().equals(this.getId())) {
+                if (CardUtil.haveSameNames(nameOrAlias, card.getOriginalName(), true)) {
+                    return true;
+                }
+            }
         }
 
         // no more empty names needs

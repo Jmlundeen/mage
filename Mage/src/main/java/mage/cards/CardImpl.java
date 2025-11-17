@@ -47,6 +47,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     protected Card secondSideCard;
     protected boolean nightCard;
     protected SpellAbility spellAbility;
+    protected PlayLandAbility playLandAbility;
     protected boolean flipCard;
     protected String flipCardName;
     protected boolean morphCard;
@@ -140,6 +141,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         }
 
         spellAbility = null; // will be set on first getSpellAbility call if card has one
+        playLandAbility = null; // will be set on first getPlayLandAbility call if card has one
         flipCard = card.flipCard;
         flipCardName = card.flipCardName;
         morphCard = card.morphCard;
@@ -271,7 +273,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
 
         // basic
         if (!cardState.hasLostAllAbilities()) {
-            if (isFaceDown()) {
+            if (isFaceDown() && !(this instanceof Permanent)) {
                 all.addAll(faceDownValues.getAbilities());
             } else {
                 all.addAll(abilities);
@@ -389,6 +391,18 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
             }
         }
         return spellAbility;
+    }
+
+    @Override
+    public PlayLandAbility getPlayLandAbility() {
+        if (playLandAbility == null) {
+            for (Ability ability : abilities.getActivatedAbilities(Zone.HAND)) {
+                if (ability instanceof PlayLandAbility) {
+                    return playLandAbility = (PlayLandAbility) ability;
+                }
+            }
+        }
+        return playLandAbility;
     }
 
     @Override

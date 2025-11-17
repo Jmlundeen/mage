@@ -470,12 +470,23 @@ public class ContinuousEffects implements Serializable {
      * @return
      */
     private List<CostModificationEffect> getApplicableCostModificationEffects(Game game) {
+        return getApplicableCostModificationEffects(game, null);
+    }
+
+    /**
+     * Filters out cost modification effects that are not active.
+     *
+     * @param game
+     * @param sourceObject
+     * @return
+     */
+    private List<CostModificationEffect> getApplicableCostModificationEffects(Game game, MageObject sourceObject) {
         List<CostModificationEffect> costEffects = new ArrayList<>();
 
         for (CostModificationEffect effect : costModificationEffects) {
             Set<Ability> abilities = costModificationEffects.getAbility(effect.getId());
             for (Ability ability : abilities) {
-                if (!(ability instanceof StaticAbility) || ability.isInUseableZone(game, null, null)) {
+                if (!(ability instanceof StaticAbility) || ability.isInUseableZone(game, sourceObject, null)) {
                     if (effect.getDuration() != Duration.OneUse || !effect.isUsed()) {
                         costEffects.add(effect);
                         break;
@@ -668,6 +679,11 @@ public class ContinuousEffects implements Serializable {
         return asThoughEffectsMap.get(effect.getAsThoughEffectType()).getAbility(effect.getId());
     }
 
+
+    public void costModification(Ability abilityToModify, Game game) {
+        costModification(abilityToModify, game, null);
+    }
+
     /**
      * 601.2e The player determines the total cost of the spell. Usually this is
      * just the mana cost. Some spells have additional or alternative costs.
@@ -694,8 +710,8 @@ public class ContinuousEffects implements Serializable {
      * @param abilityToModify
      * @param game
      */
-    public void costModification(Ability abilityToModify, Game game) {
-        List<CostModificationEffect> costEffects = getApplicableCostModificationEffects(game);
+    public void costModification(Ability abilityToModify, Game game, MageObject sourceObject) {
+        List<CostModificationEffect> costEffects = getApplicableCostModificationEffects(game, sourceObject);
 
         // add dynamic costs from X and other places
         abilityToModify.adjustCostsPrepare(game);

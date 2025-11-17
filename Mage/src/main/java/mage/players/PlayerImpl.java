@@ -3721,7 +3721,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             copy.adjustX(game);
             if (availableMana != null) {
                 // TODO: need research, why it look at availableMana here - can delete condition?
-                game.getContinuousEffects().costModification(copy, game);
+                game.getContinuousEffects().costModification(copy, game, sourceObject);
             }
             boolean canBeCastRegularly = true;
             Set<MageIdentifier> allowedIdentifiers = null;
@@ -4093,6 +4093,28 @@ public abstract class PlayerImpl implements Player, Serializable {
     private void getPlayableFromObjectAll(Game game, Zone fromZone, MageObject object, ManaOptions availableMana, List<ActivatedAbility> output) {
         if (fromZone == null || object == null) {
             return;
+        }
+
+        // if face down, check for an approving object allowing the card to be played
+        // if found, use a face up copy of the card to check playable
+        if (object.isFaceDown() && object instanceof Card) {
+            Ability ability = ((Card) object).getSpellAbility();
+            if (ability == null) {
+                ability = ((Card) object).getPlayLandAbility();
+            }
+            if (ability != null) {
+                Set<ApprovingObject> approvingObjects = game.getContinuousEffects().asThough(object.getId(),
+                        AsThoughEffectType.PLAY_FROM_NOT_OWN_HAND_ZONE, ability, getId(), game);
+                if (approvingObjects.isEmpty()) {
+                    approvingObjects = game.getContinuousEffects().asThough(object.getId(),
+                            AsThoughEffectType.CAST_FROM_NOT_OWN_HAND_ZONE, ability, getId(), game);
+                }
+                if (!approvingObjects.isEmpty()) {
+                    MageObject faceUpObject = object.copy();
+                    faceUpObject.setFaceDown(false);
+                    object = faceUpObject;
+                }
+            }
         }
 
         // BASIC abilities

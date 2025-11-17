@@ -4,6 +4,7 @@ import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Abilities;
 import mage.abilities.Ability;
+import mage.abilities.PlayLandAbility;
 import mage.abilities.SpellAbility;
 import mage.constants.CardType;
 import mage.constants.Rarity;
@@ -42,6 +43,8 @@ public interface Card extends MageObject, Ownerable {
     void setSpellAbility(SpellAbility ability);
 
     SpellAbility getSpellAbility();
+
+    PlayLandAbility getPlayLandAbility();
 
     List<String> getRules(); // gets base card rules
 

@@ -530,6 +530,11 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
+    public String getOriginalName() {
+        return card.getOriginalName();
+    }
+
+    @Override
     public String getIdName() {
         String idName;
         if (card != null) {
@@ -745,6 +750,11 @@ public class Spell extends StackObjectImpl implements Card {
     @Override
     public SpellAbility getSpellAbility() {
         return ability;
+    }
+
+    @Override
+    public PlayLandAbility getPlayLandAbility() {
+        return null;
     }
 
     public void setControllerId(UUID controllerId) {
