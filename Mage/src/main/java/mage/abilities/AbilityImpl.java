@@ -1519,7 +1519,7 @@ public abstract class AbilityImpl implements Ability {
                 }
             } else if (object instanceof Spell) {
                 Spell spell = (Spell) object;
-                String castText = spell.getSpellCastText(game);
+                String castText = spell.getSpellCastText();
                 sb.append((castText.startsWith("Cast ") ? castText.substring(5) : castText));
                 if (spell.getFromZone() == Zone.GRAVEYARD) {
                     sb.append(" from graveyard");

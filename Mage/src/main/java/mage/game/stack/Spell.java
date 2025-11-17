@@ -91,7 +91,6 @@ public class Spell extends StackObjectImpl implements Card {
         }
 
         if (ability.getSpellAbilityCastMode().isFaceDown()) {
-            affectedCard.setFaceDown(true);
             BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
             if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.MORPH) {
                 faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
@@ -101,6 +100,7 @@ public class Spell extends StackObjectImpl implements Card {
                 faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
             }
             BecomesFaceDownCreatureEffect.makeFaceDownObject(game, ability.getId(), card, faceDownType, null);
+            affectedCard.setFaceDown(true);
         } else if (card.isFaceDown()) {
             // in case card was turned face down before casting
             affectedCard.setFaceDown(false);
@@ -211,10 +211,10 @@ public class Spell extends StackObjectImpl implements Card {
         return sb.toString();
     }
 
-    public String getSpellCastText(Game game) {
+    public String getSpellCastText() {
         if (this.getSpellAbility().getSpellAbilityCastMode().isFaceDown()) {
             // add face down name with object link, so user can look at it from logs
-            return "a " + GameLog.getColoredObjectIdName(this.getSpellAbility().getCharacteristics(game))
+            return "a " + GameLog.getColoredObjectIdName(card)
                     + " using " + this.getSpellAbility().getSpellAbilityCastMode();
         }
 
