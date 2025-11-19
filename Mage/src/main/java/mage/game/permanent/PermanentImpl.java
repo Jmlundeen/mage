@@ -2089,12 +2089,21 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
         }
         ZoneChangeEvent event = new ZoneChangeEvent(this, source, controllerId, fromZone, parameters.getToZone(), appliedEffects);
         ZoneChangeInfo zoneChangeInfo;
-        if (toZone == Zone.LIBRARY) {
-            zoneChangeInfo = new ZoneChangeInfo.Library(event, parameters.isFaceDown());
-        } else {
-            zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());
+        if (toZone != null) {
+            switch (toZone) {
+                case LIBRARY:
+                    zoneChangeInfo = new ZoneChangeInfo.Library(event, parameters.isFaceDown(), parameters.isToTopOfLibrary());
+                    break;
+                case EXILED:
+                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName());
+                    break;
+                default:
+                    zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());
+                    break;
+            }
+            return ZonesHandler.moveCard(zoneChangeInfo, game, source);
         }
-        return ZonesHandler.moveCard(zoneChangeInfo, game, source);
+        return false;
     }
 
     @Override
