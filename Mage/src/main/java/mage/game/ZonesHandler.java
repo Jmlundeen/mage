@@ -143,6 +143,10 @@ public final class ZonesHandler {
         ZoneChangeEvent event = info.event;
         Zone toZone = event.getToZone();
         Card targetCard = getTargetCard(game, event.getTargetId());
+        if (!info.faceDown) {
+            // make sure card is face up if not specifically set to move face down
+            targetCard.setFaceDown(false);
+        }
 
         Cards cardsToMove = null; // moving real cards
         Map<Zone, Cards> cardsToUpdate = new LinkedHashMap<>(); // updating all card's parts (must be ordered LinkedHashMap)
