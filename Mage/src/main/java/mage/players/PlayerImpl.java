@@ -947,7 +947,7 @@ public abstract class PlayerImpl implements Player, Serializable {
          * when a card is discarded (such as madness) still work, even though that card never reaches
          * a graveyard. In addition, spells or abilities that check the characteristics of a discarded
          * card (such as Chandra Ablaze's first ability) can find that card in exile. */
-        card.moveToZone(Zone.GRAVEYARD, source, game, false);
+        card.moveToZone(new MoveCardsParameters(Zone.GRAVEYARD), source, game);
         // So discard is also successful if card is moved to another zone by replacement effect!
         game.fireEvent(GameEvent.getEvent(GameEvent.EventType.DISCARDED_CARD, card.getId(), source, playerId));
 
@@ -1030,16 +1030,6 @@ public abstract class PlayerImpl implements Player, Serializable {
     }
 
     @Override
-    public boolean putInGraveyard(Card card, Game game) {
-        if (card.isOwnedBy(playerId)) {
-            this.graveyard.add(card);
-        } else {
-            return game.getPlayer(card.getOwnerId()).putInGraveyard(card, game);
-        }
-        return true;
-    }
-
-    @Override
     public boolean removeFromGraveyard(Card card, Game game) {
         return this.graveyard.remove(card);
     }
@@ -1055,13 +1045,15 @@ public abstract class PlayerImpl implements Player, Serializable {
             Cards cards = new CardsImpl(cardsToLibrary); // prevent possible ConcurrentModificationException
             if (!anyOrder) {
                 // random order
-                List<UUID> ids = new ArrayList<>(cards);
-                Collections.shuffle(ids);
-                for (UUID id : ids) {
-                    moveObjectToLibrary(id, source, game, false);
-                }
+                List<Card> cardList = new ArrayList<>(cards.getCards(game));
+                Collections.shuffle(cardList);
+                MoveCardsParameters parameters = new MoveCardsParameters(cardList, Zone.LIBRARY)
+                        .setToTopOfLibrary(false);
+                moveCards(parameters, source, game, null);
+
             } else {
                 // user defined order
+                List<Card> order = new ArrayList<>();
                 UUID cardOwner = cards.getRandom(game).getOwnerId();
                 TargetCard target = new TargetCard(Zone.ALL,
                         new FilterCard("card ORDER to put on the BOTTOM of " +
@@ -1075,12 +1067,14 @@ public abstract class PlayerImpl implements Player, Serializable {
                         break;
                     }
                     cards.remove(targetObjectId);
-                    moveObjectToLibrary(targetObjectId, source, game, false);
+                    order.add(game.getCard(targetObjectId));
                     target.clearChosen();
                 }
                 for (UUID c : cards) {
-                    moveObjectToLibrary(c, source, game, false);
+                    order.add(game.getCard(c));
                 }
+                MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY);
+                moveCards(parameters, source, game, null);
             }
         }
         return true;
@@ -1094,7 +1088,8 @@ public abstract class PlayerImpl implements Player, Serializable {
         game.informPlayers(getLogName() + " shuffles " + CardUtil.numberToText(cards.size(), "a")
                 + " card" + (cards.size() == 1 ? "" : "s")
                 + " into their library" + CardUtil.getSourceLogName(game, source));
-        boolean status = moveCards(cards, Zone.LIBRARY, source, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.LIBRARY);
+        boolean status = moveCards(parameters, source, game);
         shuffleLibrary(source, game);
         return status;
     }
@@ -1151,13 +1146,13 @@ public abstract class PlayerImpl implements Player, Serializable {
             Cards cards = new CardsImpl(cardsToLibrary); // prevent possible ConcurrentModificationException
             if (!anyOrder) {
                 // random order
-                List<UUID> ids = new ArrayList<>(cards);
-                Collections.shuffle(ids);
-                for (UUID id : ids) {
-                    moveObjectToLibrary(id, source, game, true);
-                }
+                List<Card> cardList = new ArrayList<>(cards.getCards(game));
+                Collections.shuffle(cardList);
+                MoveCardsParameters parameters = new MoveCardsParameters(cardList, Zone.LIBRARY);
+                moveCards(parameters, source, game, null);
             } else {
                 // user defined order
+                List<Card> order = new ArrayList<>();
                 UUID cardOwner = cards.getRandom(game).getOwnerId();
                 TargetCard target = new TargetCard(Zone.ALL,
                         new FilterCard("card ORDER to put on the TOP of " +
@@ -1172,12 +1167,14 @@ public abstract class PlayerImpl implements Player, Serializable {
                         break;
                     }
                     cards.remove(targetObjectId);
-                    moveObjectToLibrary(targetObjectId, source, game, true);
+                    order.add(game.getCard(targetObjectId));
                     target.clearChosen();
                 }
                 for (UUID c : cards) {
-                    moveObjectToLibrary(c, source, game, true);
+                    order.add(game.getCard(c));
                 }
+                MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY);
+                moveCards(parameters, source, game, null);
             }
         }
         return true;
@@ -1189,27 +1186,6 @@ public abstract class PlayerImpl implements Player, Serializable {
             return putCardsOnTopOfLibrary(new CardsImpl(cardToLibrary), game, source, anyOrder);
         }
         return true;
-    }
-
-    private void moveObjectToLibrary(UUID objectId, Ability source, Game game, boolean toTop) {
-        MageObject mageObject = game.getObject(objectId);
-        if (mageObject instanceof Spell && mageObject.isCopy()) {
-            // Spell copies are not moved as cards, so here the no copy spell has to be selected to move
-            // (but because copy and original have the same objectId the wrong spell can be selected from stack).
-            // So let's check if the original spell is on the stack and has to be selected. // TODO: Better handling so each spell could be selected by a unique id
-            Spell spellNoCopy = game.getStack().getSpell(source.getSourceId(), false);
-            if (spellNoCopy != null) {
-                mageObject = spellNoCopy;
-            }
-        }
-        if (mageObject != null) {
-            Zone fromZone = game.getState().getZone(objectId);
-            if ((mageObject instanceof Permanent)) {
-                this.moveCardToLibraryWithInfo((Permanent) mageObject, source, game, fromZone, toTop, false);
-            } else if (mageObject instanceof Card) {
-                this.moveCardToLibraryWithInfo((Card) mageObject, source, game, fromZone, toTop, false);
-            }
-        }
     }
 
     @Override
@@ -4948,6 +4924,353 @@ public abstract class PlayerImpl implements Player, Serializable {
     }
 
     @Override
+    public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game) {
+        return moveCards(parameters, source, game, null);
+    }
+
+    @Override
+    public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        if (parameters.getCards().isEmpty()) {
+            return true;
+        }
+        Set<Card> successfulMovedCards = new LinkedHashSet<>();
+        switch (parameters.getToZone()) {
+            case GRAVEYARD:
+                moveCardsToGraveyardWithInfo(parameters, source, game, successfulMovedCards);
+                break;
+            case BATTLEFIELD:
+                moveCardsToBattlefieldWithInfo(parameters, source, game, successfulMovedCards, appliedEffects);
+                break;
+            case HAND:
+                moveCardsToHandWithInfo(parameters, source, game, successfulMovedCards);
+                break;
+            case EXILED:
+                moveCardsToExileWithInfo(parameters, source, game, successfulMovedCards);
+                break;
+            case LIBRARY:
+                moveCardsToLibraryWithInfo(parameters, source, game, successfulMovedCards);
+                break;
+            case COMMAND:
+                moveCardsToCommandWithInfo(parameters, source, game, successfulMovedCards);
+                break;
+        }
+        return !successfulMovedCards.isEmpty();
+    }
+
+
+    private void moveCardsToGraveyardWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
+        while (!parameters.getCards().isEmpty()) {
+            // identify cards from one owner
+            Cards cards = new CardsImpl();
+            UUID ownerId = null;
+            for (Iterator<? extends Card> it = parameters.getCards().iterator(); it.hasNext(); ) {
+                Card card = it.next();
+                if (cards.isEmpty()) {
+                    ownerId = card.getOwnerId();
+                }
+                if (card.getOwnerId().equals(ownerId)) {
+                    cards.add(card);
+                    it.remove();
+                }
+            }
+            // move cards to graveyard in order the owner decides
+            if (!cards.isEmpty()) {
+                Player owner = game.getPlayer(ownerId);
+                if (owner == null) {
+                    continue;
+                }
+                boolean chooseOrder = false;
+                if (userData.askMoveToGraveOrder() && (cards.size() > 1)) {
+                    chooseOrder = owner.chooseUse(Outcome.Neutral,
+                            "Choose the order in which the cards go to the graveyard?", source, game);
+                }
+                if (chooseOrder) {
+                    TargetCard target = new TargetCard(Zone.ALL,
+                            new FilterCard("card to put on the top of your graveyard (last one chosen will be topmost)"));
+                    target.setRequired(true);
+                    while (owner.canRespond() && cards.size() > 1) {
+                        owner.chooseTarget(Outcome.Neutral, cards, target, source, game);
+                        UUID targetObjectId = target.getFirstTarget();
+                        Card card = cards.get(targetObjectId, game);
+                        cards.remove(targetObjectId);
+                        if (card != null) {
+                            Zone fromZone = game.getState().getZone(card.getId());
+                            if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone)) {
+                                successfulMovedCards.add(card);
+                            }
+                        }
+                        target.clearChosen();
+                    }
+                    if (cards.size() == 1) {
+                        Card card = cards.getCards(game).iterator().next();
+                        Zone fromZone = game.getState().getZone(card.getId());
+                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone)) {
+                            successfulMovedCards.add(card);
+                        }
+                    }
+                } else {
+                    for (Card card : cards.getCards(game)) {
+                        Zone fromZone = game.getState().getZone(card.getId());
+
+                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone)) {
+                            successfulMovedCards.add(card);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean moveCardToGraveyardWithInfo(Player player, Card card, MoveCardsParameters parameters, Ability source, Game game, Zone fromZone) {
+        if (card == null) {
+            return false;
+        }
+        boolean result = false;
+        if (card.moveToZone(parameters, source, game)) {
+            result = true;
+            if (!game.isSimulation()) {
+                return result;
+            }
+            if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
+                card = game.getCard(card.getId());
+            }
+            logMoveInfo(player, card, fromZone, true, parameters, game, source);
+        }
+        return result;
+    }
+
+    private void moveCardsToBattlefieldWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
+        List<ZoneChangeInfo> infoList = new ArrayList<>();
+        for (Card card : parameters.getCards()) {
+            Zone fromZone = game.getState().getZone(card.getId());
+
+            // 712.14a. If a spell or ability puts a transforming double-faced card onto the battlefield "transformed"
+            // or "converted," it enters the battlefield with its back face up. If a player is instructed to put a card
+            // that isn't a transforming double-faced card onto the battlefield transformed or converted, that card stays in
+            // its current zone.
+            Boolean enterTransformed = (Boolean) game.getState().getValue(TransformAbility.VALUE_KEY_ENTER_TRANSFORMED + card.getId());
+            if (!parameters.isFaceDown() && enterTransformed != null && enterTransformed && !card.isTransformable()) {
+                continue;
+            }
+
+            // 303.4g. If an Aura is entering the battlefield and there is no legal object or player for it to enchant,
+            // the Aura remains in its current zone, unless that zone is the stack. In that case, the Aura is put into
+            // its owner's graveyard instead of entering the battlefield. If the Aura is a token, it isn't created.
+            if (!parameters.isFaceDown() && card.hasSubtype(SubType.AURA, game) && !(source instanceof BestowAbility)) {
+                SpellAbility auraSpellAbility;
+                if (source instanceof SpellAbility && card.getAbilities(game).contains(source)) {
+                    // cast aura - use source ability
+                    auraSpellAbility = (SpellAbility) source;
+                } else {
+                    // put to battlefield by another effect - use default spell
+                    auraSpellAbility = card.getSpellAbility();
+                }
+                if (auraSpellAbility != null) {
+                    if (auraSpellAbility.getTargets().isEmpty()) {
+                        throw new IllegalArgumentException("Something wrong, found etb aura with empty spell ability or without any targets: " + card + ", source: " + source);
+                    }
+                    if (!auraSpellAbility.getTargets().get(0).copy().withNotTarget(true).canChooseOrAlreadyChosen(parameters.isByOwner() ? card.getOwnerId() : getId(), source, game)) {
+                        continue;
+                    }
+                }
+            }
+
+            ZoneChangeEvent event = new ZoneChangeEvent(card.getId(), source,
+                    parameters.isByOwner() ? card.getOwnerId() : getId(), fromZone, Zone.BATTLEFIELD, appliedEffects);
+            infoList.add(new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source));
+        }
+        ZonesHandler.moveCards(infoList, source, game);
+        for (ZoneChangeInfo info : infoList) {
+            Permanent permanent = game.getPermanent(info.event.getTargetId());
+            if (permanent == null) {
+                continue;
+            }
+            successfulMovedCards.add(permanent);
+            if (game.isSimulation()) {
+                continue;
+            }
+            Player eventPlayer = game.getPlayer(info.event.getPlayerId());
+            Zone fromZone = info.event.getFromZone();
+            if (eventPlayer == null || fromZone == null) {
+                continue;
+            }
+            logMoveInfo(eventPlayer, permanent, fromZone, false, parameters, game, source);
+        }
+        game.applyEffects();
+    }
+
+    private void moveCardsToHandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
+        for (Card card : parameters.getCards()) {
+            Zone fromZone = game.getState().getZone(card.getId());
+            boolean hideName = fromZone == Zone.LIBRARY;
+            if (fromZone == Zone.STACK || fromZone == Zone.BATTLEFIELD) {
+                // Owner must reveal face down permanent or spell when moving zones
+                parameters.setFaceDown(false);
+            }
+            if (card.moveToZone(parameters, source, game)) {
+                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
+                    card = game.getCard(card.getId());
+                }
+                successfulMovedCards.add(card);
+                if (game.isSimulation()) {
+                    return;
+                }
+                logMoveInfo(this, card, fromZone, hideName, parameters, game, source);
+            }
+        }
+    }
+
+    private void moveCardsToExileWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
+        for (Card card : parameters.getCards()) {
+            Zone fromZone = game.getState().getZone(card.getId());
+            // 708.9.
+            // If a face-down permanent or a face-down component of a merged permanent moves from the
+            // battlefield to any other zone, its owner must reveal it to all players as they move it.
+            // If a face-down spell moves from the stack to any zone other than the battlefield,
+            // its owner must reveal it to all players as they move it. If a player leaves the game,
+            // all face-down permanents, face-down components of merged permanents, and face-down spells
+            // owned by that player must be revealed to all players. At the end of each game, all
+            // face-down permanents, face-down components of merged permanents, and face-down spells must
+            // be revealed to all players.
+            if (fromZone == Zone.STACK || (fromZone == Zone.BATTLEFIELD && card.isFaceDown())) {
+                parameters.setFaceDown(false);
+            }
+            if (card.moveToZone(parameters, source, game)) {
+                successfulMovedCards.add(card);
+                if (game.isSimulation()) {
+                    continue;
+                }
+                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
+                    card = game.getCard(card.getId());
+                } else if (card instanceof Spell) {
+                    final Spell spell = (Spell) card;
+                    if (spell.isCopy()) {
+                        // copied spell, remove from stack
+                        game.getStack().remove(spell, game);
+                    }
+                }
+                if (!parameters.isFaceDown() && card.getName().isEmpty()) {
+                    throw new IllegalStateException("wrong code usage: method must find real card name, but found nothing");
+                }
+                logMoveInfo(this, card, fromZone, card.isFaceDown(), parameters, game, source);
+            }
+        }
+    }
+
+    private void moveCardsToLibraryWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
+        for (Card card : parameters.getCards()) {
+            Zone fromZone;
+            if (card instanceof Spell) {
+                fromZone = game.getState().getZone(((Spell) card).getSourceId());
+            } else {
+                fromZone = game.getState().getZone(card.getId());
+            }
+            if (card.moveToZone(parameters, source, game)) {
+                successfulMovedCards.add(card);
+                if (game.isSimulation()) {
+                    continue;
+                }
+                boolean hideName = fromZone == Zone.HAND || fromZone == Zone.LIBRARY;
+                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
+                    card = game.getCard(card.getId());
+                }
+                logMoveInfo(this, card, fromZone, hideName, parameters, game, source);
+            }
+        }
+    }
+
+    private void moveCardsToCommandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
+        for (Card card : parameters.getCards()) {
+            Zone fromZone = game.getState().getZone(card.getId());
+            if (card.moveToZone(parameters, source, game)) {
+                successfulMovedCards.add(card);
+                if (game.isSimulation()) {
+                    continue;
+                }
+                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
+                    card = game.getCard(card.getId());
+                }
+                logMoveInfo(this, card, fromZone, false, parameters, game, source);
+            }
+        }
+    }
+
+    private void logMoveInfo(Player player, Card card, Zone fromZone, boolean hideName, MoveCardsParameters parameters, Game game, Ability source) {
+        String fromZoneString = fromZone != null ? " from " + fromZone.toString().toLowerCase(Locale.ENGLISH) : "";
+        String cardName = hideName ? "a card" : card.getLogName();
+        StringBuilder sb = new StringBuilder();
+        switch (game.getState().getZone(card.getId())) {
+            case GRAVEYARD:
+                sb.append(this.getLogName())
+                        .append(" puts ").append(cardName).append(" ").append(card.isCopy() ? "(Copy) " : "")
+                        .append(fromZoneString);
+                if (card.isOwnedBy(player.getId())) {
+                    sb.append("into their graveyard");
+                } else {
+                    sb.append("it into its owner's graveyard");
+                }
+                sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
+                game.informPlayers(sb.toString());
+                break;
+            case BATTLEFIELD:
+                game.informPlayers(player.getLogName() + " puts "
+                        + GameLog.getColoredObjectIdName(card)
+                        + fromZoneString + " onto the battlefield"
+                        + CardUtil.getSourceLogName(game, source, card.getId()));
+                break;
+            case HAND:
+                game.informPlayers(getLogName() + " puts "
+                        + cardName
+                        + fromZoneString
+                        + (card.isOwnedBy(this.getId()) ? " into their hand" : " into its owner's hand")
+                        + CardUtil.getSourceLogName(game, source, card.getId())
+                );
+                break;
+            case EXILED:
+                game.informPlayers(this.getLogName() + " moves " + cardName
+                        + fromZoneString
+                        + " to the exile zone"
+                        + CardUtil.getSourceLogName(game, source, card.getId())
+                );
+                break;
+            case LIBRARY:
+                sb.append(this.getLogName())
+                        .append(" puts ").append(cardName).append(' ');
+                if (fromZone != null) {
+                    sb.append("from ").append(fromZone.toString().toLowerCase(Locale.ENGLISH)).append(' ');
+                }
+                sb.append("to the ").append(parameters.isToTopOfLibrary() ? "top" : "bottom");
+                if (card.isOwnedBy(getId())) {
+                    sb.append(" of their library");
+                } else {
+                    Player owner = game.getPlayer(card.getOwnerId());
+                    if (owner != null) {
+                        sb.append(" of ").append(owner.getLogName()).append("'s library");
+                    }
+                }
+                sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
+                game.informPlayers(sb.toString());
+                break;
+            case COMMAND:
+                sb.append(this.getLogName())
+                        .append(" puts ").append(card.getLogName()).append(' ');
+                if (fromZone != null) {
+                    sb.append("from ").append(fromZone.toString().toLowerCase(Locale.ENGLISH)).append(' ');
+                }
+                if (card.isOwnedBy(getId())) {
+                    sb.append(" to their command zone");
+                } else {
+                    Player owner = game.getPlayer(card.getOwnerId());
+                    if (owner != null) {
+                        sb.append(" to ").append(owner.getLogName()).append("'s command zone");
+                    }
+                }
+                sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
+                game.informPlayers(sb.toString());
+        }
+    }
+
+    @Override
     public boolean moveCards(Set<? extends Card> cards, Zone toZone, Ability source, Game game, boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects) {
         if (cards.isEmpty()) {
             return true;
@@ -5354,7 +5677,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             return new CardsImpl();
         }
         Cards cards = new CardsImpl(this.getLibrary().getTopCards(game, event.getAmount()));
-        this.moveCards(cards, Zone.GRAVEYARD, source, game);
+        this.moveCards(new MoveCardsParameters(cards.getCards(game), Zone.GRAVEYARD), source, game);
         for (Card card : cards.getCards(game)) {
             MilledCardEvent milledEvent = new MilledCardEvent(card, getId(), source);
             game.fireEvent(milledEvent);
@@ -5515,7 +5838,10 @@ public abstract class PlayerImpl implements Player, Serializable {
                     new FilterCard("card" + (cards.size() == 1 ? "" : "s")
                             + " to PUT into your GRAVEYARD (Surveil)"));
             chooseTarget(Outcome.Benefit, cards, target, source, game);
-            moveCards(new CardsImpl(target.getTargets()), Zone.GRAVEYARD, source, game);
+            MoveCardsParameters parameters = new MoveCardsParameters(
+                    new CardsImpl(target.getTargets()).getCards(game), Zone.GRAVEYARD
+            );
+            moveCards(parameters, source, game);
             cards.removeIf(target.getTargets()::contains);
             putCardsOnTopOfLibrary(cards, game, source, true);
         }

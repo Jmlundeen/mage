@@ -457,8 +457,6 @@ public interface Player extends MageItem, Copyable<Player> {
 
     boolean removeFromBattlefield(Permanent permanent, Ability source, Game game);
 
-    boolean putInGraveyard(Card card, Game game);
-
     boolean removeFromGraveyard(Card card, Game game);
 
     boolean removeFromLibrary(Card card, Game game);
@@ -1006,6 +1004,27 @@ public interface Player extends MageItem, Copyable<Player> {
      * @return
      */
     boolean moveCards(Set<? extends Card> cards, Zone toZone, Ability source, Game game, boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects);
+
+    /**
+     * Universal method to move cards from one zone to another.
+     *
+     * @param parameters {@link MoveCardsParameters} object holding all move parameters
+     * @param source source ability causing the move
+     * @param game current game
+     * @return
+     */
+    boolean moveCards(MoveCardsParameters parameters, Ability source, Game game);
+
+    /**
+     * Universal method to move cards from one zone to another.
+     *
+     * @param parameters {@link MoveCardsParameters} object holding all move parameters
+     * @param source source ability causing the move
+     * @param game current game
+     * @param appliedEffects list of applied effects
+     * @return
+     */
+    boolean moveCards(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects);
 
     boolean moveCardsToExile(Card card, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName);
 

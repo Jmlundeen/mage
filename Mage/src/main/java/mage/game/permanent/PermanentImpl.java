@@ -24,10 +24,7 @@ import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.FilterOpponent;
-import mage.game.Game;
-import mage.game.GameState;
-import mage.game.ZoneChangeInfo;
-import mage.game.ZonesHandler;
+import mage.game.*;
 import mage.game.combat.CombatGroup;
 import mage.game.command.CommandObject;
 import mage.game.events.*;
@@ -2080,6 +2077,24 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
             return ZonesHandler.moveCard(zoneChangeInfo, game, source);
         }
         return false;
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        Zone toZone = parameters.getToZone();
+        Zone fromZone = game.getState().getZone(objectId);
+        Player controller = game.getPlayer(controllerId);
+        if (controller == null) {
+            return false;
+        }
+        ZoneChangeEvent event = new ZoneChangeEvent(this, source, controllerId, fromZone, parameters.getToZone(), appliedEffects);
+        ZoneChangeInfo zoneChangeInfo;
+        if (toZone == Zone.LIBRARY) {
+            zoneChangeInfo = new ZoneChangeInfo.Library(event, parameters.isFaceDown());
+        } else {
+            zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());
+        }
+        return ZonesHandler.moveCard(zoneChangeInfo, game, source);
     }
 
     @Override

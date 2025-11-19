@@ -5,6 +5,7 @@ import mage.constants.CardType;
 import mage.constants.Zone;
 import mage.counters.Counter;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
@@ -156,6 +157,12 @@ public abstract class MeldCard extends CardImpl {
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         // TODO: missing override method for meld cards? See removeFromZone, updateZoneChangeCounter, etc
         return super.moveToZone(toZone, source, game, flag, appliedEffects);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        // TODO: missing override method for meld cards?
+        return super.moveToZone(parameters, source, game, appliedEffects);
     }
 
     @Override

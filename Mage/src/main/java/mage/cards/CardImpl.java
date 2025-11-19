@@ -431,6 +431,37 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game) {
+        return this.moveToZone(parameters, source, game, null);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        Zone fromZone = game.getState().getZone(objectId);
+        Zone toZone = parameters.getToZone();
+        ZoneChangeEvent event = new ZoneChangeEvent(this.objectId, source, ownerId, fromZone, toZone, appliedEffects);
+        ZoneChangeInfo zoneChangeInfo;
+        if (toZone != null) {
+            switch (toZone) {
+                case LIBRARY:
+                    zoneChangeInfo = new ZoneChangeInfo.Library(event, parameters.isFaceDown(), parameters.isToTopOfLibrary());
+                    break;
+                case BATTLEFIELD:
+                    zoneChangeInfo = new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source);
+                    break;
+                case EXILED:
+                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName());
+                    break;
+                default:
+                    zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());
+                    break;
+            }
+            return ZonesHandler.moveCard(zoneChangeInfo, game, source);
+        }
+        return false;
+    }
+
+    @Override
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         Zone fromZone = game.getState().getZone(objectId);
         ZoneChangeEvent event = new ZoneChangeEvent(this.objectId, source, ownerId, fromZone, toZone, appliedEffects);
@@ -471,28 +502,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         Zone fromZone = game.getState().getZone(objectId);
         ZoneChangeEvent event = new ZoneChangeEvent(this.objectId, source, ownerId, fromZone, Zone.EXILED, appliedEffects);
         ZoneChangeInfo.Exile info = new ZoneChangeInfo.Exile(event, exileId, name);
-        return ZonesHandler.moveCard(info, game, source);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId) {
-        return this.putOntoBattlefield(game, fromZone, source, controllerId, false, false, null);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped) {
-        return this.putOntoBattlefield(game, fromZone, source, controllerId, tapped, false, null);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean faceDown) {
-        return this.putOntoBattlefield(game, fromZone, source, controllerId, tapped, faceDown, null);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean faceDown, List<UUID> appliedEffects) {
-        ZoneChangeEvent event = new ZoneChangeEvent(this.objectId, source, controllerId, fromZone, Zone.BATTLEFIELD, appliedEffects);
-        ZoneChangeInfo.Battlefield info = new ZoneChangeInfo.Battlefield(event, faceDown, tapped, source);
         return ZonesHandler.moveCard(info, game, source);
     }
 

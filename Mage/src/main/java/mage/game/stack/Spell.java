@@ -18,6 +18,7 @@ import mage.filter.predicate.mageobject.MageObjectReferencePredicate;
 import mage.game.Game;
 import mage.game.GameState;
 import mage.game.MageObjectAttribute;
+import mage.game.MoveCardsParameters;
 import mage.game.events.CopiedStackObjectEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -903,6 +904,22 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game) {
+        return moveToZone(parameters, source, game, null);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        // 706.10a If a copy of a spell is in a zone other than the stack, it ceases to exist.
+        // If a copy of a card is in any zone other than the stack or the battlefield, it ceases to exist.
+        // These are state-based actions. See rule 704.
+        if (this.isCopy() && parameters.getToZone() != Zone.STACK) {
+            return true;
+        }
+        return card.moveToZone(parameters, source, game, appliedEffects);
+    }
+
+    @Override
     public boolean moveToExile(UUID exileId, String name, Ability source, Game game) {
         return moveToExile(exileId, name, source, game, null);
     }
@@ -915,26 +932,6 @@ public class Spell extends StackObjectImpl implements Card {
             return true;
         }
         return this.card.moveToExile(exileId, name, source, game, appliedEffects);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId) {
-        throw new UnsupportedOperationException("Unsupported operation");
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean facedown) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean facedown, List<UUID> appliedEffects) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

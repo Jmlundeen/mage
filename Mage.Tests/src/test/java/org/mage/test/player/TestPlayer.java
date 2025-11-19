@@ -3073,11 +3073,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean putInGraveyard(Card card, Game game) {
-        return computerPlayer.putInGraveyard(card, game);
-    }
-
-    @Override
     public boolean removeFromGraveyard(Card card, Game game) {
         return computerPlayer.removeFromGraveyard(card, game);
     }
@@ -4504,6 +4499,16 @@ public class TestPlayer implements Player {
                              boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects
     ) {
         return computerPlayer.moveCards(cards, toZone, source, game, tapped, faceDown, byOwner, appliedEffects);
+    }
+
+    @Override
+    public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game) {
+        return computerPlayer.moveCards(parameters, source, game);
+    }
+
+    @Override
+    public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        return computerPlayer.moveCards(parameters, source, game, appliedEffects);
     }
 
     @Override

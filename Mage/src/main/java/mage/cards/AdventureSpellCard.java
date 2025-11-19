@@ -9,6 +9,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.util.CardUtil;
 
 import java.util.Arrays;
@@ -64,6 +65,11 @@ public class AdventureSpellCard extends CardImpl implements SpellOptionCard {
     @Override
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         return adventureCardParent.moveToZone(toZone, source, game, flag, appliedEffects);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        return adventureCardParent.moveToZone(parameters, source, game, appliedEffects);
     }
 
     @Override

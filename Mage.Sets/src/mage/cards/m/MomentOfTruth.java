@@ -8,6 +8,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
@@ -67,7 +68,7 @@ class MomentOfTruthEffect extends OneShotEffect {
         player.choose(outcome, cards, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
         if (card != null) {
-            player.moveCards(card, Zone.HAND, source, game);
+            player.moveCards(new MoveCardsParameters(card, Zone.HAND), source, game);
             cards.remove(card);
         }
         if (cards.isEmpty()) {
@@ -80,7 +81,7 @@ class MomentOfTruthEffect extends OneShotEffect {
         player.choose(outcome, cards, target, source, game);
         card = game.getCard(target.getFirstTarget());
         if (card != null) {
-            player.putInGraveyard(card, game);
+            player.moveCards(new MoveCardsParameters(card, Zone.GRAVEYARD), source, game);
             cards.remove(card);
         }
         if (cards.isEmpty()) {

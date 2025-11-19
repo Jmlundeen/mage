@@ -9,6 +9,7 @@ import mage.constants.CardType;
 import mage.constants.SpellAbilityType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.ZoneChangeEvent;
 import mage.util.CardUtil;
 
@@ -87,6 +88,17 @@ public abstract class SplitCard extends CardImpl implements CardWithHalves {
     @Override
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         if (super.moveToZone(toZone, source, game, flag, appliedEffects)) {
+            Zone currentZone = game.getState().getZone(getId());
+            game.getState().setZone(getLeftHalfCard().getId(), currentZone);
+            game.getState().setZone(getRightHalfCard().getId(), currentZone);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        if (super.moveToZone(parameters, source, game, appliedEffects)) {
             Zone currentZone = game.getState().getZone(getId());
             game.getState().setZone(getLeftHalfCard().getId(), currentZone);
             game.getState().setZone(getRightHalfCard().getId(), currentZone);

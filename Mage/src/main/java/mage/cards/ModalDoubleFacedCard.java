@@ -11,6 +11,7 @@ import mage.counters.Counter;
 import mage.counters.Counters;
 import mage.game.Game;
 import mage.game.GameState;
+import mage.game.MoveCardsParameters;
 import mage.game.events.ZoneChangeEvent;
 import mage.util.CardUtil;
 import mage.util.SubTypes;
@@ -117,6 +118,16 @@ public abstract class ModalDoubleFacedCard extends CardImpl implements CardWithH
     @Override
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         if (super.moveToZone(toZone, source, game, flag, appliedEffects)) {
+            Zone currentZone = game.getState().getZone(getId());
+            setSideZones(currentZone, game);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        if (super.moveToZone(parameters, source, game, appliedEffects)) {
             Zone currentZone = game.getState().getZone(getId());
             setSideZones(currentZone, game);
             return true;

@@ -15,6 +15,7 @@ import mage.counters.Counters;
 import mage.filter.FilterMana;
 import mage.game.Game;
 import mage.game.GameState;
+import mage.game.MoveCardsParameters;
 import mage.game.Ownerable;
 import mage.game.permanent.Permanent;
 import mage.util.ManaUtil;
@@ -112,6 +113,18 @@ public interface Card extends MageObject, Ownerable {
      */
     boolean moveToZone(Zone zone, Ability source, Game game, boolean flag);
 
+    /**
+     * Moves the card to the specified zone
+     *
+     * @param parameters holds information about the move such as zone to move to, tapped, and face down
+     * @param source     ability which calls that move, can be null
+     * @param game
+     * @return true if card was moved to zone
+     */
+    boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game);
+
+    boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects);
+
     boolean moveToZone(Zone zone, Ability source, Game game, boolean flag, List<UUID> appliedEffects);
 
     /**
@@ -131,14 +144,6 @@ public interface Card extends MageObject, Ownerable {
 
     // WARNING, don't add new move/remove methods (if you add then you must override it in all multi-parts card like Split Half or MDF Half)
     boolean removeFromZone(Game game, Zone fromZone, Ability source);
-
-    boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId);
-
-    boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped);
-
-    boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean facedown);
-
-    boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean facedown, List<UUID> appliedEffects);
 
     void setZone(Zone zone, Game game);
 

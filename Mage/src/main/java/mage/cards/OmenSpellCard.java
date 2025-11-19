@@ -9,6 +9,7 @@ import mage.constants.SpellAbilityType;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.util.CardUtil;
 
 import java.util.Arrays;
@@ -61,6 +62,11 @@ public class OmenSpellCard extends CardImpl implements SpellOptionCard {
     @Override
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         return omenCardParent.moveToZone(toZone, source, game, flag, appliedEffects);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        return omenCardParent.moveToZone(parameters, source, game, appliedEffects);
     }
 
     @Override
