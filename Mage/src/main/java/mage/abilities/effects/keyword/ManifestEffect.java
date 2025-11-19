@@ -10,6 +10,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -130,10 +131,12 @@ public class ManifestEffect extends OneShotEffect {
 
             // set face down characteristics
             BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), battlefieldCard, cloakNotManifest ? FaceDownType.CLOAKED : FaceDownType.MANIFESTED, null);
-            battlefieldCard.setFaceDown(true);
 
             // move to the battlefield
-            manifestPlayer.moveCards(battlefieldCard, Zone.BATTLEFIELD, source, game, tapped, true, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(battlefieldCard, Zone.BATTLEFIELD)
+                    .setTapped(tapped)
+                    .setFaceDown(true);
+            manifestPlayer.moveCards(parameters, source, game);
 
             // set face down status
             Permanent permanent = game.getPermanent(battlefieldCard.getId());
