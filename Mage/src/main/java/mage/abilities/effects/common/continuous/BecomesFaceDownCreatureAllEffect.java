@@ -1,20 +1,13 @@
 package mage.abilities.effects.common.continuous;
 
-import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.OneShotEffect;
 import mage.cards.ModalDoubleFacedCardHalf;
-import mage.constants.Duration;
-import mage.constants.Layer;
 import mage.constants.Outcome;
-import mage.constants.SubLayer;
 import mage.filter.FilterPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -22,12 +15,12 @@ import java.util.List;
  * @author LevelX2
  */
 
-public class BecomesFaceDownCreatureAllEffect extends ContinuousEffectImpl {
+public class BecomesFaceDownCreatureAllEffect extends OneShotEffect {
 
     protected FilterPermanent filter;
 
     public BecomesFaceDownCreatureAllEffect(FilterPermanent filter) {
-        super(Duration.EndOfGame, Layer.CopyEffects_1, SubLayer.FaceDownEffects_1b, Outcome.Neutral);
+        super(Outcome.Neutral);
         this.filter = filter;
         staticText = "turn all " + filter.getMessage() + " face down. (They're 2/2 creatures.)";
     }
@@ -43,45 +36,14 @@ public class BecomesFaceDownCreatureAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-
-        // save permanents to become face down (one time usage on resolve)
+    public boolean apply(Game game, Ability source) {
         for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
             if (!perm.isFaceDown() && !perm.isTransformable() && !(((PermanentCard) perm).getCard() instanceof ModalDoubleFacedCardHalf)) {
-                affectedObjectList.add(new MageObjectReference(perm, game));
+                BecomesFaceDownCreatureEffect.FaceDownType type = BecomesFaceDownCreatureEffect.findFaceDownType(game, perm);
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), perm, type, null);
                 perm.setFaceDown(true);
             }
         }
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        boolean targetExists = false;
-        List<MageObjectReference> objectsToRemove = new ArrayList<>();
-        for (MageObjectReference mor : affectedObjectList) {
-            Permanent permanent = mor.getPermanent(game);
-            if (permanent == null || !permanent.isFaceDown()) {
-                objectsToRemove.add(mor);
-                continue;
-            }
-            targetExists = true;
-            BecomesFaceDownCreatureEffect.FaceDownType type = BecomesFaceDownCreatureEffect.findFaceDownType(game, permanent);
-            BecomesFaceDownCreatureEffect.makeFaceDownObject(game,
-                    source.getSourceId(),
-                    permanent,
-                    type,
-                    null);
-        }
-        if (!targetExists) {
-            discard();
-        }
-        affectedObjectList.removeAll(objectsToRemove);
         return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 }

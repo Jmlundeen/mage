@@ -6,29 +6,25 @@ import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DontUntapInControllersNextUntapStepTargetEffect;
 import mage.abilities.effects.common.TapTargetEffect;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureAllEffect;
-import mage.abilities.effects.common.continuous.BecomesSubtypeAllEffect;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.cards.AdventureCard;
 import mage.cards.CardSetInfo;
+import mage.cards.ModalDoubleFacedCardHalf;
 import mage.constants.CardType;
-import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterCreaturePermanent;
-import mage.filter.predicate.Predicate;
-import mage.filter.predicate.Predicates;
-import mage.filter.predicate.permanent.PermanentIdPredicate;
 import mage.filter.predicate.permanent.TappedPredicate;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+import mage.game.permanent.PermanentCard;
 import mage.target.Target;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetadjustment.XTargetsCountAdjuster;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -94,19 +90,17 @@ class IllithidHarvesterEffect extends OneShotEffect {
 
     @Override
     public boolean apply(Game game, Ability source) {
-        Predicate<Permanent> pred = new PermanentIdPredicate(UUID.randomUUID());
         for (Target target : source.getTargets()) {
             for (UUID targetId : target.getTargets()) {
-                if (!game.getPermanent(targetId).isTransformable()) {
-                    pred = Predicates.or(pred, new PermanentIdPredicate(targetId));
+                Permanent permanent = game.getPermanent(targetId);
+                if (!permanent.isFaceDown() && !permanent.isTransformable() && !(((PermanentCard) permanent).getCard() instanceof ModalDoubleFacedCardHalf)) {
+                    BecomesFaceDownCreatureEffect.FaceDownType type = BecomesFaceDownCreatureEffect.findFaceDownType(game, permanent);
+                    BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), permanent, type, null);
+                    permanent.setFaceDown(true);
+                    permanent.getFaceDownValues().getSubtype().add(SubType.HORROR);
                 }
             }
         }
-        FilterCreaturePermanent filter = new FilterCreaturePermanent();
-        filter.add(pred);
-
-        game.addEffect(new BecomesFaceDownCreatureAllEffect(filter), source);
-        game.addEffect(new BecomesSubtypeAllEffect(Duration.WhileOnBattlefield, Arrays.asList(SubType.HORROR), filter, false), source);
         return true;
     }
 }
