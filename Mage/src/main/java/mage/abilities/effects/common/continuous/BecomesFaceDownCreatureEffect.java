@@ -255,6 +255,11 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
         CopiableValues faceDownValues = object.getFaceDownValues();
         faceDownValues.clear();
 
+        if (object.isFaceDown() && object instanceof Card && !(object instanceof Permanent)) {
+            object = object.copy();
+            object.setFaceDown(false);
+        }
+
         faceDownValues.setName(EmptyNames.FACE_DOWN_CREATURE.getObjectName());
         faceDownValues.getCardType().add(CardType.CREATURE);
         faceDownValues.getColor().setColor(ObjectColor.COLORLESS);
