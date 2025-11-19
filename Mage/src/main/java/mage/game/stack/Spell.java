@@ -101,10 +101,6 @@ public class Spell extends StackObjectImpl implements Card {
                 faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
             }
             BecomesFaceDownCreatureEffect.makeFaceDownObject(game, ability.getId(), card, faceDownType, null);
-            affectedCard.setFaceDown(true);
-        } else if (card.isFaceDown()) {
-            // in case card was turned face down before casting
-            affectedCard.setFaceDown(false);
         }
         this.card = affectedCard;
         this.manaCost = affectedCard.getManaCost().copy();
