@@ -2596,16 +2596,30 @@ public class TestPlayer implements Player {
                     || target.getOriginalTarget() instanceof TargetSpellOrPermanent
                     || target.getOriginalTarget() instanceof TargetStackObject) {
                 for (String targetDefinition : targets.stream().limit(takeMaxTargetsPerChoose).collect(Collectors.toList())) {
-                    checkTargetDefinitionMarksSupport(target, targetDefinition, "^");
+                    checkTargetDefinitionMarksSupport(target, targetDefinition, "^[]");
                     String[] targetList = targetDefinition.split("\\^");
                     boolean targetFound = false;
                     for (String targetName : targetList) {
+                        boolean originOnly = false;
+                        boolean copyOnly = false;
+                        if (targetName.endsWith("]")) {
+                            if (targetName.endsWith("[no copy]")) {
+                                originOnly = true;
+                                targetName = targetName.substring(0, targetName.length() - 9);
+                            }
+                            if (targetName.endsWith("[only copy]")) {
+                                copyOnly = true;
+                                targetName = targetName.substring(0, targetName.length() - 11);
+                            }
+                        }
                         for (StackObject stackObject : game.getStack()) {
                             if (hasObjectTargetNameOrAlias(stackObject, targetName)) {
                                 if (target.canTarget(abilityControllerId, stackObject.getId(), source, game) && !target.contains(stackObject.getId())) {
-                                    target.addTarget(stackObject.getId(), source, game);
-                                    targetFound = true;
-                                    break; // return to next targetName
+                                    if ((stackObject.isCopy() && !originOnly) || (!stackObject.isCopy() && !copyOnly)) {
+                                        target.addTarget(stackObject.getId(), source, game);
+                                        targetFound = true;
+                                        break; // return to next targetName
+                                    }
                                 }
                             }
                         }
