@@ -1,0 +1,233 @@
+package mage.game;
+
+import mage.cards.Card;
+import mage.constants.Zone;
+
+import java.util.*;
+
+/**
+ * Represents the parameters for moving cards in the game.
+ * This class encapsulates the details of the cards being moved,
+ * the destination zone, and additional properties such as whether
+ * the cards are tapped, face-down, or moved by their owner.
+ * Author: Jmlundeen
+ */
+public class MoveCardsParameters {
+    // The list of cards to be moved
+    List<Card> cards = null;
+
+    // The destination zone where the cards will be moved
+    Zone toZone;
+
+    // Indicates whether the cards should be tapped after being moved
+    boolean tapped = false;
+
+    // Indicates whether the cards should be face-down after being moved
+    boolean faceDown = false;
+
+    // Indicates whether the cards are being moved by their owner
+    boolean byOwner = false;
+
+    // The ID associated with the exile zone, if applicable
+    UUID exileId = null;
+
+    // The name associated with the exile zone, if applicable
+    String exileName = "";
+
+    // Indicates whether the cards should be placed at the top of the library
+    boolean toTopOfLibrary = true;
+
+    /**
+     * Constructs a new MoveCardsParameters object with the specified cards and destination zone.
+     * By default, the cards are not tapped, not face-down, and not moved by their owner.
+     *
+     * @param cards  The set of cards to be moved.
+     * @param toZone The destination zone where the cards will be moved.
+     */
+    public MoveCardsParameters(List<Card> cards, Zone toZone) {
+        this.cards = new ArrayList<>(cards);
+        this.toZone = toZone;
+    }
+
+    /**
+     * Constructs a new MoveCardsParameters object with the specified cards and destination zone.
+     * By default, the cards are not tapped, not face-down, and not moved by their owner.
+     *
+     * @param cards  The set of cards to be moved.
+     * @param toZone The destination zone where the cards will be moved.
+     */
+    public MoveCardsParameters(Set<Card> cards, Zone toZone) {
+        this.cards = new ArrayList<>(cards);
+        this.toZone = toZone;
+    }
+
+    public MoveCardsParameters(Card card, Zone toZone) {
+        this.cards = new ArrayList<>();
+        this.cards.add(card);
+        this.toZone = toZone;
+    }
+
+    public MoveCardsParameters(Zone toZone) {
+        this.toZone = toZone;
+    }
+
+    /**
+     * Gets the list of cards to be moved.
+     *
+     * @return The list of cards.
+     */
+    public List<Card> getCards() {
+        return cards;
+    }
+
+    /**
+     * Sets the list of cards to be moved.
+     *
+     * @param cards The list of cards.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setCards(List<Card> cards) {
+        this.cards = cards;
+        return this;
+    }
+
+    /**
+     * Gets the destination zone where the cards will be moved.
+     *
+     * @return The destination zone.
+     */
+    public Zone getToZone() {
+        return toZone;
+    }
+
+    /**
+     * Sets the destination zone where the cards will be moved.
+     *
+     * @param toZone The destination zone.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setToZone(Zone toZone) {
+        this.toZone = toZone;
+        return this;
+    }
+
+    /**
+     * Checks if the cards should be tapped after being moved.
+     *
+     * @return True if the cards should be tapped, false otherwise.
+     */
+    public boolean isTapped() {
+        return tapped;
+    }
+
+    /**
+     * Sets whether the cards should be tapped after being moved.
+     *
+     * @param tapped True if the cards should be tapped, false otherwise.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setTapped(boolean tapped) {
+        this.tapped = tapped;
+        return this;
+    }
+
+    /**
+     * Checks if the cards should be face-down after being moved.
+     *
+     * @return True if the cards should be face-down, false otherwise.
+     */
+    public boolean isFaceDown() {
+        return faceDown;
+    }
+
+    /**
+     * Sets whether the cards should be face-down after being moved.
+     *
+     * @param faceDown True if the cards should be face-down, false otherwise.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setFaceDown(boolean faceDown) {
+        this.faceDown = faceDown;
+        return this;
+    }
+
+    /**
+     * Checks if the cards are being moved by their owner.
+     *
+     * @return True if the cards are moved by their owner, false otherwise.
+     */
+    public boolean isByOwner() {
+        return byOwner;
+    }
+
+    /**
+     * Sets whether the cards are being moved by their owner.
+     *
+     * @param byOwner True if the cards are moved by their owner, false otherwise.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setByOwner(boolean byOwner) {
+        this.byOwner = byOwner;
+        return this;
+    }
+
+    /**
+     * Gets the ID associated with the exile zone, if applicable.
+     *
+     * @return The exile ID.
+     */
+    public UUID getExileId() {
+        return exileId;
+    }
+
+    /**
+     * Sets the ID associated with the exile zone, if applicable.
+     *
+     * @param exileId The exile ID.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setExileId(UUID exileId) {
+        this.exileId = exileId;
+        return this;
+    }
+
+    /**
+     * Gets the name associated with the exile zone, if applicable.
+     *
+     * @return The exile name.
+     */
+    public String getExileName() {
+        return exileName;
+    }
+
+    /**
+     * Sets the name associated with the exile zone, if applicable.
+     *
+     * @param exileName The exile name.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setExileName(String exileName) {
+        this.exileName = exileName;
+        return this;
+    }
+
+    /**
+     * Checks if the cards should be placed at the top of the library.
+     *
+     * @return True if the cards should be placed at the top of the library, false otherwise.
+     */
+    public boolean isToTopOfLibrary() {
+        return toTopOfLibrary;
+    }
+
+    /**
+     * Sets whether the cards should be placed at the top of the library.
+     *
+     * @param toTopOfLibrary True if the cards should be placed at the top of the library, false otherwise.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setToTopOfLibrary(boolean toTopOfLibrary) {
+        this.toTopOfLibrary = toTopOfLibrary;
+        return this;
+    }
+}
