@@ -2426,6 +2426,7 @@ public abstract class GameImpl implements Game {
                 .stream()
                 .map(object -> (Card) object)
                 .filter(Objects::nonNull)
+                .filter(card -> allCopiedCards.stream().noneMatch(currentCard -> currentCard.getId().equals(card.getId())))
                 .collect(Collectors.toList())
         );
         Set<Card> copiedCardsToRemove = new HashSet<>();
