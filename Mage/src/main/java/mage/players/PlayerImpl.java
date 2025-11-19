@@ -1358,12 +1358,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         if (card == null) {
             return false;
         }
-        ActivatedAbility playLandAbility = null;
-        for (Ability ability : card.getAbilities(game)) {
-            if (ability instanceof PlayLandAbility) {
-                playLandAbility = (ActivatedAbility) ability;
-            }
-        }
+        ActivatedAbility playLandAbility = card.getPlayLandAbility();
 
         if (playLandAbility == null) {
             return false;
@@ -1391,6 +1386,9 @@ public abstract class PlayerImpl implements Player, Serializable {
         if (approvingResult.status.equals(ApprovingObjectResultStatus.NOT_REQUIRED_NO_CHOICE)) {
             return false; // canceled choice of approving object.
         }
+
+        // if face down, turn it face up
+        card.setFaceDown(false);
 
         //20091005 - 305.1
         if (!game.replaceEvent(GameEvent.getEvent(GameEvent.EventType.PLAY_LAND,
