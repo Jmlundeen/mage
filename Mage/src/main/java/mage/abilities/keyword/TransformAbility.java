@@ -78,6 +78,7 @@ public class TransformAbility extends SimpleStaticAbility {
         permanent.setStartingLoyalty(sourceCard.getStartingLoyalty());
         permanent.setStartingDefense(sourceCard.getStartingDefense());
 
+        permanent.saveCopiableValues(game);
         return true;
     }
 
