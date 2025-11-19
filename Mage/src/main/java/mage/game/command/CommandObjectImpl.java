@@ -100,6 +100,11 @@ public abstract class CommandObjectImpl implements CommandObject {
     }
 
     @Override
+    public String getOriginalName() {
+        return name;
+    }
+
+    @Override
     public void setName(String name) {
         this.name = name;
     }

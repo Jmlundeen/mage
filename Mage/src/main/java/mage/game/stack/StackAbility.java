@@ -185,6 +185,11 @@ public class StackAbility extends StackObjectImpl implements Ability {
     }
 
     @Override
+    public String getOriginalName() {
+        return name;
+    }
+
+    @Override
     public String getIdName() {
         return getName() + " [" + getId().toString().substring(0, 3) + ']';
     }
