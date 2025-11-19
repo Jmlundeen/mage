@@ -239,10 +239,8 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             return BecomesFaceDownCreatureEffect.FaceDownType.MANIFESTED;
         } else if (permanent.isCloaked()) {
             return BecomesFaceDownCreatureEffect.FaceDownType.CLOAKED;
-        } else if (permanent.isFaceDown()) {
-            return BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
         } else {
-            return null;
+            return FaceDownType.MANUAL;
         }
     }
 
@@ -307,21 +305,23 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
                 faceUpCosts.add(object.getManaCost());
                 faceDownValues.getAbilities().add(new TurnFaceUpAbility(faceUpCosts));
             }
-            // Add an info ability stating it can be turned face up for its face up costs
-            String ruleText = "Turn it face up any time for its";
-            switch (faceDownType) {
-                case MORPHED:
-                case MEGAMORPHED:
-                    ruleText += " morph cost.";
-                    break;
-                case DISGUISED:
-                    ruleText += " disguise cost.";
-                    break;
-                default:
-                    ruleText += " mana cost if it's a creature card.";
-                    break;
+            if (faceDownType != FaceDownType.MANUAL) {
+                // Add an info ability stating it can be turned face up for its face up costs
+                String ruleText = "Turn it face up any time for its";
+                switch (faceDownType) {
+                    case MORPHED:
+                    case MEGAMORPHED:
+                        ruleText += " morph cost.";
+                        break;
+                    case DISGUISED:
+                        ruleText += " disguise cost.";
+                        break;
+                    default:
+                        ruleText += " mana cost if it's a creature card.";
+                        break;
+                }
+                faceDownValues.getAbilities().add(new SimpleStaticAbility(Zone.ALL, new InfoEffect(ruleText)));
             }
-            faceDownValues.getAbilities().add(new SimpleStaticAbility(Zone.ALL, new InfoEffect(ruleText)));
         }
 
         faceDownValues.setPower(new MageInt(2));
