@@ -13,8 +13,8 @@ import java.util.*;
  * Author: Jmlundeen
  */
 public class MoveCardsParameters {
-    // The list of cards to be moved
-    List<Card> cards = null;
+    // The set of cards to be moved
+    Set<Card> cards = null;
 
     // The destination zone where the cards will be moved
     Zone toZone;
@@ -45,7 +45,7 @@ public class MoveCardsParameters {
      * @param toZone The destination zone where the cards will be moved.
      */
     public MoveCardsParameters(List<Card> cards, Zone toZone) {
-        this.cards = new ArrayList<>(cards);
+        this.cards = new LinkedHashSet<>(cards);
         this.toZone = toZone;
     }
 
@@ -57,12 +57,12 @@ public class MoveCardsParameters {
      * @param toZone The destination zone where the cards will be moved.
      */
     public MoveCardsParameters(Set<Card> cards, Zone toZone) {
-        this.cards = new ArrayList<>(cards);
+        this.cards = cards;
         this.toZone = toZone;
     }
 
     public MoveCardsParameters(Card card, Zone toZone) {
-        this.cards = new ArrayList<>();
+        this.cards = new HashSet<>();
         this.cards.add(card);
         this.toZone = toZone;
     }
@@ -76,7 +76,7 @@ public class MoveCardsParameters {
      *
      * @return The list of cards.
      */
-    public List<Card> getCards() {
+    public Set<Card> getCards() {
         return cards;
     }
 
@@ -86,7 +86,7 @@ public class MoveCardsParameters {
      * @param cards The list of cards.
      * @return The updated MoveCardsParameters object.
      */
-    public MoveCardsParameters setCards(List<Card> cards) {
+    public MoveCardsParameters setCards(Set<Card> cards) {
         this.cards = cards;
         return this;
     }
