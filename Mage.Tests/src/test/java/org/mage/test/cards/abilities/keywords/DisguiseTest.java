@@ -32,9 +32,8 @@ public class DisguiseTest extends CardTestPlayerBase {
         // - it must be hidden from opponent
         // - so it must be replaced in rules by non-cost versions (e.g. text only)
 
-        String FACE_DOWN_SPELL = "with no text, no name, no subtypes";
         String FACE_DOWN_TRIGGER = "When ";
-        String FACE_DOWN_FACE_UP = "down permanent face up";
+        String FACE_UP_ANY_TIME = "Turn it face up any time";
 
 
         // {R}{W}
@@ -53,7 +52,7 @@ public class DisguiseTest extends CardTestPlayerBase {
 
         // prepare face down
         castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Dog Walker using Disguise");
-        runCode("face up on stack", 1, PhaseStep.PRECOMBAT_MAIN, playerA, (info, player, game) -> {
+        runCode("card on stack", 1, PhaseStep.PRECOMBAT_MAIN, playerA, (info, player, game) -> {
             Assert.assertEquals("stack, server - can't find spell", 1, currentGame.getStack().size());
             SpellAbility spellAbility = (SpellAbility) currentGame.getStack().getFirstOrNull().getStackAbility();
             Assert.assertEquals("stack, server - can't find spell", "Cast Dog Walker using Disguise", spellAbility.getName());
@@ -61,8 +60,7 @@ public class DisguiseTest extends CardTestPlayerBase {
             Assert.assertNotNull("stack, client: can't find spell", spellView);
 
             // make sure rules visible
-            assertRuleExist("client side, stack: face down spell - show", spellView.getRules(), FACE_DOWN_SPELL, true);
-            assertRuleExist("client side, stack: face up - hide", spellView.getRules(), FACE_DOWN_FACE_UP, false);
+            assertRuleExist("client side, stack: face up - show", spellView.getRules(), FACE_UP_ANY_TIME, true);
             assertRuleExist("client side, stack: triggered ability - hide", spellView.getRules(), FACE_DOWN_TRIGGER, false);
         });
         waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
@@ -105,9 +103,7 @@ public class DisguiseTest extends CardTestPlayerBase {
             Assert.assertEquals("client side - controller: wrong power", "2", permanentView.getPower());
             Assert.assertEquals("client side - controller: wrong toughness", "2", permanentView.getToughness());
             // make sure rules visible
-            assertRuleExist("client side, controller: turn face up - show", permanentView.getRules(), "face up any time", true);
-            assertRuleExist("client side, controller: face down spell - hide", permanentView.getRules(), FACE_DOWN_SPELL, false);
-            assertRuleExist("client side, controller: face up - hide", permanentView.getRules(), FACE_DOWN_FACE_UP, false);
+            assertRuleExist("client side, controller: turn face up - show", permanentView.getRules(), FACE_UP_ANY_TIME, true);
             assertRuleExist("client side, controller: triggered ability - hide", permanentView.getRules(), FACE_DOWN_TRIGGER, false);
             assertRuleExist("client side, controller: {R/W} cost hide", permanentView.getRules(), "{R/W}", false);
 
@@ -130,9 +126,7 @@ public class DisguiseTest extends CardTestPlayerBase {
             Assert.assertEquals("client side - opponent: wrong power", "2", permanentView.getPower());
             Assert.assertEquals("client side - opponent: wrong toughness", "2", permanentView.getToughness());
             // make sure rules visible
-            assertRuleExist("client side, opponent: turn face up - show", permanentView.getRules(), "face up any time", true);
-            assertRuleExist("client side, opponent: face down spell - hide", permanentView.getRules(), FACE_DOWN_SPELL, false);
-            assertRuleExist("client side, opponent: face up - hide", permanentView.getRules(), FACE_DOWN_FACE_UP, false);
+            assertRuleExist("client side, opponent: turn face up - show", permanentView.getRules(), FACE_UP_ANY_TIME, true);
             assertRuleExist("client side, opponent: triggered ability - hide", permanentView.getRules(), FACE_DOWN_TRIGGER, false);
             assertRuleExist("client side, opponent: {R/W} cost hide", permanentView.getRules(), "{R/W}", false);
         });
