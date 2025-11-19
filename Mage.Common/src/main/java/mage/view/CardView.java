@@ -314,11 +314,6 @@ public class CardView extends SimpleCardView {
         // find real name from original card, cause face down status can be applied to card/spell
         String sourceName = faceUpCard.isCopy() ? faceUpCard.getCopyFrom().getName() : faceUpCard.getMainCard().getName();
 
-        // find real spell characteristics before resolve
-        if (game != null && !sourceCard.isFaceDown() && sourceCard instanceof Spell) {
-            sourceCard = faceUpCard.getSpellAbility().getCharacteristics(game);
-        }
-
         // use isFaceDown() only here to find real status, all other code must use this.faceDown
         this.faceDown = game != null && sourceCard.isFaceDown();
         boolean showFaceUp = !this.faceDown;
