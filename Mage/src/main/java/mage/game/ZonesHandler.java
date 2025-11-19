@@ -143,7 +143,7 @@ public final class ZonesHandler {
         ZoneChangeEvent event = info.event;
         Zone toZone = event.getToZone();
         Card targetCard = getTargetCard(game, event.getTargetId());
-        if (targetCard.isCopy() && toZone != Zone.STACK && toZone != Zone.BATTLEFIELD) {
+        if (targetCard != null && targetCard.isCopy() && toZone != Zone.STACK && toZone != Zone.BATTLEFIELD) {
             // copies are removed only from source zone, no need to put them to destination zone
             // unless stack or battlefield. Just set the zone, but we don't need to add to zone collection
             targetCard.setZone(toZone, game);
@@ -313,7 +313,9 @@ public final class ZonesHandler {
         });
 
         // set face down status
-        targetCard.setFaceDown(info.faceDown);
+        if (targetCard != null) {
+            targetCard.setFaceDown(info.faceDown);
+        }
 
         // reset meld status
         if (targetCard instanceof MeldCard) {
