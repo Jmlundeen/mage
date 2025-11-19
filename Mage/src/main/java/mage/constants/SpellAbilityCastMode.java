@@ -78,7 +78,8 @@ public enum SpellAbilityCastMode {
             case MORPH:
             case DISGUISE:
                 if (cardCopy instanceof Spell) {
-                    ((Spell) cardCopy).getCard().getFaceDownValues().applyTo(cardCopy);
+                    cardCopy = ((Spell) cardCopy).getCard();
+                    ((Spell) card).getCard().getFaceDownValues().applyTo(cardCopy);
                     return cardCopy;
                 }
                 BecomesFaceDownCreatureEffect.FaceDownType faceDownType = this == MORPH
