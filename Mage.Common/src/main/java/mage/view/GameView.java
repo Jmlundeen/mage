@@ -94,10 +94,12 @@ public class GameView implements Serializable {
                 // Spell
                 Spell spell = (Spell) stackObject;
                 // Don't show unpaid spells of other players
-                if (!spell.getSpellAbility().getManaCostsToPay().isPaid()) {
-                    if (!spell.getControllerId().equals(createdForPlayerId)) {
-                        continue;
-                    }
+                boolean paid = spell.getSpellAbility().getManaCostsToPay().isPaid();
+                if (paid) {
+                    paid = spell.getSpellAbility().getCosts().isPaid();
+                }
+                if (!paid && !spell.getControllerId().equals(createdForPlayerId)) {
+                    continue;
                 }
                 CardView spellView = new CardView(spell, game, CardUtil.canShowAsControlled(spell, createdForPlayerId));
                 spellView.paid = spell.getSpellAbility().getManaCostsToPay().isPaid();
