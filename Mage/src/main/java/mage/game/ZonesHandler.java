@@ -374,6 +374,7 @@ public final class ZonesHandler {
         boolean isGoodToMove = false;
         if (info.faceDown) {
             // any card can be moved as face down (doubled faced cards also support face down)
+            card.setFaceDown(true);
             isGoodToMove = true;
         } else if (event.getToZone().equals(Zone.BATTLEFIELD)) {
             // non-permanents can't move to battlefield
