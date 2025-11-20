@@ -1011,7 +1011,7 @@ public interface Player extends MageItem, Copyable<Player> {
      * @param parameters {@link MoveCardsParameters} object holding all move parameters
      * @param source source ability causing the move
      * @param game current game
-     * @return
+     * @return true if any cards were moved
      */
     boolean moveCards(MoveCardsParameters parameters, Ability source, Game game);
 
@@ -1022,9 +1022,31 @@ public interface Player extends MageItem, Copyable<Player> {
      * @param source source ability causing the move
      * @param game current game
      * @param appliedEffects list of applied effects
-     * @return
+     * @return true if any cards were moved
      */
     boolean moveCards(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects);
+
+    /**
+     * Universal method to move cards to another zone.
+     *
+     * @param parameters {@link MoveCardsParameters} object holding all move parameters
+     * @param source source ability causing the move
+     * @param game current game
+     * @return set of cards that were successfully moved
+     */
+    Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game);
+
+    /**
+     * Universal method to move cards from one zone to another.
+     *
+     * @param parameters {@link MoveCardsParameters} object holding all move parameters
+     * @param source source ability causing the move
+     * @param game current game
+     * @param appliedEffects list of applied effects
+     * @return set of cards that were successfully moved
+     */
+    Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects);
+
 
     boolean moveCardsToExile(Card card, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName);
 

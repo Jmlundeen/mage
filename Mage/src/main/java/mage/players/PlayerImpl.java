@@ -4931,6 +4931,19 @@ public abstract class PlayerImpl implements Player, Serializable {
         if (parameters.getCards().isEmpty()) {
             return true;
         }
+        return !moveCardsWithResult(parameters, source, game, appliedEffects).isEmpty();
+    }
+
+    @Override
+    public Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game) {
+        return moveCardsWithResult(parameters, source, game, null);
+    }
+
+    @Override
+    public Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        if (parameters.getCards().isEmpty()) {
+            return Collections.emptySet();
+        }
         Set<Card> successfulMovedCards = new LinkedHashSet<>();
         switch (parameters.getToZone()) {
             case GRAVEYARD:
@@ -4952,9 +4965,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                 moveCardsToCommandWithInfo(parameters, source, game, successfulMovedCards);
                 break;
         }
-        return !successfulMovedCards.isEmpty();
+        return successfulMovedCards;
     }
-
 
     private void moveCardsToGraveyardWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         while (!parameters.getCards().isEmpty()) {

@@ -4526,6 +4526,16 @@ public class TestPlayer implements Player {
     }
 
     @Override
+    public Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game) {
+        return computerPlayer.moveCardsWithResult(parameters, source, game, null);
+    }
+
+    @Override
+    public Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        return computerPlayer.moveCardsWithResult(parameters, source, game, appliedEffects);
+    }
+
+    @Override
     public boolean hasDesignation(DesignationType designationName
     ) {
         return computerPlayer.hasDesignation(designationName);
