@@ -48,8 +48,8 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -1761,7 +1761,7 @@ public class TablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnStateFinishedActionPerformed
 
     private void buttonWhatsNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWhatsNewActionPerformed
-        MageFrame.getInstance().showWhatsNewDialog(true);
+        MageFrame.showWhatsNewDialog();
     }//GEN-LAST:event_buttonWhatsNewActionPerformed
 
     private void btnQuickStart2PlayerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQuickStartDuelActionPerformed

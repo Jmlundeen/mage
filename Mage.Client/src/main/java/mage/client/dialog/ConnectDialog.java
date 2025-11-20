@@ -15,16 +15,17 @@ import org.apache.log4j.Logger;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.*;
-import java.net.*;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.Writer;
+import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static mage.client.dialog.PreferencesDialog.*;
+import static mage.client.dialog.PreferencesDialog.KEY_CONNECT_AUTO_CONNECT;
+import static mage.client.dialog.PreferencesDialog.KEY_CONNECT_FLAG;
 
 /**
  * App GUI: connection windows
@@ -761,11 +762,11 @@ public class ConnectDialog extends MageDialog {
     }//GEN-LAST:event_btnFlagSearchActionPerformed
 
     private void btnCheckStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCheckStatusActionPerformed
-        AppUtil.openUrlInSystemBrowser("http://xmage.today/servers/");
+        AppUtil.openUrlInBrowser("http://xmage.today/servers/");
     }//GEN-LAST:event_btnCheckStatusActionPerformed
 
     private void btnWhatsNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnWhatsNewActionPerformed
-        MageFrame.getInstance().showWhatsNewDialog(true);
+        MageFrame.showWhatsNewDialog();
     }//GEN-LAST:event_btnWhatsNewActionPerformed
 
     private void btnFindMainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindMainActionPerformed
