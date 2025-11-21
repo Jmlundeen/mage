@@ -5035,7 +5035,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                 card = game.getCard(card.getId());
             }
-            logMoveInfo(player, card, fromZone, true, parameters, game, source);
+            logMoveInfo(player, card, fromZone, false, parameters, game, source);
         }
         return result;
     }
@@ -5103,10 +5103,11 @@ public abstract class PlayerImpl implements Player, Serializable {
     private void moveCardsToHandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
-            boolean hideName = fromZone == Zone.LIBRARY;
+            boolean hideName = fromZone == Zone.LIBRARY || card.isFaceDown();
             if (fromZone == Zone.STACK || fromZone == Zone.BATTLEFIELD) {
                 // Owner must reveal face down permanent or spell when moving zones
                 parameters.setFaceDown(false);
+                hideName = false;
             }
             if (card.moveToZone(parameters, source, game, appliedEffects)) {
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
@@ -5116,7 +5117,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                 if (game.isSimulation()) {
                     return;
                 }
-                logMoveInfo(this, card, fromZone, hideName, parameters, game, source);
+                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
+                logMoveInfo(movingPlayer, card, fromZone, hideName, parameters, game, source);
             }
         }
     }
@@ -5153,7 +5155,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                 if (!parameters.isFaceDown() && card.getName().isEmpty()) {
                     throw new IllegalStateException("wrong code usage: method must find real card name, but found nothing");
                 }
-                logMoveInfo(this, card, fromZone, card.isFaceDown(), parameters, game, source);
+                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
+                logMoveInfo(movingPlayer, card, fromZone, card.isFaceDown(), parameters, game, source);
             }
         }
     }
@@ -5166,16 +5169,18 @@ public abstract class PlayerImpl implements Player, Serializable {
             } else {
                 fromZone = game.getState().getZone(card.getId());
             }
+            boolean hideName = fromZone == Zone.HAND || fromZone == Zone.LIBRARY
+                    || (fromZone != Zone.STACK && fromZone != Zone.BATTLEFIELD && card.isFaceDown());
             if (card.moveToZone(parameters, source, game, appliedEffects)) {
                 successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
                 }
-                boolean hideName = fromZone == Zone.HAND || fromZone == Zone.LIBRARY;
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                     card = game.getCard(card.getId());
                 }
-                logMoveInfo(this, card, fromZone, hideName, parameters, game, source);
+                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
+                logMoveInfo(movingPlayer, card, fromZone, hideName, parameters, game, source);
             }
         }
     }
@@ -5191,7 +5196,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                     card = game.getCard(card.getId());
                 }
-                logMoveInfo(this, card, fromZone, false, parameters, game, source);
+                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
+                logMoveInfo(movingPlayer, card, fromZone, false, parameters, game, source);
             }
         }
     }
@@ -5202,7 +5208,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         StringBuilder sb = new StringBuilder();
         switch (game.getState().getZone(card.getId())) {
             case GRAVEYARD:
-                sb.append(this.getLogName())
+                sb.append(player.getLogName())
                         .append(" puts ").append(cardName).append(" ").append(card.isCopy() ? "(Copy) " : "")
                         .append(fromZoneString);
                 if (card.isOwnedBy(player.getId())) {
@@ -5223,19 +5229,19 @@ public abstract class PlayerImpl implements Player, Serializable {
                 game.informPlayers(getLogName() + " puts "
                         + cardName
                         + fromZoneString
-                        + (card.isOwnedBy(this.getId()) ? " into their hand" : " into its owner's hand")
+                        + (card.isOwnedBy(player.getId()) ? " into their hand" : " into its owner's hand")
                         + CardUtil.getSourceLogName(game, source, card.getId())
                 );
                 break;
             case EXILED:
-                game.informPlayers(this.getLogName() + " moves " + cardName
+                game.informPlayers(player.getLogName() + " moves " + cardName
                         + fromZoneString
                         + " to the exile zone"
                         + CardUtil.getSourceLogName(game, source, card.getId())
                 );
                 break;
             case LIBRARY:
-                sb.append(this.getLogName())
+                sb.append(player.getLogName())
                         .append(" puts ").append(cardName).append(' ');
                 if (fromZone != null) {
                     sb.append("from ").append(fromZone.toString().toLowerCase(Locale.ENGLISH)).append(' ');
@@ -5253,7 +5259,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 game.informPlayers(sb.toString());
                 break;
             case COMMAND:
-                sb.append(this.getLogName())
+                sb.append(player.getLogName())
                         .append(" puts ").append(card.getLogName()).append(' ');
                 if (fromZone != null) {
                     sb.append("from ").append(fromZone.toString().toLowerCase(Locale.ENGLISH)).append(' ');
