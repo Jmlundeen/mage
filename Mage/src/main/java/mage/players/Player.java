@@ -980,15 +980,30 @@ public interface Player extends MageItem, Copyable<Player> {
      */
     boolean moveCards(Cards cards, Zone toZone, Ability source, Game game);
 
+    /**
+     * Moves a card from one zone to another
+     *
+     * @param card
+     * @param toZone
+     * @param source
+     * @param game
+     * @return
+     */
     boolean moveCards(Card card, Zone toZone, Ability source, Game game);
 
-    boolean moveCards(Card card, Zone toZone, Ability source, Game game, boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects);
-
+    /**
+     * Universal method to move cards from one zone to another.
+     *
+     * @param cards
+     * @param toZone
+     * @param source
+     * @param game
+     * @return
+     */
     boolean moveCards(Set<? extends Card> cards, Zone toZone, Ability source, Game game);
 
     /**
-     * Universal method to move cards from one zone to another. Do not mix
-     * objects from different zones to move.
+     * Universal method to move cards from one zone to another.
      *
      * @param cards
      * @param toZone
@@ -1027,7 +1042,7 @@ public interface Player extends MageItem, Copyable<Player> {
     boolean moveCards(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects);
 
     /**
-     * Universal method to move cards to another zone.
+     * Universal method to move cards to another zone and returns the resulting card after the move.
      *
      * @param parameters {@link MoveCardsParameters} object holding all move parameters
      * @param source source ability causing the move
@@ -1037,7 +1052,7 @@ public interface Player extends MageItem, Copyable<Player> {
     Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game);
 
     /**
-     * Universal method to move cards from one zone to another.
+     * Universal method to move cards from one zone to another and returns the resulting card after the move.
      *
      * @param parameters {@link MoveCardsParameters} object holding all move parameters
      * @param source source ability causing the move
