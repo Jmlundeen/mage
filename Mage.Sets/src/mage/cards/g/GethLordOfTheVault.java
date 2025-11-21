@@ -13,6 +13,7 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 import mage.target.targetadjustment.XManaValueTargetAdjuster;
@@ -84,7 +85,9 @@ class GethLordOfTheVaultEffect extends OneShotEffect {
         if (card == null) {
             return true;
         }
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCards(parameters, source, game);
         Player player = game.getPlayer(card.getOwnerId());
         if (player != null) {
             player.millCards(card.getManaValue(), source, game);

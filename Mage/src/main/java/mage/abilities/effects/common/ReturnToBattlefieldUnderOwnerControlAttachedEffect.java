@@ -7,6 +7,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
@@ -50,7 +51,10 @@ public class ReturnToBattlefieldUnderOwnerControlAttachedEffect extends OneShotE
         if (attached instanceof Permanent && zcc instanceof Integer) {
             Card card = game.getCard(((Permanent) attached).getId());
             if (card != null && (int) zcc == card.getZoneChangeCounter(game)) {
-                return controller.moveCards(card, Zone.BATTLEFIELD, source, game, this.tapped, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setTapped(tapped)
+                        .setByOwner(true);
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;

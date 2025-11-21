@@ -7,6 +7,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 /**
@@ -64,8 +65,10 @@ public class ReturnToBattlefieldUnderOwnerControlSourceEffect extends OneShotEff
                 case COMMAND:
                 case GRAVEYARD:
                     if (zoneChangeCounter < 0 || game.getState().getZoneChangeCounter(card.getId()) == zoneChangeCounter) {
-
-                        if (controller.moveCards(card, Zone.BATTLEFIELD, source, game, tapped, false, true, null)) {
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                                .setTapped(tapped)
+                                .setByOwner(true);
+                        if (controller.moveCards(parameters, source, game)) {
                             if (attacking) {
                                 game.getCombat().addAttackingCreature(card.getId(), game);
                             }

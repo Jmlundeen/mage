@@ -1,6 +1,5 @@
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
@@ -9,17 +8,20 @@ import mage.abilities.common.delayed.AtTheEndOfCombatDelayedTriggeredAbility;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ReturnToHandTargetEffect;
+import mage.abilities.keyword.HasteAbility;
 import mage.cards.*;
 import mage.constants.*;
-import mage.abilities.keyword.HasteAbility;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -106,10 +108,10 @@ class ArthurMarigoldKnightEffect extends OneShotEffect {
                 StaticFilters.FILTER_CARD_CREATURE);
         player.choose(outcome, cards, targetCardInLibrary, source, game);
         Card card = game.getCard(targetCardInLibrary.getFirstTarget());
-        if (card == null || !player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, true, null
-        )) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        if (card == null || !player.moveCards(parameters, source, game)) {
             return player.putCardsOnBottomOfLibrary(cards, game, source, false);
         }
         Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);

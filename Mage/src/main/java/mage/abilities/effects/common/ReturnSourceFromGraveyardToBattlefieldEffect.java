@@ -11,6 +11,7 @@ import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
@@ -79,7 +80,10 @@ public class ReturnSourceFromGraveyardToBattlefieldEffect extends OneShotEffect 
             return false;
         }
         if (game.getState().getZone(source.getSourceId()) == Zone.GRAVEYARD) {
-            player.moveCards(card, Zone.BATTLEFIELD, source, game, tapped, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(tapped)
+                    .setByOwner(true);
+            player.moveCards(parameters, source, game);
             if (haste) {
                 Permanent permanent = game.getPermanent(card.getId());
                 if (permanent != null) {

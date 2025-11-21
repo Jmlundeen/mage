@@ -76,7 +76,7 @@ class SeraphEffect extends OneShotEffect {
         if (controller == null || creatureCard == null) {
             return false;
         }
-        controller.moveCards(creatureCard, Zone.BATTLEFIELD, source, game, false, false, false, null);
+        controller.moveCards(creatureCard, Zone.BATTLEFIELD, source, game);
         Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(creatureCard, game);
         if (permanent != null) {
             SacrificeTargetEffect effect = new SacrificeTargetEffect();

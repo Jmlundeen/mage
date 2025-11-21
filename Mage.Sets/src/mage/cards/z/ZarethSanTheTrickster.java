@@ -18,6 +18,7 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.common.FilterPermanentCard;
 import mage.filter.predicate.permanent.UnblockedPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
@@ -101,14 +102,14 @@ class ZarethSanTheTricksterEffect extends OneShotEffect {
         if (card == null) {
             return true;
         }
-        controller.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, true, null
-        );
-        Permanent permanent = game.getPermanent(card.getId());
-        if (permanent != null) {
-            game.getCombat().addAttackingCreature(permanent.getId(), game);
-        }
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(p -> p instanceof Permanent)
+                .map(p -> (Permanent) p)
+                .findFirst()
+                .ifPresent(permanent -> game.getCombat().addAttackingCreature(permanent.getId(), game));
         return true;
     }
 }

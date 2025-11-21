@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.MageObjectReference;
@@ -16,14 +15,13 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.choices.Choice;
 import mage.choices.ChoiceImpl;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -84,7 +82,10 @@ class ShorecrasherElementalEffect extends OneShotEffect {
             if (controller.moveCards(shorecrasherElemental, Zone.EXILED, source, game)) {
                 Card card = game.getExile().getCard(source.getSourceId(), game);
                 if (card != null) {
-                    controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, true, true, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                            .setFaceDown(true)
+                            .setByOwner(true);
+                    controller.moveCards(parameters, source, game);
                 }
             }
             return true;

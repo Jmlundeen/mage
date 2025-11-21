@@ -361,7 +361,9 @@ public class Spell extends StackObjectImpl implements Card {
                     permId = card.getId();
                     MageObjectReference mor = new MageObjectReference(getSpellAbility());
                     game.storePermanentCostsTags(mor, getSpellAbility());
-                    permanentCreated = controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, isFaceDown(), false, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                            .setFaceDown(isFaceDown());
+                    permanentCreated = controller.moveCards(parameters, ability, game);
                 }
                 if (permanentCreated) {
                     if (bestow) {
@@ -394,7 +396,9 @@ public class Spell extends StackObjectImpl implements Card {
             if (bestow) {
                 MageObjectReference mor = new MageObjectReference(getSpellAbility());
                 game.storePermanentCostsTags(mor, getSpellAbility());
-                return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, isFaceDown(), false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setFaceDown(isFaceDown());
+                return controller.moveCards(parameters, ability, game);
             } else {
                 //20091005 - 608.2b
                 if (!game.isSimulation()) {
@@ -411,7 +415,9 @@ public class Spell extends StackObjectImpl implements Card {
         } else {
             MageObjectReference mor = new MageObjectReference(getSpellAbility());
             game.storePermanentCostsTags(mor, getSpellAbility());
-            return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, isFaceDown(), false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setFaceDown(isFaceDown());
+            return controller.moveCards(parameters, ability, game);
         }
     }
 

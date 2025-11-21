@@ -1,6 +1,5 @@
 package mage.cards.k;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -8,9 +7,9 @@ import mage.abilities.common.OneOrMoreCombatDamagePlayerTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.counter.AddCountersAllEffect;
+import mage.abilities.keyword.FlyingAbility;
 import mage.cards.*;
 import mage.constants.*;
-import mage.abilities.keyword.FlyingAbility;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.common.FilterControlledCreaturePermanent;
@@ -19,6 +18,8 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
+
+import java.util.UUID;
 
 /**
  *
@@ -112,7 +113,7 @@ class KastralTheWindcrestedEffect extends OneShotEffect {
         }
         Card card = game.getCard(target.getFirstTarget());
         if (card != null) {
-            controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+            controller.moveCards(card, Zone.BATTLEFIELD, source, game);
         }
         return true;
     }

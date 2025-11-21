@@ -1,9 +1,9 @@
 package mage.cards.o;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -13,6 +13,7 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.common.TargetCardWithDifferentNameInLibrary;
@@ -112,12 +113,11 @@ class OmenpathJourneyChooseEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player player = game.getPlayer(source.getControllerId());
         ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
-        return player != null
-                && exileZone != null
-                && !exileZone.isEmpty()
-                && player.moveCards(
-                exileZone.getRandom(game), Zone.BATTLEFIELD, source, game,
-                true, false, false, null
-        );
+        if (exileZone == null || player == null || exileZone.isEmpty()) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(exileZone.getRandom(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 }

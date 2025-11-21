@@ -1,7 +1,6 @@
 package mage.cards.o;
 
 import mage.MageInt;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
@@ -18,6 +17,7 @@ import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.FilterSpell;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.players.Player;
 
@@ -149,7 +149,10 @@ class OjerPakpatiqDeepestEpochTrigger extends OneShotEffect {
         }
         game.getState().setValue(TransformAbility.VALUE_KEY_ENTER_TRANSFORMED + source.getSourceId(), Boolean.TRUE);
         game.setEnterWithCounters(card.getId(), new Counters().addCounter(CounterType.TIME.createInstance(3)));
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

@@ -14,6 +14,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 
@@ -73,7 +74,9 @@ class OldGrowthDryadsEffect extends OneShotEffect {
                 if (opponent.searchLibrary(target, source, game)) {
                     Card targetCard = opponent.getLibrary().getCard(target.getFirstTarget(), game);
                     if (targetCard != null) {
-                        opponent.moveCards(targetCard, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(targetCard, Zone.BATTLEFIELD)
+                                .setTapped(true);
+                        opponent.moveCards(parameters, source, game);
                         playersThatSearched.add(opponent);
                     }
                 }

@@ -104,7 +104,7 @@ class ColossalGraveReaverEffect extends OneShotEffect {
                     cardsToMove.add(cardsToChooseFrom.get(target.getFirstTarget(), game));
 
             }
-            controller.moveCards(cardsToMove, Zone.BATTLEFIELD, source, game, false, false, false, null);
+            controller.moveCards(cardsToMove, Zone.BATTLEFIELD, source, game);
             return true;
         }
         return false;

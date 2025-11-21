@@ -16,6 +16,7 @@ import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.Predicate;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
@@ -101,10 +102,9 @@ class MarchOfBurgeoningLifeEffect extends OneShotEffect {
         player.searchLibrary(target, source, game);
         Card card = player.getLibrary().getCard(target.getFirstTarget(), game);
         if (card != null) {
-            player.moveCards(
-                    card, Zone.BATTLEFIELD, source, game, true,
-                    false, false, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
         player.shuffleLibrary(source, game);
         return true;

@@ -6,6 +6,7 @@ import mage.cards.Card;
 import mage.cards.Cards;
 import mage.cards.CardsImpl;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 /**
@@ -74,7 +75,9 @@ public enum PutCards {
             case BOTTOM_RANDOM:
                 return player.putCardsOnBottomOfLibrary(new CardsImpl(card), game, source, false);
             case BATTLEFIELD_TAPPED:
-                return player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setTapped(true);
+                return player.moveCards(parameters, source, game);
             case SHUFFLE:
                 return player.shuffleCardsToLibrary(card, game, source);
             case BATTLEFIELD_TRANSFORMED:

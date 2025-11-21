@@ -1,7 +1,5 @@
 package mage.cards.t;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import mage.abilities.Ability;
 import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -22,16 +20,14 @@ import mage.counters.Counters;
 import mage.filter.common.FilterEnchantmentPermanent;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
 import mage.util.CardUtil;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+
+import java.util.*;
 
 /**
  * @author MarcoMarin
@@ -220,8 +216,14 @@ class TawnossCoffinReturnEffect extends OneShotEffect {
             if (creatureCard == null) {
                 continue;
             }
-            controller.moveCards(creatureCard, Zone.BATTLEFIELD, source, game, false, false, true, null);
-            Permanent newPermanent = CardUtil.getPermanentFromCardPutToBattlefield(creatureCard, game);
+            MoveCardsParameters parameters = new MoveCardsParameters(creatureCard, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            Permanent newPermanent = controller.moveCardsWithResult(parameters, source, game)
+                    .stream()
+                    .filter(card -> card instanceof Permanent)
+                    .map(card -> (Permanent) card)
+                    .findFirst()
+                    .orElse(null);
             if (newPermanent == null) {
                 continue;
             }

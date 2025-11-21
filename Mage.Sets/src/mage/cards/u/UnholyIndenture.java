@@ -82,7 +82,7 @@ class UnholyIndentureReturnEffect extends OneShotEffect {
                 Counters countersToAdd = new Counters();
                 countersToAdd.addCounter(CounterType.P1P1.createInstance());
                 game.setEnterWithCounters(card.getId(), countersToAdd);
-                controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+                controller.moveCards(card, Zone.BATTLEFIELD, source, game);
                 return true;
             }
         }

@@ -1,7 +1,6 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesAttachedTriggeredAbility;
 import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbility;
@@ -18,12 +17,14 @@ import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -86,16 +87,16 @@ class GiftOfImmortalityEffect extends OneShotEffect {
             return false;
         }
 
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-        if (permanent == null) {
-            return false;
-        }
-
-        // Create delayed triggered ability
-        Effect effect = new ReturnToBattlefieldAttachedEffect();
-        effect.setTargetPointer(new FixedTarget(permanent, game));
-        game.addDelayedTriggeredAbility(new AtTheBeginOfNextEndStepDelayedTriggeredAbility(effect), source);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        controller.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .findFirst()
+                .ifPresent(permanent -> {
+                    Effect effect = new ReturnToBattlefieldAttachedEffect();
+                    effect.setTargetPointer(new FixedTarget(permanent, game));
+                    game.addDelayedTriggeredAbility(new AtTheBeginOfNextEndStepDelayedTriggeredAbility(effect), source);
+                });
         return true;
     }
 }

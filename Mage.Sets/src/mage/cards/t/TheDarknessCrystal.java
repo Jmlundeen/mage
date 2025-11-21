@@ -21,6 +21,7 @@ import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.ObjectSourcePlayerPredicate;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.players.Player;
@@ -117,16 +118,9 @@ class TheDarknessCrystalExileEffect extends ReplacementEffectImpl {
         if (player == null || card == null) {
             return false;
         }
-        player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(
-                        game, source.getSourceId(),
-                        game.getState().getZoneChangeCounter(source.getSourceId())
-                ),
-                CardUtil.getSourceName(game, source)
-        );
+        ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
         player.gainLife(2, game, source);
-        return true;
+        return false;
     }
 
     @Override
@@ -169,6 +163,8 @@ class TheDarknessCrystalReturnEffect extends OneShotEffect {
             return false;
         }
         game.setEnterWithCounters(card.getId(), new Counters(CounterType.P1P1.createInstance(2)));
-        return player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 }

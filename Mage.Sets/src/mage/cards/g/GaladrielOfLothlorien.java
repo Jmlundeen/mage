@@ -12,6 +12,7 @@ import mage.cards.CardSetInfo;
 import mage.cards.CardsImpl;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -76,8 +77,8 @@ class GaladrielOfLothlorienEffect extends OneShotEffect {
             return false;
         }
         player.revealCards(source, new CardsImpl(card), game);
-        return card.isLand(game) && player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        return card.isLand(game) && player.moveCards(parameters, source, game);
     }
 }

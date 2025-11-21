@@ -1,6 +1,5 @@
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
@@ -9,17 +8,19 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.Card;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.mageobject.PowerPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
-import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -99,11 +100,14 @@ class ShadowfaxLordOfHorsesEffect extends OneShotEffect {
             return false;
         }
 
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-        if (permanent != null) {
-            game.getCombat().addAttackingCreature(permanent.getId(), game);
-        }
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(resCard -> resCard instanceof Permanent)
+                .map(resCard -> (Permanent) resCard)
+                .findFirst()
+                .ifPresent(permanent -> game.getCombat().addAttackingCreature(permanent.getId(), game));
 
         return true;
     }

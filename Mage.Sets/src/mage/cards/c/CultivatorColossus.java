@@ -11,14 +11,16 @@ import mage.abilities.keyword.TrampleAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -89,14 +91,14 @@ class CultivatorColossusEffect extends OneShotEffect {
             if (card == null) {
                 break;
             }
-            player.moveCards(
-                    card, Zone.BATTLEFIELD, source, game, true,
-                    false, false, null
-            );
-            Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-            if (permanent != null) {
-                player.drawCards(1, source, game);
-            }
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCardsWithResult(parameters, source, game)
+                    .stream()
+                    .findFirst()
+                    .ifPresent(permanent -> {
+                        player.drawCards(1, source, game);
+                    });
         }
         return true;
     }

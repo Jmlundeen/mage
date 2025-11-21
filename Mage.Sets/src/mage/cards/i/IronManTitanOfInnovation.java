@@ -16,6 +16,7 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterArtifactCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.TreasureToken;
 import mage.players.Player;
@@ -98,7 +99,9 @@ class IronManTitanOfInnovationEffect extends OneShotEffect {
         player.searchLibrary(targetCardInLibrary, source, game);
         Card card = player.getLibrary().getCard(targetCardInLibrary.getFirstTarget(), game);
         if (card != null) {
-            player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
         player.shuffleLibrary(source, game);
         return true;

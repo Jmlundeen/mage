@@ -9,6 +9,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.util.CardUtil;
@@ -61,7 +62,9 @@ public class PutCardFromHandOrGraveyardOntoBattlefieldEffect extends OneShotEffe
         controller.choose(outcome, cards, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
         if (card != null) {
-            controller.moveCards(card, Zone.BATTLEFIELD, source, game, tapped, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(tapped);
+            return controller.moveCards(parameters, source, game);
         }
         return true;
     }

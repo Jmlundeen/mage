@@ -1,6 +1,5 @@
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
@@ -13,10 +12,13 @@ import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  * @author jeffwadsworth
@@ -71,7 +73,9 @@ class PlanarIncisionEffect extends OneShotEffect {
                         Counters countersToAdd = new Counters();
                         countersToAdd.addCounter(CounterType.P1P1.createInstance());
                         game.setEnterWithCounters(exiledCard.getId(), countersToAdd);
-                        return controller.moveCards(exiledCard, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(exiledCard, Zone.BATTLEFIELD)
+                                .setByOwner(true);
+                        return controller.moveCards(parameters, source, game);
                     }
                 }
             }

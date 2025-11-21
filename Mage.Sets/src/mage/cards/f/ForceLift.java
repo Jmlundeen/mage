@@ -111,7 +111,7 @@ class ForceLiftReturnFromExileEffect extends OneShotEffect {
         if (card != null && objectToReturn.refersTo(card, game)) {
             Player owner = game.getPlayer(card.getOwnerId());
             if (owner != null) {
-                owner.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                owner.moveCards(card, Zone.BATTLEFIELD, source, game);
             }
         }
         return true;

@@ -16,11 +16,11 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterArtifactCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -94,11 +94,14 @@ class UltraMagnusTacticianEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        );
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        Permanent permanent = player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(p -> p instanceof Permanent)
+                .map(p -> (Permanent) p)
+                .findFirst()
+                .orElse(null);
         if (permanent == null) {
             return true;
         }

@@ -1,7 +1,6 @@
 
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
@@ -17,7 +16,10 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -81,7 +83,9 @@ class AshcloudPhoenixEffect extends OneShotEffect {
             if (card != null) {
                 Player owner = game.getPlayer(card.getOwnerId());
                 if (owner != null && owner.getGraveyard().contains(card.getId())) {
-                    controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, true, false, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                            .setFaceDown(true);
+                    controller.moveCards(parameters, source, game);
                 }
             }
             return true;

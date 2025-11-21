@@ -23,6 +23,7 @@ import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.common.TargetControlledPermanent;
@@ -100,13 +101,12 @@ class ScholarOfNewHorizonsEffect extends OneShotEffect {
         player.searchLibrary(target, source, game);
         Card card = player.getLibrary().getCard(target.getFirstTarget(), game);
         player.revealCards(source, new CardsImpl(card), game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
         if (card == null
                 || !condition.apply(game, source)
                 || !player.chooseUse(outcome, "Put the card onto the battlfield tapped?", source, game)
-                || !player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        )) {
+                || !player.moveCards(parameters, source, game)) {
             player.moveCards(card, Zone.HAND, source, game);
         }
         player.shuffleLibrary(source, game);

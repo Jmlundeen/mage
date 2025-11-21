@@ -14,6 +14,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.ZombieDruidToken;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -84,9 +85,8 @@ class TevalTheBalancedScaleEffect extends OneShotEffect {
         );
         player.choose(outcome, player.getGraveyard(), target, source, game);
         Card card = game.getCard(target.getFirstTarget());
-        return card != null && player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        return card != null && player.moveCards(parameters, source, game);
     }
 }

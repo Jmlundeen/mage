@@ -11,13 +11,13 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -116,11 +116,17 @@ class OwlbearCubEffect extends OneShotEffect {
         player.choose(outcome, cards, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
         if (card != null) {
-            player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
-            Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-            if (permanent != null) {
-                game.getCombat().addAttackerToCombat(permanent.getId(), getTargetPointer().getFirst(game, source), game);
-            }
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+
+            player.moveCardsWithResult(parameters, source, game)
+                    .stream()
+                    .filter(cardRes -> cardRes instanceof Permanent)
+                    .map(cardRes -> (Permanent) cardRes)
+                    .findFirst()
+                    .ifPresent(permanent ->
+                            game.getCombat().addAttackerToCombat(permanent.getId(), getTargetPointer().getFirst(game, source), game)
+                    );
         }
         cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);

@@ -13,6 +13,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -80,7 +81,9 @@ class RisenReefEffect extends OneShotEffect {
                 outcome, "Put " + card.getName() + " onto the battlefield tapped?",
                 "(otherwise put it into your hand)", "To battlefield",
                 "To hand", source, game)) {
-            player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         } else {
             player.moveCards(card, Zone.HAND, source, game);
         }

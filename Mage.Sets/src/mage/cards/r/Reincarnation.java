@@ -1,6 +1,5 @@
 package mage.cards.r;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.delayed.WhenTargetDiesDelayedTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
@@ -15,9 +14,12 @@ import mage.constants.Zone;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.card.OwnerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -79,7 +81,9 @@ class ReincarnationEffect extends OneShotEffect {
                 && controller.chooseTarget(outcome, target, source, game)) {
             Card card = game.getCard(target.getFirstTarget());
             if (card != null && game.getState().getZone(card.getId()) == Zone.GRAVEYARD) {
-                controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setByOwner(true);
+                controller.moveCards(parameters, source, game);
             }
         }
         return true;

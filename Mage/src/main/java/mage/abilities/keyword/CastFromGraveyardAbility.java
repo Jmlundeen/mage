@@ -173,10 +173,8 @@ class CastFromGraveyardReplacementEffect extends ReplacementEffectImpl {
             return false;
         }
         discard();
-        return controller.moveCards(
-                card, Zone.EXILED, source, game, false,
-                false, false, event.getAppliedEffects()
-        );
+        ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
+        return false;
     }
 
     @Override

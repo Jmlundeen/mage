@@ -1,7 +1,5 @@
 package mage.cards.a;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.SearchEffect;
@@ -18,12 +16,14 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.common.TargetControlledCreaturePermanent;
-import mage.target.common.TargetCreaturePermanent;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 import static mage.filter.StaticFilters.FILTER_CREATURE_YOU_DONT_CONTROL;
 
@@ -115,7 +115,9 @@ class ArchdruidsCharmMode1Effect extends SearchEffect {
                         continue;
                     }
                     if (putOnBattlefieldFilter.match(card, game)) {
-                        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                                .setTapped(true);
+                        controller.moveCards(parameters, source, game);
                     } else {
                         controller.moveCards(card, Zone.HAND, source, game);
                     }

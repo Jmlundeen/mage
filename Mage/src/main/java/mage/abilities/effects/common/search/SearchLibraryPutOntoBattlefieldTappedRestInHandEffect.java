@@ -10,6 +10,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.util.CardUtil;
@@ -66,7 +67,9 @@ public class SearchLibraryPutOntoBattlefieldTappedRestInHandEffect extends Searc
                     Cards cardsToBattlefield = new CardsImpl(targetCardsToBattlefield.getTargets());
                     Cards cardsToHand = new CardsImpl(revealed);
                     if (!cardsToBattlefield.isEmpty()) {
-                        controller.moveCards(cardsToBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, true, false, false, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(cardsToBattlefield.getCards(game), Zone.BATTLEFIELD)
+                                .setTapped(true);
+                        controller.moveCards(parameters, source, game);
                         cardsToHand.removeAll(cardsToBattlefield);
                     }
 
@@ -75,7 +78,9 @@ public class SearchLibraryPutOntoBattlefieldTappedRestInHandEffect extends Searc
                     Cards cards = new CardsImpl(revealed);
                     Card cardToBattlefield = cards.getRandom(game);
                     if (cardToBattlefield != null) {
-                        controller.moveCards(cardToBattlefield, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(cardToBattlefield, Zone.BATTLEFIELD)
+                                .setTapped(true);
+                        controller.moveCards(parameters, source, game);
                     }
                 }
             }

@@ -1,21 +1,23 @@
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.TheRingTemptsYouTriggeredAbility;
 import mage.abilities.condition.common.CreatureDiedControlledCondition;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.keyword.TheRingTemptsYouEffect;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.Card;
-import mage.cards.CardsImpl;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.CardsImpl;
+import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
+
+import java.util.UUID;
 
 /**
  *
@@ -90,7 +92,9 @@ class SmeagolHelpfulGuideEffect extends OneShotEffect {
         // If there was a land card, the source's controller puts in on the battlefield tapped.
         if (land != null) {
             revealed.remove(land);
-            controller.moveCards(land, Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(land, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
         }
 
         // Rest of the revealed cards are put into the opponent's graveyard.

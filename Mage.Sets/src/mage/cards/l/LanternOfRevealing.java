@@ -13,6 +13,7 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -76,7 +77,9 @@ class LanternOfRevealingEffect extends OneShotEffect {
         if (card.isLand(game) && player.chooseUse(
                 outcome, "Put " + card.getName() + " onto the battlefield tapped?", source, game
         )) {
-            player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
         if (game.getState().getZone(card.getId()) == Zone.LIBRARY && player.chooseUse(
                 outcome, "Put " + card.getName() + " on the bottom of your library?", source, game

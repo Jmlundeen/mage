@@ -17,6 +17,7 @@ import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.players.Player;
 
@@ -82,10 +83,9 @@ class EsperOriginsEffect extends OneShotEffect {
         player.moveCards(card, Zone.EXILED, source, game);
         game.setEnterWithCounters(card.getId(), new Counters(CounterType.FINALITY.createInstance()));
         game.getState().setValue(TransformAbility.VALUE_KEY_ENTER_TRANSFORMED + card.getId(), Boolean.TRUE);
-        player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, false,
-                false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

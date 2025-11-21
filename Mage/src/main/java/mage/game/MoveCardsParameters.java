@@ -49,6 +49,11 @@ public class MoveCardsParameters {
         this.toZone = toZone;
     }
 
+    public MoveCardsParameters(Collection<? extends Card> cards, Zone toZone) {
+        this.cards = new LinkedHashSet<>(cards);
+        this.toZone = toZone;
+    }
+
     /**
      * Constructs a new MoveCardsParameters object with the specified cards and destination zone.
      * By default, the cards are not tapped, not face-down, and not moved by their owner.

@@ -13,6 +13,7 @@ import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.common.TargetControlledCreaturePermanent;
@@ -87,10 +88,9 @@ class PrishesWanderingsEffect extends OneShotEffect {
         Card card = player.getLibrary().getCard(target.getFirstTarget(), game);
         if (card != null) {
             player.revealCards(source, new CardsImpl(card), game);
-            player.moveCards(
-                    card, Zone.BATTLEFIELD, source, game, true,
-                    false, false, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
         player.shuffleLibrary(source, game);
         return true;

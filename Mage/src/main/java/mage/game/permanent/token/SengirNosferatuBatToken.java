@@ -15,6 +15,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInExile;
@@ -86,9 +87,11 @@ class ReturnSengirNosferatuEffect extends OneShotEffect {
         }
         player.chooseTarget(Outcome.PutCreatureInPlay, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
-        return card != null && player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, false,
-                false, true, null
-        );
+        if (card == null) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return player.moveCards(parameters, source, game);
     }
 }

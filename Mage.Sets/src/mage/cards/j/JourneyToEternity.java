@@ -1,4 +1,3 @@
-
 package mage.cards.j;
 
 import mage.abilities.Ability;
@@ -83,7 +82,7 @@ class JourneyToEternityReturnTransformedSourceEffect extends OneShotEffect {
                 return true;
             }
             game.getState().setValue(TransformAbility.VALUE_KEY_ENTER_TRANSFORMED + source.getSourceId(), Boolean.TRUE);
-            controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+            controller.moveCards(card, Zone.BATTLEFIELD, source, game);
         }
         return true;
     }

@@ -13,6 +13,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -85,7 +86,9 @@ class WindsOfAbandonEffect extends OneShotEffect {
         if (player.searchLibrary(target, source, game)) {
             Card card = player.getLibrary().getCard(target.getFirstTarget(), game);
             if (card != null) {
-                player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setTapped(true);
+                player.moveCards(parameters, source, game);
             }
         }
         player.shuffleLibrary(source, game);

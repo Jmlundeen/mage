@@ -10,6 +10,7 @@ import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.players.PlayerList;
@@ -91,7 +92,9 @@ class ThievesAuctionEffect extends OneShotEffect {
                 // and puts it onto the battlefield tapped under their control.
                 Card chosenCard = exiledCards.get(target.getFirstTarget(), game);
                 if (chosenCard != null) {
-                    player.moveCards(chosenCard, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(chosenCard, Zone.BATTLEFIELD)
+                            .setTapped(true);
+                    player.moveCards(parameters, source, game);
                 }
                 exiledCards.remove(chosenCard);
             } else {

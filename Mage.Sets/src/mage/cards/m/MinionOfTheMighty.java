@@ -15,6 +15,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
@@ -85,10 +86,9 @@ class MinionOfTheMightyEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        controller.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCards(parameters, source, game);
         Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
         if (permanent != null) {
             game.getCombat().addAttackingCreature(permanent.getId(), game);

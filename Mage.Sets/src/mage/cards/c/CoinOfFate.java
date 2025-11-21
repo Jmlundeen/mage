@@ -17,6 +17,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInYourGraveyard;
@@ -99,11 +100,14 @@ class CoinOfFateEffect extends OneShotEffect {
         opponent.chooseTarget(Outcome.Benefit, cards, targetCard, source, game);
         Card cardToLibrary = game.getCard(targetCard.getFirstTarget());
         if (cardToLibrary != null) {
-            controller.moveCardToLibraryWithInfo(cardToLibrary, source, game, Zone.EXILED, false, true);
+            controller.moveCards(cardToLibrary, Zone.LIBRARY, source, game);
             cards.remove(cardToLibrary);
         }
         if (!cards.isEmpty()) {
-            controller.moveCards(game.getCard(cards.iterator().next()), Zone.BATTLEFIELD, source, game, true, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(game.getCard(cards.iterator().next()), Zone.BATTLEFIELD)
+                    .setTapped(true)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
         }
         return true;
     }

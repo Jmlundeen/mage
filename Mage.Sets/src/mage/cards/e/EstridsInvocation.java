@@ -2,10 +2,10 @@ package mage.cards.e;
 
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CopyPermanentEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -15,6 +15,7 @@ import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledEnchantmentPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.functions.CopyApplier;
@@ -88,8 +89,11 @@ class EstridsInvocationEffect extends OneShotEffect {
             return false;
         }
         Card card = permanent.getMainCard();
+
         player.moveCards(permanent, Zone.EXILED, source, game);
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

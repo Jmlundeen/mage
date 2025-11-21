@@ -13,11 +13,11 @@ import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -93,13 +93,17 @@ class WinotaJoinerOfForcesEffect extends OneShotEffect {
         TargetCardInLibrary targetCardInLibrary = new TargetCardInLibrary(0, 1, filter);
         player.choose(outcome, cards, targetCardInLibrary, source, game);
         Card card = game.getCard(targetCardInLibrary.getFirstTarget());
-        if (card == null || !player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, true, null
-        )) {
+        if (card == null) {
             return player.putCardsOnBottomOfLibrary(cards, game, source, false);
         }
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        Permanent permanent = player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(p -> p instanceof Permanent)
+                .map(p -> (Permanent) p)
+                .findFirst()
+                .orElse(null);
         if (permanent == null) {
             return player.putCardsOnBottomOfLibrary(cards, game, source, false);
         }

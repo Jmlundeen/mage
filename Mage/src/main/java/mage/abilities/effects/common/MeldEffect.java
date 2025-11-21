@@ -17,6 +17,7 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.filter.predicate.permanent.AttackingPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -121,7 +122,9 @@ public class MeldEffect extends OneShotEffect {
         game.addMeldCard(meldCard.getId(), meldCard);
         game.getState().addCard(meldCard);
         meldCard.setZone(Zone.EXILED, game);
-        controller.moveCards(meldCard, Zone.BATTLEFIELD, source, game, attacking, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(meldCard, Zone.BATTLEFIELD)
+                .setTapped(attacking);
+        controller.moveCards(parameters, source, game);
         if (attacking) {
             game.getCombat().addAttackingCreature(meldCard.getId(), game);
         }

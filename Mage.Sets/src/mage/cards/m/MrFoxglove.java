@@ -1,19 +1,20 @@
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.constants.*;
 import mage.abilities.keyword.LifelinkAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.UUID;
 
 /**
  *
@@ -83,7 +84,7 @@ class MrFoxgloveEffect extends OneShotEffect {
                 if (controller.choose(Outcome.PutCardInPlay, target, source, game)) {
                     Card card = game.getCard(target.getFirstTarget());
                     if (card != null) {
-                        return controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+                        return controller.moveCards(card, Zone.BATTLEFIELD, source, game);
                     }
                 }
             }

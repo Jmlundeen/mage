@@ -17,6 +17,7 @@ import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -87,7 +88,9 @@ class LilysplashMentorEffect extends OneShotEffect {
                         Counters countersToAdd = new Counters();
                         countersToAdd.addCounter(CounterType.P1P1.createInstance());
                         game.setEnterWithCounters(exiledCard.getId(), countersToAdd);
-                        return controller.moveCards(exiledCard, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(exiledCard, Zone.BATTLEFIELD)
+                                .setByOwner(true);
+                        return controller.moveCards(parameters, source, game);
                     }
                 }
             }
