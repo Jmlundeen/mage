@@ -86,7 +86,7 @@ public class FuzzyTestsUtil {
                         .setByOwner(false);
                 Player player = game.getPlayer(originalPermanent.getControllerId());
                 if (player != null) {
-                    player.moveCards(parameters, source, game, null);
+                    player.moveCards(parameters, source, game);
                     Permanent doppelgangerPerm = CardUtil.getPermanentFromCardPutToBattlefield(doppelgangerCardSide, game);
                     doppelgangerPerm.phaseOut(game, true); // use indirect, so no phase in on untap
                 }

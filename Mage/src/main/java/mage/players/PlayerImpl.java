@@ -1049,7 +1049,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 Collections.shuffle(cardList);
                 MoveCardsParameters parameters = new MoveCardsParameters(cardList, Zone.LIBRARY)
                         .setToTopOfLibrary(false);
-                moveCards(parameters, source, game, null);
+                moveCards(parameters, source, game);
 
             } else {
                 // user defined order
@@ -1074,7 +1074,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     order.add(game.getCard(c));
                 }
                 MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY);
-                moveCards(parameters, source, game, null);
+                moveCards(parameters, source, game);
             }
         }
         return true;
@@ -1149,7 +1149,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 List<Card> cardList = new ArrayList<>(cards.getCards(game));
                 Collections.shuffle(cardList);
                 MoveCardsParameters parameters = new MoveCardsParameters(cardList, Zone.LIBRARY);
-                moveCards(parameters, source, game, null);
+                moveCards(parameters, source, game);
             } else {
                 // user defined order
                 List<Card> order = new ArrayList<>();
@@ -1174,7 +1174,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     order.add(game.getCard(c));
                 }
                 MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY);
-                moveCards(parameters, source, game, null);
+                moveCards(parameters, source, game);
             }
         }
         return true;
@@ -4914,52 +4914,39 @@ public abstract class PlayerImpl implements Player, Serializable {
 
     @Override
     public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game) {
-        return moveCards(parameters, source, game, null);
-    }
-
-    @Override
-    public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
-        if (parameters.getCards().isEmpty()) {
-            return true;
-        }
-        return !moveCardsWithResult(parameters, source, game, appliedEffects).isEmpty();
+        return !moveCardsWithResult(parameters, source, game).isEmpty();
     }
 
     @Override
     public Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game) {
-        return moveCardsWithResult(parameters, source, game, null);
-    }
-
-    @Override
-    public Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
         if (parameters.getCards().isEmpty()) {
             return Collections.emptySet();
         }
         Set<Card> successfulMovedCards = new LinkedHashSet<>();
         switch (parameters.getToZone()) {
             case GRAVEYARD:
-                moveCardsToGraveyardWithInfo(parameters, source, game, successfulMovedCards, appliedEffects);
+                moveCardsToGraveyardWithInfo(parameters, source, game, successfulMovedCards);
                 break;
             case BATTLEFIELD:
-                moveCardsToBattlefieldWithInfo(parameters, source, game, successfulMovedCards, appliedEffects);
+                moveCardsToBattlefieldWithInfo(parameters, source, game, successfulMovedCards);
                 break;
             case HAND:
-                moveCardsToHandWithInfo(parameters, source, game, successfulMovedCards, appliedEffects);
+                moveCardsToHandWithInfo(parameters, source, game, successfulMovedCards);
                 break;
             case EXILED:
-                moveCardsToExileWithInfo(parameters, source, game, successfulMovedCards, appliedEffects);
+                moveCardsToExileWithInfo(parameters, source, game, successfulMovedCards);
                 break;
             case LIBRARY:
-                moveCardsToLibraryWithInfo(parameters, source, game, successfulMovedCards, appliedEffects);
+                moveCardsToLibraryWithInfo(parameters, source, game, successfulMovedCards);
                 break;
             case COMMAND:
-                moveCardsToCommandWithInfo(parameters, source, game, successfulMovedCards, appliedEffects);
+                moveCardsToCommandWithInfo(parameters, source, game, successfulMovedCards);
                 break;
         }
         return successfulMovedCards;
     }
 
-    private void moveCardsToGraveyardWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
+    private void moveCardsToGraveyardWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         while (!parameters.getCards().isEmpty()) {
             // identify cards from one owner
             Cards cards = new CardsImpl();
@@ -4996,7 +4983,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                         cards.remove(targetObjectId);
                         if (card != null) {
                             Zone fromZone = game.getState().getZone(card.getId());
-                            if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone, appliedEffects)) {
+                            if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone)) {
                                 successfulMovedCards.add(card);
                             }
                         }
@@ -5005,7 +4992,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     if (cards.size() == 1) {
                         Card card = cards.getCards(game).iterator().next();
                         Zone fromZone = game.getState().getZone(card.getId());
-                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone, appliedEffects)) {
+                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone)) {
                             successfulMovedCards.add(card);
                         }
                     }
@@ -5013,7 +5000,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     for (Card card : cards.getCards(game)) {
                         Zone fromZone = game.getState().getZone(card.getId());
 
-                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone, appliedEffects)) {
+                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone)) {
                             successfulMovedCards.add(card);
                         }
                     }
@@ -5022,12 +5009,12 @@ public abstract class PlayerImpl implements Player, Serializable {
         }
     }
 
-    private boolean moveCardToGraveyardWithInfo(Player player, Card card, MoveCardsParameters parameters, Ability source, Game game, Zone fromZone, List<UUID> appliedEffects) {
+    private boolean moveCardToGraveyardWithInfo(Player player, Card card, MoveCardsParameters parameters, Ability source, Game game, Zone fromZone) {
         if (card == null) {
             return false;
         }
         boolean result = false;
-        if (card.moveToZone(parameters, source, game, appliedEffects)) {
+        if (card.moveToZone(parameters, source, game)) {
             result = true;
             if (!game.isSimulation()) {
                 return result;
@@ -5040,7 +5027,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         return result;
     }
 
-    private void moveCardsToBattlefieldWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
+    private void moveCardsToBattlefieldWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         List<ZoneChangeInfo> infoList = new ArrayList<>();
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
@@ -5077,7 +5064,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             }
 
             ZoneChangeEvent event = new ZoneChangeEvent(card.getId(), source,
-                    parameters.isByOwner() ? card.getOwnerId() : getId(), fromZone, Zone.BATTLEFIELD, appliedEffects);
+                    parameters.isByOwner() ? card.getOwnerId() : getId(), fromZone, Zone.BATTLEFIELD);
             infoList.add(new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source));
         }
         ZonesHandler.moveCards(infoList, source, game);
@@ -5100,7 +5087,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         game.applyEffects();
     }
 
-    private void moveCardsToHandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
+    private void moveCardsToHandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
             boolean hideName = fromZone == Zone.LIBRARY || card.isFaceDown();
@@ -5109,7 +5096,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 parameters.setFaceDown(false);
                 hideName = false;
             }
-            if (card.moveToZone(parameters, source, game, appliedEffects)) {
+            if (card.moveToZone(parameters, source, game)) {
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                     card = game.getCard(card.getId());
                 }
@@ -5123,7 +5110,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         }
     }
 
-    private void moveCardsToExileWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
+    private void moveCardsToExileWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
             // 708.9.
@@ -5138,7 +5125,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             if (fromZone == Zone.STACK || (fromZone == Zone.BATTLEFIELD && card.isFaceDown())) {
                 parameters.setFaceDown(false);
             }
-            if (card.moveToZone(parameters, source, game, appliedEffects)) {
+            if (card.moveToZone(parameters, source, game)) {
                 successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
@@ -5161,7 +5148,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         }
     }
 
-    private void moveCardsToLibraryWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
+    private void moveCardsToLibraryWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         for (Card card : parameters.getCards()) {
             Zone fromZone;
             if (card instanceof Spell) {
@@ -5171,7 +5158,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             }
             boolean hideName = fromZone == Zone.HAND || fromZone == Zone.LIBRARY
                     || (fromZone != Zone.STACK && fromZone != Zone.BATTLEFIELD && card.isFaceDown());
-            if (card.moveToZone(parameters, source, game, appliedEffects)) {
+            if (card.moveToZone(parameters, source, game)) {
                 successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
@@ -5185,10 +5172,10 @@ public abstract class PlayerImpl implements Player, Serializable {
         }
     }
 
-    private void moveCardsToCommandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards, List<UUID> appliedEffects) {
+    private void moveCardsToCommandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
-            if (card.moveToZone(parameters, source, game, appliedEffects)) {
+            if (card.moveToZone(parameters, source, game)) {
                 successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
