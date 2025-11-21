@@ -13,6 +13,7 @@ import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -99,10 +100,9 @@ class HewTheEntwoodEffect extends OneShotEffect {
                 toPlay.getCards(StaticFilters.FILTER_CARD_NON_LAND, game),
                 Zone.BATTLEFIELD, source, game
         );
-        player.moveCards(
-                toPlay.getCards(StaticFilters.FILTER_CARD_LAND, game),
-                Zone.BATTLEFIELD, source, game, true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(toPlay.getCards(StaticFilters.FILTER_CARD_LAND, game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);
         return true;

@@ -90,8 +90,7 @@ class PushTheLimitEffect extends OneShotEffect {
             return false;
         }
         Set<Card> cards = controller.getGraveyard().getCards(filter, source.getControllerId(), source, game);
-        boolean result = controller.moveCards(cards, Zone.BATTLEFIELD, source, game,
-                false, false, false, null);
+        boolean result = controller.moveCards(cards, Zone.BATTLEFIELD, source, game);
         if (result) {
             List<Permanent> permanentsToSac = cards.stream()
                     .map(card -> CardUtil.getPermanentFromCardPutToBattlefield(card, game))

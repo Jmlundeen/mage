@@ -19,6 +19,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.stack.StackAbility;
 import mage.game.stack.StackObject;
@@ -140,9 +141,11 @@ class SaviorOfOllenbockEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player player = game.getPlayer(source.getControllerId());
         ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source, -1));
-        return player != null && exileZone != null && !exileZone.isEmpty() && player.moveCards(
-                exileZone.getCards(game), Zone.BATTLEFIELD, source, game,
-                false, false, true, null
-        );
+        if (player == null || exileZone == null || exileZone.isEmpty()) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(exileZone.getCards(game), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return  player.moveCards(parameters, source, game);
     }
 }

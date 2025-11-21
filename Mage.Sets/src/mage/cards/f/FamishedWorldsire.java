@@ -21,6 +21,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledLandPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
@@ -95,10 +96,9 @@ class FamishedWorldsireEffect extends OneShotEffect {
         TargetCard target = new TargetCardInLibrary(0, Integer.MAX_VALUE, StaticFilters.FILTER_CARD_LANDS);
         target.withChooseHint("to put onto the battlefield tapped");
         player.choose(outcome, cards, target, source, game);
-        player.moveCards(
-                new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source,
-                game, true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

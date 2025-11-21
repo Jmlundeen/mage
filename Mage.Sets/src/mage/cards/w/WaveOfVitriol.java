@@ -1,7 +1,6 @@
 
 package mage.cards.w;
 
-import java.util.*;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.CardImpl;
@@ -16,9 +15,12 @@ import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.*;
 
 /**
  *
@@ -107,7 +109,10 @@ class WaveOfVitriolEffect extends OneShotEffect {
                 }
             }
 
-            controller.moveCards(toBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, true, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield.getCards(game), Zone.BATTLEFIELD)
+                    .setTapped(true)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
             for (Player player : playersToShuffle) {
                 player.shuffleLibrary(source, game);
             }

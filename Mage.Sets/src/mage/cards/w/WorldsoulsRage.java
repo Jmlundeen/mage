@@ -11,6 +11,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetAnyTarget;
@@ -96,7 +97,9 @@ class WorldsoulsRageEffect extends OneShotEffect {
             return false;
         }
 
-        controller.moveCards(chosenCards, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(chosenCards, Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

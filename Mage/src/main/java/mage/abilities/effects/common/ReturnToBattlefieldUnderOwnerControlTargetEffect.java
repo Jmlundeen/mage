@@ -9,6 +9,7 @@ import mage.cards.MeldCard;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -79,7 +80,10 @@ public class ReturnToBattlefieldUnderOwnerControlTargetEffect extends OneShotEff
         }
         Cards cardsToBattlefield = getCardsToReturn(game, source);
         if (!cardsToBattlefield.isEmpty()) {
-            controller.moveCards(cardsToBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, tapped, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cardsToBattlefield.getCards(game), Zone.BATTLEFIELD)
+                    .setTapped(tapped)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
         }
         return true;
     }

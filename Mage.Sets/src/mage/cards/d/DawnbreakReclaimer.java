@@ -1,29 +1,27 @@
 package mage.cards.d;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.FlyingAbility;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Outcome;
-import mage.constants.TargetController;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.card.OwnerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInGraveyard;
 import mage.target.common.TargetOpponent;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -157,7 +155,9 @@ class DawnbreakReclaimerEffect extends OneShotEffect {
                             null,
                             source,
                             game)) {
-                        controller.moveCards(cards, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.BATTLEFIELD)
+                                .setByOwner(true);
+                        controller.moveCards(parameters, source, game);
                     }
                 }
             }

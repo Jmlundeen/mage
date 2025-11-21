@@ -1,7 +1,6 @@
 
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.OneShotEffect;
@@ -16,8 +15,11 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.permanent.TappedPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.UUID;
 
 /**
  *
@@ -75,7 +77,9 @@ class HarvestSeasonEffect extends OneShotEffect {
             if (tappedCreatures > 0) {
                 TargetCardInLibrary target = new TargetCardInLibrary(0, tappedCreatures, StaticFilters.FILTER_CARD_BASIC_LAND);
                 if (controller.searchLibrary(target, source, game)) {
-                    controller.moveCards(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source, game, true, false, false, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                            .setTapped(true);
+                    controller.moveCards(parameters, source, game);
                 }
             }
             controller.shuffleLibrary(source, game);

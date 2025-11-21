@@ -7,6 +7,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInYourGraveyard;
@@ -62,7 +63,9 @@ public class ReturnFromGraveyardToBattlefieldTargetEffect extends OneShotEffect 
                     cardsToMove.add(card);
                 }
             }
-            controller.moveCards(cardsToMove, Zone.BATTLEFIELD, source, game, tapped, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cardsToMove, Zone.BATTLEFIELD)
+                    .setTapped(tapped);
+            controller.moveCards(parameters, source, game);
             if (attacking) {
                 for (Card card : cardsToMove) {
                     game.getCombat().addAttackingCreature(card.getId(), game);

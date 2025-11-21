@@ -19,6 +19,7 @@ import mage.filter.common.FilterNonlandPermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -132,7 +133,9 @@ class PheliaExuberantShepherdEffect extends OneShotEffect {
             return false;
         }
         Set<Card> cards = exileZone.getCards(game);
-        player.moveCards(cards, Zone.BATTLEFIELD, source, game, false, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        player.moveCards(parameters, source, game);
         game.processAction();
 
         Permanent phelia = source.getSourcePermanentIfItStillExists(game);

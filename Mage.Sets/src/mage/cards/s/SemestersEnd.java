@@ -16,6 +16,7 @@ import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterCreatureOrPlaneswalkerPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 
@@ -117,10 +118,9 @@ class SemestersEndReturnEffect extends OneShotEffect {
         }
         Cards cards = new CardsImpl();
         morSet.stream().map(mor -> mor.getCard(game)).forEach(cards::add);
-        player.moveCards(
-                cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                false, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        player.moveCards(parameters, source, game);
         cards.retainZone(Zone.BATTLEFIELD, game);
         if (cards.isEmpty()) {
             return false;

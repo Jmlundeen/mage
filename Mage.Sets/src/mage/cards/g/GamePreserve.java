@@ -1,8 +1,8 @@
 package mage.cards.g;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
@@ -12,6 +12,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -73,10 +74,9 @@ class GamePreserveEffect extends OneShotEffect {
         if (cards.isEmpty() || cards.count(StaticFilters.FILTER_CARD_NON_CREATURE, game) > 0) {
             return false;
         }
-        controller.moveCards(
-                cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                false, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

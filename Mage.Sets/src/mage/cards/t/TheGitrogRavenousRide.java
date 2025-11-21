@@ -17,6 +17,7 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.permanent.SaddledSourceThisTurnPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -105,10 +106,9 @@ class TheGitrogRavenousRideEffect extends OneShotEffect {
         TargetCard targetCard = new TargetCardInHand(0, power, StaticFilters.FILTER_CARD_LANDS);
         player.choose(outcome, player.getHand(), targetCard, source, game);
         Cards cards = new CardsImpl(targetCard.getTargets());
-        player.moveCards(
-                cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

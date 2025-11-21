@@ -1,7 +1,6 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.CardImpl;
@@ -13,7 +12,10 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -65,7 +67,9 @@ class PlanarBirthEffect extends OneShotEffect {
                     toBattlefield.addAllCards(player.getGraveyard().getCards(StaticFilters.FILTER_CARD_BASIC_LAND, controller.getId(), source, game));
                 }
             }
-            controller.moveCards(toBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, true, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield.getCards(game), Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

@@ -11,6 +11,7 @@ import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.Objects;
@@ -76,7 +77,9 @@ class PyrrhicRevivalEffect extends OneShotEffect {
         for (Card card : toBattlefield) {
             game.setEnterWithCounters(card.getId(), counters.copy());
         }
-        controller.moveCards(toBattlefield, Zone.BATTLEFIELD, source, game, false, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

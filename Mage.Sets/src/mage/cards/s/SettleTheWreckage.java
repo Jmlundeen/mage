@@ -1,8 +1,5 @@
 package mage.cards.s;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
@@ -14,9 +11,14 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -79,8 +81,9 @@ class SettleTheWreckageEffect extends OneShotEffect {
         if (player.chooseUse(Outcome.PutLandInPlay, "Search your library for " + target.getDescription() + '?', source, game)) {
             if (player.searchLibrary(target, source, game)) {
                 if (!target.getTargets().isEmpty()) {
-                    player.moveCards(new CardsImpl(target.getTargets()).getCards(game),
-                            Zone.BATTLEFIELD, source, game, true, false, false, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                            .setTapped(true);
+                    player.moveCards(parameters, source, game);
                 }
             }
         }

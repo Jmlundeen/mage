@@ -1,19 +1,17 @@
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Library;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -80,7 +78,10 @@ class ClearTheLandEffect extends OneShotEffect {
                                 cardsToExile.add(card);
                             }
                         }
-                        player.moveCards(cardsToPutOnBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, tapped, false, true, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(cardsToPutOnBattlefield.getCards(game), Zone.BATTLEFIELD)
+                                .setTapped(tapped)
+                                .setByOwner(true);
+                        player.moveCards(parameters, source, game);
                         player.moveCards(cardsToExile.getCards(game), Zone.EXILED, source, game);
                     }
                 }

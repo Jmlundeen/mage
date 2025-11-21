@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.CardImpl;
@@ -11,14 +10,15 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
-import mage.filter.common.FilterControlledLandPermanent;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
-import mage.target.common.TargetControlledPermanent;
 import mage.target.common.TargetSacrifice;
+
+import java.util.UUID;
 
 /**
  *
@@ -67,9 +67,7 @@ class ScapeshiftEffect extends OneShotEffect {
         }
         int amount = 0;
         TargetSacrifice sacrificeLand = new TargetSacrifice(0, Integer.MAX_VALUE, StaticFilters.FILTER_LANDS);
-        // TODO: replace example for #8254:
-        //  sacrificeLand.choose(Outcome.Sacrifice, controller.getId(), source.getSourceId(), source, game)
-        if (controller.choose(Outcome.Sacrifice, sacrificeLand, source, game)) {
+        if (sacrificeLand.choose(Outcome.Sacrifice, controller.getId(), source, game)) {
             for (UUID uuid : sacrificeLand.getTargets()) {
                 Permanent land = game.getPermanent(uuid);
                 if (land != null) {
@@ -80,8 +78,9 @@ class ScapeshiftEffect extends OneShotEffect {
         }
         TargetCardInLibrary target = new TargetCardInLibrary(amount, new FilterLandCard("lands"));
         if (controller.searchLibrary(target, source, game)) {
-            controller.moveCards(new CardsImpl(target.getTargets()).getCards(game),
-                    Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
             controller.shuffleLibrary(source, game);
             return true;
         }

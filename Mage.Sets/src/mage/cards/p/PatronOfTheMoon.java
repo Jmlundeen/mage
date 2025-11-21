@@ -14,6 +14,7 @@ import mage.constants.*;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
@@ -74,8 +75,9 @@ class PatronOfTheMoonEffect extends OneShotEffect {
         if (controller != null) {
             TargetCard target = new TargetCardInHand(0, 2, new FilterLandCard("up to two land cards to put onto the battlefield tapped"));
             controller.chooseTarget(outcome, controller.getHand(), target, source, game);
-            return controller.moveCards(new CardsImpl(target.getTargets()).getCards(game),
-                    Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                    .setTapped(true);
+            return controller.moveCards(parameters, source, game);
         }
         return false;
     }

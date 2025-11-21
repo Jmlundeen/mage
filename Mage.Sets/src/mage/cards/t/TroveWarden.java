@@ -15,6 +15,7 @@ import mage.filter.common.FilterPermanentCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
@@ -93,9 +94,8 @@ class TroveWardenEffect extends OneShotEffect {
         if (exileZone == null) {
             return true;
         }
-        return controller.moveCards(
-                exileZone.getCards(game), Zone.BATTLEFIELD, source, game,
-                false, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(exileZone.getCards(game), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return controller.moveCards(parameters, source, game);
     }
 }

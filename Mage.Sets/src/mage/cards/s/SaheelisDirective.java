@@ -79,7 +79,7 @@ class SaheelisDirectiveEffect extends OneShotEffect {
             controller.choose(Outcome.PutCardInPlay, cards, target1, source, game);
             Cards toBattlefield = new CardsImpl(target1.getTargets());
             cards.removeAll(toBattlefield);
-            controller.moveCards(toBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, false, false, false, null);
+            controller.moveCards(toBattlefield.getCards(game), Zone.BATTLEFIELD, source, game);
             controller.moveCards(cards, Zone.GRAVEYARD, source, game);
         }
         return true;

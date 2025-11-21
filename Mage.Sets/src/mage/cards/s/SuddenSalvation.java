@@ -14,6 +14,7 @@ import mage.filter.common.FilterPermanentCard;
 import mage.filter.predicate.card.PutIntoGraveFromBattlefieldThisTurnPredicate;
 import mage.game.Controllable;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 import mage.watchers.common.CardsPutIntoGraveyardWatcher;
@@ -79,10 +80,10 @@ class SuddenSalvationEffect extends OneShotEffect {
         if (player == null || cards.isEmpty()) {
             return false;
         }
-        player.moveCards(
-                cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                true, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        player.moveCards(parameters, source, game);
         int opponents = cards.stream()
                 .map(game::getPermanent)
                 .filter(Objects::nonNull)

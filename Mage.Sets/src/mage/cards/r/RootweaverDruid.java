@@ -14,6 +14,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 
@@ -90,17 +91,16 @@ class RootweaverDruidEffect extends OneShotEffect {
             target = new TargetCardInLibrary();
             player.choose(outcome, cards, target, source, game);
             mine.addAll(target.getTargets());
-            cards.removeAll(target.getTargets());
+            target.getTargets().forEach(cards::remove);
             theirs.addAll(cards);
         }
-        controller.moveCards(
-                mine.getCards(game), Zone.BATTLEFIELD, source, game,
-                true, false, false, null
-        );
-        controller.moveCards(
-                theirs.getCards(game), Zone.BATTLEFIELD, source, game,
-                true, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(mine.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCards(parameters, source, game);
+        MoveCardsParameters parametersTheirs = new MoveCardsParameters(theirs.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        controller.moveCards(parametersTheirs, source, game);
         return true;
     }
 }

@@ -10,6 +10,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.BeastToken;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
@@ -95,10 +96,9 @@ class WildEndeavorEffect extends OneShotEffect {
                 .map(game::getCard)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        controller.moveCards(
-                cards, Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCards(parameters, source, game);
         controller.shuffleLibrary(source, game);
         return true;
     }

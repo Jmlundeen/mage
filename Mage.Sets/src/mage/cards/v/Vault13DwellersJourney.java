@@ -2,11 +2,9 @@ package mage.cards.v;
 
 import mage.abilities.Ability;
 import mage.abilities.common.SagaAbility;
-import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ExileUntilSourceLeavesEffect;
 import mage.abilities.effects.common.GainLifeEffect;
-import mage.abilities.effects.common.PutOnLibraryTargetEffect;
 import mage.abilities.effects.keyword.ScryEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -18,13 +16,13 @@ import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInExile;
 import mage.target.targetadjustment.ForEachPlayerTargetsAdjuster;
 import mage.target.targetpointer.EachTargetPointer;
-import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
 
 import java.util.Optional;
@@ -125,16 +123,16 @@ class Vault13DwellersJourneyEffect extends OneShotEffect {
         }
         toPlay.retainZone(Zone.EXILED, game);
         if (!toPlay.isEmpty()) {
-            player.moveCards(
-                    toPlay.getCards(game), Zone.BATTLEFIELD, source, game,
-                    false, false, true, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(toPlay.getCards(game), Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            player.moveCards(parameters, source, game);
             cards.retainZone(Zone.EXILED, game);
         }
         if (!cards.isEmpty()) {
-            Effect e = new PutOnLibraryTargetEffect(false);
-            e.setTargetPointer(new FixedTargets(cards, game));
-            e.apply(game, source);
+            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.LIBRARY)
+                    .setToTopOfLibrary(false)
+                    .setByOwner(true);
+            player.moveCards(parameters, source, game);
         }
         return true;
     }

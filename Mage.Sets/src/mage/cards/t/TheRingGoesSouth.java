@@ -12,6 +12,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -85,10 +86,9 @@ class TheRingGoesSouthEffect extends OneShotEffect {
             }
         }
         player.revealCards(source, cards, game);
-        player.moveCards(
-                lands.getCards(game), Zone.BATTLEFIELD, source, game,
-                true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(lands.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);
         return true;

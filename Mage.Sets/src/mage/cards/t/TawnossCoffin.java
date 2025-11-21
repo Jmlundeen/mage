@@ -251,7 +251,9 @@ class TawnossCoffinReturnEffect extends OneShotEffect {
                     game.getState().setValue("attachTo:" + auraCard.getId(), newPermanent);
                 }
             }
-            controller.moveCards(returningAuras, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters aurasParameters = new MoveCardsParameters(returningAuras, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(aurasParameters, source, game);
             for (Card enchantment : returningAuras) {
                 Permanent permanent = game.getPermanent(enchantment.getId());
                 if (permanent != null) {

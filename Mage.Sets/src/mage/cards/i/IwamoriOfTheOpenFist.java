@@ -9,6 +9,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.TargetCard;
@@ -83,7 +84,9 @@ class IwamoriOfTheOpenFistEffect extends OneShotEffect {
                     }
                 }
             }
-            controller.moveCards(cards.getCards(game), Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
             return true;
         }
 

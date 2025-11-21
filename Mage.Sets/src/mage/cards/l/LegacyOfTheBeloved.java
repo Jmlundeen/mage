@@ -1,7 +1,6 @@
 
 package mage.cards.l;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.SacrificeTargetCost;
@@ -21,7 +20,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
-import mage.target.common.TargetControlledCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -79,7 +79,7 @@ class LegacyOfTheBelovedEffect extends OneShotEffect {
                         TargetCardInLibrary target = new TargetCardInLibrary(0, 2, filter);
                         Player player = game.getPlayer(source.getControllerId());
                         if (player != null && player.searchLibrary(target, source, game)) {
-                            player.moveCards(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source, game, false, false, false, null);
+                            player.moveCards(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source, game);
                             player.shuffleLibrary(source, game);
                             return true;
                         }

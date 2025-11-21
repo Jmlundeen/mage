@@ -1,12 +1,12 @@
 package mage.cards.a;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ExileSpellEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
@@ -14,6 +14,7 @@ import mage.constants.TargetController;
 import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.Collection;
@@ -100,7 +101,9 @@ class AllHallowsEveEffect extends OneShotEffect {
                 .filter(card1 -> card1.isCreature(game))
                 .forEach(allCreatureCardsInGraveyards::add);
 
-        controller.moveCards(allCreatureCardsInGraveyards.getCards(game), Zone.BATTLEFIELD, source, game, false, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(allCreatureCardsInGraveyards.getCards(game), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

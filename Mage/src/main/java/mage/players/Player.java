@@ -1005,24 +1005,6 @@ public interface Player extends MageItem, Copyable<Player> {
     /**
      * Universal method to move cards from one zone to another.
      *
-     * @param cards
-     * @param toZone
-     * @param source
-     * @param game
-     * @param tapped         the cards are tapped on the battlefield
-     * @param faceDown       the cards are face down in the to zone
-     * @param byOwner        the card is moved (or put onto battlefield) by the
-     *                       owner of the card and if target zone is battlefield
-     *                       controls the permanent (instead of the controller
-     *                       of the source)
-     * @param appliedEffects
-     * @return
-     */
-    boolean moveCards(Set<? extends Card> cards, Zone toZone, Ability source, Game game, boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects);
-
-    /**
-     * Universal method to move cards from one zone to another.
-     *
      * @param parameters {@link MoveCardsParameters} object holding all move parameters
      * @param source source ability causing the move
      * @param game current game

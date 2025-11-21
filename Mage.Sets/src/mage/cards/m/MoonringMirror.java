@@ -3,15 +3,16 @@ package mage.cards.m;
 
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.DrawCardControllerTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -119,13 +120,14 @@ class MoonringMirrorEffect extends OneShotEffect {
         }
 
         // hand
-        for (Card card : controller.getHand().getCards(game)) {
-            card.setFaceDown(true);
-        }
-        controller.moveCardsToExile(controller.getHand().getCards(game), source, game, false, exileZoneId, sourceObject.getIdName());
+        MoveCardsParameters handParameters = new MoveCardsParameters(controller.getHand().getCards(game), Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(exileZoneId)
+                .setExileName(sourceObject.getIdName());
+        controller.moveCards(handParameters, source, game);
 
         if (cardsToHand != null) {
-            controller.moveCards(cardsToHand.getCards(game), Zone.HAND, source, game, false, true, false, null);
+            controller.moveCards(cardsToHand.getCards(game), Zone.HAND, source, game);
         }
 
         exileZone = game.getExile().getExileZone(exileZoneId);

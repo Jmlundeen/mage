@@ -139,8 +139,9 @@ class WindsOfAbandonOverloadEffect extends OneShotEffect {
                     entry.getValue() > 1 ? StaticFilters.FILTER_CARD_BASIC_LANDS : StaticFilters.FILTER_CARD_BASIC_LAND);
             if (player.searchLibrary(target, source, game)) {
                 if (!target.getTargets().isEmpty()) {
-                    player.moveCards(new CardsImpl(target.getTargets()).getCards(game),
-                            Zone.BATTLEFIELD, source, game, true, false, false, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                            .setTapped(true);
+                    player.moveCards(parameters, source, game);
                 }
             }
             player.shuffleLibrary(source, game);

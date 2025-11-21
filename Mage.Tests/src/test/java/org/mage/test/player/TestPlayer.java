@@ -4500,14 +4500,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean moveCards(Set<? extends Card> cards, Zone toZone,
-                             Ability source, Game game,
-                             boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects
-    ) {
-        return computerPlayer.moveCards(cards, toZone, source, game, tapped, faceDown, byOwner, appliedEffects);
-    }
-
-    @Override
     public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game) {
         return computerPlayer.moveCards(parameters, source, game);
     }

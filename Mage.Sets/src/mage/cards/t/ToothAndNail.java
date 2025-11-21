@@ -1,6 +1,5 @@
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.OneShotEffect;
@@ -18,6 +17,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.UUID;
 
 /**
  *
@@ -74,8 +75,7 @@ class ToothAndNailPutCreatureOnBattlefieldEffect extends OneShotEffect {
 
         TargetCardInHand target = new TargetCardInHand(0, 2, new FilterCreatureCard("creature cards"));
         if (controller.choose(Outcome.PutCreatureInPlay, target, source, game)) {
-            return controller.moveCards(new CardsImpl(target.getTargets()).getCards(game),
-                    Zone.BATTLEFIELD, source, game, false, false, false, null);
+            return controller.moveCards(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source, game);
         }
         return false;
     }

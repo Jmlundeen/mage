@@ -6,6 +6,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 /**
@@ -39,8 +40,9 @@ public class ReturnFromYourGraveyardToBattlefieldAllEffect extends OneShotEffect
         if (controller == null) {
             return false;
         }
-        return controller.moveCards(controller.getGraveyard().getCards(filter, source.getControllerId(), source, game),
-                Zone.BATTLEFIELD, source, game, tapped, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(controller.getGraveyard().getCards(filter, source.getControllerId(), source, game), Zone.BATTLEFIELD)
+                .setTapped(tapped);
+        return controller.moveCards(parameters, source, game);
     }
 
     @Override

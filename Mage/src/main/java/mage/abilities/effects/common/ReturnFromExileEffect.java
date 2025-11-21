@@ -7,6 +7,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -55,7 +56,10 @@ public class ReturnFromExileEffect extends OneShotEffect {
         if (zone == Zone.LIBRARY) {
             return controller.putCardsOnTopOfLibrary(exile, game, source, false);
         }
-        return controller.moveCards(exile.getCards(game), zone, source, game, tapped, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(exile.getCards(game), zone)
+                .setTapped(tapped)
+                .setByOwner(true);
+        return controller.moveCards(parameters, source, game);
     }
 
     private void setText() {

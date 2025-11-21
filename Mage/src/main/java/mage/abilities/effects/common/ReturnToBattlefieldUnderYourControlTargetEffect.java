@@ -9,6 +9,7 @@ import mage.cards.MeldCard;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -86,7 +87,9 @@ public class ReturnToBattlefieldUnderYourControlTargetEffect extends OneShotEffe
                 cardsToBattlefield.addAll(getTargetPointer().getTargets(game, source));
             }
             if (!cardsToBattlefield.isEmpty()) {
-                controller.moveCards(cardsToBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, tapped, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(cardsToBattlefield.getCards(game), Zone.BATTLEFIELD)
+                        .setTapped(tapped);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

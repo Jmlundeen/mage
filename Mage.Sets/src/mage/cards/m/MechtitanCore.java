@@ -20,6 +20,7 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.token.MechtitanToken;
@@ -173,10 +174,10 @@ class MechtitanCoreReturnEffect extends OneShotEffect {
             return false;
         }
         Cards cards = new CardsImpl(getTargetPointer().getTargets(game, source));
-        return player.moveCards(
-                cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                true, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        return player.moveCards(parameters, source, game);
     }
 }
 // and I'll form the head!

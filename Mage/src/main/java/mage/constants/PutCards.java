@@ -103,7 +103,9 @@ public enum PutCards {
             case BOTTOM_RANDOM:
                 return player.putCardsOnBottomOfLibrary(cards, game, source, false);
             case BATTLEFIELD_TAPPED:
-                return player.moveCards(cards.getCards(game), Zone.BATTLEFIELD, source, game, true, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                        .setTapped(true);
+                return player.moveCards(parameters, source, game);
             case SHUFFLE:
                 return player.shuffleCardsToLibrary(cards, game, source);
             case BATTLEFIELD_TRANSFORMED:

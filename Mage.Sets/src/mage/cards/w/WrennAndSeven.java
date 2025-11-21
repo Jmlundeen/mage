@@ -12,6 +12,7 @@ import mage.cards.CardsImpl;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.command.emblems.WrennAndSevenEmblem;
 import mage.game.permanent.token.WrennAndSevenTreefolkToken;
 import mage.players.Player;
@@ -83,12 +84,10 @@ class WrennAndSevenLandEffect extends OneShotEffect {
         TargetCardInHand target = new TargetCardInHand(
                 0, Integer.MAX_VALUE, StaticFilters.FILTER_CARD_LANDS
         );
-        player.choose(outcome, player.getHand(), target, source, game);
-        return player.moveCards(
-                new CardsImpl(target.getTargets()).getCards(game),
-                Zone.BATTLEFIELD, source, game, true,
-                false, true, null
-        );
+        target.choose(outcome, player.getId(), source, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 }
 
