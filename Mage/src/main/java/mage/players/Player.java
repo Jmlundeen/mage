@@ -970,7 +970,8 @@ public interface Player extends MageItem, Copyable<Player> {
     Set<UUID> getCommandersIds();
 
     /**
-     * Moves cards from one zone to another
+     * Moves cards from one zone to another. If you need to modify movement, like being tapped/face down use {@link MoveCardsParameters}
+     * method instead.
      *
      * @param cards
      * @param toZone
@@ -981,7 +982,8 @@ public interface Player extends MageItem, Copyable<Player> {
     boolean moveCards(Cards cards, Zone toZone, Ability source, Game game);
 
     /**
-     * Moves a card from one zone to another
+     * Moves a card from one zone to another. If you need to modify movement, like being tapped/face down use {@link MoveCardsParameters}
+     * method instead.
      *
      * @param card
      * @param toZone
@@ -992,7 +994,8 @@ public interface Player extends MageItem, Copyable<Player> {
     boolean moveCards(Card card, Zone toZone, Ability source, Game game);
 
     /**
-     * Universal method to move cards from one zone to another.
+     * Moves cards from one zone to another. If you need to modify movement, like being tapped/face down use {@link MoveCardsParameters}
+     * method instead.
      *
      * @param cards
      * @param toZone
