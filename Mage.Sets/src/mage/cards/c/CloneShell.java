@@ -9,6 +9,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -73,8 +74,10 @@ class CloneShellEffect extends OneShotEffect {
                 Card card = cards.get(target1.getFirstTarget(), game);
                 if (card != null) {
                     cards.remove(card);
-                    controller.moveCardsToExile(card, source, game, false, CardUtil.getCardExileZoneId(game, source), CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
-                    card.setFaceDown(true);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
+                    controller.moveCards(parameters, source, game);
                     Permanent permanent = game.getPermanentOrLKIBattlefield(source.getSourceId());
                     if (permanent != null) {
                         permanent.imprint(card.getId(), game);

@@ -14,6 +14,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Library;
@@ -120,8 +121,11 @@ class PossibilityStormEffect extends OneShotEffect {
             return false;
         }
 
+        MoveCardsParameters parameters = new MoveCardsParameters(spell, Zone.EXILED)
+                .setExileId(source.getSourceId())
+                .setExileName(sourceObject.getIdName());
         if (!noLongerOnStack) {
-            spellController.moveCardsToExile(spell, source, game, true, source.getSourceId(), sourceObject.getIdName());
+            spellController.moveCards(parameters, source, game);
         }
 
         if (!spellController.getLibrary().hasCards()) { return true; }
@@ -132,10 +136,10 @@ class PossibilityStormEffect extends OneShotEffect {
             if (card == null) {
                 break;
             }
-
-            if (!spellController.moveCardsToExile(card, source, game, true, source.getSourceId(), sourceObject.getIdName())) {
+            parameters.setCards(card);
+            if (!spellController.moveCards(parameters, source, game)) {
                 break;
-            };
+            }
         } while (library.hasCards() && !sharesType(card, spell.getCardType(game), game));
 
         if (card != null && sharesType(card, spell.getCardType(game), game)

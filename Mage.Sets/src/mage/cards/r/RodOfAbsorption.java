@@ -17,6 +17,7 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.stack.Spell;
@@ -119,11 +120,11 @@ class RodOfAbsorptionExileEffect extends ReplacementEffectImpl {
         if (player == null) {
             return false;
         }
-        player.moveCardsToExile(
-                sourceSpell, source, game, false,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        //TODO: allow replacement effects to modify the exile zone
+        MoveCardsParameters parameters = new MoveCardsParameters(sourceSpell, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         return true;
     }
 

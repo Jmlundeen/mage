@@ -15,6 +15,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -107,11 +108,10 @@ class IdentityThiefEffect extends OneShotEffect {
         if (controller == null || targetPermanent == null) {
             return false;
         }
-        controller.moveCardsToExile(
-                targetPermanent, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(targetPermanent, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new AtTheBeginOfNextEndStepDelayedTriggeredAbility(
                 new ReturnToBattlefieldUnderOwnerControlTargetEffect(false, true)
                         .setText("Return the exiled card to the battlefield under its owner's control at the beginning of the next end step")

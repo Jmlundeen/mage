@@ -1,7 +1,6 @@
 
 package mage.cards.v;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -19,12 +18,15 @@ import mage.cards.Cards;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInExile;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  * @author jeffwadsworth & L_J
@@ -82,9 +84,11 @@ class VoidMawEffect extends ReplacementEffectImpl {
                 Permanent permanent = ((ZoneChangeEvent) event).getTarget();
                 if (permanent != null) {
                     UUID exileZoneId = CardUtil.getCardExileZoneId(game, source);
-                    if (controller.moveCardsToExile(permanent, source, game, false, exileZoneId, sourceObject.getIdName())) {
-                        return true;
-                    }
+                    // TODO: allow zone change events to change exile info
+                    MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                            .setExileId(exileZoneId)
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    return controller.moveCards(parameters, source, game);
                 }
             }
         }

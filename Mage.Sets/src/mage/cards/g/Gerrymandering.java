@@ -8,6 +8,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -66,7 +67,10 @@ class GerrymanderingEffect extends OneShotEffect {
                 exiledCards.add(permanent);
                 playerLandCount.putIfAbsent(permanent.getControllerId(), 0);
                 playerLandCount.put(permanent.getControllerId(), playerLandCount.get(permanent.getControllerId()) + 1);
-                controller.moveCardsToExile(permanent, source, game, true, CardUtil.getCardExileZoneId(game, source.getSourceId()), "Gerrymandering");
+                MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
 
             // Give each player a number of those cards chosen at random equal to the number of those cards the player controlled.

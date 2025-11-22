@@ -12,6 +12,7 @@ import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
@@ -112,9 +113,10 @@ class CunningRhetoricEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-
-        UUID exileZoneId = CardUtil.getExileZoneId(game, sourceObject.getId(), sourceObject.getZoneChangeCounter(game));
-        opponent.moveCardsToExile(card, source, game, true, exileZoneId, sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        opponent.moveCards(parameters, source, game);
         CardUtil.makeCardPlayable(game, source, card, false, Duration.Custom, true);
         return true;
     }

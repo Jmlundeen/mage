@@ -4,17 +4,13 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.other.SpellCastFromAnywhereOtherThanHand;
@@ -22,8 +18,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
-import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -90,19 +84,7 @@ class SavvyTraderEffect extends OneShotEffect {
         if (sourcePermanent == null || controller == null || card == null) {
             return false;
         }
-        // One single exile zone per player is enough for this effect. source does not matter.
-        // TODO: have a rework to group together in that same exile zone all cards in exile that
-        //         - are not linked to any other ability (like return on some condition / be counted by some effet)
-        //         - can be played by a single player until end of game
-        //       On a more broad subject, there is a bunch of improvements we could do to exile zone management.
-        String keyForPlayer = "Shared::EndOfGame::PlayerMayPlay=" + controller.getId();
-        UUID exileId = CardUtil.getExileZoneId(keyForPlayer, game);
-        String exileName = controller.getName() + " may play for as long as cards remains exiled";
-        if (controller.moveCardsToExile(card, source, game, true, exileId, exileName)) {
-            ContinuousEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Duration.EndOfGame);
-            effect.setTargetPointer(new FixedTarget(card, game));
-            game.addEffect(effect, source);
-        }
+        PlayFromNotOwnHandZoneTargetEffect.exileAndPlayFromExile(game, source, card, TargetController.YOU, Duration.EndOfGame, false, false, false);
         return true;
     }
 }

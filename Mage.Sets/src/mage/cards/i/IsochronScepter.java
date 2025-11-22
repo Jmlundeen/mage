@@ -1,6 +1,5 @@
 package mage.cards.i;
 
-import java.util.UUID;
 import mage.ApprovingObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -15,11 +14,14 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.util.CardUtil;
 import org.apache.log4j.Logger;
+
+import java.util.UUID;
 
 /**
  *
@@ -77,21 +79,20 @@ class IsochronScepterImprintEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
         Permanent sourcePermanent = game.getPermanentOrLKIBattlefield(source.getSourceId());
-        if (controller != null) {
+        if (controller != null && sourcePermanent != null) {
             if (!controller.getHand().isEmpty()) {
                 TargetCard target = new TargetCard(Zone.HAND, filter);
                 if (target.canChoose(source.getControllerId(), source, game)
                         && controller.choose(Outcome.Benefit, controller.getHand(), target, source, game)) {
                     Card card = controller.getHand().get(target.getFirstTarget(), game);
                     if (card != null) {
-                        controller.moveCardsToExile(card, source, game, true, source.getSourceId(),
-                                sourcePermanent.getIdName() + " (Imprint)");
-                        Permanent permanent = game.getPermanent(source.getSourceId());
-                        if (permanent != null) {
-                            permanent.imprint(card.getId(), game);
-                            permanent.addInfo("imprint", CardUtil.addToolTipMarkTags(
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setExileId(CardUtil.getExileZoneId(game, source))
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
+                        controller.moveCards(parameters, source, game);
+                            sourcePermanent.imprint(card.getId(), game);
+                            sourcePermanent.addInfo("imprint", CardUtil.addToolTipMarkTags(
                                     "[Imprinted card - " + card.getLogName() + ']'), game);
-                        }
                     }
                 }
             }

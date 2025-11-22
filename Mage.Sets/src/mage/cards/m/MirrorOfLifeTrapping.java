@@ -89,7 +89,7 @@ class MirrorOfLifeTrappingEffect extends OneShotEffect {
             return false;
         }
 
-        UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
+        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
         ExileZone exileZone = game.getExile().getExileZone(exileZoneId);
 
         Cards toBattlefield = null;
@@ -99,7 +99,10 @@ class MirrorOfLifeTrappingEffect extends OneShotEffect {
 
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent != null) {
-            controller.moveCardsToExile(permanent, source, game, true, exileZoneId, sourceObject.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                    .setExileId(exileZoneId)
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
         }
 
         if (toBattlefield != null) {

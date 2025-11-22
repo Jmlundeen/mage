@@ -1,6 +1,5 @@
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -11,17 +10,20 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.common.FilterNonlandCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.PermanentToken;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -78,22 +80,16 @@ class TidehollowScullerExileEffect extends OneShotEffect {
         // 6/7/2013 	If Tidehollow Sculler leaves the battlefield before its first ability has resolved,
         //              its second ability will trigger. This ability will do nothing when it resolves.
         //              Then its first ability will resolve and exile the chosen card forever.
-        if (controller != null
-                && opponent != null) {
+        if (controller != null && opponent != null) {
             opponent.revealCards("Tidehollow Sculler", opponent.getHand(), game);
             TargetCard target = new TargetCard(Zone.HAND, new FilterNonlandCard("nonland card to exile"));
             if (controller.choose(Outcome.Exile, opponent.getHand(), target, source, game)) {
                 Card card = opponent.getHand().get(target.getFirstTarget(), game);
                 if (card != null) {
-                    controller.moveCardsToExile(
-                            card,
-                            source,
-                            game,
-                            true,
-                            CardUtil.getExileZoneId(game,
-                                    source.getSourceId(),
-                                    source.getStackMomentSourceZCC()),
-                            "Tidehollow Sculler");
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                 }
             }
             return true;

@@ -11,6 +11,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
@@ -63,7 +64,10 @@ public class ExileTopCardPlayUntilExileAnotherEffect extends OneShotEffect {
         }
         UUID exileId = CardUtil.getExileZoneId(game, source);
         String exileName = CardUtil.getSourceIdName(game, source);
-        controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        controller.moveCards(parameters, source, game);
         game.processAction();
         if (!Zone.EXILED.equals(game.getState().getZone(card.getId()))) {
             return true;

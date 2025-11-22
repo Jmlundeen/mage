@@ -1,6 +1,5 @@
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -12,16 +11,19 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.common.FilterNonlandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -85,9 +87,10 @@ class MesmericFiendExileEffect extends OneShotEffect {
             if (controller.choose(Outcome.Exile, opponent.getHand(), target, source, game)) {
                 Card card = opponent.getHand().get(target.getFirstTarget(), game);
                 if (card != null) {
-                    UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                    game.getState().setValue(source.getSourceId().toString() + source.getStackMomentSourceZCC(), exileId);
-                    controller.moveCardsToExile(card, source, game, true, exileId, sourcePermanent.getName());
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                 }
             }
             return true;
@@ -118,13 +121,10 @@ class MesmericFiendLeaveEffect extends OneShotEffect {
         MageObject sourceObject = source.getSourceObject(game);
         if (controller != null
                 && sourceObject != null) {
-            int zoneChangeMinusOne = source.getStackMomentSourceZCC() - 1;
-            UUID exileId = (UUID) game.getState().getValue(source.getSourceId().toString() + zoneChangeMinusOne);
-            if (exileId != null) {
-                Cards cards = game.getExile().getExileZone(exileId);
-                if (cards != null && !cards.isEmpty()) {
-                    return controller.moveCards(cards, Zone.HAND, source, game);
-                }
+            UUID exileId = CardUtil.getExileZoneId(game, source, -1);
+            Cards cards = game.getExile().getExileZone(exileId);
+            if (cards != null && !cards.isEmpty()) {
+                return controller.moveCards(cards, Zone.HAND, source, game);
             }
         }
         return false;

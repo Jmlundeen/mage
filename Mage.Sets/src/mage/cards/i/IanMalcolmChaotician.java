@@ -1,7 +1,5 @@
 package mage.cards.i;
 
-import java.util.*;
-
 import mage.MageIdentifier;
 import mage.MageInt;
 import mage.MageObject;
@@ -12,17 +10,22 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.AsThoughManaEffect;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.*;
+import mage.cards.Card;
+import mage.cards.CardImpl;
+import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.CardState;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
+import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 import mage.watchers.Watcher;
-import mage.target.targetpointer.FixedTarget;
+
+import java.util.*;
 
 /**
  *
@@ -115,8 +118,10 @@ class IanMalcolmChaoticianExileEffect extends OneShotEffect {
             return false;
         }
 
-        UUID exileZoneId = CardUtil.getExileZoneId(game, sourceObject.getId(), sourceObject.getZoneChangeCounter(game));
-        targetPlayer.moveCardsToExile(card, source, game, true, exileZoneId, sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        targetPlayer.moveCards(parameters, source, game);
         MageObjectReference sourceMOR = new MageObjectReference(source.getSourceId(), game);
         IanMalcolmChaoticianWatcher.addCard(sourceMOR, card, game);
         return true;

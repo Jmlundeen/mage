@@ -95,9 +95,12 @@ class MysteriousLimousineEffect extends OneShotEffect {
         if (exileZone != null) {
             cards.addAll(exileZone);
         }
-        player.moveCardsToExile(permanent, source, game, true, exileId, CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         if (!cards.isEmpty()) {
-            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+            parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
                     .setByOwner(true);
             player.moveCards(parameters, source, game);
         }

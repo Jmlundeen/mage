@@ -20,6 +20,7 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
@@ -174,11 +175,10 @@ class AgathasSoulCauldronExileEffect extends OneShotEffect {
         if (player == null || card == null) {
             return false;
         }
-        player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceName(game, source));
+        player.moveCards(parameters, source, game);
         if (!card.isCreature(game)) {
             return true;
         }

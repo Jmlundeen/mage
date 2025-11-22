@@ -13,6 +13,7 @@ import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInOpponentsGraveyard;
@@ -95,7 +96,10 @@ class KingNarfisBetrayalFirstEffect extends OneShotEffect {
                 TargetCard target = new TargetCardInYourGraveyard(filter);
                 target.withNotTarget(true);
                 if (controller.chooseTarget(outcome, controller.getGraveyard(), target, source, game)) {
-                    controller.moveCardsToExile(game.getCard(target.getFirstTarget()), source, game, true, CardUtil.getCardExileZoneId(game, source), CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    MoveCardsParameters parameters = new MoveCardsParameters(game.getCard(target.getFirstTarget()), Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                 }
             }
         }
@@ -112,8 +116,10 @@ class KingNarfisBetrayalFirstEffect extends OneShotEffect {
                     TargetCard target = new TargetCardInOpponentsGraveyard(1, 1, filter, true);
                     target.withNotTarget(true);
                     if (controller.chooseTarget(outcome, opponent.getGraveyard(), target, source, game)) {
-                        controller.moveCardsToExile(game.getCard(target.getFirstTarget()), source, game, true, CardUtil.getCardExileZoneId(game, source), CardUtil.createObjectRelatedWindowTitle(source, game, null));
-                    }
+                        MoveCardsParameters parameters = new MoveCardsParameters(game.getCard(target.getFirstTarget()), Zone.EXILED)
+                                .setExileId(CardUtil.getExileZoneId(game, source))
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                        controller.moveCards(parameters, source, game);                    }
                 }
             }
         }

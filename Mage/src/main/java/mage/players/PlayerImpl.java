@@ -5030,6 +5030,13 @@ public abstract class PlayerImpl implements Player, Serializable {
     private void moveCardsToBattlefieldWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         List<ZoneChangeInfo> infoList = new ArrayList<>();
         for (Card card : parameters.getCards()) {
+            // permanents shouldn't be going to battlefield, check for card and skip if no card found
+            if (card instanceof Permanent) {
+                card = game.getCard(card.getId());
+                if (card == null || card instanceof Permanent) {
+                    continue;
+                }
+            }
             Zone fromZone = game.getState().getZone(card.getId());
 
             // 712.14a. If a spell or ability puts a transforming double-faced card onto the battlefield "transformed"
@@ -5262,15 +5269,6 @@ public abstract class PlayerImpl implements Player, Serializable {
                 sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
                 game.informPlayers(sb.toString());
         }
-    }
-
-    @Override
-    public boolean moveCardsToExile(Card card, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName) {
-        Set<Card> cards = new HashSet<>();
-        if (card != null) {
-            cards.add(card);
-        }
-        return moveCardsToExile(cards, source, game, withName, exileId, exileZoneName);
     }
 
     @Override

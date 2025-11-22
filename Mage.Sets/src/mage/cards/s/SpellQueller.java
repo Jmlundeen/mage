@@ -1,8 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.Set;
-import java.util.UUID;
 import mage.ApprovingObject;
 import mage.MageInt;
 import mage.MageObject;
@@ -16,20 +14,21 @@ import mage.abilities.keyword.FlyingAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.ComparisonType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.filter.FilterSpell;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.TargetSpell;
 import mage.util.CardUtil;
 import org.apache.log4j.Logger;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -96,8 +95,10 @@ class SpellQuellerEntersEffect extends OneShotEffect {
         if (controller != null && sourceObject != null) {
             Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
             if (spell != null) {
-                UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                return controller.moveCardsToExile(spell, source, game, true, exileId, sourceObject.getIdName());
+                MoveCardsParameters parameters = new MoveCardsParameters(spell, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

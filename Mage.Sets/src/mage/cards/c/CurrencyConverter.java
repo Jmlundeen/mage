@@ -16,6 +16,7 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.RogueToken;
 import mage.game.permanent.token.Token;
 import mage.game.permanent.token.TreasureToken;
@@ -82,11 +83,10 @@ class CurrencyConverterExileEffect extends OneShotEffect {
                 || !Zone.GRAVEYARD.match(game.getState().getZone(card.getId()))) {
             return false;
         }
-        return player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return player.moveCards(parameters, source, game);
     }
 }
 

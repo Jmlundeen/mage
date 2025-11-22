@@ -2,12 +2,12 @@ package mage.cards.g;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
 import mage.abilities.keyword.DecayedAbility;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
@@ -16,9 +16,9 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
-import mage.game.permanent.PermanentToken;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
@@ -80,17 +80,12 @@ class GisaGloriousResurrectorExileEffect extends ReplacementEffectImpl {
         if (player == null) {
             return false;
         }
+        // TODO: allow replacement effects to modify exile parameters
         ZoneChangeEvent zEvent = (ZoneChangeEvent) event;
-        if (zEvent.getTarget() instanceof PermanentToken) {
-            return player.moveCards(zEvent.getTarget(), Zone.EXILED, source, game);
-        }
-        game.getState().setValue("GisaGloriousResurrectorExile"
-                + source.getSourceId().toString()
-                + game.getState().getZoneChangeCounter(source.getSourceId()), source);
-        return player.moveCardsToExile(
-                zEvent.getTarget(), source, game, false,
-                CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(zEvent.getTarget(), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return player.moveCards(parameters, source, game);
     }
 
     @Override

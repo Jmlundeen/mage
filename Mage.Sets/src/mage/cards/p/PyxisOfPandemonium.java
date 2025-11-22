@@ -96,9 +96,11 @@ class PyxisOfPandemoniumExileEffect extends OneShotEffect {
                                         source.getSourceId(),
                                         pyxis.getZoneChangeCounter(game));
                         UUID exileId = exileIds.computeIfAbsent(exileKey, k -> UUID.randomUUID());
-                        player.moveCardsToExile(card, source, game, false,
-                                exileId, pyxis.getIdName() + " (" + player.getName() + ')');
-                        card.setFaceDown(true);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setFaceDown(true)
+                                .setExileId(exileId)
+                                .setExileName(pyxis.getIdName() + " (" + player.getName() + ')');
+                        controller.moveCards(parameters, source, game);
                     }
                 }
             });

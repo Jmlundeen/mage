@@ -14,6 +14,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Library;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
@@ -71,9 +72,14 @@ class NivixAerieOfTheFiremindEffect extends OneShotEffect {
             Library library = controller.getLibrary();
             if (library.hasCards()) {
                 Card card = library.getFromTop(game);
-                if (card != null
-                        && controller.moveCardsToExile(card, source, game, true, source.getSourceId(), CardUtil.createObjectRelatedWindowTitle(source, game, null))
-                        && card.isInstantOrSorcery(game)) {
+                if (card == null) {
+                    return false;
+                }
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
+                if (card.isInstantOrSorcery(game)) {
                     ContinuousEffect effect = new NivixAerieOfTheFiremindCanCastEffect();
                     effect.setTargetPointer(new FixedTarget(card.getId()));
                     game.addEffect(effect, source);

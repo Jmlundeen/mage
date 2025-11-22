@@ -14,6 +14,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -75,16 +76,18 @@ class PortcullisExileEffect extends OneShotEffect {
         Permanent creatureToExile = game.getPermanent(getTargetPointer().getFirst(game, source));
         Permanent portcullis = game.getPermanent(source.getSourceId());
         Player controller = game.getPlayer(source.getControllerId());
-        if (portcullis != null
-                && creatureToExile != null
-                && controller != null) {
-            UUID exileZoneId = CardUtil.getExileZoneId(game, creatureToExile.getId(), creatureToExile.getZoneChangeCounter(game));
-            controller.moveCardsToExile(creatureToExile, source, game, true, exileZoneId, portcullis.getName());
-            Effect returnEffect = new ReturnToBattlefieldUnderOwnerControlTargetEffect(false, false);
-            returnEffect.setTargetPointer(new FixedTarget(creatureToExile.getId(), game.getState().getZoneChangeCounter(creatureToExile.getId())));
-            DelayedTriggeredAbility delayedAbility = new PortcullisReturnToBattlefieldTriggeredAbility(new FixedTarget(portcullis, game), returnEffect);
-            game.addDelayedTriggeredAbility(delayedAbility, source);
+        if (portcullis == null || creatureToExile == null || controller == null) {
+            return false;
         }
+        MoveCardsParameters parameters = new MoveCardsParameters(creatureToExile, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
+        Effect returnEffect = new ReturnToBattlefieldUnderOwnerControlTargetEffect(false, false);
+        returnEffect.setTargetPointer(new FixedTarget(creatureToExile.getId(), game.getState().getZoneChangeCounter(creatureToExile.getId())));
+        DelayedTriggeredAbility delayedAbility = new PortcullisReturnToBattlefieldTriggeredAbility(new FixedTarget(portcullis, game), returnEffect);
+        game.addDelayedTriggeredAbility(delayedAbility, source);
+
         return true;
     }
 }

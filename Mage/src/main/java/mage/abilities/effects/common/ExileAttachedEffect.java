@@ -3,6 +3,7 @@ package mage.abilities.effects.common;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -36,7 +37,7 @@ public class ExileAttachedEffect extends OneShotEffect {
                 && enchantment.getAttachedTo() != null) {
             Permanent creature = game.getPermanent(enchantment.getAttachedTo());
             if (creature != null) {
-                controller.moveCardsToExile(creature, source, game, true, null, "");
+                controller.moveCards(creature, Zone.EXILED, source, game);
             }
         }
         return false;

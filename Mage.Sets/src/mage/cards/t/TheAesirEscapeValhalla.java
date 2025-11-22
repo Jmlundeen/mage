@@ -12,6 +12,7 @@ import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
@@ -83,10 +84,10 @@ class TheAesirEscapeValhallaOneEffect extends OneShotEffect {
         controller.choose(outcome, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
         if (card != null) {
-            UUID exileId = CardUtil.getExileZoneId(game, source);
-            MageObject sourceObject = source.getSourceObject(game);
-            String exileName = sourceObject != null ? sourceObject.getName() : "";
-            controller.moveCardsToExile(card, source, game, false, exileId, exileName);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             controller.gainLife(card.getManaValue(), game, source);
         }
         return true;

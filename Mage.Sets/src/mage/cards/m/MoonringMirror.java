@@ -65,10 +65,12 @@ class MoonringMirrorExileEffect extends OneShotEffect {
             Card card = controller.getLibrary().getFromTop(game);
             MageObject sourceObject = source.getSourceObject(game);
             if (card != null && sourceObject != null) {
-                UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                card.setFaceDown(true);
-                controller.moveCardsToExile(card, source, game, false, exileZoneId, sourceObject.getIdName());
-                card.setFaceDown(true);
+                UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setFaceDown(true)
+                        .setExileId(exileZoneId)
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 Set<UUID> exileZones = (Set<UUID>) game.getState().getValue(MoonringMirror.VALUE_PREFIX + source.getSourceId().toString());
                 if (exileZones == null) {
                     exileZones = new HashSet<>();

@@ -8,13 +8,16 @@ import mage.abilities.effects.ContinuousEffect;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author LevelX2
@@ -186,16 +189,14 @@ public class PlayFromNotOwnHandZoneTargetEffect extends AsThoughEffectImpl {
         if (Duration.EndOfTurn.equals(duration)) {
             game.getExile().createZone(exileId, exileName).setCleanupOnEndTurn(true);
         }
-        if (!controller.moveCardsToExile(cards, source, game, true, exileId, exileName)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        // get real cards (if it was called on permanent instead card, example: Release to the Wind)
+        Set<Card> cardsToPlay = controller.moveCardsWithResult(parameters, source, game);
+        if (cardsToPlay.isEmpty()) {
             return false;
         }
-
-        // get real cards (if it was called on permanent instead card, example: Release to the Wind)
-        Set<Card> cardsToPlay = cards
-                .stream()
-                .map(Card::getMainCard)
-                .filter(card -> Zone.EXILED.equals(game.getState().getZone(card.getId())))
-                .collect(Collectors.toSet());
 
         ContinuousEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Zone.EXILED, allowedCaster, duration, withoutMana, onlyCastAllowed);
         effect.setTargetPointer(new FixedTargets(cardsToPlay, game));

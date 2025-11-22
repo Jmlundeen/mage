@@ -18,6 +18,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.common.TargetOpponentsCreaturePermanent;
@@ -94,7 +95,10 @@ class FiresOfMountDoomEffect extends OneShotEffect {
             return false;
         }
 
-        controller.moveCardsToExile(card, source, game, true, source.getSourceId(), sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         CardUtil.makeCardPlayable(game, source, card, false, Duration.EndOfTurn, false);
         game.addDelayedTriggeredAbility(new FiresOfMountDoomDelayedTriggeredAbility(card.getId()), source);
         return true;

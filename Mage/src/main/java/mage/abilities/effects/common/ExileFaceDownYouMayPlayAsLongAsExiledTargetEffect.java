@@ -9,8 +9,10 @@ import mage.cards.CardsImpl;
 import mage.constants.CastManaAdjustment;
 import mage.constants.Duration;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -75,9 +77,11 @@ public class ExileFaceDownYouMayPlayAsLongAsExiledTargetEffect extends OneShotEf
         MageObject sourceObject = source.getSourceObject(game);
         String exileName = sourceObject == null ? "" : sourceObject.getIdName();
         for (Card card : cards.getCards(game)) {
-            card.setFaceDown(true);
-            if (controller.moveCardsToExile(card, source, game, false, exileZoneId, exileName)) {
-                card.setFaceDown(true);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setFaceDown(true)
+                    .setExileId(exileZoneId)
+                    .setExileName(exileName);
+            if (controller.moveCards(parameters, source, game)) {
                 switch (manaAdjustment) {
                     case NONE:
                         CardUtil.makeCardPlayable(game, source, card, useCastSpellOnly, Duration.Custom, false, controller.getId(), null);

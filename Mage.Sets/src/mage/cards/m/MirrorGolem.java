@@ -14,6 +14,7 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
@@ -77,12 +78,13 @@ class MirrorGolemImprintEffect extends OneShotEffect {
             Card card = game.getCard(this.getTargetPointer().getFirst(game, source));
             if (card != null) {
                 if (sourcePermanent != null) {
-                    UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), sourcePermanent.getZoneChangeCounter(game));
-                    String exileZoneName = sourcePermanent.getIdName();
-                    controller.moveCardsToExile(card, source, game, true, exileZoneId, exileZoneName);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                     sourcePermanent.imprint(this.getTargetPointer().getFirst(game, source), game);
                 } else {
-                    controller.moveCardsToExile(card, source, game, true, null, "");
+                    controller.moveCards(card, Zone.EXILED, source, game);
                 }
             }
             return true;

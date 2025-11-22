@@ -11,6 +11,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
@@ -85,7 +86,10 @@ class CovetousUrgeEffect extends OneShotEffect {
         // use same player's zone for all Covetous Urge instances
         UUID exileZone = CardUtil.getExileZoneId(controller.getId() + " - Covetous Urge", game);
         Card card = game.getCard(target.getFirstTarget());
-        if (card == null || !controller.moveCardsToExile(card, source, game, true, exileZone, "Covetous Urge - can cast with any mana")) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileZone)
+                .setExileName("Covetous Urge - can cast with any mana");
+        if (card == null || !controller.moveCards(parameters, source, game)) {
             return false;
         }
         if (card.getSpellAbility() == null) {

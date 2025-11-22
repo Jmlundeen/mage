@@ -22,6 +22,7 @@ import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AbilityPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
@@ -179,9 +180,12 @@ public class ForetellAbility extends SpecialAction {
             foretellAbility.activate(game, true);
         } else {
             // land cards still need to exile normally
-            card.setFaceDown(true);
             UUID exileId = CardUtil.getExileZoneId(card.getMainCard().getId().toString() + "foretellAbility", game);
-            controller.moveCardsToExile(card, source, game, false, exileId, " Foretell Turn Number: " + game.getTurnNum());
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setFaceDown(true)
+                    .setExileId(exileId)
+                    .setExileName(" Foretell Turn Number: " + game.getTurnNum());
+            controller.moveCards(parameters, source, game);
         }
         return true;
     }

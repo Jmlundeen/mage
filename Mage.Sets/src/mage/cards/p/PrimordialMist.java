@@ -1,13 +1,12 @@
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.keyword.ManifestEffect;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -15,10 +14,14 @@ import mage.constants.*;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.card.FaceDownPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -92,11 +95,12 @@ class PrimordialMistCost extends CostImpl {
                     if (sourcePermanent != null) {
                         Permanent targetPermanent = game.getPermanent(target.getFirstTarget());
                         Card targetCard = game.getCard(target.getFirstTarget());
-                        if (targetPermanent != null
-                                && targetCard != null) {
+                        if (targetPermanent != null && targetCard != null) {
                             String exileName = sourcePermanent.getIdName() + " <this card may be played the turn it was exiled>";
-                            controller.moveCardsToExile(targetPermanent, source, game, true, source.getSourceId(), exileName);
-                            targetPermanent.setFaceDown(false);
+                            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                    .setExileId(CardUtil.getExileZoneId(game, source))
+                                    .setExileName(exileName);
+                            controller.moveCards(parameters, source, game);
                             PrimordialMistCastFromExileEffect effect = new PrimordialMistCastFromExileEffect();
                             effect.setTargetPointer(new FixedTarget(targetCard.getId()));
                             game.addEffect(effect, ability);

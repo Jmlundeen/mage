@@ -16,6 +16,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -93,8 +94,11 @@ class AsmodeusTheArchfiendReplacementEffect extends ReplacementEffectImpl {
             if (card != null) {
                 UUID exileZoneId = CardUtil.getExileZoneId(game, sourcePermanent.getId(), sourcePermanent.getZoneChangeCounter(game));
                 String exileName = CardUtil.createObjectRelatedWindowTitle(source, game, null);
-                controller.moveCardsToExile(card, source, game, false, exileZoneId, exileName);
-                card.setFaceDown(true);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setFaceDown(true)
+                        .setExileId(exileZoneId)
+                        .setExileName(exileName);
+                controller.moveCards(parameters, source, game);
             }
         }
         return true;

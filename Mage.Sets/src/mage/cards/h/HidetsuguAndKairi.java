@@ -10,10 +10,7 @@ import mage.abilities.keyword.FlyingAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.SuperType;
+import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
@@ -83,7 +80,7 @@ class HidetsuguAndKairiEffect extends OneShotEffect {
             return false;
         }
         Card card = player.getLibrary().getFromTop(game);
-        if (card == null || !player.moveCardsToExile(card, source, game, true, null, "")) {
+        if (card == null || !player.moveCards(card, Zone.EXILED, source, game)) {
             return false;
         }
         opponent.loseLife(card.getManaValue(), game, source, false);

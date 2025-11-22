@@ -84,7 +84,7 @@ class HeavenSentEffect extends OneShotEffect {
         boolean condition = game
                 .getOpponents(player.getId())
                 .stream()
-                .map(id -> game.getPlayer(id))
+                .map(game::getPlayer)
                 .filter(Objects::nonNull)
                 .anyMatch(p -> p.getLife() <= 0);
 
@@ -97,7 +97,7 @@ class HeavenSentEffect extends OneShotEffect {
                 return false;
             }
 
-            player.moveCardsToExile(heaven, source, game, true, null, "");
+            player.moveCards(heaven, Zone.EXILED, source, game);
             if (game.getState().getZone(heaven.getId()) == Zone.EXILED) {
                 game.addEffect(
                         new PlayFromNotOwnHandZoneTargetEffect(

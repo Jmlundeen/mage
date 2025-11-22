@@ -14,6 +14,7 @@ import mage.constants.*;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.PowerPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -79,11 +80,13 @@ class DaxosOfMeletisEffect extends OneShotEffect {
             Player damagedPlayer = game.getPlayer(this.getTargetPointer().getFirst(game, source));
             if (damagedPlayer != null) {
                 MageObject sourceObject = game.getObject(source);
-                UUID exileId = CardUtil.getCardExileZoneId(game, source);
                 Card card = damagedPlayer.getLibrary().getFromTop(game);
                 if (card != null && sourceObject != null) {
                     // move card to exile
-                    controller.moveCardsToExile(card, source, game, true, exileId, sourceObject.getIdName());
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                     // player gains life
                     controller.gainLife(card.getManaValue(), game, source);
                     // Add effects only if the card has a spellAbility (e.g. not for lands).

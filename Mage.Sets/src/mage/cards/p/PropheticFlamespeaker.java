@@ -1,7 +1,6 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
@@ -13,15 +12,14 @@ import mage.abilities.keyword.TrampleAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AsThoughEffectType;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -77,8 +75,10 @@ class PropheticFlamespeakerExileEffect extends OneShotEffect {
         if (controller != null) {
             Card card = controller.getLibrary().getFromTop(game);
             if (card != null) {
-                if (controller.moveCardsToExile(card, source, game, true, source.getSourceId(),
-                        CardUtil.createObjectRelatedWindowTitle(source, game, "<this card may be played the turn it was exiled>"))) {
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "<this card may be played the turn it was exiled>"));
+                if (controller.moveCards(parameters, source, game)) {
                     ContinuousEffect effect = new PropheticFlamespeakerCastFromExileEffect();
                     effect.setTargetPointer(new FixedTarget(card.getId()));
                     game.addEffect(effect, source);

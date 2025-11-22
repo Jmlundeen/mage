@@ -19,6 +19,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
@@ -91,7 +92,10 @@ class AshioksErasureExileEffect extends OneShotEffect {
             return false;
         }
         UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-        return controller.moveCardsToExile(spell, source, game, true, exileId, sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(spell, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(sourceObject.getIdName());
+        return controller.moveCards(parameters, source, game);
     }
 }
 

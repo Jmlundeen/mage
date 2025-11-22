@@ -1,6 +1,5 @@
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.ApprovingObject;
 import mage.MageObject;
 import mage.Mana;
@@ -15,17 +14,14 @@ import mage.abilities.effects.mana.BasicManaEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.constants.TargetController;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.command.emblems.ChandraTorchOfDefianceEmblem;
 import mage.players.Library;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  * @author fireshoes
@@ -90,7 +86,7 @@ class ChandraTorchOfDefianceEffect extends OneShotEffect {
             Card card = library.getFromTop(game);
             if (card != null) {
                 boolean cardWasCast = false;
-                controller.moveCardsToExile(card, source, game, true, source.getSourceId(), sourceObject.getIdName());
+                controller.moveCards(card, Zone.EXILED, source, game);
                 if (!card.getManaCost().isEmpty()
                         || !card.isLand(game)) {
                     if (controller.chooseUse(Outcome.Benefit, "Cast " + card.getName() + "? (You still pay the costs)", source, game)

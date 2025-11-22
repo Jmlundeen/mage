@@ -97,6 +97,15 @@ public class MoveCardsParameters {
     }
 
     /**
+     * Sets a single card to be moved.
+     * @param card
+     */
+    public void setCards(Card card) {
+        this.cards.clear();
+        this.cards.add(card);
+    }
+
+    /**
      * Gets the destination zone where the cards will be moved.
      *
      * @return The destination zone.

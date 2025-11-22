@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.ApprovingObject;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -14,6 +15,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
@@ -23,7 +25,6 @@ import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
 import java.util.UUID;
-import mage.ApprovingObject;
 
 /**
  * @author emerald000
@@ -83,7 +84,10 @@ class SpellweaverHelixImprintEffect extends OneShotEffect {
             for (UUID targetId : this.getTargetPointer().getTargets(game, source)) {
                 Card card = game.getCard(targetId);
                 if (card != null) {
-                    controller.moveCardsToExile(card, source, game, true, CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC()), source.getSourceObject(game).getIdName());
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                     if (sourcePermanent != null) {
                         sourcePermanent.imprint(targetId, game);
                     }

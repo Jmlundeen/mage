@@ -2,22 +2,20 @@ package mage.cards.c;
 
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.effects.AsThoughEffectImpl;
-import mage.abilities.effects.AsThoughManaEffect;
-import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.common.FilterNonlandCard;
 import mage.game.Game;
-import mage.players.ManaPoolItem;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
-import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
 import java.util.UUID;
@@ -81,61 +79,16 @@ class CunningAbductionExileEffect extends OneShotEffect {
                 }
                 if (card != null) {
                     // move card to exile
-                    UUID exileId = CardUtil.getCardExileZoneId(game, source);
-                    controller.moveCardsToExile(card, source, game, true, exileId, sourceObject.getIdName());
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                     // allow to cast the card
-                    ContinuousEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Zone.EXILED, Duration.Custom);
-                    effect.setTargetPointer(new FixedTarget(card, game));
-                    game.addEffect(effect, source);
-                    // and you may spend mana as though it were mana of any color to cast it
-                    effect = new CunningAbductionSpendAnyManaEffect();
-                    effect.setTargetPointer(new FixedTarget(card.getId(), game));
-                    game.addEffect(effect, source);
+                    CardUtil.makeCardPlayable(game, source, card, true, Duration.Custom, true);
                 }
                 return true;
             }
         }
         return false;
-    }
-}
-
-class CunningAbductionSpendAnyManaEffect extends AsThoughEffectImpl implements AsThoughManaEffect {
-
-    public CunningAbductionSpendAnyManaEffect() {
-        super(AsThoughEffectType.SPEND_OTHER_MANA, Duration.Custom, Outcome.Benefit);
-        staticText = "you may spend mana as though it were mana of any color to cast it";
-    }
-
-    private CunningAbductionSpendAnyManaEffect(final CunningAbductionSpendAnyManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public CunningAbductionSpendAnyManaEffect copy() {
-        return new CunningAbductionSpendAnyManaEffect(this);
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        objectId = CardUtil.getMainCardId(game, objectId); // for split cards
-        if (objectId.equals(((FixedTarget) getTargetPointer()).getTarget())
-                && game.getState().getZoneChangeCounter(objectId) <= ((FixedTarget) getTargetPointer()).getZoneChangeCounter() + 1) {
-            // if the card moved from exile to spell the zone change counter is increased by 1 (effect must applies before and on stack, use isCheckPlayableMode?)
-            return source.isControlledBy(affectedControllerId);
-        } else if (((FixedTarget) getTargetPointer()).getTarget().equals(objectId)) {
-            // object has moved zone so effect can be discarted
-            this.discard();
-        }
-        return false;
-    }
-
-    @Override
-    public ManaType getAsThoughManaType(ManaType manaType, ManaPoolItem mana, UUID affectedControllerId, Ability source, Game game) {
-        return mana.getFirstAvailable();
     }
 }

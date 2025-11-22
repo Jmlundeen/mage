@@ -16,6 +16,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -80,11 +81,10 @@ class BagOfHoldingExileEffect extends OneShotEffect {
                 || !Zone.GRAVEYARD.match(game.getState().getZone(card.getId()))) {
             return false;
         }
-        return player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceName(game, source));
+        return player.moveCards(parameters, source, game);
     }
 }
 

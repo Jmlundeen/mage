@@ -18,6 +18,7 @@ import mage.filter.common.FilterNonlandCard;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.CardIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
@@ -165,9 +166,11 @@ class KnowledgePoolExileAndPlayEffect extends OneShotEffect {
             return false;
         }
 
-        UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), sourceObject.getZoneChangeCounter(game));
-
-        if (!spellController.moveCardsToExile(spell, source, game, true, exileZoneId, sourceObject.getIdName())) {
+        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+        MoveCardsParameters parameters = new MoveCardsParameters(spell, Zone.EXILED)
+                .setExileId(exileZoneId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        if (!spellController.moveCards(parameters, source, game)) {
             // The card didn't make it to exile, none of Knowledge Pool's effect applied
             return false;
         }

@@ -14,6 +14,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -80,8 +81,10 @@ class EaterOfVirtueExileEffect extends OneShotEffect {
         if (controller != null
                 && eaterOfVirtue != null
                 && exiledCard != null) {
-            UUID exileId = CardUtil.getExileZoneId(source.getSourceId().toString() + "cards exiled by Eater of Virtue", game);
-            controller.moveCardsToExile(exiledCard, source, game, true, exileId, eaterOfVirtue.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(exiledCard, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;
@@ -111,7 +114,7 @@ class EaterOfVirtueGainAbilityAttachedEffect extends ContinuousEffectImpl {
                 && eaterOfVirtue.getAttachedTo() != null) {
             Permanent permanent = game.getPermanent(eaterOfVirtue.getAttachedTo());
             if (permanent != null) {
-                ExileZone exileZone = game.getState().getExile().getExileZone(CardUtil.getExileZoneId(source.getSourceId().toString() + "cards exiled by Eater of Virtue", game));
+                ExileZone exileZone = game.getState().getExile().getExileZone(CardUtil.getExileZoneId(game, source));
                 if (exileZone != null && !exileZone.isEmpty()) {
                     Set<Card> cardsInExile = exileZone.getCards(game);
                     for (Card card : cardsInExile) {

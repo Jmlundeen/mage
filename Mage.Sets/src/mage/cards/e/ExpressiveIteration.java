@@ -11,10 +11,12 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -101,7 +103,10 @@ class ExpressiveIterationEffect extends OneShotEffect {
         if (card == null) {
             return true;
         }
-        player.moveCardsToExile(card, source, game, true, source.getSourceId(), sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addEffect(new PlayFromNotOwnHandZoneTargetEffect(
                 Zone.EXILED, Duration.EndOfTurn
         ).setTargetPointer(new FixedTarget(card, game)), source);

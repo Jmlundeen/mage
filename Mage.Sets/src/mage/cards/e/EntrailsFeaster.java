@@ -2,12 +2,15 @@ package mage.cards.e;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
@@ -72,7 +75,7 @@ class EntrailsFeasterEffect extends OneShotEffect {
                 if (controller.choose(Outcome.Exile, target, source, game)) {
                     Card cardChosen = game.getCard(target.getFirstTarget());
                     if (cardChosen != null) {
-                        controller.moveCardsToExile(cardChosen, source, game, true, null, "");
+                        controller.moveCards(cardChosen, Zone.EXILED, source, game);
                         if (sourceObject != null) {
                             sourceObject.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game);
                             game.informPlayers(controller.getLogName() + " puts a +1/+1 counter on " + sourceObject.getLogName());

@@ -1,23 +1,25 @@
 
 package mage.cards.t;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.turn.AddExtraTurnTargetEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.TargetController;
+import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -70,7 +72,7 @@ class TimesifterEffect extends OneShotEffect {
                     Card card = player.getLibrary().getFromTop(game);
                     if (card != null) {
                         int cardCMC = card.getManaValue();
-                        player.moveCardsToExile(card, source, game, true, null, "");
+                        player.moveCards(card, Zone.EXILED, source, game);
                         if (cardCMC > highestCMC) {
                             highestCMC = cardCMC;
                             playersWithHighestCMC.clear();

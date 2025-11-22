@@ -24,6 +24,7 @@ import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.command.emblems.TibaltCosmicImpostorEmblem;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -205,7 +206,6 @@ class ExileTopCardEachPlayersLibrary extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
         MageObject Tibalt = source.getSourceObject(game);
-        UUID exileId = CardUtil.getExileZoneId(source.getSourceId().toString(), game);
         Set<Card> cardsToExile = new LinkedHashSet<>();
         if (controller != null
                 && Tibalt != null) {
@@ -219,7 +219,10 @@ class ExileTopCardEachPlayersLibrary extends OneShotEffect {
             }
             // exile all cards at one time
             if (!cardsToExile.isEmpty()) {
-                return controller.moveCardsToExile(cardsToExile, source, game, true, exileId, Tibalt.getName());
+                MoveCardsParameters parameters = new MoveCardsParameters(cardsToExile, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;
@@ -246,12 +249,14 @@ class ExileTargetArtifactOrCreatureEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
         MageObject Tibalt = source.getSourceObject(game);
-        UUID exileId = CardUtil.getExileZoneId(source.getSourceId().toString(), game);
         if (controller != null
                 && Tibalt != null) {
             Permanent targetCreatureOrArtifact = game.getPermanent(source.getTargets().getFirstTarget());
             if (targetCreatureOrArtifact != null) {
-                controller.moveCardsToExile(targetCreatureOrArtifact, source, game, true, exileId, Tibalt.getName());
+                MoveCardsParameters parameters = new MoveCardsParameters(targetCreatureOrArtifact, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 return true;
             }
         }
@@ -280,7 +285,6 @@ class ExileAllCardsFromAllGraveyards extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         MageObject Tibalt = source.getSourceObject(game);
         Set<Card> cardsToExile = new LinkedHashSet<>();
-        UUID exileId = CardUtil.getExileZoneId(source.getSourceId().toString(), game);
         if (controller != null
                 && Tibalt != null) {
             for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
@@ -290,7 +294,10 @@ class ExileAllCardsFromAllGraveyards extends OneShotEffect {
                 }
             }
             // exile all cards at one time
-            controller.moveCardsToExile(cardsToExile, source, game, true, exileId, Tibalt.getName());
+            MoveCardsParameters parameters = new MoveCardsParameters(cardsToExile, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             // add {R}{R}{R}
             controller.getManaPool().addMana(Mana.RedMana(3), game, source);
             return true;

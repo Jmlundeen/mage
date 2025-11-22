@@ -11,7 +11,9 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -63,7 +65,10 @@ class ElkinBottleExileEffect extends OneShotEffect {
         if (controller != null) {
             Card card = controller.getLibrary().getFromTop(game);
             if (card != null) {
-                controller.moveCardsToExile(card, source, game, true, source.getSourceId(), CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 CardUtil.makeCardPlayable(game, source, card, false, Duration.UntilYourNextUpkeepStep, false);
             }
             return true;
