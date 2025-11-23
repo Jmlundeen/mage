@@ -213,4 +213,12 @@ public class CardsImpl extends LinkedHashSet<UUID> implements Cards, Serializabl
         this.clear();
         this.addAll(newList.stream().map(Card::getId).collect(Collectors.toList()));
     }
+
+    @Override
+    public void shuffle() {
+        List<UUID> list = new ArrayList<>(this);
+        Collections.shuffle(list);
+        this.clear();
+        this.addAll(list);
+    }
 }

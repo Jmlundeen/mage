@@ -7,7 +7,10 @@ import mage.game.Game;
 import mage.util.Copyable;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.UUID;
 
 public interface Cards extends Set<UUID>, Serializable, Copyable<Cards> {
 
@@ -87,4 +90,6 @@ public interface Cards extends Set<UUID>, Serializable, Copyable<Cards> {
     void removeZone(Zone zone, Game game);
 
     void sortCards(Game game, Comparator<? super Card> comparator);
+
+    void shuffle();
 }
