@@ -1,9 +1,6 @@
 
 package mage.cards.n;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -22,6 +19,10 @@ import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -85,7 +86,7 @@ class NefariousLichDamageReplacementEffect extends ReplacementEffectImpl {
                             cards.add(card);
                         }
                     }
-                    controller.moveCardsToExile(cards, source, game, true, null, "");
+                    controller.moveCards(cards, Zone.EXILED, source, game);
                     return true;
                 }
             }

@@ -1,28 +1,25 @@
 package mage.cards.i;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.PutIntoGraveFromBattlefieldSourceTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.util.CardUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import mage.MageObject;
-import mage.cards.Card;
 
 /**
  * @author LevelX2
@@ -82,14 +79,11 @@ class InducedAmnesiaExileEffect extends OneShotEffect {
             return false;
         }
         Cards cards = new CardsImpl(targetPlayer.getHand());
-        targetPlayer.moveCardsToExile(
-                cards.getCards(game), source, game, false,
-                CardUtil.getExileZoneId(game, mageObject.getId(), game.getState().getZoneChangeCounter(mageObject.getId())), CardUtil.getSourceName(game, source)
-        );
-        cards.getCards(game)
-                .stream()
-                .filter(card -> game.getState().getZone(card.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        targetPlayer.moveCards(parameters, source, game);
         targetPlayer.drawCards(numberOfCards, source, game);
         return true;
     }

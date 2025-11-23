@@ -1,7 +1,6 @@
 package mage.cards.h;
 
 import mage.MageIdentifier;
-import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,6 +13,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -79,10 +79,12 @@ class HaukensInsightExileEffect extends OneShotEffect {
         if (controller != null) {
             Card card = controller.getLibrary().getFromTop(game);
             if (card != null) {
-                UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                MageObject sourceObject = source.getSourceObject(game);
-                String exileName = sourceObject == null ? null : sourceObject.getIdName();
-                CardUtil.moveCardsToExileFaceDown(game, source, controller, card, exileId, exileName, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setCanLookFaceDownInExile(true)
+                        .setFaceDown(true)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
         }
         return false;

@@ -8,6 +8,7 @@ import mage.abilities.effects.common.CreateTokenEffect;
 import mage.cards.*;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.TreasureToken;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
@@ -92,7 +93,10 @@ class KorvoldAndTheNobleThiefEffect extends OneShotEffect {
                 + " — Player: " + player.getName();
         game.getExile().createZone(exileId, exileName).setCleanupOnEndTurn(true);
 
-        player.moveCardsToExile(cards.getCards(game), source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        player.moveCards(parameters, source, game);
         cards.retainZone(Zone.EXILED, game);
 
         for (Card card : cards.getCards(game)) {

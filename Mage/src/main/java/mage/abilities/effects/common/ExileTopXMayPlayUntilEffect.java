@@ -13,6 +13,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInExile;
@@ -66,11 +67,10 @@ public class ExileTopXMayPlayUntilEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return true;
         }
-        controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         // remove cards that could not be moved to exile
         cards.retainZone(Zone.EXILED, game);
         if (chooseOne && cards.size() > 1) {

@@ -1,22 +1,20 @@
 package mage.cards.j;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.common.InfoEffect;
 import mage.abilities.effects.common.RollDieWithResultTableEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
-import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.permanent.token.Token;
 import mage.game.permanent.token.WolfToken;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInExile;
-import mage.util.CardUtil;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -83,11 +81,8 @@ class JourneyToTheLostCityEffect extends RollDieWithResultTableEffect {
             return false;
         }
         Cards cards = new CardsImpl(player.getLibrary().getTopCards(game, 4));
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        player.moveCards(cards, Zone.EXILED, source, game);
+        cards.retainZone(Zone.EXILED, game);
         int amount = player.rollDice(outcome, source, game, 20);
         if (amount < 1) {
             return false;
@@ -116,12 +111,7 @@ class JourneyToTheLostCityEffect extends RollDieWithResultTableEffect {
         if (amount != 20) {
             return false;
         }
-        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
-        if (exileZone != null && !exileZone.isEmpty()) {
-            player.moveCards(exileZone.getCards(
-                    StaticFilters.FILTER_CARD_PERMANENT, game
-            ), Zone.BATTLEFIELD, source, game);
-        }
+        player.moveCards(cards.getCards(StaticFilters.FILTER_CARD_PERMANENT, game), Zone.BATTLEFIELD, source, game);
         Optional.ofNullable(source.getSourcePermanentIfItStillExists(game))
                 .ifPresent(permanent -> permanent.sacrifice(source, game));
         return true;

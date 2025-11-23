@@ -83,11 +83,10 @@ class OmenpathJourneySearchEffect extends OneShotEffect {
                 .map(uuid -> player.getLibrary().getCard(uuid, game))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        player.moveCardsToExile(
-                cards, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         player.shuffleLibrary(source, game);
         return true;
     }

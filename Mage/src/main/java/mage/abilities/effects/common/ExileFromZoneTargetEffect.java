@@ -10,6 +10,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInHand;
@@ -71,10 +72,12 @@ public class ExileFromZoneTargetEffect extends OneShotEffect {
         }
         target.chooseTarget(Outcome.Exile, player.getId(), source, game);
         Cards cards = new CardsImpl(target.getTargets());
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED);
         if (withSource) {
-            return player.moveCardsToExile(cards.getCards(game), source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+            parameters.setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
         }
-        return player.moveCards(cards, Zone.EXILED, source, game);
+        return player.moveCards(parameters, source, game);
     }
 
     @Override

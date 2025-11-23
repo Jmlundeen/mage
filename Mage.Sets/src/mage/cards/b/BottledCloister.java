@@ -1,8 +1,8 @@
 package mage.cards.b;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
@@ -13,6 +13,7 @@ import mage.constants.TargetController;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -73,11 +74,11 @@ class BottledCloisterExileEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        controller.moveCardsToExile(cards.getCards(game), source, game, false, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
-        cards.getCards(game)
-                .stream()
-                .filter(c -> game.getState().getZone(c.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

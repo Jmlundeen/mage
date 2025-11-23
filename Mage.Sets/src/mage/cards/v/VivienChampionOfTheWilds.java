@@ -12,6 +12,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
@@ -104,9 +105,13 @@ class VivienChampionOfTheWildsEffect extends OneShotEffect {
 
         // exile
         Card cardToExile = game.getCard(target.getFirstTarget());
-        if (!CardUtil.moveCardsToExileFaceDown(game, source, player, cardToExile,
-                CardUtil.getCardExileZoneId(game, source),
-                CardUtil.createObjectRelatedWindowTitle(source, game, " (look and cast)"), true)) {
+        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+        MoveCardsParameters parameters = new MoveCardsParameters(cardToExile, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(exileZoneId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(look and cast)"));
+        if (!player.moveCards(parameters, source, game)) {
             return false;
         }
         // cast

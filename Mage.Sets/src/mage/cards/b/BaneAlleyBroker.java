@@ -18,6 +18,7 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -116,7 +117,13 @@ class BaneAlleyBrokerDrawExileEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        return CardUtil.moveCardsToExileFaceDown(game, source, controller, card, true);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setFaceDown(true)
+                .setCanLookFaceDownInExile(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
+        return true;
     }
 
     @Override

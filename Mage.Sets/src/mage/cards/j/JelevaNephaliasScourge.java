@@ -1,7 +1,6 @@
 package mage.cards.j;
 
 import mage.MageInt;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -15,6 +14,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
@@ -98,8 +98,10 @@ class JelevaNephaliasScourgeEffect extends OneShotEffect {
         for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
             Player player = game.getPlayer(playerId);
             if (player != null) {
-                succeeded |= player.moveCardsToExile(player.getLibrary().getTopCards(game, xValue),
-                        source, game, true, CardUtil.getCardExileZoneId(game, source), permanent.getIdName());
+                MoveCardsParameters parameters = new MoveCardsParameters(player.getLibrary().getTopCards(game, xValue), Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                succeeded |= player.moveCards(parameters, source, game);
             }
         }
         return succeeded;

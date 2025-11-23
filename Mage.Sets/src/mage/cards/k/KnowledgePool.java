@@ -82,14 +82,10 @@ class KnowledgePoolExileThreeCardsEffect extends OneShotEffect {
             Player player = game.getPlayer(playerId);
             if (player == null) { continue; }
 
-            player.moveCardsToExile(
-                    player.getLibrary().getTopCards(game, 3),
-                    source,
-                    game,
-                    true,
-                    CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC()),
-                    sourceObject.getIdName() + " (" + sourceObject.getZoneChangeCounter(game) + ')'
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(player.getLibrary().getTopCards(game, 3), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            player.moveCards(parameters, source, game);
         }
         return true;
     }

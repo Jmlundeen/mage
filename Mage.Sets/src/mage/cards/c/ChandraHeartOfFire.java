@@ -11,15 +11,16 @@ import mage.abilities.effects.common.ExileTopXMayPlayUntilEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.abilities.effects.common.discard.DiscardHandControllerEffect;
 import mage.abilities.effects.mana.BasicManaEffect;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.Cards;
 import mage.cards.CardsImpl;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetAnyTarget;
@@ -28,8 +29,6 @@ import mage.target.common.TargetCardInYourGraveyard;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -99,29 +98,30 @@ class ChandraHeartOfFireUltimateEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            Set<Card> exiledCards = new HashSet<>();
+            Cards exiledCards = new CardsImpl();
 
             // from graveyard
             Target target = new TargetCardInYourGraveyard(0, Integer.MAX_VALUE, filter, true).withChooseHint("from graveyard");
             if (target.canChoose(controller.getId(), source, game)
-                    && target.choose(Outcome.AIDontUseIt, controller.getId(), source.getSourceId(), source, game)) {
-                Set<Card> cards = new CardsImpl(target.getTargets()).getCards(game);
-                exiledCards.addAll(cards);
+                    && target.choose(Outcome.AIDontUseIt, controller.getId(), source, game)) {
+                exiledCards.addAll(target.getTargets());
             }
 
             // from library
             target = new TargetCardInLibrary(0, Integer.MAX_VALUE, filter).withChooseHint("from library");
             if (target.canChoose(controller.getId(), source, game)
-                    && target.choose(Outcome.AIDontUseIt, controller.getId(), source.getSourceId(), source, game)) {
-                Set<Card> cards = new CardsImpl(target.getTargets()).getCards(game);
-                exiledCards.addAll(cards);
+                    && target.choose(Outcome.AIDontUseIt, controller.getId(), source, game)) {
+                exiledCards.addAll(target.getTargets());
             }
 
             // exile cards all at once and set the exile name to the source card
-            controller.moveCardsToExile(exiledCards, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+            MoveCardsParameters parameters = new MoveCardsParameters(exiledCards.getCards(game), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             controller.shuffleLibrary(source, game);
 
-            exiledCards.removeIf(card -> !Zone.EXILED.equals(game.getState().getZone(card.getId())));
+            exiledCards.retainZone(Zone.EXILED, game);
 
             if (!exiledCards.isEmpty()) {
                 ContinuousEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Zone.EXILED, Duration.EndOfTurn);

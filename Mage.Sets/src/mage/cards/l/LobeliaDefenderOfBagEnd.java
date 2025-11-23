@@ -18,6 +18,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -109,7 +110,12 @@ class LobeliaDefenderOfBagEndETBEffect extends OneShotEffect {
         controller.lookAtCards(source, null, topCards, game);
 
         Set<Card> cardSet = topCards.getCards(game);
-        CardUtil.moveCardsToExileFaceDown(game, source, controller, cardSet, true);
+        MoveCardsParameters parameters = new MoveCardsParameters(cardSet, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 

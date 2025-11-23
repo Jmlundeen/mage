@@ -17,6 +17,7 @@ import mage.filter.predicate.Predicates;
 import mage.filter.predicate.card.CastFromZonePredicate;
 import mage.filter.predicate.mageobject.AbilityPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.util.CardUtil;
@@ -94,7 +95,12 @@ class HoardingBroodlordEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        if (CardUtil.moveCardsToExileFaceDown(game, source, player, card, true)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        if (player.moveCards(parameters, source, game)) {
             CardUtil.makeCardPlayable(game, source, card, false, Duration.Custom, false);
         }
         player.shuffleLibrary(source, game);

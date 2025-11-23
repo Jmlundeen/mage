@@ -15,6 +15,7 @@ import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -96,7 +97,13 @@ class ArvinoxTheMindFlailExileEffect extends OneShotEffect {
             }
             cards.add(opponent.getLibrary().getFromBottom(game));
         }
-        if (CardUtil.moveCardsToExileFaceDown(game, source, controller, cards.getCards(game), true)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        if (controller.moveCards(parameters, source, game)) {
+            cards.retainZone(Zone.EXILED, game);
             for (Card card : cards.getCards(game)) {
                 if (card.isPermanent(game)) {
                     CardUtil.makeCardPlayable(game, source, card, true, Duration.Custom, true);

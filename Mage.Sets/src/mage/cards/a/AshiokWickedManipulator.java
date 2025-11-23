@@ -97,7 +97,7 @@ class AshiokWickedManipulatorReplacementEffect extends ReplacementEffectImpl {
         }
 
         Set<Card> cards = player.getLibrary().getTopCards(game, event.getAmount());
-        player.moveCardsToExile(cards, source, game, true, null, "");
+        player.moveCards(cards, Zone.EXILED, source, game);
 
         return true;
     }

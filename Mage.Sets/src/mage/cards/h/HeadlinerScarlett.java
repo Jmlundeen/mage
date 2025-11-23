@@ -15,6 +15,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.util.CardUtil;
@@ -118,7 +119,13 @@ class HeadlinerScarlettExileEffect extends OneShotEffect {
         UUID exileId = CardUtil.getExileZoneId("HeadlinerScarlett::" + source.getSourceId() + "::" + game.getTurn(), game);
         String exileName = CardUtil.getSourceIdName(game, source) + " turn:" + game.getTurnNum();
 
-        if (CardUtil.moveCardsToExileFaceDown(game, source, controller, card, exileId, exileName, true)) {
+
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        if (controller.moveCards(parameters, source, game)) {
             CardUtil.makeCardPlayable(game, source, card, false, Duration.EndOfTurn, false);
             ExileZone exileZone = game.getExile().getExileZone(exileId);
             if (exileZone != null) {

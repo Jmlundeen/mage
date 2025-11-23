@@ -14,10 +14,12 @@ import mage.cards.CardsImpl;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -97,12 +99,10 @@ class GloriousProtectorEffect extends OneShotEffect {
         if (target.getTargets().isEmpty()) {
             return false;
         }
-        player.moveCardsToExile(
-                new CardsImpl(target.getTargets()).getCards(game),
-                source, game, true, CardUtil.getExileZoneId(
-                        game, source.getSourceId(), source.getStackMomentSourceZCC()
-                ), sourceObject.getIdName()
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         return true;
     }

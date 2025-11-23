@@ -10,12 +10,11 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.abilities.keyword.EnchantAbility;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
+import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
@@ -23,7 +22,6 @@ import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -84,10 +82,14 @@ class DeadMansChestEffect extends OneShotEffect {
             Player owner = game.getPlayer(attachedTo.getOwnerId());
             int amount = attachedTo.getPower().getValue();
             if (owner != null && amount > 0) {
-                Set<Card> cards = owner.getLibrary().getTopCards(game, amount);
+                Cards cards = new CardsImpl(owner.getLibrary().getTopCards(game, amount));
                 if (!cards.isEmpty()) {
-                    controller.moveCardsToExile(cards, source, game, true, source.getSourceId(), sourceObject.getName());
-                    for (Card card : cards) {
+                    MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
+                    cards.retainZone(Zone.EXILED, game);
+                    for (Card card : cards.getCards(game)) {
                         if (!card.isLand(game)) {
                             ContinuousEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Zone.EXILED, Duration.Custom);
                             effect.setTargetPointer(new FixedTarget(card, game));

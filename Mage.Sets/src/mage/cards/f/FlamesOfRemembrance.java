@@ -1,9 +1,7 @@
 
 package mage.cards.f;
 
-import java.util.UUID;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.ExileFromGraveCost;
 import mage.abilities.costs.common.SacrificeSourceCost;
@@ -13,6 +11,7 @@ import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
@@ -20,10 +19,13 @@ import mage.cards.CardsImpl;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -77,7 +79,10 @@ class FlamesOfRemembranceExileEffect extends OneShotEffect {
         if (controller != null) {
             Cards cards = new CardsImpl(controller.getLibrary().getTopCards(game, amount.calculate(game, source, this)));
             if (!cards.isEmpty()) {
-                controller.moveCardsToExile(cards.getCards(game), source, game, true, source.getSourceId(), CardUtil.createObjectRelatedWindowTitle(source, game, ""));
+                MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 ContinuousEffect effect = new FlamesOfRemembranceMayPlayExiledEffect();
                 effect.setTargetPointer(new FixedTargets(cards, game));
                 game.addEffect(effect, source);

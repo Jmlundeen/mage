@@ -1,6 +1,5 @@
 package mage.cards.b;
 
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTappedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,6 +14,7 @@ import mage.abilities.mana.RedManaAbility;
 import mage.cards.*;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
 import mage.util.CardUtil;
@@ -100,10 +100,10 @@ class BloodsoakedInsightTargetEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        UUID exileId = CardUtil.getExileZoneId(game, source);
-        MageObject sourceObject = source.getSourceObject(game);
-        String exileName = sourceObject == null ? null : sourceObject.getIdName();
-        controller.moveCardsToExile(cards.getCards(game), source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         cards.retainZone(Zone.EXILED, game);
         for (Card card : cards.getCards(game)) {
             CardUtil.makeCardPlayable(game, source, card, false, Duration.UntilEndOfYourNextTurn, true);

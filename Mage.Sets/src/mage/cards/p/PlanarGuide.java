@@ -21,6 +21,7 @@ import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.MoveCardsParameters;
 import mage.players.Player;
+import mage.util.CardUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -72,9 +73,13 @@ class PlanarGuideExileEffect extends OneShotEffect {
         MageObject sourceObject = game.getObject(source);
         Player controller = game.getPlayer(source.getControllerId());
         if (sourceObject != null && controller != null) {
-            Set<Card> toExile = new HashSet<>();
-            toExile.addAll(game.getBattlefield().getActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), source, game));
-            controller.moveCardsToExile(toExile, source, game, true, source.getSourceId(), sourceObject.getIdName());
+            Set<Card> toExile = new HashSet<>(game.getBattlefield()
+                    .getActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), source, game)
+            );
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             ExileZone exile = game.getExile().getExileZone(source.getSourceId());
             if (exile != null && !exile.isEmpty()) {
                 // Create delayed triggered ability

@@ -16,8 +16,10 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInHand;
@@ -80,7 +82,12 @@ class KheruMindEaterExileEffect extends OneShotEffect {
             Card card = game.getCard(target.getFirstTarget());
             MageObject sourceObject = game.getObject(source);
             if (card != null && sourceObject != null) {
-                return CardUtil.moveCardsToExileFaceDown(game, source, controller, card, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setCanLookFaceDownInExile(true)
+                        .setFaceDown(true)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;

@@ -87,7 +87,7 @@ class LightstallInquisitorEffect extends OneShotEffect {
             if (cards.isEmpty()) {
                 continue;
             }
-            opponent.moveCardsToExile(cards.getCards(game), source, game, true, null, "");
+            opponent.moveCards(cards.getCards(game), Zone.EXILED, source, game);
             cards.retainZone(Zone.EXILED, game);
             for (Card card : cards.getCards(game)) {
                 game.addEffect(new LightstallInquisitorAsThoughEffect(playerId, new MageObjectReference(card, game)), source);

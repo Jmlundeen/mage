@@ -13,6 +13,7 @@ import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -61,7 +62,12 @@ class ThreeWishesExileEffect extends OneShotEffect {
             UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), 0);
             Set<Card> topThreeCards = controller.getLibrary().getTopCards(game, 3);
             for (Card card : topThreeCards) {
-                if (CardUtil.moveCardsToExileFaceDown(game, source, controller, card, exileId, "Three Wishes", true)) {
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setCanLookFaceDownInExile(true)
+                        .setFaceDown(true)
+                        .setExileId(exileId)
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                if ( controller.moveCards(parameters, source, game)) {
                     CardUtil.makeCardPlayable(game, source, card, false, Duration.UntilYourNextTurn, false);
                 }
             }

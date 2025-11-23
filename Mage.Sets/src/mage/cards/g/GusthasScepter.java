@@ -14,6 +14,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -74,7 +75,12 @@ class GusthasScepterExileEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        CardUtil.moveCardsToExileFaceDown(game, source, controller, card, true);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 

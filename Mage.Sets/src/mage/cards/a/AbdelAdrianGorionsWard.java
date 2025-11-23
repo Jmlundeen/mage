@@ -15,6 +15,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterNonlandPermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.SoldierToken;
 import mage.players.Player;
@@ -89,11 +90,10 @@ class AbdelAdrianGorionsWardEffect extends OneShotEffect {
         TargetPermanent target = new TargetPermanent(0, Integer.MAX_VALUE, filter, true);
         player.choose(outcome, target, source, game);
         Cards cards = new CardsImpl(target.getTargets());
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         cards.retainZone(Zone.EXILED, game);
         int count = cards.size();
         if (count > 0) {

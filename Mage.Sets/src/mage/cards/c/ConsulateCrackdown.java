@@ -1,9 +1,6 @@
 
 package mage.cards.c;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.delayed.OnLeaveReturnExiledAbility;
@@ -14,11 +11,17 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.TargetController;
+import mage.constants.Zone;
 import mage.filter.common.FilterArtifactPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author JRHerlehy
@@ -68,13 +71,13 @@ class ConsulateCracksownExileEffect extends OneShotEffect {
         //If the permanent leaves the battlefield before the ability resolves, artifacts won't be exiled.
         if (permanent == null || controller == null) return false;
 
-        Set<Card> toExile = new LinkedHashSet<>();
-        for (Permanent artifact : game.getBattlefield().getActivePermanents(filter, controller.getId(), game)) {
-            toExile.add(artifact);
-        }
+        Set<Card> toExile = new LinkedHashSet<>(game.getBattlefield().getActivePermanents(filter, controller.getId(), game));
 
         if (!toExile.isEmpty()) {
-            controller.moveCardsToExile(toExile, source, game, true, CardUtil.getCardExileZoneId(game, source), permanent.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         }
 

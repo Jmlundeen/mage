@@ -14,6 +14,7 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -22,8 +23,6 @@ import mage.target.Target;
 import mage.target.common.TargetCardInHand;
 import mage.util.CardUtil;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -86,7 +85,7 @@ class IntellectDevourerExileEffect extends OneShotEffect {
 
         boolean applied = false;
         // for storing each card to exile
-        Map<UUID, Cards> cardsToExile = new HashMap<>();
+        Cards cardsToExile = new CardsImpl();
 
         // Each player chooses a card to exile
         for (UUID opponentId : game.getOpponents(source.getControllerId())) {
@@ -98,11 +97,8 @@ class IntellectDevourerExileEffect extends OneShotEffect {
                 Target target = new TargetCardInHand(1, new FilterCard());
                 target.setRequired(true);
                 if (opponent.chooseTarget(Outcome.Exile, target, source, game)) {
-                    Cards cards = new CardsImpl(target.getTargets());
-                    cardsToExile.put(opponentId, cards);
+                    cardsToExile.add(target.getFirstTarget());
                 }
-            } else {
-                cardsToExile.put(opponentId, new CardsImpl());
             }
         }
 
@@ -112,20 +108,14 @@ class IntellectDevourerExileEffect extends OneShotEffect {
         if (controller == null || sourceObject == null) {
             return false;
         }
-        UUID exileZoneId = CardUtil.getExileZoneId(game, sourceObject.getId(), sourceObject.getZoneChangeCounter(game));
-
-        for (UUID opponentId : game.getOpponents(source.getControllerId())) {
-            Cards opponentCardsToExile = new CardsImpl();
-            Player opponent = game.getPlayer(opponentId);
-            if (opponent == null || !cardsToExile.containsKey(opponentId) || cardsToExile.get(opponentId).isEmpty()) {
-                continue;
-            }
-            opponentCardsToExile.addAll(cardsToExile.get(opponentId));
-            opponent.moveCardsToExile(opponentCardsToExile.getCards(game), source, game, false, exileZoneId, sourceObject.getIdName());
-            Card thisCard = opponentCardsToExile.getCards(game).iterator().next();
-            game.getState().setValue(thisCard.getId().toString() + game.getState().getZoneChangeCounter(thisCard.getId()), exileZoneId);
-            CardUtil.makeCardPlayable(game, source, thisCard, false, Duration.Custom, true, source.getControllerId(), null);
-            applied = true;
+        MoveCardsParameters parameters = new MoveCardsParameters(cardsToExile.getCards(game), Zone.EXILED)
+                .setByOwner(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
+        cardsToExile.retainZone(Zone.EXILED, game);
+        for (Card card : cardsToExile.getCards(game)) {
+            CardUtil.makeCardPlayable(game, source, card, false, Duration.Custom, true, source.getControllerId(), null);
         }
 
         return applied;

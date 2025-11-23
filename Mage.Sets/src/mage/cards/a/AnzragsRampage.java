@@ -1,7 +1,5 @@
 package mage.cards.a;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbility;
@@ -19,6 +17,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterArtifactPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -28,6 +27,8 @@ import mage.target.common.TargetCardInExile;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 import mage.watchers.Watcher;
+
+import java.util.UUID;
 
 /**
  * @author Cguy7777
@@ -141,10 +142,10 @@ class AnzragsRampageEffect extends OneShotEffect {
         // where X is the number of artifacts that were put into graveyards from the battlefield this turn.
         Cards cards = new CardsImpl(controller.getLibrary()
                 .getTopCards(game, AnzragsRampageValue.instance.calculate(game, source, this)));
-        controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
 
         // You may put a creature card exiled this way onto the battlefield.
         TargetCard targetCard = new TargetCardInExile(

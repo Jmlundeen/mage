@@ -22,12 +22,11 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.Zone;
-import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
-import mage.target.TargetCard;
 import mage.target.common.TargetCardInGraveyard;
 import mage.util.CardUtil;
 
@@ -144,10 +143,10 @@ class PitOfOfferingsEffect extends OneShotEffect {
             return false;
         }
         Cards cardsExiled = new CardsImpl(getTargetPointer().getTargets(game, source));
-        controller.moveCardsToExile(
-                cardsExiled.getCards(game), source, game, true,
-                getExileZoneId(sourceObject, game), sourceObject.getIdName()
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cardsExiled.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 

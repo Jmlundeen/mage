@@ -8,19 +8,17 @@ import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
+import mage.cards.*;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.common.TargetControlledCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -78,11 +76,13 @@ class ShowdownOfTheSkaldsEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            Set<Card> cards = controller.getLibrary().getTopCards(game, 4);
-            Card sourceCard = game.getCard(source.getSourceId());
-            controller.moveCardsToExile(cards, source, game, true, CardUtil.getCardExileZoneId(game, source), sourceCard != null ? sourceCard.getIdName() : "");
-
-            for (Card card : cards) {
+            Cards cards = new CardsImpl(controller.getLibrary().getTopCards(game, 4));
+            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
+            cards.retainZone(Zone.EXILED, game);
+            for (Card card : cards.getCards(game)) {
                 ContinuousEffect effect = new ShowdownOfTheSkaldsMayPlayEffect();
                 effect.setTargetPointer(new FixedTarget(card, game));
                 game.addEffect(effect, source);

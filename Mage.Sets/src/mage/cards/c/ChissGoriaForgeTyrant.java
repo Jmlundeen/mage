@@ -14,6 +14,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
@@ -85,7 +86,10 @@ class ChissGoriaForgeTyrantEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return true;
         }
-        player.moveCardsToExile(cards.getCards(game), source, game, false, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         cards.retainZone(Zone.EXILED, game);
 
         Cards castableCards = new CardsImpl(cards.getCards(StaticFilters.FILTER_CARD_NON_LAND, game));

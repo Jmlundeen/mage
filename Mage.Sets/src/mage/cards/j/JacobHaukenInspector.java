@@ -14,6 +14,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
 import mage.util.CardUtil;
@@ -82,7 +83,12 @@ class JacobHaukenInspectorExileEffect extends OneShotEffect {
             controller.chooseTarget(outcome, controller.getHand(), target, source, game);
             Card card = game.getCard(target.getFirstTarget());
             if (card != null) {
-                CardUtil.moveCardsToExileFaceDown(game, source , controller, card, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setCanLookFaceDownInExile(true)
+                        .setFaceDown(true)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
         }
         return true;

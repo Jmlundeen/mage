@@ -12,6 +12,7 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -101,11 +102,12 @@ class HideawayExileEffect extends OneShotEffect {
         controller.choose(Outcome.Detriment, cards, target, source, game);
         Card card = cards.get(target.getFirstTarget(), game);
         if (card != null) {
-            CardUtil.moveCardsToExileFaceDown(
-                    game, source, controller, card,
-                    CardUtil.getCardExileZoneId(game, source),
-                    "Hideaway (" + CardUtil.getSourceName(game, source) + ")",
-                    false);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setCanLookFaceDownInExile(true)
+                    .setFaceDown(true)
+                    .setExileId(CardUtil.getCardExileZoneId(game, source))
+                    .setExileName("Hideaway (" + CardUtil.getSourceName(game, source) + ")");
+            controller.moveCards(parameters, source, game);
             game.addEffect(new HideawayLookAtFaceDownCardEffect().setTargetPointer(new FixedTarget(card, game)), source);
         }
         cards.retainZone(Zone.LIBRARY, game);

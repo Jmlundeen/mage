@@ -16,6 +16,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.DamagedEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -156,9 +157,10 @@ class FireGiantsFuryDelayedEffect extends OneShotEffect {
             Integer damage = (Integer) getValue("damage");
             if (damage != null && damage > 0) {
                 Set<Card> cards = controller.getLibrary().getTopCards(game, damage);
-                Card sourceCard = game.getCard(source.getSourceId());
-                controller.moveCardsToExile(cards, source, game, true, CardUtil.getCardExileZoneId(game, source), sourceCard != null ? sourceCard.getIdName() : "");
-
+                MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 for (Card card : cards) {
                     ContinuousEffect effect = new FireGiantsFuryMayPlayEffect();
                     effect.setTargetPointer(new FixedTarget(card.getId(), game));

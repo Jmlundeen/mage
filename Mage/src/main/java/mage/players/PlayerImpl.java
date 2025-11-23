@@ -5133,6 +5133,14 @@ public abstract class PlayerImpl implements Player, Serializable {
                 parameters.setFaceDown(false);
             }
             if (card.moveToZone(parameters, source, game)) {
+                if (parameters.canLookFaceDownInExile()) {
+                    ExileZone exileZone = parameters.getExileId() == null
+                            ? game.getExile().getPermanentExile()
+                            : game.getExile().getExileZone(parameters.getExileId());
+                    if (exileZone != null) {
+                        exileZone.letPlayerSeeCards(this.getId(), card);
+                    }
+                }
                 successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
@@ -5269,19 +5277,6 @@ public abstract class PlayerImpl implements Player, Serializable {
                 sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
                 game.informPlayers(sb.toString());
         }
-    }
-
-    @Override
-    public boolean moveCardsToExile(Set<Card> cards, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName) {
-        if (cards.isEmpty()) {
-            return true;
-        }
-        boolean result = false;
-        for (Card card : cards) {
-            Zone fromZone = game.getState().getZone(card.getId());
-            result |= moveCardToExileWithInfo(card, exileId, exileZoneName, source, game, fromZone, withName);
-        }
-        return result;
     }
 
     @Override

@@ -34,6 +34,9 @@ public class MoveCardsParameters {
     // The name associated with the exile zone, if applicable
     String exileName = "";
 
+    // Indicates whether the moving player can look at the card in exile face down
+    boolean canLookFaceDownInExile = false;
+
     // Indicates whether the cards should be placed at the top of the library
     boolean toTopOfLibrary = true;
 
@@ -222,6 +225,26 @@ public class MoveCardsParameters {
      */
     public MoveCardsParameters setExileName(String exileName) {
         this.exileName = exileName;
+        return this;
+    }
+
+    /**
+     * Checks if the moving player can look at the card in exile face down.
+     *
+     * @return True if the player can look at the card, false otherwise.
+     */
+    public boolean canLookFaceDownInExile() {
+        return canLookFaceDownInExile;
+    }
+
+    /**
+     * Sets whether the moving player can look at the card in exile face down.
+     *
+     * @param canLookFaceDownInExile True if the player can look at the card, false otherwise.
+     * @return The updated MoveCardsParameters object.
+     */
+    public MoveCardsParameters setCanLookFaceDownInExile(boolean canLookFaceDownInExile) {
+        this.canLookFaceDownInExile = canLookFaceDownInExile;
         return this;
     }
 

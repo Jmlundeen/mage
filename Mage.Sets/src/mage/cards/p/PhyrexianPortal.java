@@ -1,18 +1,11 @@
   
 package mage.cards.p;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
@@ -21,6 +14,10 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 
@@ -95,7 +92,7 @@ class PhyrexianPortalEffect extends OneShotEffect {
                 game.informPlayers(controller.getLogName() + " chooses to search the " + (choice ? "first" : "second") + " pile");
                 Cards pileToExile = new CardsImpl();
                 pileToExile.addAllCards(choice ? pile2 : pile1);
-                controller.moveCardsToExile(pileToExile.getCards(game), source, game, true, null, "");
+                controller.moveCards(pileToExile, Zone.EXILED, source, game);
                 Cards chosenPile = new CardsImpl();
                 chosenPile.addAllCards(choice ? pile1 : pile2);
                 

@@ -11,7 +11,6 @@ import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.ExileTargetEffect;
 import mage.abilities.effects.common.InfoEffect;
 import mage.cards.*;
 import mage.cards.repository.TokenInfo;
@@ -25,7 +24,6 @@ import mage.game.Game;
 import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
-import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 import mage.watchers.common.ForetoldWatcher;
 
@@ -207,12 +205,12 @@ public class ForetellAbility extends SpecialAction {
         UUID exileId = CardUtil.getExileZoneId(mainCardId.toString() + "foretellAbility", game);
 
         // foretell turn number shows up on exile window
-        ExileTargetEffect effect = new ExileTargetEffect(exileId, " Foretell Turn Number: " + game.getTurnNum());
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(" Foretell Turn Number: " + game.getTurnNum());
+        controller.moveCards(parameters, source, game);
 
-        effect.setWithName(false);
-        effect.setTargetPointer(new FixedTarget(card.getId(), game));
-        effect.apply(game, source);
-        card.setFaceDown(true);
         TokenInfo tokenInfo = TokenRepository.instance.findPreferredTokenInfoForXmage(TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_FORETELL, card.getId());
         if (tokenInfo != null) {
             CopiableValues faceDownValues = card.getFaceDownValues();

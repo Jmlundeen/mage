@@ -10,9 +10,12 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.*;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.TargetPlayer;
@@ -76,7 +79,12 @@ class JestersScepterEffect extends OneShotEffect {
                 && sourceObject != null) {
             if (targetedPlayer.getLibrary().hasCards()) {
                 Set<Card> cardsToExile = targetedPlayer.getLibrary().getTopCards(game, 5);
-                CardUtil.moveCardsToExileFaceDown(game, source, controller, cardsToExile, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(cardsToExile, Zone.EXILED)
+                        .setCanLookFaceDownInExile(true)
+                        .setFaceDown(true)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

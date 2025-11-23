@@ -21,6 +21,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.GoblinToken;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
@@ -110,7 +111,10 @@ class NerivCracklingVanguardEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        controller.moveCardsToExile(cards, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         // copy ability in case Neriv leaves the battlefield. Card should be playable any turn you've attacked with a commander.
         Ability copiedAbility = source.copy();
         copiedAbility.newId();

@@ -10,6 +10,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.DamagedEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -153,7 +154,12 @@ class GontiExileEffect extends OneShotEffect {
         UUID exileZoneId = CardUtil.getExileZoneId(game, controller.getId(), source.getStackMomentSourceZCC());
         String exileName = CardUtil.getSourceName(game, source) + " - " + controller.getName();
 
-        if (!CardUtil.moveCardsToExileFaceDown(game, source, controller, card, exileZoneId, exileName, true)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(exileZoneId)
+                .setExileName(exileName);
+        if (!controller.moveCards(parameters, source, game)) {
             return false;
         }
         CardUtil.makeCardPlayable(game, source, card, false, Duration.Custom, true, controller.getId(), null);

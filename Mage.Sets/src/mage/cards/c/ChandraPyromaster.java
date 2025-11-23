@@ -13,6 +13,7 @@ import mage.constants.*;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.common.FilterInstantOrSorceryCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
@@ -20,6 +21,7 @@ import mage.target.TargetCard;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetPlayerOrPlaneswalker;
 import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
 
 import java.util.Set;
 import java.util.UUID;
@@ -197,7 +199,11 @@ class ChandraPyromasterEffect3 extends OneShotEffect {
             return false;
         }
         Cards cards = new CardsImpl(controller.getLibrary().getTopCards(game, 10));
-        controller.moveCardsToExile(cards.getCards(game), source, game, true, source.getSourceId(), sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
+        cards.retainZone(Zone.EXILED, game);
 
         if (!cards.getCards(new FilterInstantOrSorceryCard(), game).isEmpty()) {
             TargetCard target = new TargetCard(Zone.EXILED, new FilterInstantOrSorceryCard());

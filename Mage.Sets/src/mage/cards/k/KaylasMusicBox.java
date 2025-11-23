@@ -13,6 +13,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -77,10 +78,14 @@ class KaylasMusicBoxExileEffect extends OneShotEffect {
             return false;
         }
 
-        card.setFaceDown(true);
         controller.lookAtCards(null, card, game);
 
-        CardUtil.moveCardsToExileFaceDown(game, source, controller, card, true);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 

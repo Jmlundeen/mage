@@ -8,6 +8,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
@@ -111,12 +112,15 @@ public class ExileTargetEffect extends OneShotEffect {
             }
             if (toSourceExileZone) {
                 MageObject sourceObject = source.getSourceObject(game);
-                exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
+                exileId = CardUtil.getExileZoneId(game, source);
                 if (sourceObject != null) {
                     exileZone = sourceObject.getIdName();
                 }
             }
-            controller.moveCardsToExile(toExile, source, game, withName, exileId, exileZone);
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setExileId(exileId)
+                    .setExileName(exileZone);
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

@@ -19,6 +19,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.target.common.TargetCardInExile;
@@ -85,8 +86,10 @@ class MuseVesselExileEffect extends OneShotEffect {
         TargetCardInHand target = new TargetCardInHand();
         if (target.canChoose(player.getId(), source, game)
                 && target.choose(Outcome.Exile, player.getId(), source, game)) {
-            UUID exileId = CardUtil.getExileZoneId(game, source);
-            return player.moveCardsToExile(new CardsImpl(target.getTargets()).getCards(game), source, game, true, exileId, sourceObject.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            player.moveCards(parameters, source, game);
         }
         return false;
     }

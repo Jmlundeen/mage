@@ -7,6 +7,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -55,11 +56,12 @@ public class ExileGraveyardAllTargetPlayerEffect extends OneShotEffect {
             }
             cardsToExile.addAll(targetPlayer.getGraveyard().getCards(game));
         }
-        return toUniqueExile ?
-                controller.moveCardsToExile(
-                        cardsToExile, source, game, true,
-                        CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
-                ) : controller.moveCards(cardsToExile, Zone.EXILED, source, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(cardsToExile, Zone.EXILED);
+        if (toUniqueExile) {
+            parameters.setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        }
+        return controller.moveCards(parameters, source, game);
     }
 
     @Override

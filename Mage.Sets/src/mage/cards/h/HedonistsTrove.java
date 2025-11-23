@@ -12,6 +12,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -74,12 +75,13 @@ class HedonistsTroveExileEffect extends OneShotEffect {
         UUID exileId = CardUtil.getExileZoneId(game, source);
         // save the exileId associated with this specific source
         game.getState().setValue(source.getSourceId().toString(), exileId);
-        return controller != null
-                && targetPlayer != null
-                && controller.moveCardsToExile(
-                targetPlayer.getGraveyard().getCards(game), source, game, true,
-                exileId, CardUtil.getSourceName(game, source)
-        );
+        if (controller == null || targetPlayer == null) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(targetPlayer.getGraveyard().getCards(game), Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return controller.moveCards(parameters, source, game);
     }
 }
 

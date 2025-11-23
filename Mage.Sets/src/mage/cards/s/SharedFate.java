@@ -13,6 +13,7 @@ import mage.filter.predicate.Predicates;
 import mage.filter.predicate.other.PlayerIdPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -116,7 +117,12 @@ class SharedFateReplacementEffect extends ReplacementEffectImpl {
 
         UUID exileId = CardUtil.getExileZoneId(SharedFate.prepareExileKey(game, source, sourcePermanent, playerToDraw.getId()), game);
         String exileName = sourcePermanent.getIdName() + "-" + sourcePermanent.getZoneChangeCounter(game) + " (" + playerToDraw.getName() + ')';
-        CardUtil.moveCardsToExileFaceDown(game, source, playerToDraw, card, exileId, exileName, true);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 

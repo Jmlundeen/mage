@@ -14,6 +14,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
 import mage.players.Player;
@@ -89,10 +90,12 @@ class GrimoireThiefExileEffect extends OneShotEffect {
                 for (Card card : cards) {
                     card.setFaceDown(true);
                 }
-                UUID exileZoneId = CardUtil.getExileZoneId(game,
-                        source.getSourceId(), source.getStackMomentSourceZCC());
-                targetOpponent.moveCardsToExile(cards, source, game, false,
-                        exileZoneId, sourceObject.getIdName());
+                UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+                MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                        .setFaceDown(true)
+                        .setExileId(exileZoneId)
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                targetOpponent.moveCards(parameters, source, game);
                 for (Card card : cards) {
                     card.setFaceDown(true);
                 }

@@ -148,7 +148,10 @@ class TawnossCoffinEffect extends OneShotEffect {
         }
 
         creatureToAurasMap.put(creature.getId(), auras);
-        controller.moveCardsToExile(toExile, source, game, true, exileZoneId, sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                .setExileId(exileZoneId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         exileData.put("NotedCounters", creature.getCounters(game).copy());
         exileData.put("Creature", creature.getId());
         exileData.put("Auras", creatureToAurasMap);

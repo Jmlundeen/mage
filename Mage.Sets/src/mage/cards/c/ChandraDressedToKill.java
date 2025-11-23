@@ -1,6 +1,5 @@
 package mage.cards.c;
 
-import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
@@ -136,10 +135,10 @@ class ChandraDressedToKillExile5Effect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-        MageObject sourceObject = source.getSourceObject(game);
-        String exileName = sourceObject == null ? null : sourceObject.getIdName();
-        controller.moveCardsToExile(cards, source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         cards.removeIf(card -> !Zone.EXILED.equals(game.getState().getZone(card.getId())));
         if (!cards.isEmpty()) {
             game.addEffect(new ChandraDressedToKillPlayEffect()

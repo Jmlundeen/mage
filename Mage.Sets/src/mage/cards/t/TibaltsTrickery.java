@@ -1,27 +1,22 @@
 package mage.cards.t;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 import mage.ApprovingObject;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.NamePredicate;
-import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.TargetSpell;
-import mage.util.CardUtil;
 import mage.util.RandomUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -81,7 +76,7 @@ class TibaltsTrickeryEffect extends OneShotEffect {
                 game.informPlayers(random + " was chosen at random");
                 controller.millCards(random, source, game);
                 Card cardToCast = null;
-                Set<Card> cardsToExile = new HashSet<>();
+                Cards cardsToExile = new CardsImpl();
                 FilterCard filter = new FilterCard();
                 filter.add(Predicates.not(CardType.LAND.getPredicate()));
                 filter.add(Predicates.not(new NamePredicate(spellName)));
@@ -92,8 +87,8 @@ class TibaltsTrickeryEffect extends OneShotEffect {
                         break;
                     }
                 }
-                controller.moveCardsToExile(cardsToExile, source, game, true, source.getSourceId(),
-                        CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(cardsToExile.getCards(game), Zone.EXILED, source, game);
+                cardsToExile.retainZone(Zone.EXILED, game);
                 if (cardToCast != null) {
                     if (controller.chooseUse(Outcome.PlayForFree, "Cast " + cardToCast.getLogName() + " for free?", source, game)) {
                         game.getState().setValue("PlayFromNotOwnHandZone" + cardToCast.getId(), Boolean.TRUE);
@@ -102,10 +97,7 @@ class TibaltsTrickeryEffect extends OneShotEffect {
                         game.getState().setValue("PlayFromNotOwnHandZone" + cardToCast.getId(), null);
                     }
                 }
-                ExileZone exile = game.getExile().getExileZone(source.getSourceId());
-                if (exile != null) {
-                    controller.putCardsOnBottomOfLibrary(exile, game, source, false);
-                }
+                controller.putCardsOnBottomOfLibrary(cardsToExile, game, source, false);
             }
             return true;
         }

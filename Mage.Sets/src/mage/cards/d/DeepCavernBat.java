@@ -15,10 +15,10 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
-import mage.target.common.TargetCardInHand;
 import mage.target.common.TargetOpponent;
 import mage.util.CardUtil;
 
@@ -98,11 +98,10 @@ class DeepCaverBatEffect extends OneShotEffect {
             return true;
         }
         Cards cards = new CardsImpl(target.getTargets());
-        controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                bat.getIdName()
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(Zone.HAND), source);
         return true;
     }

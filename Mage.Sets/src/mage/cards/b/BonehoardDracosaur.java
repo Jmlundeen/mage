@@ -2,18 +2,19 @@ package mage.cards.b;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.abilities.keyword.FirstStrikeAbility;
 import mage.abilities.keyword.FlyingAbility;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.Dinosaur31Token;
 import mage.game.permanent.token.TreasureToken;
 import mage.players.Player;
@@ -89,7 +90,10 @@ class BoneahoardDracosaurEffect extends OneShotEffect {
         UUID exileId = CardUtil.getExileZoneId("BonehoardDragon::" + source.getSourceId() + "::" + game.getTurn(), game);
         String exileName = CardUtil.getSourceIdName(game, source) + " turn:" + game.getTurnNum();
 
-        controller.moveCardsToExile(cards, source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        controller.moveCards(parameters, source, game);
         ExileZone zone = game.getExile().getExileZone(exileId);
         zone.setCleanupOnEndTurn(true);
 

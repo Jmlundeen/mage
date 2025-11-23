@@ -15,10 +15,12 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.GiftType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTargets;
@@ -92,7 +94,10 @@ class PartingGustExileReturnEffect extends OneShotEffect {
         if (toExile.isEmpty()) {
             return false;
         }
-        controller.moveCardsToExile(toExile, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         Effect effect = new ReturnToBattlefieldUnderOwnerControlWithCounterTargetEffect(CounterType.P1P1.createInstance(), false, false);
         effect.setTargetPointer(new FixedTargets(toExile
                 .stream()

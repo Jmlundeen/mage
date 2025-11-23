@@ -102,7 +102,7 @@ class UlamogTheDefilerTargetEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        opponent.moveCardsToExile(cards, source, game, true, null, "");
+        opponent.moveCards(cards, Zone.EXILED, source, game);
         return true;
     }
 

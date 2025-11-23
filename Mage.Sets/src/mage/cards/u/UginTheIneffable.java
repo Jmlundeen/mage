@@ -23,6 +23,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ColorlessPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.token.UginTheIneffableToken;
@@ -109,8 +110,13 @@ class UginTheIneffableEffect extends OneShotEffect {
         }
 
         // exile and look
-        UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-        CardUtil.moveCardsToExileFaceDown(game, source, player, card, exileZoneId, sourceObject.getIdName() + " (" + player.getName() + ")", true);
+        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(exileZoneId)
+                .setExileName(sourceObject.getIdName() + " (" + player.getName() + ")");
+        player.moveCards(parameters, source, game);
         // create token
         Set<MageObjectReference> tokenObjs = new HashSet<>();
         CreateTokenEffect effect = new CreateTokenEffect(new UginTheIneffableToken());

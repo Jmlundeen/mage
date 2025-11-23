@@ -106,7 +106,7 @@ class Vault112SadisticSimulationChapterEffect extends OneShotEffect {
         controller.shuffleLibrary(source, game);
         // Exile top X cards.
         Cards cards = new CardsImpl(controller.getLibrary().getTopCards(game, numberToPay));
-        controller.moveCardsToExile(cards.getCards(game), source, game, true, null, "");
+        controller.moveCards(cards.getCards(game), Zone.EXILED, source, game);
         cards.retainZone(Zone.EXILED, game);
         if (cards.isEmpty()) {
             return true;

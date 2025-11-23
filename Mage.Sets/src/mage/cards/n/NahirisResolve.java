@@ -100,11 +100,10 @@ class NahirisResolveExileEffect extends OneShotEffect {
         TargetPermanent target = new TargetPermanent(0, Integer.MAX_VALUE, filter, true);
         player.choose(outcome, target, source, game);
         Cards cards = new CardsImpl(target.getTargets());
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new AtTheBeginOfYourNextUpkeepDelayedTriggeredAbility(
                 new NahirisResolveReturnEffect().setTargetPointer(new FixedTargets(cards, game))
         ), source);

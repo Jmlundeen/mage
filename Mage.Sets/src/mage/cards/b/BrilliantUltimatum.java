@@ -10,9 +10,11 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
+import mage.util.CardUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +72,10 @@ class BrilliantUltimatumEffect extends OneShotEffect {
 
         Cards pile2 = new CardsImpl();
         pile2.addAllCards(controller.getLibrary().getTopCards(game, 5));
-        controller.moveCardsToExile(pile2.getCards(game), source, game, true, source.getSourceId(), sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(pile2.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
 
         TargetOpponent targetOpponent = new TargetOpponent(true);
         targetOpponent.choose(outcome, source.getControllerId(), source.getSourceId(), source, game);

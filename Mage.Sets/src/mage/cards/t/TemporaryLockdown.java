@@ -11,10 +11,12 @@ import mage.cards.CardsImpl;
 import mage.constants.CardType;
 import mage.constants.ComparisonType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterNonlandPermanent;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -74,11 +76,10 @@ class TemporaryLockdownEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         return true;
     }

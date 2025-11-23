@@ -12,6 +12,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -73,8 +74,13 @@ class SummonersEggImprintEffect extends OneShotEffect {
                         && controller.choose(Outcome.Benefit, controller.getHand(), target, source, game)) {
                     Card card = controller.getHand().get(target.getFirstTarget(), game);
                     if (card != null) {
-                        CardUtil.moveCardsToExileFaceDown(game, source, controller, card,
-                                source.getSourceId(), sourcePermanent.getIdName() + " (Imprint)", false);
+                        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setCanLookFaceDownInExile(true)
+                                .setFaceDown(true)
+                                .setExileId(exileZoneId)
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
+                        controller.moveCards(parameters, source, game);
                         sourcePermanent.imprint(card.getId(), game);
                         sourcePermanent.addInfo("imprint", CardUtil.addToolTipMarkTags("[Imprinted card]"), game);
                     }
@@ -83,7 +89,6 @@ class SummonersEggImprintEffect extends OneShotEffect {
             return true;
         }
         return false;
-
     }
 
     @Override

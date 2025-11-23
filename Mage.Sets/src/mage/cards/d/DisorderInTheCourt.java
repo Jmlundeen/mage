@@ -12,7 +12,9 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetadjustment.XTargetsCountAdjuster;
@@ -77,7 +79,10 @@ class DisorderInTheCourtEffect extends OneShotEffect {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         if (!toExile.isEmpty()) {
-            controller.moveCardsToExile(toExile, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             game.processAction();
         }
         new InvestigateEffect(GetXValue.instance).apply(game, source);

@@ -13,6 +13,7 @@ import mage.filter.FilterCard;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
@@ -86,11 +87,10 @@ class TheKenrithsRoyalFuneralExileEffect extends OneShotEffect {
                 .mapToInt(MageObject::getManaValue)
                 .max()
                 .orElse(0);
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         player.drawCards(xValue, source, game);
         player.loseLife(xValue, game, source, false);
         return true;

@@ -10,6 +10,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -65,15 +66,14 @@ class HeartlessConscriptionEffect extends OneShotEffect {
         Cards cards = new CardsImpl();
         game.getBattlefield()
                 .getActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURES, source.getControllerId(), source, game)
-                .stream()
                 .forEach(cards::add);
         if (cards.isEmpty()) {
             return false;
         }
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.processAction();
         cards.retainZone(Zone.EXILED, game);
         for (Card card : cards.getCards(game)) {

@@ -25,6 +25,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
@@ -100,15 +101,14 @@ class LegionsInitiativeExileEffect extends OneShotEffect {
             return false;
         }
         Cards cards = new CardsImpl();
-        UUID exileZone = CardUtil.getExileZoneId(game, source);
         game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_CONTROLLED_CREATURE,
                 source.getControllerId(), source, game
         ).stream().filter(Objects::nonNull).forEach(cards::add);
-        return controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                exileZone, CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return controller.moveCards(parameters, source, game);
     }
 
     @Override

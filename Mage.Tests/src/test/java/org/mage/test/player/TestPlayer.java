@@ -3972,11 +3972,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean moveCardsToExile(Set<Card> cards, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName) {
-        return computerPlayer.moveCardsToExile(cards, source, game, withName, exileId, exileZoneName);
-    }
-
-    @Override
     public Set<Card> moveCardsToGraveyardWithInfo(Set<? extends Card> allCards, Ability source, Game game, Zone fromZone) {
         return computerPlayer.moveCardsToGraveyardWithInfo(allCards, source, game, fromZone);
     }

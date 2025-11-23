@@ -19,6 +19,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -106,8 +107,13 @@ class RogueClassExileEffect extends OneShotEffect {
             return false;
         }
         // exileId must remain consistent among all checks
-        UUID exileZoneId = CardUtil.getExileZoneId(game, sourceObject.getId(), sourceObject.getZoneChangeCounter(game));
-        if (CardUtil.moveCardsToExileFaceDown(game, source, controller, card, exileZoneId, sourceObject.getIdName(), true)) {
+        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(exileZoneId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        if (controller.moveCards(parameters, source, game)) {
             game.getState().setValue(card.getId().toString() + game.getState().getZoneChangeCounter(card.getId()), exileZoneId);
             return true;
         }

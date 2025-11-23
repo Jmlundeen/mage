@@ -7,11 +7,17 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.SkipDrawStepEffect;
 import mage.abilities.effects.common.continuous.CantCastMoreThanOneSpellEffect;
-import mage.abilities.effects.common.continuous.MayPlayCardsExiledWithThisEffect;
 import mage.abilities.effects.common.continuous.LookAtCardsExiledWithThisEffect;
-import mage.cards.*;
-import mage.constants.*;
+import mage.abilities.effects.common.continuous.MayPlayCardsExiledWithThisEffect;
+import mage.cards.Card;
+import mage.cards.CardImpl;
+import mage.cards.CardSetInfo;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.TargetController;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -69,8 +75,12 @@ class ColfenorsPlansExileEffect extends OneShotEffect {
         if (controller != null) {
             Set<Card> toExile = controller.getLibrary().getTopCards(game, 7);
             UUID exileId = CardUtil.getCardExileZoneId(game, source);
-            CardUtil.moveCardsToExileFaceDown(game, source, controller, toExile, exileId,
-                    CardUtil.createObjectRelatedWindowTitle(source, game, null), true);
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setCanLookFaceDownInExile(true)
+                    .setFaceDown(true)
+                    .setExileId(exileId)
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

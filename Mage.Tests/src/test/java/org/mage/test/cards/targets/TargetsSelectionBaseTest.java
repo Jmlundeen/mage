@@ -2,7 +2,6 @@ package org.mage.test.cards.targets;
 
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
-import mage.abilities.costs.common.TapAttachedCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -16,11 +15,12 @@ import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInHand;
+import mage.util.CardUtil;
 import org.mage.test.player.TestPlayer;
-import org.mage.test.serverside.base.CardTestPlayerBase;
 import org.mage.test.serverside.base.CardTestPlayerBaseWithAIHelps;
 
 import java.util.ArrayList;
@@ -249,7 +249,10 @@ class SelectExileAndGainLifeCustomEffect extends OneShotEffect {
             return false;
         }
 
-        player.moveCardsToExile(new CardsImpl(target.getTargets()).getCards(game), source, game, false, source.getSourceId(), player.getLogName());
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(player.getLogName());
+        player.moveCards(parameters, source, game);
         player.gainLife(target.getTargets().size(), game, source);
         return true;
     }

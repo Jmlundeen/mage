@@ -14,10 +14,10 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -66,12 +66,11 @@ class IgnorantBlissEffect extends OneShotEffect {
             return false;
         }
         Cards hand = new CardsImpl(controller.getHand());
-        controller.moveCardsToExile(hand.getCards(game), source, game, false, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
-        hand.getCards(game)
-                .stream()
-                .filter(Objects::nonNull)
-                .filter(card -> game.getState().getZone(card.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true));
+        MoveCardsParameters parameters = new MoveCardsParameters(hand.getCards(game), Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         DelayedTriggeredAbility ability = new AtTheBeginOfNextEndStepDelayedTriggeredAbility(new ReturnFromExileEffect(Zone.HAND));
         ability.addEffect(new DrawCardSourceControllerEffect(1));
         game.addDelayedTriggeredAbility(ability, source);

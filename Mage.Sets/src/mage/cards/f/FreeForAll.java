@@ -1,11 +1,11 @@
 package mage.cards.f;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ReturnFromExileForSourceEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
@@ -17,6 +17,7 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -77,11 +78,11 @@ class FreeForAllExileAllEffect extends OneShotEffect {
         game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), source, game
         ).forEach(cards::add);
-        player.moveCardsToExile(cards.getCards(game), source, game, false, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
-        cards.getCards(game)
-                .stream()
-                .filter(card -> game.getState().getZone(card.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

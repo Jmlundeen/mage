@@ -1026,8 +1026,6 @@ public interface Player extends MageItem, Copyable<Player> {
     Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game);
 
 
-    boolean moveCardsToExile(Set<Card> cards, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName);
-
     /**
      * Uses card.moveToZone and posts a inform message about moving the card
      * into the game log
