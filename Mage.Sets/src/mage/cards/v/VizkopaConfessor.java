@@ -1,27 +1,24 @@
 
 package mage.cards.v;
 
-import java.util.List;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.ExtortAbility;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -109,7 +106,7 @@ class VizkopaConfessorEffect extends OneShotEffect {
                     controller.chooseTarget(Outcome.Exile, revealedCards, targetInHand, source, game);
                     Card card = revealedCards.get(targetInHand.getFirstTarget(), game);
                     if (card != null) {
-                        controller.moveCardToExileWithInfo(card, null, null, source, game, Zone.HAND, true);
+                        controller.moveCards(card, Zone.EXILED, source, game);
                     }
                 }
                 return true;

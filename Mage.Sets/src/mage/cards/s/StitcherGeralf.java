@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -10,16 +9,14 @@ import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.cards.*;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Outcome;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
 import mage.game.permanent.token.StitcherGeralfZombieToken;
 import mage.players.Player;
 import mage.target.TargetCard;
+
+import java.util.UUID;
 
 /**
  *
@@ -87,7 +84,7 @@ class StitcherGeralfEffect extends OneShotEffect {
                 Card card = game.getCard(cardId);
                 if (card != null) {
                     power += card.getPower().getValue();
-                    controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.GRAVEYARD, true);
+                    controller.moveCards(card, Zone.EXILED, source, game);
                 }
             }
             return new CreateTokenEffect(new StitcherGeralfZombieToken(power)).apply(game, source);

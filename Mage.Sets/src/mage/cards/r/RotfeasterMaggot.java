@@ -1,7 +1,6 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -10,13 +9,15 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -70,7 +71,7 @@ class RotfeasterMaggotExileEffect extends OneShotEffect {
             Card targetCard = game.getCard(getTargetPointer().getFirst(game, source));
             if (targetCard != null) {
                 if (game.getState().getZone(targetCard.getId()) == Zone.GRAVEYARD) {
-                    controller.moveCardToExileWithInfo(targetCard, null, "", source, game, Zone.GRAVEYARD, true);
+                    controller.moveCards(targetCard, Zone.EXILED, source, game);
                 }
                 controller.gainLife(targetCard.getToughness().getValue(), game, source);
                 return true;

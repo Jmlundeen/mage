@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -18,11 +17,14 @@ import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.TargetPermanent;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -83,10 +85,10 @@ class SynodSanctumEffect extends OneShotEffect {
             if (getTargetPointer().getFirst(game, source) != null) {
                 Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
                 if (permanent != null) {
-                    UUID exileZone = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                    if (exileZone != null) {
-                        controller.moveCardToExileWithInfo(permanent, exileZone, sourceObject.getIdName(), source, game, Zone.BATTLEFIELD, true);
-                    }
+                    MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                 }
             }
             return true;

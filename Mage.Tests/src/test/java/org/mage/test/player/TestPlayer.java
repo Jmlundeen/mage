@@ -3962,16 +3962,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean moveCardToHandWithInfo(Card card, Ability source, Game game, boolean withName) {
-        return computerPlayer.moveCardToHandWithInfo(card, source, game, withName);
-    }
-
-    @Override
-    public boolean moveCardsToHandWithInfo(Cards cards, Ability source, Game game, boolean withName) {
-        return computerPlayer.moveCardsToHandWithInfo(cards, source, game, withName);
-    }
-
-    @Override
     public Set<Card> moveCardsToGraveyardWithInfo(Set<? extends Card> allCards, Ability source, Game game, Zone fromZone) {
         return computerPlayer.moveCardsToGraveyardWithInfo(allCards, source, game, fromZone);
     }
@@ -3984,11 +3974,6 @@ public class TestPlayer implements Player {
     @Override
     public boolean moveCardToLibraryWithInfo(Card card, Ability source, Game game, Zone fromZone, boolean toTop, boolean withName) {
         return computerPlayer.moveCardToLibraryWithInfo(card, source, game, fromZone, toTop, withName);
-    }
-
-    @Override
-    public boolean moveCardToExileWithInfo(Card card, UUID exileId, String exileName, Ability source, Game game, Zone fromZone, boolean withName) {
-        return computerPlayer.moveCardToExileWithInfo(card, exileId, exileName, source, game, fromZone, withName);
     }
 
     @Override

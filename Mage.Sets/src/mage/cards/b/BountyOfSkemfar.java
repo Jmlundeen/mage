@@ -79,14 +79,14 @@ class BountyOfSkemfarEffect extends OneShotEffect {
                     .setTapped(true);
             player.moveCards(parameters, source, game);
         }
-        cards.removeIf(uuid -> game.getState().getZone(uuid) != Zone.LIBRARY);
+        cards.retainZone(Zone.LIBRARY, game);
         target = new TargetCardInLibrary(0, 1, filter);
         player.choose(outcome, cards, target, source, game);
         Card elf = cards.get(target.getFirstTarget(), game);
         if (elf != null) {
-            player.moveCardToHandWithInfo(elf, source, game, true);
+            player.moveCards(elf, Zone.HAND, source, game);
         }
-        cards.removeIf(uuid -> game.getState().getZone(uuid) != Zone.LIBRARY);
+        cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);
         return true;
     }

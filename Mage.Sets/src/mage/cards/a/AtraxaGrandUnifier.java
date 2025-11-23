@@ -1,24 +1,24 @@
 package mage.cards.a;
 
-import java.util.Arrays;
-import java.util.UUID;
-
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.assignment.common.CardTypeAssignment;
+import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.keyword.DeathtouchAbility;
+import mage.abilities.keyword.FlyingAbility;
+import mage.abilities.keyword.LifelinkAbility;
+import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.*;
 import mage.constants.*;
-import mage.abilities.keyword.FlyingAbility;
-import mage.abilities.keyword.VigilanceAbility;
-import mage.abilities.keyword.DeathtouchAbility;
-import mage.abilities.keyword.LifelinkAbility;
 import mage.filter.FilterCard;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * @author TheElk801
@@ -89,7 +89,7 @@ class AtraxaGrandUnifierEffect extends OneShotEffect {
         TargetCard target = new AtraxaGrandUnifierTarget();
         player.choose(outcome, cards, target, source, game);
         Cards toHand = new CardsImpl(target.getTargets());
-        player.moveCardsToHandWithInfo(toHand, source, game, true);
+        player.moveCards(toHand, Zone.HAND, source, game);
         cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);
         return true;

@@ -73,10 +73,10 @@ class SilenceTheBelieversExileEffect extends OneShotEffect {
                     for (UUID attachmentId : attachments) {
                         Permanent attachment = game.getPermanent(attachmentId);
                         if (attachment != null && attachment.hasSubtype(SubType.AURA, game)) {
-                            controller.moveCardToExileWithInfo(attachment, null, null, source, game, Zone.BATTLEFIELD, true);
+                            controller.moveCards(attachment, Zone.EXILED, source, game);
                         }
                     }
-                    controller.moveCardToExileWithInfo(creature, null, null, source, game, Zone.BATTLEFIELD, true);
+                    controller.moveCards(creature, Zone.EXILED, source, game);
                 }
             }
             return true;

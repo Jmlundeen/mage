@@ -1,7 +1,5 @@
 package mage.cards.p;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.condition.common.DeliriumCondition;
 import mage.abilities.dynamicvalue.common.CardTypesInGraveyardCount;
@@ -17,6 +15,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
+
+import java.util.UUID;
 
 /**
  * @author escplan9 (Derek Monturo - dmontur1 at gmail dot com)
@@ -73,7 +73,7 @@ class PickTheBrainEffect extends SearchTargetGraveyardHandLibraryForCardNameAndE
                 if (controller.choose(Outcome.Exile, opponent.getHand(), target, source, game)) {
                     Card card = opponent.getHand().get(target.getFirstTarget(), game);
                     if (card != null) {
-                        controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.HAND, true);
+                        controller.moveCards(card, Zone.EXILED, source, game);
 
                         // Check the Delirium condition
                         if (!DeliriumCondition.instance.apply(game, source)) {

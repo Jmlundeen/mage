@@ -89,7 +89,7 @@ class ReapIntellectEffect extends OneShotEffect {
             for (UUID cardId : target.getTargets()) {
                 Card chosenCard = game.getCard(cardId);
                 if (chosenCard != null) {
-                    controller.moveCardToExileWithInfo(chosenCard, null, "", source, game, Zone.HAND, true);
+                    controller.moveCards(chosenCard, Zone.EXILED, source, game);
                     exiledCards.add(chosenCard);
                 }
             }
@@ -118,7 +118,7 @@ class ReapIntellectEffect extends OneShotEffect {
                 for (UUID cardId : targetCardsGraveyard.getTargets()) {
                     Card card = game.getCard(cardId);
                     if (card != null) {
-                        controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.GRAVEYARD, true);
+                        controller.moveCards(card, Zone.EXILED, source, game);
                     }
                 }
 
@@ -128,7 +128,7 @@ class ReapIntellectEffect extends OneShotEffect {
                 for (UUID cardId : targetCardsHand.getTargets()) {
                     Card card = game.getCard(cardId);
                     if (card != null) {
-                        controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.HAND, true);
+                        controller.moveCards(card, Zone.EXILED, source, game);
                     }
                 }
 
@@ -138,7 +138,7 @@ class ReapIntellectEffect extends OneShotEffect {
                 for (UUID cardId : targetCardsLibrary.getTargets()) {
                     Card card = game.getCard(cardId);
                     if (card != null) {
-                        controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.LIBRARY, true);
+                        controller.moveCards(card, Zone.EXILED, source, game);
                     }
                 }
 

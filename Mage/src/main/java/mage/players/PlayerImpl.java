@@ -5280,39 +5280,6 @@ public abstract class PlayerImpl implements Player, Serializable {
     }
 
     @Override
-    public boolean moveCardsToHandWithInfo(Cards cards, Ability source, Game game, boolean withName) {
-        Player player = this;
-        for (Card card : cards.getCards(game)) {
-            player.moveCardToHandWithInfo(card, source, game, withName);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean moveCardToHandWithInfo(Card card, Ability source, Game game, boolean withName) {
-        boolean result = false;
-        Zone fromZone = game.getState().getZone(card.getId());
-        if (fromZone == Zone.BATTLEFIELD && !(card instanceof Permanent)) {
-            card = game.getPermanent(card.getId());
-        }
-        if (card.moveToZone(Zone.HAND, source, game, false)) {
-            if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                card = game.getCard(card.getId());
-            }
-            if (!game.isSimulation()) {
-                game.informPlayers(getLogName() + " puts "
-                        + (withName ? card.getLogName() : (card.isFaceDown() ? "a face down card" : "a card"))
-                        + " from " + fromZone.toString().toLowerCase(Locale.ENGLISH) + ' '
-                        + (card.isOwnedBy(this.getId()) ? "into their hand" : "into its owner's hand"
-                        + CardUtil.getSourceLogName(game, source, card.getId()))
-                );
-            }
-            result = true;
-        }
-        return result;
-    }
-
-    @Override
     public Set<Card> moveCardsToGraveyardWithInfo(Set<? extends Card> allCards, Ability source, Game game, Zone fromZone) {
         Set<Card> movedCards = new LinkedHashSet<>();
         while (!allCards.isEmpty()) {
@@ -5464,49 +5431,6 @@ public abstract class PlayerImpl implements Player, Serializable {
                 }
                 sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
                 game.informPlayers(sb.toString());
-            }
-            result = true;
-        }
-        return result;
-    }
-
-    @Override
-    public boolean moveCardToExileWithInfo(Card card, UUID exileId, String exileName, Ability source, Game game, Zone fromZone, boolean withName) {
-        if (card == null) {
-            return false;
-        }
-        boolean result = false;
-        if (card.moveToExile(exileId, exileName, source, game)) {
-            if (!game.isSimulation()) {
-                if (card instanceof PermanentCard) {
-                    // in case it's face down or name was changed by copying from other permanent
-                    Card basicCard = game.getCard(card.getId());
-                    if (basicCard != null) {
-                        card = basicCard;
-                    }
-                } else if (card instanceof Spell) {
-                    final Spell spell = (Spell) card;
-                    if (spell.isCopy()) {
-                        // copied spell, only remove from stack
-                        game.getStack().remove(spell, game);
-                    }
-                }
-                if (Zone.EXILED.equals(game.getState().getZone(card.getId()))) { // only if target zone was not replaced
-                    String visibleName;
-                    if (withName) {
-                        // warning, withName param used to forced name show of the face down card (see 708.9.)
-                        if (card.getName().isEmpty()) {
-                            throw new IllegalStateException("Wrong code usage: method must find real card name, but found nothing", new Throwable());
-                        }
-                        visibleName = card.getLogName() + (card.isCopy() ? " (Copy)" : "");
-                    } else {
-                        visibleName = "a " + GameLog.getNeutralObjectIdName(EmptyNames.FACE_DOWN_CARD.getObjectName(), card.getId());
-                    }
-                    game.informPlayers(this.getLogName() + " moves " + visibleName
-                            + (fromZone != null ? " from " + fromZone.toString().toLowerCase(Locale.ENGLISH) : "")
-                            + " to the exile zone" + CardUtil.getSourceLogName(game, source, card.getId()));
-                }
-
             }
             result = true;
         }

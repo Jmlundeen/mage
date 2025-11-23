@@ -1,24 +1,29 @@
 
 package mage.cards.w;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.ExileSourceCost;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.*;
+import mage.cards.Card;
+import mage.cards.CardImpl;
+import mage.cards.CardSetInfo;
+import mage.cards.Cards;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -79,8 +84,10 @@ class WatchersOfTheDeadEffect extends OneShotEffect {
                         opponent.choose(outcome, cardsInGraveyard, target, source, game);
                         for (Card cardInGraveyard : cardsInGraveyard.getCards(game)) {
                             if (!target.getTargets().contains(cardInGraveyard.getId())) {
-                                opponent.moveCardToExileWithInfo(cardInGraveyard, CardUtil.getCardExileZoneId(game, source.getId()),
-                                        sourceObject.getLogName(), source, game, Zone.GRAVEYARD, true);
+                                MoveCardsParameters parameters = new MoveCardsParameters(cardInGraveyard, Zone.EXILED)
+                                        .setExileId(CardUtil.getExileZoneId(game, source))
+                                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                                opponent.moveCards(parameters, source, game);
                             }
                         }
                     }

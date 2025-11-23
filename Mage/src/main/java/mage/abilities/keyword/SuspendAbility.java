@@ -23,6 +23,7 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -298,8 +299,10 @@ class SuspendExileEffect extends OneShotEffect {
             return false;
         }
         UUID exileId = SuspendAbility.getSuspendExileId(controller.getId(), game);
-        if (controller.moveCardToExileWithInfo(card, exileId, "Suspended cards of "
-                + controller.getName(), source, game, Zone.HAND, true)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName("Suspended cards of " + controller.getName());
+        if (controller.moveCards(parameters, source, game)) {
             if (suspend == Integer.MAX_VALUE) {
                 suspend = CardUtil.getSourceCostsTag(game, source, "X", 0);
             }

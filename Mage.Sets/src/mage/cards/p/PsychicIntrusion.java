@@ -12,6 +12,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.common.FilterNonlandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -103,8 +104,10 @@ class PsychicIntrusionExileEffect extends OneShotEffect {
                 }
                 if (card != null) {
                     // move card to exile
-                    UUID exileId = CardUtil.getCardExileZoneId(game, source);
-                    controller.moveCardToExileWithInfo(card, exileId, sourceObject.getIdName(), source, game, fromHand ? Zone.HAND : Zone.GRAVEYARD, true);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getCardExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                     // allow to cast the card
                     ContinuousEffect effect = new PsychicIntrusionCastFromExileEffect();
                     effect.setTargetPointer(new FixedTarget(card.getId()));

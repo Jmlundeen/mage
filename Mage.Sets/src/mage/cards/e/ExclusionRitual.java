@@ -13,6 +13,7 @@ import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -70,7 +71,10 @@ class ExclusionRitualImprintEffect extends OneShotEffect {
         Permanent targetPermanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null && sourcePermanent != null && targetPermanent != null) {
-            controller.moveCardToExileWithInfo(targetPermanent, getId(), sourcePermanent.getIdName(), source, game, Zone.BATTLEFIELD, true);
+            MoveCardsParameters parameters = new MoveCardsParameters(targetPermanent, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             sourcePermanent.imprint(targetPermanent.getId(), game);
         }
         return true;

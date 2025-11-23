@@ -1,14 +1,17 @@
 package mage.cards.s;
 
-import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -68,12 +71,13 @@ class StolenStrategyEffect extends OneShotEffect {
             if (damagedPlayer == null) {
                 continue;
             }
-            MageObject sourceObject = game.getObject(source);
-            UUID exileId = CardUtil.getCardExileZoneId(game, source);
             Card card = damagedPlayer.getLibrary().getFromTop(game);
-            if (card != null && sourceObject != null) {
+            if (card != null) {
                 // move card to exile
-                controller.moveCardToExileWithInfo(card, exileId, sourceObject.getIdName(), source, game, Zone.LIBRARY, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 // Add effects only if the card has a spellAbility (e.g. not for lands).
                 if (!card.isLand(game) && card.getSpellAbility() != null) {
                     // allow to cast the card

@@ -14,6 +14,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetDiscard;
@@ -84,10 +85,10 @@ class FiendOfTheShadowsEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        player.moveCardToExileWithInfo(
-                card, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source),
-                source, game, Zone.HAND, true
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         CardUtil.makeCardPlayable(game, source, card, false, Duration.Custom, false);
         return true;
     }

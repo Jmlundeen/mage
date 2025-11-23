@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
@@ -13,6 +12,8 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.watchers.common.CardsCycledOrDiscardedThisTurnWatcher;
+
+import java.util.UUID;
 
 /**
  *
@@ -64,7 +65,7 @@ class ShadowOfTheGraveEffect extends OneShotEffect {
             for (Card card : watcher.getCardsCycledOrDiscardedThisTurn(controller.getId()).getCards(game)) {
                 if (game.getState().getZone(card.getId()) == Zone.GRAVEYARD //must come from their graveyard
                         && card.isOwnedBy(controller.getId())) {  //confirm ownership, but it should not be possible to get not ownwd cards here
-                    controller.moveCardToHandWithInfo(card, source, game, true);
+                    controller.moveCards(card, Zone.HAND, source, game);
                 }
             }
             return true;

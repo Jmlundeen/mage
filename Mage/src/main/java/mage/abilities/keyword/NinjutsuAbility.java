@@ -166,7 +166,7 @@ class ReturnAttackerToHandTargetCost extends CostImpl {
                     return false;
                 }
                 defendingPlayerId = game.getCombat().getDefenderId(permanent.getId());
-                paid |= controller.moveCardToHandWithInfo(permanent, source, game, true);
+                paid |= controller.moveCards(permanent, Zone.HAND, source, game);
             }
         }
         return paid;

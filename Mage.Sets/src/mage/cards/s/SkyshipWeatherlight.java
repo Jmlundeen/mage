@@ -1,6 +1,5 @@
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -20,9 +19,12 @@ import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -83,15 +85,16 @@ class SkyshipWeatherlightEffect extends SearchEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
-        MageObject sourceObject = source.getSourceObject(game);
-        if (sourceObject != null && controller != null) {
+        if (controller != null) {
             if (controller.searchLibrary(target, source, game)) {
-                UUID exileZone = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
                 if (!target.getTargets().isEmpty()) {
                     for (UUID cardID : target.getTargets()) {
                         Card card = controller.getLibrary().getCard(cardID, game);
                         if (card != null) {
-                            controller.moveCardToExileWithInfo(card, exileZone, sourceObject.getIdName(), source, game, Zone.LIBRARY, true);
+                            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                    .setExileId(CardUtil.getExileZoneId(game, source))
+                                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                            controller.moveCards(parameters, source, game);
                         }
                     }
                 }

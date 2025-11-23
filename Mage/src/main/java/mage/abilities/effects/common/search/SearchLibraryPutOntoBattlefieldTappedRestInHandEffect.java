@@ -73,7 +73,7 @@ public class SearchLibraryPutOntoBattlefieldTappedRestInHandEffect extends Searc
                         cardsToHand.removeAll(cardsToBattlefield);
                     }
 
-                    controller.moveCardsToHandWithInfo(cardsToHand, source, game, true);
+                    controller.moveCards(cardsToHand, Zone.HAND, source, game);
                 } else if (target.getTargets().size() == 1) {
                     Cards cards = new CardsImpl(revealed);
                     Card cardToBattlefield = cards.getRandom(game);

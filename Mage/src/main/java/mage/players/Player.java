@@ -1027,47 +1027,6 @@ public interface Player extends MageItem, Copyable<Player> {
 
 
     /**
-     * Uses card.moveToZone and posts a inform message about moving the card
-     * into the game log
-     *
-     * @param card
-     * @param source
-     * @param game
-     * @param withName show the card name in the log
-     * @return
-     */
-    boolean moveCardToHandWithInfo(Card card, Ability source, Game game, boolean withName);
-
-    /**
-     * Iterates through a set of cards and runs moveCardToHandWithInfo on each item
-     *
-     * @param cards
-     * @param source
-     * @param game
-     * @param withName show the card names in the log
-     * @return
-     */
-    boolean moveCardsToHandWithInfo(Cards cards, Ability source, Game game, boolean withName);
-
-    /**
-     * Uses card.moveToExile and posts a inform message about moving the card to
-     * exile into the game log. Don't use this in replacement effects, because
-     * list of applied effects is not saved
-     *
-     * @param card
-     * @param exileId   exile zone id (optional)
-     * @param exileName name of exile zone (optional)
-     * @param source
-     * @param game
-     * @param fromZone
-     * @param withName  for face down: used to hide card name in game logs before real face down status apply
-     * @return
-     */
-    @Deprecated
-    // if you want to use it in replaceEvent, then use ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
-    boolean moveCardToExileWithInfo(Card card, UUID exileId, String exileName, Ability source, Game game, Zone fromZone, boolean withName);
-
-    /**
      * Uses card.moveToZone and posts a inform message about moving the card to
      * graveyard into the game log
      *
