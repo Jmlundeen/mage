@@ -239,8 +239,10 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             return BecomesFaceDownCreatureEffect.FaceDownType.MANIFESTED;
         } else if (permanent.isCloaked()) {
             return BecomesFaceDownCreatureEffect.FaceDownType.CLOAKED;
+        } else if (permanent.isFaceDown()) {
+            return BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
         } else {
-            return FaceDownType.MANUAL;
+            return null;
         }
     }
 

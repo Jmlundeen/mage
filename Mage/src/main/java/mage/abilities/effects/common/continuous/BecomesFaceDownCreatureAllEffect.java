@@ -40,6 +40,9 @@ public class BecomesFaceDownCreatureAllEffect extends OneShotEffect {
         for (Permanent perm : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
             if (!perm.isFaceDown() && !perm.isTransformable() && !(((PermanentCard) perm).getCard() instanceof ModalDoubleFacedCardHalf)) {
                 BecomesFaceDownCreatureEffect.FaceDownType type = BecomesFaceDownCreatureEffect.findFaceDownType(game, perm);
+                if (type == null) {
+                    type = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
+                }
                 BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), perm, type, null);
                 perm.setFaceDown(true);
             }
