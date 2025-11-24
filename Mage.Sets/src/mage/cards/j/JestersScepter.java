@@ -119,7 +119,7 @@ class JestersScepterCost extends CostImpl {
                     && controller.choose(Outcome.Benefit, cards, target, source, game)) {
                 Card card = game.getCard(target.getFirstTarget());
                 if (card != null) {
-                    if (controller.moveCardToGraveyardWithInfo(card, source, game, Zone.EXILED)) {
+                    if (controller.moveCards(card, Zone.GRAVEYARD, source, game)) {
                         if (card instanceof SplitCard) {
                             game.getState().setValue(source.getSourceId() + "_nameOfExiledCardPayment", ((SplitCard) card).getLeftHalfCard().getName());
                             game.getState().setValue(source.getSourceId() + "_nameOfExiledCardPayment2", ((SplitCard) card).getRightHalfCard().getName());

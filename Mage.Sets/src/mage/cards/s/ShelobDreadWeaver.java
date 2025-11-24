@@ -138,7 +138,7 @@ class ShelobDreadWeaverCost extends CostImpl {
                     && controller.choose(Outcome.Benefit, cards, target, source, game)) {
                 Card card = game.getCard(target.getFirstTarget());
                 if (card != null) {
-                    if (controller.moveCardToGraveyardWithInfo(card, source, game, Zone.EXILED)) {
+                    if (controller.moveCards(card, Zone.GRAVEYARD, source, game)) {
                         paid = true;
                     }
                 }

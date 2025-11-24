@@ -1027,18 +1027,6 @@ public interface Player extends MageItem, Copyable<Player> {
 
 
     /**
-     * Uses card.moveToZone and posts a inform message about moving the card to
-     * graveyard into the game log
-     *
-     * @param card
-     * @param source
-     * @param game
-     * @param fromZone if null, this info isn't postet
-     * @return
-     */
-    boolean moveCardToGraveyardWithInfo(Card card, Ability source, Game game, Zone fromZone);
-
-    /**
      * Internal used to move cards Use commonly player.moveCards()
      *
      * @param cards

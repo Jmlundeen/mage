@@ -5321,7 +5321,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                         cards.remove(targetObjectId);
                         if (card != null) {
                             fromZone = game.getState().getZone(card.getId());
-                            if (choosingPlayer.moveCardToGraveyardWithInfo(card, source, game, fromZone)) {
+                            if (choosingPlayer.moveCards(card, Zone.GRAVEYARD, source, game)) {
                                 movedCards.add(card);
                             }
                         }
@@ -5329,13 +5329,13 @@ public abstract class PlayerImpl implements Player, Serializable {
                     }
                     if (cards.size() == 1) {
                         Card card = cards.getCards(game).iterator().next();
-                        if (card != null && choosingPlayer.moveCardToGraveyardWithInfo(card, source, game, fromZone)) {
+                        if (card != null && choosingPlayer.moveCards(card, Zone.GRAVEYARD, source, game)) {
                             movedCards.add(card);
                         }
                     }
                 } else {
                     for (Card card : cards.getCards(game)) {
-                        if (choosingPlayer.moveCardToGraveyardWithInfo(card, source, game, fromZone)) {
+                        if (choosingPlayer.moveCards(card, Zone.GRAVEYARD, source, game)) {
                             movedCards.add(card);
                         }
                     }
@@ -5343,33 +5343,6 @@ public abstract class PlayerImpl implements Player, Serializable {
             }
         }
         return movedCards;
-    }
-
-    @Override
-    public boolean moveCardToGraveyardWithInfo(Card card, Ability source, Game game, Zone fromZone) {
-        if (card == null) {
-            return false;
-        }
-        boolean result = false;
-        if (card.moveToZone(Zone.GRAVEYARD, source, game, false)) {
-            if (!game.isSimulation()) {
-                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                    card = game.getCard(card.getId());
-                }
-                StringBuilder sb = new StringBuilder(this.getLogName())
-                        .append(" puts ").append(card.getLogName()).append(' ').append(card.isCopy() ? "(Copy) " : "")
-                        .append(fromZone != null ? "from " + fromZone.toString().toLowerCase(Locale.ENGLISH) + ' ' : "");
-                if (card.isOwnedBy(getId())) {
-                    sb.append("into their graveyard");
-                } else {
-                    sb.append("it into its owner's graveyard");
-                }
-                sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
-                game.informPlayers(sb.toString());
-            }
-            result = true;
-        }
-        return result;
     }
 
     @Override

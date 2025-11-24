@@ -3967,11 +3967,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean moveCardToGraveyardWithInfo(Card card, Ability source, Game game, Zone fromZone) {
-        return computerPlayer.moveCardToGraveyardWithInfo(card, source, game, fromZone);
-    }
-
-    @Override
     public boolean moveCardToLibraryWithInfo(Card card, Ability source, Game game, Zone fromZone, boolean toTop, boolean withName) {
         return computerPlayer.moveCardToLibraryWithInfo(card, source, game, fromZone, toTop, withName);
     }
