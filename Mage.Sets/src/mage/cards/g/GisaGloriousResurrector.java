@@ -83,7 +83,7 @@ class GisaGloriousResurrectorExileEffect extends ReplacementEffectImpl {
         // TODO: allow replacement effects to modify exile parameters
         ZoneChangeEvent zEvent = (ZoneChangeEvent) event;
         MoveCardsParameters parameters = new MoveCardsParameters(zEvent.getTarget(), Zone.EXILED)
-                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileId(CardUtil.getExileZoneId(game, source.getSourceId(), CardUtil.getActualSourceObjectZoneChangeCounter(game, source)))
                 .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
         return player.moveCards(parameters, source, game);
     }
@@ -123,13 +123,8 @@ class GisaGloriousResurrectorReturnEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player player = game.getPlayer(source.getControllerId());
-        Ability exiledWithSource = (Ability) game.getState().getValue("GisaGloriousResurrectorExile"
-                + source.getSourceId().toString()
-                + game.getState().getZoneChangeCounter(source.getSourceId()));
-        if (exiledWithSource == null) {
-            return false;
-        }
-        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, exiledWithSource));
+        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), CardUtil.getActualSourceObjectZoneChangeCounter(game, source));
+        ExileZone exileZone = game.getExile().getExileZone(exileId);
         if (player == null
                 || exileZone == null
                 || exileZone.isEmpty()) {
