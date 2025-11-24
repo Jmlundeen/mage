@@ -462,8 +462,7 @@ public final class ZonesHandler {
             } else if (event.getTarget() != null) {
                 // PUT PERMANENT TO OTHER ZONE (e.g. remove only)
                 Permanent target = event.getTarget();
-                success = target.removeFromZone(game, fromZone, source)
-                        && game.getPlayer(target.getControllerId()).removeFromBattlefield(target, source, game);
+                success = target.removeFromZone(game, fromZone, source);
             } else {
                 // PUT CARD TO OTHER ZONE
                 success = card.removeFromZone(game, fromZone, source);

@@ -587,10 +587,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
                 break;
             case BATTLEFIELD: // for sacrificing permanents or putting to library
                 Permanent permanent = game.getPermanent(this.getId());
-                if (permanent != null) {
-                    game.getBattlefield().removePermanent(this.getId());
-                }
-                removed = true;
+                removed = permanent != null && game.getPlayer(permanent.getControllerId()).removeFromBattlefield(permanent, source, game);
                 break;
             default:
                 MageObject sourceObject = game.getObject(source);
