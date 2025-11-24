@@ -64,8 +64,7 @@ class TibaltCosmicImpostorPlayFromExileEffect extends AsThoughEffectImpl {
             return false;
         }
         // the exile zone of the Tibalt, Cosmic Impostor that spawned the emblem only
-        UUID sourceId = tibaltEmblem.getSourceId();
-        UUID exileId = CardUtil.getExileZoneId(sourceId != null ? sourceId.toString() : source.getSourceId().toString(), game);
+        UUID exileId = CardUtil.getExileZoneId(game, tibaltEmblem.getSourceObject().getId(), tibaltEmblem.getSourceObject().getZoneChangeCounter(game));
         ExileZone exileZone = game.getState().getExile().getExileZone(exileId);
         if (exileZone == null || exileZone.isEmpty()) {
             return false;
