@@ -5280,38 +5280,6 @@ public abstract class PlayerImpl implements Player, Serializable {
     }
 
     @Override
-    public boolean moveCardToCommandWithInfo(Card card, Ability source, Game game, Zone fromZone) {
-        if (card == null) {
-            return false;
-        }
-        boolean result = false;
-        if (card.moveToZone(Zone.COMMAND, source, game, true)) {
-            if (!game.isSimulation()) {
-                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                    card = game.getCard(card.getId());
-                }
-                StringBuilder sb = new StringBuilder(this.getLogName())
-                        .append(" puts ").append(card.getLogName()).append(' ');
-                if (fromZone != null) {
-                    sb.append("from ").append(fromZone.toString().toLowerCase(Locale.ENGLISH)).append(' ');
-                }
-                if (card.isOwnedBy(getId())) {
-                    sb.append(" to their command zone");
-                } else {
-                    Player player = game.getPlayer(card.getOwnerId());
-                    if (player != null) {
-                        sb.append(" to ").append(player.getLogName()).append("'s command zone");
-                    }
-                }
-                sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
-                game.informPlayers(sb.toString());
-            }
-            result = true;
-        }
-        return result;
-    }
-
-    @Override
     public Cards millCards(int toMill, Ability source, Game game) {
         GameEvent event = GameEvent.getEvent(GameEvent.EventType.MILL_CARDS, getId(), source, getId(), toMill);
         if (game.replaceEvent(event)) {
