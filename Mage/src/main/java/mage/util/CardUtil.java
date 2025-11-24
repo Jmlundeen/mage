@@ -1784,7 +1784,13 @@ public final class CardUtil {
      */
     public static String getSourceLogName(Game game, String namePrefix, UUID sourceId, String namePostfix, String nonFoundText) {
         MageObject sourceObject = game.getObject(sourceId);
-        return (sourceObject == null ? nonFoundText : namePrefix + sourceObject.getLogName() + namePostfix);
+        if (sourceObject == null) {
+            return nonFoundText;
+        }
+        if (sourceObject.isFaceDown() && !sourceObject.getAbilities().containsKey(sourceId)) {
+            return namePrefix + sourceObject.getOriginalName() + namePostfix;
+        }
+        return namePrefix + sourceObject.getLogName() + namePostfix;
     }
 
     public static String getSourceLogName(Game game, String namePrefix, Ability source, String namePostfix, String nonFoundText) {
