@@ -1073,7 +1073,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                 for (UUID c : cards) {
                     order.add(game.getCard(c));
                 }
-                MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY);
+                MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY)
+                        .setToTopOfLibrary(false);
                 moveCards(parameters, source, game);
             }
         }
