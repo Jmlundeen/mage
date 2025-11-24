@@ -152,10 +152,10 @@ class FeatherTheRedeemedEffect extends ReplacementEffectImpl {
             return false;
         }
         Effect effect = new ReturnToHandTargetEffect().setText("return " + sourceSpell.getName() + " to its owner's hand");
-        player.moveCards(sourceSpell, Zone.EXILED, source, game);
-        effect.setTargetPointer(new FixedTarget(event.getTargetId(), game));
+        ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
+        effect.setTargetPointer(new FixedTarget(sourceSpell.getMainCard().getId(), morSpell.getZoneChangeCounter() + 1));
         game.addDelayedTriggeredAbility(new AtTheBeginOfNextEndStepDelayedTriggeredAbility(effect), source);
-        return true;
+        return false;
     }
 
     @Override
