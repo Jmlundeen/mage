@@ -116,14 +116,8 @@ public class CopyEffect extends ContinuousEffectImpl {
         }
 
         permanent.removeAllAbilities(source.getSourceId(), game);
-        if (copyFromObject instanceof Permanent) {
-            for (Ability ability : ((Permanent) copyFromObject).getAbilities(game)) {
-                permanent.addAbility(ability, getSourceId(), game, true);
-            }
-        } else {
-            for (Ability ability : copyFromObject.getAbilities()) {
-                permanent.addAbility(ability, getSourceId(), game, true);
-            }
+        for (Ability ability : copyFromObject.getAbilities()) {
+            permanent.addAbility(ability, getSourceId(), game, true);
         }
 
         // Primal Clay example:
