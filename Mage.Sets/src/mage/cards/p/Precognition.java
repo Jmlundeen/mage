@@ -1,13 +1,14 @@
 package mage.cards.p;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
 
@@ -63,7 +64,9 @@ class PrecognitionEffect extends OneShotEffect {
                 Cards cards = new CardsImpl(card);
                 controller.lookAtCards("Precognition", cards, game);
                 if (controller.chooseUse(outcome, "Put that card on the bottom of its owner's library?", source, game)) {
-                    controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, false, false);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                            .setToTopOfLibrary(false);
+                    controller.moveCards(parameters, source, game);
                 } else {
                     game.informPlayers(controller.getLogName() + " puts the card back on top of the library.");
                 }

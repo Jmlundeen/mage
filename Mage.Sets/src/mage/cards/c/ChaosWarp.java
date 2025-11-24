@@ -1,7 +1,6 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
@@ -14,6 +13,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -66,7 +67,7 @@ class ChaosWarpShuffleIntoLibraryEffect extends OneShotEffect {
         if (permanent != null) {
             Player owner = game.getPlayer(permanent.getOwnerId());
             if (owner != null) {
-                owner.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, true, true);
+                owner.moveCards(permanent, Zone.LIBRARY, source, game);
                 owner.shuffleLibrary(source, game);
                 return true;
             }

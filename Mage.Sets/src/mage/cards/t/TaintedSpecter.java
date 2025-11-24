@@ -96,7 +96,7 @@ class TaintedSpecterEffect extends OneShotEffect {
             targetPlayer.choose(Outcome.Detriment, target, source, game);
             Card card = targetPlayer.getHand().get(target.getFirstTarget(), game);
             if (card != null) {
-                targetPlayer.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                targetPlayer.moveCards(card, Zone.LIBRARY, source, game);
             }
         }
 

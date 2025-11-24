@@ -10,6 +10,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
 import mage.players.Player;
@@ -94,7 +95,9 @@ class DeceiverOfFormEffect extends OneShotEffect {
                     }
                 }
                 if (controller.chooseUse(outcome, "Move " + cardFromTop.getLogName() + " to the bottom of your library?", source, game)) {
-                    controller.moveCardToLibraryWithInfo(cardFromTop, source, game, Zone.LIBRARY, false, true);
+                    MoveCardsParameters parameters = new MoveCardsParameters(cardFromTop, Zone.LIBRARY)
+                            .setToTopOfLibrary(false);
+                    controller.moveCards(parameters, source, game);
                 }
             }
             return true;

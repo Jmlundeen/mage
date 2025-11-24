@@ -1,7 +1,6 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.ExileSourceCost;
@@ -16,6 +15,8 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetPlayer;
+
+import java.util.UUID;
 
 /**
  *
@@ -67,7 +68,7 @@ class CranialArchiveEffect extends OneShotEffect {
             Player targetPlayer = game.getPlayer(getTargetPointer().getFirst(game, source));
             if (targetPlayer != null) {
                 for (Card card: targetPlayer.getGraveyard().getCards(game)){
-                    targetPlayer.moveCardToLibraryWithInfo(card, source, game, Zone.GRAVEYARD, true, true);
+                    targetPlayer.moveCards(card, Zone.LIBRARY, source, game);
                 }
                 targetPlayer.shuffleLibrary(source, game);
             }

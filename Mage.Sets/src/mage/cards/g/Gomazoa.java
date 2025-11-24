@@ -1,9 +1,6 @@
 
 package mage.cards.g;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -13,16 +10,16 @@ import mage.abilities.keyword.DefenderAbility;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Outcome;
-import mage.constants.WatcherScope;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.watchers.Watcher;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -81,7 +78,7 @@ class GomazoaEffect extends OneShotEffect {
             List<UUID> players = new ArrayList<>();
             Permanent gomazoa = game.getPermanent(source.getSourceId());
             if (gomazoa != null) {
-                controller.moveCardToLibraryWithInfo(gomazoa, source, game, Zone.BATTLEFIELD, true, true);
+                controller.moveCards(gomazoa, Zone.LIBRARY, source, game);
                 players.add(gomazoa.getOwnerId());
             }
 
@@ -93,7 +90,7 @@ class GomazoaEffect extends OneShotEffect {
                     players.add(blockedByGomazoa.getOwnerId());
                     Player owner = game.getPlayer(blockedByGomazoa.getOwnerId());
                     if (owner != null) {
-                        owner.moveCardToLibraryWithInfo(blockedByGomazoa, source, game, Zone.BATTLEFIELD, true, true);
+                        controller.moveCards(blockedByGomazoa, Zone.LIBRARY, source, game);
                     }
                 }
             }

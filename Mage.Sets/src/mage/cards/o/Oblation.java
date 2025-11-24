@@ -1,7 +1,6 @@
 
 package mage.cards.o;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.CardImpl;
@@ -13,6 +12,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetNonlandPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -60,7 +61,7 @@ class OblationEffect extends OneShotEffect {
         if (permanent != null) {
             Player player = game.getPlayer(permanent.getOwnerId());
             if (player != null) {
-                player.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, true, true);
+                player.moveCards(permanent, Zone.LIBRARY, source, game);
                 player.shuffleLibrary(source, game);
 
                 game.processAction(); // so effects from creatures that were on the battlefield won't trigger from draw 

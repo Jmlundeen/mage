@@ -10,6 +10,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.Target;
@@ -67,7 +68,9 @@ public class FatesealEffect extends OneShotEffect {
                     Card card = cards.get(target1.getFirstTarget(), game);
                     if (card != null) {
                         cards.remove(card);
-                        controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, false, false);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                                .setToTopOfLibrary(false);
+                        controller.moveCards(parameters, source, game);
                     }
                     target1.clearChosen();
                 }

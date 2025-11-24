@@ -5280,39 +5280,6 @@ public abstract class PlayerImpl implements Player, Serializable {
     }
 
     @Override
-    public boolean moveCardToLibraryWithInfo(Card card, Ability source, Game game, Zone fromZone, boolean toTop, boolean withName) {
-        if (card == null) {
-            return false;
-        }
-        boolean result = false;
-        if (card.moveToZone(Zone.LIBRARY, source, game, toTop)) {
-            if (!game.isSimulation()) {
-                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                    card = game.getCard(card.getId());
-                }
-                StringBuilder sb = new StringBuilder(this.getLogName())
-                        .append(" puts ").append(withName ? card.getLogName() : "a card").append(' ');
-                if (fromZone != null) {
-                    sb.append("from ").append(fromZone.toString().toLowerCase(Locale.ENGLISH)).append(' ');
-                }
-                sb.append("to the ").append(toTop ? "top" : "bottom");
-                if (card.isOwnedBy(getId())) {
-                    sb.append(" of their library");
-                } else {
-                    Player player = game.getPlayer(card.getOwnerId());
-                    if (player != null) {
-                        sb.append(" of ").append(player.getLogName()).append("'s library");
-                    }
-                }
-                sb.append(CardUtil.getSourceLogName(game, source, card.getId()));
-                game.informPlayers(sb.toString());
-            }
-            result = true;
-        }
-        return result;
-    }
-
-    @Override
     public boolean moveCardToCommandWithInfo(Card card, Ability source, Game game, Zone fromZone) {
         if (card == null) {
             return false;

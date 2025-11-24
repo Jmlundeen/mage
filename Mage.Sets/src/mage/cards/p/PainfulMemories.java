@@ -1,7 +1,6 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
@@ -15,6 +14,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
+
+import java.util.UUID;
 
 /**
  *
@@ -69,7 +70,7 @@ class PainfulMemoriesEffect extends OneShotEffect {
                 if (you.choose(Outcome.Benefit, targetPlayer.getHand(), target, source, game)) {
                     Card card = targetPlayer.getHand().get(target.getFirstTarget(), game);
                     if (card != null) {
-                        return targetPlayer.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, true);
+                        return targetPlayer.moveCards(card, Zone.LIBRARY, source, game);
                     }
                 }
             }

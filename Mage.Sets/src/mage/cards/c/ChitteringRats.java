@@ -1,7 +1,6 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -10,13 +9,15 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
 import mage.target.common.TargetOpponent;
+
+import java.util.UUID;
 
 /**
  *
@@ -73,7 +74,7 @@ class ChitteringRatsEffect extends OneShotEffect {
                 targetOpponent.choose(Outcome.Detriment, target, source, game);
                 Card card = targetOpponent.getHand().get(target.getFirstTarget(), game);
                 if (card != null) {
-                    targetOpponent.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                    targetOpponent.moveCards(card, Zone.LIBRARY, source, game);
                 }
             }
             return true;

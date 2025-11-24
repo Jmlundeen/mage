@@ -1,7 +1,5 @@
 package mage.cards.m;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.effects.OneShotEffect;
@@ -10,10 +8,13 @@ import mage.abilities.effects.common.GetEmblemEffect;
 import mage.cards.*;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.command.emblems.MordenkainenEmblem;
 import mage.game.permanent.token.DogIllusionToken;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.UUID;
 
 /**
  *
@@ -77,7 +78,9 @@ class MordenkainenDrawEffect extends OneShotEffect {
         if (controller.chooseTarget(Outcome.Discard, target, source, game)) {
             Card card = game.getCard(target.getFirstTarget());
             if (card != null) {
-                controller.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, false, false);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                        .setToTopOfLibrary(false);
+                controller.moveCards(parameters, source, game);
             }
         }
         return true;

@@ -1,26 +1,24 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -72,7 +70,9 @@ class ProteusStaffEffect extends OneShotEffect {
             Player controller = game.getPlayer(permanent.getControllerId());
             if (owner != null && controller != null) {
                 // Put target creature on the bottom of its owner's library.
-                owner.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, false, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.LIBRARY)
+                        .setToTopOfLibrary(false);
+                controller.moveCards(parameters, source, game);
 
                 // That creature's controller reveals cards from the top of their library until they reveal a creature card.
                 Cards cards = new CardsImpl();
@@ -94,7 +94,8 @@ class ProteusStaffEffect extends OneShotEffect {
                     if (cards.size() == 1) {
                         Card card = cards.get(cards.iterator().next(), game);
                         if (card != null) {
-                            controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, false, false);
+                            parameters.setCards(card);
+                            controller.moveCards(parameters, source, game);
                             cards.remove(card);
                         }
                     } else {
@@ -102,7 +103,8 @@ class ProteusStaffEffect extends OneShotEffect {
                         controller.choose(Outcome.Neutral, cards, target, source, game);
                         Card card = cards.get(target.getFirstTarget(), game);
                         if (card != null) {
-                            controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, false, false);
+                            parameters.setCards(card);
+                            controller.moveCards(parameters, source, game);
                             cards.remove(card);
                         }
                     }

@@ -1,8 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
-
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
@@ -11,12 +9,14 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.UUID;
 
 /**
  * @author LevelX2
@@ -73,7 +73,7 @@ class WidespreadPanicEffect extends OneShotEffect {
                         player.choose(Outcome.Detriment, target, source, game);
                         Card card = player.getHand().get(target.getFirstTarget(), game);
                         if (card != null) {
-                            player.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                            player.moveCards(card, Zone.LIBRARY, source, game);
                         }
                     }
                 }

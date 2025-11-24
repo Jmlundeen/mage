@@ -1025,21 +1025,6 @@ public interface Player extends MageItem, Copyable<Player> {
      */
     Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game);
 
-
-    /**
-     * Uses card.moveToZone and posts a inform message about moving the card to
-     * library into the game log
-     *
-     * @param card
-     * @param source
-     * @param game
-     * @param fromZone if null, this info isn't postet
-     * @param toTop    to the top of the library else to the bottom
-     * @param withName show the card name in the log
-     * @return
-     */
-    boolean moveCardToLibraryWithInfo(Card card, Ability source, Game game, Zone fromZone, boolean toTop, boolean withName);
-
     /**
      * Uses card.moveToZone and posts a inform message about moving the card to
      * library into the game log

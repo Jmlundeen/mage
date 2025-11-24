@@ -1,7 +1,6 @@
 
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
@@ -16,6 +15,8 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -68,7 +69,7 @@ class AvengingAngelEffect extends OneShotEffect {
         Card sourceCard = game.getCard(source.getSourceId());
         if (controller != null && sourceCard != null) {
             if (game.getState().getZone(source.getSourceId()) == Zone.GRAVEYARD) {
-                controller.moveCardToLibraryWithInfo(sourceCard, source, game, Zone.GRAVEYARD, true, true);
+                controller.moveCards(sourceCard, Zone.LIBRARY, source, game);
             }
             return true;
         }

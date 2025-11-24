@@ -85,7 +85,7 @@ class TheGreatAuroraEffect extends OneShotEffect {
                     permanentsCount.put(playerId, handCards + (list != null ? list.size() : 0));
                     if (list != null) {
                         for (Permanent permanent : list) {
-                            player.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, true, true);
+                            player.moveCards(permanent, Zone.LIBRARY, source, game);
                         }
                         player.shuffleLibrary(source, game);
                     }

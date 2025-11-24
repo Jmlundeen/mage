@@ -1,8 +1,6 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
@@ -20,6 +18,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -77,7 +77,7 @@ class RishadanPawnshopShuffleIntoLibraryEffect extends OneShotEffect {
         if (permanent != null) {
             Player owner = game.getPlayer(permanent.getOwnerId());
             if (owner != null) {
-                owner.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, true, true);
+                owner.moveCards(permanent, Zone.LIBRARY, source, game);
                 owner.shuffleLibrary(source, game);
                 return true;
             }

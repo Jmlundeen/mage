@@ -7,6 +7,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.players.Player;
 
@@ -36,7 +37,9 @@ public class ReturnToLibrarySpellEffect extends OneShotEffect {
             if (spell != null) {
                 Card spellCard = spell.getCard();
                 if (spellCard != null) {
-                    controller.moveCardToLibraryWithInfo(spellCard, source, game, Zone.STACK, toTop, true);
+                    MoveCardsParameters parameters = new MoveCardsParameters(spellCard, Zone.LIBRARY)
+                            .setToTopOfLibrary(toTop);
+                    controller.moveCards(parameters, source, game);
                 }
             }
             return true;

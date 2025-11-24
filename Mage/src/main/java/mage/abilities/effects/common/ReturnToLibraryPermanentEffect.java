@@ -7,6 +7,7 @@ import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 /**
@@ -33,7 +34,9 @@ public class ReturnToLibraryPermanentEffect extends OneShotEffect {
         if (controller != null) {
             Card card = game.getPermanent(source.getSourceId());
             if (card != null) {
-                controller.moveCardToLibraryWithInfo(card, source, game, Zone.STACK, toTop, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                        .setToTopOfLibrary(toTop);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }
