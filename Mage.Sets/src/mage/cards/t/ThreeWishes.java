@@ -102,7 +102,7 @@ class ThreeWishesPutIntoGraveyardEffect extends OneShotEffect {
             UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), 0);
             Set<Card> cardsInExile = game.getExile().getExileZone(exileId).getCards(game);
             if (cardsInExile != null) {
-                controller.moveCardsToGraveyardWithInfo(cardsInExile, source, game, Zone.EXILED);
+                controller.moveCards(cardsInExile, Zone.GRAVEYARD, source, game);
                 return true;
             }
         }

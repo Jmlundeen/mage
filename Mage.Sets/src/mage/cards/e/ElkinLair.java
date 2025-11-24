@@ -127,7 +127,7 @@ class ElkinLairPutIntoGraveyardEffect extends OneShotEffect {
             return false;
         }
 
-        player.moveCardsToGraveyardWithInfo(cardsInExile, source, game, Zone.EXILED);
+        player.moveCards(cardsInExile, Zone.GRAVEYARD, source, game);
         return true;
     }
 

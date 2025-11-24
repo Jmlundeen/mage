@@ -3962,11 +3962,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public Set<Card> moveCardsToGraveyardWithInfo(Set<? extends Card> allCards, Ability source, Game game, Zone fromZone) {
-        return computerPlayer.moveCardsToGraveyardWithInfo(allCards, source, game, fromZone);
-    }
-
-    @Override
     public boolean moveCardToLibraryWithInfo(Card card, Ability source, Game game, Zone fromZone, boolean toTop, boolean withName) {
         return computerPlayer.moveCardToLibraryWithInfo(card, source, game, fromZone, toTop, withName);
     }
