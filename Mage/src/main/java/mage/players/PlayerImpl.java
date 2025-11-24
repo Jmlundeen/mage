@@ -5027,7 +5027,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         boolean result = false;
         if (card.moveToZone(parameters, source, game)) {
             result = true;
-            if (!game.isSimulation()) {
+            if (game.isSimulation()) {
                 return result;
             }
             if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
@@ -5237,7 +5237,8 @@ public abstract class PlayerImpl implements Player, Serializable {
             case GRAVEYARD:
                 sb.append(player.getLogName())
                         .append(" puts ").append(cardName).append(" ").append(card.isCopy() ? "(Copy) " : "")
-                        .append(fromZoneString);
+                        .append(fromZoneString)
+                        .append(" ");
                 if (card.isOwnedBy(player.getId())) {
                     sb.append("into their graveyard");
                 } else {
