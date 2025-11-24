@@ -13,12 +13,13 @@ import mage.cards.CardsImpl;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
+import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
-import mage.target.targetpointer.FixedTarget;
+import mage.target.targetpointer.FixedTargets;
 
 import java.util.UUID;
 
@@ -71,8 +72,12 @@ class VanishIntoMemoryEffect extends OneShotEffect {
                     .findFirst()
                     .ifPresent(card -> {
                         controller.drawCards(permanent.getPower().getValue(), source, game);
+                        ExileZone exileZone = game.getExile().getExileZone(source.getSourceId());
+                        if (exileZone == null) {
+                            return;
+                        }
                         Effect effect = new VanishIntoMemoryReturnFromExileEffect();
-                        effect.setTargetPointer(new FixedTarget(card, game));
+                        effect.setTargetPointer(new FixedTargets(exileZone, game));
                         game.addDelayedTriggeredAbility(new AtTheBeginOfYourNextUpkeepDelayedTriggeredAbility(effect), source);
                     });
             return true;
