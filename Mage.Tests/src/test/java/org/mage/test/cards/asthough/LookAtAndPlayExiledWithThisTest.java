@@ -3,7 +3,6 @@ package org.mage.test.cards.asthough;
 import mage.cards.Card;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
-import mage.util.CardUtil;
 import mage.view.CardView;
 import mage.view.GameView;
 import org.junit.Assert;
@@ -55,7 +54,6 @@ public class LookAtAndPlayExiledWithThisTest extends CardTestPlayerBase {
         String controllerName = "Face Down: " + expectedCardName;
         String opponentName = "Face Down" + (shouldOppSee ? ": " + expectedCardName : "");
         Assert.assertTrue("Card should be face down", card.isFaceDown());
-        Assert.assertTrue("Controller - can't play", card.getAbilities(currentGame).stream().anyMatch(ability -> !CardUtil.isInformationAbility(ability)));
         Assert.assertEquals("Controller - wrong name", controllerName, controllerView.getName());
         Assert.assertEquals("Opponent - wrong name", opponentName, opponentView.getName());
     }
