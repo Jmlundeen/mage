@@ -4943,6 +4943,15 @@ public abstract class PlayerImpl implements Player, Serializable {
             case COMMAND:
                 moveCardsToCommandWithInfo(parameters, source, game, successfulMovedCards);
                 break;
+            case OUTSIDE:
+                for (Card card : parameters.getCards()) {
+                    if (card instanceof Permanent) {
+                        game.getBattlefield().removePermanent(card.getId());
+                        ZoneChangeEvent event = new ZoneChangeEvent((Permanent) card, source,
+                                parameters.isByOwner() ? card.getOwnerId() : getId(), Zone.BATTLEFIELD, Zone.OUTSIDE);
+                        game.fireEvent(event);
+                    }
+                }
         }
         return successfulMovedCards;
     }
@@ -5022,6 +5031,9 @@ public abstract class PlayerImpl implements Player, Serializable {
             }
             if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                 card = game.getCard(card.getId());
+            }
+            if (card instanceof Spell) {
+                card = ((Spell) card).getCard();
             }
             logMoveInfo(player, card, fromZone, false, parameters, game, source);
         }
@@ -5108,6 +5120,9 @@ public abstract class PlayerImpl implements Player, Serializable {
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                     card = game.getCard(card.getId());
                 }
+                if (card instanceof Spell) {
+                    card = ((Spell) card).getCard();
+                }
                 successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     return;
@@ -5148,12 +5163,9 @@ public abstract class PlayerImpl implements Player, Serializable {
                 }
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                     card = game.getCard(card.getId());
-                } else if (card instanceof Spell) {
-                    final Spell spell = (Spell) card;
-                    if (spell.isCopy()) {
-                        // copied spell, remove from stack
-                        game.getStack().remove(spell, game);
-                    }
+                }
+                if (card instanceof Spell) {
+                    card = ((Spell) card).getCard();
                 }
                 if (!parameters.isFaceDown() && card.getName().isEmpty()) {
                     throw new IllegalStateException("wrong code usage: method must find real card name, but found nothing");
@@ -5182,6 +5194,9 @@ public abstract class PlayerImpl implements Player, Serializable {
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                     card = game.getCard(card.getId());
                 }
+                if (card instanceof Spell) {
+                    card = ((Spell) card).getCard();
+                }
                 Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
                 logMoveInfo(movingPlayer, card, fromZone, hideName, parameters, game, source);
             }
@@ -5198,6 +5213,9 @@ public abstract class PlayerImpl implements Player, Serializable {
                 }
                 if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
                     card = game.getCard(card.getId());
+                }
+                if (card instanceof Spell) {
+                    card = ((Spell) card).getCard();
                 }
                 Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
                 logMoveInfo(movingPlayer, card, fromZone, false, parameters, game, source);
