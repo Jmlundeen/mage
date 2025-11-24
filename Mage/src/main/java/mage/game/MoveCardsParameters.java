@@ -76,6 +76,7 @@ public class MoveCardsParameters {
     }
 
     public MoveCardsParameters(Zone toZone) {
+        this.cards = new HashSet<>();
         this.toZone = toZone;
     }
 
