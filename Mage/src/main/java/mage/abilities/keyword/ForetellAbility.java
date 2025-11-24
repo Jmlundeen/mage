@@ -207,7 +207,7 @@ public class ForetellAbility extends SpecialAction {
         // foretell turn number shows up on exile window
         MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
                 .setFaceDown(true)
-                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileId(exileId)
                 .setExileName(" Foretell Turn Number: " + game.getTurnNum());
         controller.moveCards(parameters, source, game);
 
