@@ -82,7 +82,7 @@ class EaterOfVirtueExileEffect extends OneShotEffect {
                 && eaterOfVirtue != null
                 && exiledCard != null) {
             MoveCardsParameters parameters = new MoveCardsParameters(exiledCard, Zone.EXILED)
-                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileId(source.getSourceId())
                     .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
             controller.moveCards(parameters, source, game);
             return true;
@@ -114,7 +114,7 @@ class EaterOfVirtueGainAbilityAttachedEffect extends ContinuousEffectImpl {
                 && eaterOfVirtue.getAttachedTo() != null) {
             Permanent permanent = game.getPermanent(eaterOfVirtue.getAttachedTo());
             if (permanent != null) {
-                ExileZone exileZone = game.getState().getExile().getExileZone(CardUtil.getExileZoneId(game, source));
+                ExileZone exileZone = game.getState().getExile().getExileZone(source.getSourceId());
                 if (exileZone != null && !exileZone.isEmpty()) {
                     Set<Card> cardsInExile = exileZone.getCards(game);
                     for (Card card : cardsInExile) {
