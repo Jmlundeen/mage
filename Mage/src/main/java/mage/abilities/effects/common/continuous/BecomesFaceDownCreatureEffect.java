@@ -308,7 +308,7 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             if (faceDownType == FaceDownType.CLOAKED) {
                 faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
             }
-            if (faceDownType == FaceDownType.MANIFESTED && object.isCreature()) {
+            if ((faceDownType == FaceDownType.MANIFESTED || faceDownType == FaceDownType.CLOAKED) && object.isCreature()) {
                 // allow creatures to be turned face up for their mana cost when manifested
                 Costs<Cost> faceUpCosts = new CostsImpl<>();
                 faceUpCosts.add(object.getManaCost());
