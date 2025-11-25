@@ -5006,7 +5006,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                         if (card != null) {
                             Zone fromZone = game.getState().getZone(card.getId());
                             if (card.moveToZone(parameters, source, game)) {
-                                successfulMovedCards.add(getMovedCard(card, game));
+                                card = getMovedCard(card, game);
+                                successfulMovedCards.add(card);
                                 if (game.isSimulation()) {
                                     continue;
                                 }
@@ -5019,7 +5020,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                         Card card = cards.getCards(game).iterator().next();
                         Zone fromZone = game.getState().getZone(card.getId());
                         if (card.moveToZone(parameters, source, game)) {
-                            successfulMovedCards.add(getMovedCard(card, game));
+                            card = getMovedCard(card, game);
+                            successfulMovedCards.add(card);
                             if (game.isSimulation()) {
                                 continue;
                             }
@@ -5030,7 +5032,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                     for (Card card : cards.getCards(game)) {
                         Zone fromZone = game.getState().getZone(card.getId());
                         if (card.moveToZone(parameters, source, game)) {
-                            successfulMovedCards.add(getMovedCard(card, game));
+                            card = getMovedCard(card, game);
+                            successfulMovedCards.add(card);
                             if (game.isSimulation()) {
                                 continue;
                             }
@@ -5121,7 +5124,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                 hideName = false;
             }
             if (card.moveToZone(parameters, source, game)) {
-                successfulMovedCards.add(getMovedCard(card, game));
+                card = getMovedCard(card, game);
+                successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     return;
                 }
@@ -5156,7 +5160,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                         exileZone.letPlayerSeeCards(this.getId(), card);
                     }
                 }
-                successfulMovedCards.add(getMovedCard(card, game));
+                card = getMovedCard(card, game);
+                successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
                 }
@@ -5187,7 +5192,8 @@ public abstract class PlayerImpl implements Player, Serializable {
             boolean hideName = fromZone == Zone.HAND || fromZone == Zone.LIBRARY
                     || (fromZone != Zone.STACK && fromZone != Zone.BATTLEFIELD && card.isFaceDown());
             if (card.moveToZone(parameters, source, game)) {
-                successfulMovedCards.add(getMovedCard(card, game));
+                card = getMovedCard(card, game);
+                successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
                 }
@@ -5202,7 +5208,8 @@ public abstract class PlayerImpl implements Player, Serializable {
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
             if (card.moveToZone(parameters, source, game)) {
-                successfulMovedCards.add(getMovedCard(card, game));
+                card = getMovedCard(card, game);
+                successfulMovedCards.add(card);
                 if (game.isSimulation()) {
                     continue;
                 }
