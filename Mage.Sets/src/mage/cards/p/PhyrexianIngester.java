@@ -45,6 +45,7 @@ public final class PhyrexianIngester extends CardImpl {
         Ability ability = new EntersBattlefieldTriggeredAbility(new PhyrexianIngesterImprintEffect(), true);
         ability.addTarget(new TargetPermanent(filter));
         this.addAbility(ability.setAbilityWord(AbilityWord.IMPRINT));
+
         // Phyrexian Ingester gets +X/+Y, where X is the exiled creature card's power and Y is its toughness.
         this.addAbility(new SimpleStaticAbility(new PhyrexianIngesterBoostEffect()));
     }
@@ -90,9 +91,13 @@ class PhyrexianIngesterImprintEffect extends OneShotEffect {
         if (sourcePermanent != null) {
             parameters.setExileId(CardUtil.getCardExileZoneId(game, source));
             parameters.setExileName(sourcePermanent.getIdName() + " (Imprint)");
+            controller.moveCards(parameters, source, game);
             sourcePermanent.imprint(targetPermanent.getId(), game);
+        } else {
+            // Ingester is no longer on the battlefield, but the target still needs to be exiled.
+            // no need for specific exile zone
+            controller.moveCards(targetPermanent, Zone.EXILED, source, game);
         }
-        controller.moveCards(parameters, source, game);
         return true;
     }
 }
