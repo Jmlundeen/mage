@@ -2198,24 +2198,19 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
             }
             return false;
         }
-        Abilities<Ability> dynamicAbilities = this.getDynamicAbilities();
-        setFaceDown(false);
-        this.reset(game);
-        this.getAbilities().addAll(dynamicAbilities);
+
         GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
         if (!game.replaceEvent(event)) {
+            Abilities<Ability> dynamicAbilities = this.getDynamicAbilities();
             setFaceDown(false);
+            this.reset(game);
+            this.getAbilities().addAll(dynamicAbilities);
             setManifested(false);
             setMorphed(false);
             setDisguised(false);
             setCloaked(false);
             game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_UP, getId(), source, playerId));
             return true;
-        } else {
-            // revert face down change
-            setFaceDown(true);
-            this.reset(game);
-            this.getAbilities().addAll(dynamicAbilities);
         }
         return false;
     }
