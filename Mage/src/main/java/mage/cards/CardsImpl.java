@@ -6,6 +6,7 @@ import mage.abilities.Ability;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.stack.Spell;
 import mage.util.RandomUtil;
 import mage.util.ThreadLocalStringBuilder;
 
@@ -25,7 +26,7 @@ public class CardsImpl extends LinkedHashSet<UUID> implements Cards, Serializabl
 
     public CardsImpl(Card card) {
         if (card != null) {
-            this.add(card.getId());
+            this.add(card);
         }
     }
 
@@ -57,7 +58,11 @@ public class CardsImpl extends LinkedHashSet<UUID> implements Cards, Serializabl
         if (card == null) {
             return;
         }
-        this.add(card.getId());
+        if (card instanceof Spell) {
+            this.add(((Spell) card).getCard().getId());
+        } else {
+            this.add(card.getId());
+        }
     }
 
     @Override
