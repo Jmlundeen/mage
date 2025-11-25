@@ -4956,6 +4956,17 @@ public abstract class PlayerImpl implements Player, Serializable {
         return successfulMovedCards;
     }
 
+    private Card getMovedCard(Card card, Game game) {
+        if (card instanceof Spell) {
+            return ((Spell) card).getCard();
+        }
+        Card resultCard = game.getCard(card.getId());
+        if (resultCard == null) {
+            return card;
+        }
+        return resultCard.getMainCard();
+    }
+
     private void moveCardsToGraveyardWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         String sourceLogName = CardUtil.getSourceLogName(game, source);
         while (!parameters.getCards().isEmpty()) {
@@ -4994,8 +5005,12 @@ public abstract class PlayerImpl implements Player, Serializable {
                         cards.remove(targetObjectId);
                         if (card != null) {
                             Zone fromZone = game.getState().getZone(card.getId());
-                            if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone, sourceLogName)) {
-                                successfulMovedCards.add(card);
+                            if (card.moveToZone(parameters, source, game)) {
+                                successfulMovedCards.add(getMovedCard(card, game));
+                                if (game.isSimulation()) {
+                                    continue;
+                                }
+                                logMoveInfo(owner, card, fromZone, false, parameters, game, sourceLogName);
                             }
                         }
                         target.clearChosen();
@@ -5003,42 +5018,28 @@ public abstract class PlayerImpl implements Player, Serializable {
                     if (cards.size() == 1) {
                         Card card = cards.getCards(game).iterator().next();
                         Zone fromZone = game.getState().getZone(card.getId());
-                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone, sourceLogName)) {
-                            successfulMovedCards.add(card);
+                        if (card.moveToZone(parameters, source, game)) {
+                            successfulMovedCards.add(getMovedCard(card, game));
+                            if (game.isSimulation()) {
+                                continue;
+                            }
+                            logMoveInfo(owner, card, fromZone, false, parameters, game, sourceLogName);
                         }
                     }
                 } else {
                     for (Card card : cards.getCards(game)) {
                         Zone fromZone = game.getState().getZone(card.getId());
-
-                        if (moveCardToGraveyardWithInfo(owner, card, parameters, source, game, fromZone, sourceLogName)) {
-                            successfulMovedCards.add(card);
+                        if (card.moveToZone(parameters, source, game)) {
+                            successfulMovedCards.add(getMovedCard(card, game));
+                            if (game.isSimulation()) {
+                                continue;
+                            }
+                            logMoveInfo(owner, card, fromZone, false, parameters, game, sourceLogName);
                         }
                     }
                 }
             }
         }
-    }
-
-    private boolean moveCardToGraveyardWithInfo(Player player, Card card, MoveCardsParameters parameters, Ability source, Game game, Zone fromZone, String sourceLogName) {
-        if (card == null) {
-            return false;
-        }
-        boolean result = false;
-        if (card.moveToZone(parameters, source, game)) {
-            result = true;
-            if (game.isSimulation()) {
-                return result;
-            }
-            if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                card = game.getCard(card.getId());
-            }
-            if (card instanceof Spell) {
-                card = ((Spell) card).getCard();
-            }
-            logMoveInfo(player, card, fromZone, false, parameters, game, sourceLogName);
-        }
-        return result;
     }
 
     private void moveCardsToBattlefieldWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
@@ -5120,13 +5121,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 hideName = false;
             }
             if (card.moveToZone(parameters, source, game)) {
-                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                    card = game.getCard(card.getId());
-                }
-                if (card instanceof Spell) {
-                    card = ((Spell) card).getCard();
-                }
-                successfulMovedCards.add(card);
+                successfulMovedCards.add(getMovedCard(card, game));
                 if (game.isSimulation()) {
                     return;
                 }
@@ -5161,7 +5156,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                         exileZone.letPlayerSeeCards(this.getId(), card);
                     }
                 }
-                successfulMovedCards.add(card);
+                successfulMovedCards.add(getMovedCard(card, game));
                 if (game.isSimulation()) {
                     continue;
                 }
@@ -5192,15 +5187,9 @@ public abstract class PlayerImpl implements Player, Serializable {
             boolean hideName = fromZone == Zone.HAND || fromZone == Zone.LIBRARY
                     || (fromZone != Zone.STACK && fromZone != Zone.BATTLEFIELD && card.isFaceDown());
             if (card.moveToZone(parameters, source, game)) {
-                successfulMovedCards.add(card);
+                successfulMovedCards.add(getMovedCard(card, game));
                 if (game.isSimulation()) {
                     continue;
-                }
-                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                    card = game.getCard(card.getId());
-                }
-                if (card instanceof Spell) {
-                    card = ((Spell) card).getCard();
                 }
                 Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
                 logMoveInfo(movingPlayer, card, fromZone, hideName, parameters, game, sourceLogName);
@@ -5213,15 +5202,9 @@ public abstract class PlayerImpl implements Player, Serializable {
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
             if (card.moveToZone(parameters, source, game)) {
-                successfulMovedCards.add(card);
+                successfulMovedCards.add(getMovedCard(card, game));
                 if (game.isSimulation()) {
                     continue;
-                }
-                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                    card = game.getCard(card.getId());
-                }
-                if (card instanceof Spell) {
-                    card = ((Spell) card).getCard();
                 }
                 Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
                 logMoveInfo(movingPlayer, card, fromZone, false, parameters, game, sourceLogName);
