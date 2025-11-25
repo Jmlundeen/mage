@@ -1557,6 +1557,9 @@ public abstract class CardTestPlayerAPIImpl extends MageTestPlayerBase implement
                 if (CardUtil.haveSameNames(card.getName(), cardName, true)) {
                     actualCount++;
                 }
+                else if (card.isFaceDown() && CardUtil.haveSameNames(card.getOriginalName(), cardName, true)) {
+                    actualCount++;
+                }
             }
         }
 
