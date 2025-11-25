@@ -16,6 +16,7 @@ import mage.constants.Rarity;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.game.Game;
+import mage.game.permanent.PermanentCard;
 import mage.game.stack.Spell;
 import mage.util.SubTypes;
 
@@ -87,7 +88,11 @@ public class CopiableValues implements Serializable {
 
     public void copyFrom(MageObject mageObject, Game game) {
         this.name = mageObject.getName();
-        this.manaCost = mageObject.getManaCost().copy();
+        if (mageObject instanceof PermanentCard && mageObject.getManaCost().isEmpty()) {
+            this.manaCost = ((PermanentCard) mageObject).getCard().getManaCost().copy();
+        } else{
+            this.manaCost = mageObject.getManaCost().copy();
+        }
         this.color = mageObject.getColor(game).copy();
         this.cardType.clear();
         this.cardType.addAll(mageObject.getCardType(game));
