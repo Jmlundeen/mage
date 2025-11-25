@@ -93,12 +93,12 @@ public class CopiableValues implements Serializable {
         } else{
             this.manaCost = mageObject.getManaCost().copy();
         }
-        this.color = mageObject.getColor(game).copy();
+        this.color = mageObject.getColor().copy();
         this.cardType.clear();
-        this.cardType.addAll(mageObject.getCardType(game));
+        this.cardType.addAll(mageObject.getCardType());
         this.superType.clear();
-        this.superType.addAll(mageObject.getSuperType(game));
-        this.subtype.copyFrom(mageObject.getSubtype(game));
+        this.superType.addAll(mageObject.getSuperType());
+        this.subtype.copyFrom(mageObject.getSubtype());
         if (mageObject instanceof Card) {
             this.abilities = ((Card) mageObject).getAbilities(game).copy();
         } else {
