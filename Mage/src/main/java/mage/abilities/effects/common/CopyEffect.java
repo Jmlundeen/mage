@@ -57,6 +57,7 @@ public class CopyEffect extends ContinuousEffectImpl {
         Permanent permanent = game.getPermanent(copyToObjectId);
         if (permanent != null) {
             affectedObjectList.add(new MageObjectReference(permanent, game));
+            copyToPermanent(permanent, game, source);
         } else if (source.getAbilityType() == AbilityType.STATIC) {
             // for replacement effects that let a permanent enter the battlefield as a copy of another permanent we need to apply that copy
             // before the permanent is added to the battlefield
