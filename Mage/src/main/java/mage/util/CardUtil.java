@@ -1787,7 +1787,7 @@ public final class CardUtil {
         if (sourceObject == null) {
             return nonFoundText;
         }
-        if (sourceObject.isFaceDown() && !sourceObject.getAbilities().containsKey(sourceId)) {
+        if (sourceObject.isFaceDown() && !sourceObject.getAbilities().containsKey(sourceId) && !(sourceObject instanceof Spell)) {
             return namePrefix + sourceObject.getOriginalName() + namePostfix;
         }
         return namePrefix + sourceObject.getLogName() + namePostfix;
