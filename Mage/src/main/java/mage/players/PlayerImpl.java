@@ -1349,6 +1349,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     return true;
                 }
                 restoreState(bookmark, ability.getRule(), game);
+                spell.getCard().setFaceDown(false); // make sure it's face up if cast failed
             }
         }
         return false;
