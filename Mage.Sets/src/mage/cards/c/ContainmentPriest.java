@@ -72,7 +72,7 @@ class ContainmentPriestReplacementEffect extends ReplacementEffectImpl {
             if (card != null) {
                 ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
             }
-            return true;
+            return false;
 
         }
         return false;
