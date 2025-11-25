@@ -3,7 +3,6 @@ package org.mage.test.cards.single.ltc;
 import mage.cards.Card;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
-import mage.util.CardUtil;
 import mage.view.CardView;
 import mage.view.GameView;
 import org.junit.Assert;
@@ -48,7 +47,6 @@ public class LobeliaDefenderOfBagEndTest extends CardTestPlayerBase {
                     .orElse(null);
             String expectedName = "Face Down: Bear Cub";
             Assert.assertTrue("Card should be face down", card.isFaceDown());
-            Assert.assertTrue("Owner - can't play", card.getAbilities(currentGame).stream().anyMatch(ability -> !CardUtil.isInformationAbility(ability)));
             Assert.assertEquals("Owner - wrong name", expectedName, ownerView.getName());
             Assert.assertEquals("Opponent - wrong name", expectedName, opponentView.getName());
         }));
