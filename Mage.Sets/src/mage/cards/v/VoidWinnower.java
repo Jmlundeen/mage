@@ -3,12 +3,17 @@ package mage.cards.v;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
+import mage.abilities.SpellAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousRuleModifyingEffectImpl;
 import mage.abilities.effects.RestrictionEffect;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -82,6 +87,18 @@ class VoidWinnowerCantCastEffect extends ContinuousRuleModifyingEffectImpl {
             if (spell != null) {
                 // the low bit will always be set on an odd number.
                 return (spell.getManaValue() & 1) == 0;
+            }
+            // check ability to prevent casting
+            Ability eventAbility = game.getAbility(event.getTargetId(), event.getSourceId())
+                    .orElse(null);
+            if (eventAbility instanceof SpellAbility) {
+                if ((eventAbility.getManaCosts().manaValue() & 1) == 0) {
+                    return true;
+                }
+                Card stackCharacteristics = ((SpellAbility) eventAbility).getCharacteristics(game);
+                if (stackCharacteristics != null) {
+                    return (stackCharacteristics.getManaValue() & 1) == 0;
+                }
             }
         }
         return false;
