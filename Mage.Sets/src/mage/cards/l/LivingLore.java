@@ -101,14 +101,14 @@ class LivingLoreExileEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        // The source ability on the stack will have a 0 ZCC.
-        // We retrieve the ZCC from the object source instead.
-        MageObject mageObject = game.getObject(source.getSourceId());
-        if(mageObject == null) {
-            return false;
+        ExileZone exileZone = game.getExile().getExileZone(
+                CardUtil.getExileZoneId(game, source)
+        );
+        if (exileZone != null) {
+            game.getExile().cleanupZone(exileZone.getId());
         }
         MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
-                .setExileId(CardUtil.getExileZoneId(game, source, 1))
+                .setExileId(CardUtil.getExileZoneId(game, source))
                 .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
         controller.moveCards(parameters, source, game);
         return true;
@@ -127,7 +127,7 @@ enum LivingLoreValue implements DynamicValue {
 
         ExileZone exileZone = game
                 .getExile()
-                .getExileZone(CardUtil.getExileZoneId(game, permanent.getId(), permanent.getZoneChangeCounter(game)));
+                .getExileZone(CardUtil.getExileZoneId(game, sourceAbility));
         if (exileZone == null) {
             return 0;
         }
@@ -172,7 +172,7 @@ class LivingLoreCastEffect extends OneShotEffect {
         if(permanent == null) {
             return false;
         }
-        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, permanent.getId(), permanent.getZoneChangeCounter(game)));
+        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), 0));
         if (controller == null || exileZone == null || exileZone.isEmpty()) {
             return false;
         }
