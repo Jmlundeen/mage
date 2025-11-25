@@ -15,6 +15,7 @@ import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
+import mage.game.permanent.PermanentToken;
 
 /**
  * @author oscscull
@@ -70,6 +71,11 @@ public class RoomCharacteristicsEffect extends ContinuousEffectImpl {
                 roomCardBlueprint = (Card) copiedObject;
             } else {
                 roomCardBlueprint = permanent.getMainCard();
+            }
+        } else if (permanent instanceof PermanentToken) {
+            roomCardBlueprint = permanent.getMainCard();
+            if (!(roomCardBlueprint instanceof SplitCard)) {
+                roomCardBlueprint = roomCardBlueprint.getMainCard();
             }
         } else {
             roomCardBlueprint = permanent.getMainCard();
