@@ -4898,6 +4898,9 @@ public abstract class PlayerImpl implements Player, Serializable {
 
     @Override
     public boolean moveCards(Card card, Zone toZone, Ability source, Game game) {
+        if (card == null) {
+            return false;
+        }
         return moveCards(new MoveCardsParameters(card, toZone), source, game);
     }
 
