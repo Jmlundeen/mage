@@ -56,12 +56,10 @@ public class AsTurnedFaceUpEffect extends ReplacementEffectImpl {
             }
         }
         for (Effect effect : baseEffects) {
-            if (source.activate(game, false)) {
-                if (effect instanceof ContinuousEffect) {
-                    game.addEffect((ContinuousEffect) effect, source);
-                } else {
-                    effect.apply(game, source);
-                }
+            if (effect instanceof ContinuousEffect) {
+                game.addEffect((ContinuousEffect) effect, source);
+            } else {
+                effect.apply(game, source);
             }
         }
         return false;
