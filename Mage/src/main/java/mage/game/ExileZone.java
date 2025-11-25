@@ -49,6 +49,10 @@ public class ExileZone extends CardsImpl {
         this.cleanupOnEndTurn = cleanupOnEndTurn;
     }
 
+    public void letPlayerSeeCards(UUID playerId, UUID cardId) {
+        playerCardMap.computeIfAbsent(playerId, k -> new CardsImpl()).add(cardId);
+    }
+
     public void letPlayerSeeCards(UUID playerId, Card card) {
         letPlayerSeeCards(playerId, new CardsImpl(card));
     }
@@ -85,6 +89,15 @@ public class ExileZone extends CardsImpl {
             Cards cards = entry.getValue();
             if (cards.contains(card.getId())) {
                 targetZone.letPlayerSeeCards(entry.getKey(), card);
+            }
+        }
+    }
+
+    public void copyCardVisibility(UUID cardId, ExileZone targetZone) {
+        for (Map.Entry<UUID, Cards> entry : playerCardMap.entrySet()) {
+            Cards cards = entry.getValue();
+            if (cards.contains(cardId)) {
+                targetZone.letPlayerSeeCards(entry.getKey(), cardId);
             }
         }
     }

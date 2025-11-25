@@ -183,6 +183,18 @@ public class Exile implements Serializable, Copyable<Exile> {
         }
     }
 
+    public void cleanupZone(UUID zoneId) {
+        ExileZone zone = getExileZone(zoneId);
+        ExileZone mainZone = getExileZone(PERMANENT);
+        if (zone != null) {
+            for (UUID cardID : zone) {
+                zone.copyCardVisibility(cardID, mainZone);
+                mainZone.add(cardID);
+                zone.remove(cardID);
+            }
+        }
+    }
+
     public void cleanupEndOfTurnZones(Game game) {
         // moves cards from outdated zone to main exile zone
         ExileZone mainZone = getExileZone(PERMANENT);
