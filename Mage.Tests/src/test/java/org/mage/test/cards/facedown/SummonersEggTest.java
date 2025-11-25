@@ -43,7 +43,7 @@ public class SummonersEggTest extends CardTestPlayerBase {
         assertHandCount(playerA, "Goblin Roughrider", 0);
 
         assertExileCount("Goblin Roughrider", 1);
-        for (Card card : currentGame.getExile().getAllCards(currentGame)) {
+        for (Card card : currentGame.getExile().getCardsOwned(currentGame, playerA.getId())) {
             if (card.getName().equals("Goblin Roughrider")) {
                 Assert.assertTrue("Exiled card is not face down", card.isFaceDown());
             }
