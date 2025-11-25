@@ -1049,8 +1049,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 Collections.shuffle(cardList);
                 MoveCardsParameters parameters = new MoveCardsParameters(cardList, Zone.LIBRARY)
                         .setToTopOfLibrary(false);
-                moveCards(parameters, source, game);
-
+                return moveCards(parameters, source, game);
             } else {
                 // user defined order
                 List<Card> order = new ArrayList<>();
@@ -1075,7 +1074,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 }
                 MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY)
                         .setToTopOfLibrary(false);
-                moveCards(parameters, source, game);
+                return moveCards(parameters, source, game);
             }
         }
         return true;
@@ -1150,7 +1149,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 List<Card> cardList = new ArrayList<>(cards.getCards(game));
                 Collections.shuffle(cardList);
                 MoveCardsParameters parameters = new MoveCardsParameters(cardList, Zone.LIBRARY);
-                moveCards(parameters, source, game);
+                return moveCards(parameters, source, game);
             } else {
                 // user defined order
                 List<Card> order = new ArrayList<>();
@@ -1175,7 +1174,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     order.add(game.getCard(c));
                 }
                 MoveCardsParameters parameters = new MoveCardsParameters(order, Zone.LIBRARY);
-                moveCards(parameters, source, game);
+                return moveCards(parameters, source, game);
             }
         }
         return true;
