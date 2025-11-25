@@ -130,7 +130,12 @@ public class PermanentCard extends PermanentImpl {
             this.subtype.copyFrom(faceDownValues.getSubtype());
             this.abilities.clear();
             for (Ability ability : faceDownValues.getAbilities()) {
-                this.addAbility(ability, this.getId(), game, false);
+                if (this.getCard().getAbilities().containsKey(ability.getId())) {
+                    // don't add original abilities to game state
+                    this.addAbility(ability, this.getId(), null, true);
+                } else {
+                    this.addAbility(ability, this.getId(), game, false);
+                }
             }
             this.power = faceDownValues.getPower();
             this.toughness = faceDownValues.getToughness();
