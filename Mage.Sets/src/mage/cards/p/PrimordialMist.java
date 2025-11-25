@@ -97,7 +97,8 @@ class PrimordialMistCost extends CostImpl {
                         Card targetCard = game.getCard(target.getFirstTarget());
                         if (targetPermanent != null && targetCard != null) {
                             String exileName = sourcePermanent.getIdName() + " <this card may be played the turn it was exiled>";
-                            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            MoveCardsParameters parameters = new MoveCardsParameters(targetPermanent, Zone.EXILED)
+                                    .setFaceDown(true)
                                     .setExileId(CardUtil.getExileZoneId(game, source))
                                     .setExileName(exileName);
                             controller.moveCards(parameters, source, game);
