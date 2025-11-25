@@ -97,6 +97,7 @@ public class PermanentCard extends PermanentImpl {
                 TransformAbility.transformPermanent(this, game, null);
             }
         }
+        this.saveCopiableValues(game);
     }
 
     protected PermanentCard(final PermanentCard permanent) {
