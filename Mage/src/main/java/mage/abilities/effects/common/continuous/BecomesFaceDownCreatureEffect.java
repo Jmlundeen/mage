@@ -297,6 +297,13 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
                     }
                     faceDownValues.getAbilities().add(turnFaceUpAbility);
                 }
+
+                // Add abilities that work face down
+                if (ability.getWorksFaceDown()) {
+                    Ability copy = ability.copy();
+                    copy.setRuleVisible(false);
+                    faceDownValues.getAbilities().add(copy);
+                }
             }
             if (faceDownType == FaceDownType.CLOAKED) {
                 faceDownValues.getAbilities().add(new WardAbility(new ManaCostsImpl<>("{2}")));
