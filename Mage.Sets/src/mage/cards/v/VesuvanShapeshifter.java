@@ -142,7 +142,6 @@ class VesuvanShapeshifterFaceDownEffect extends OneShotEffect {
         if (controller == null || permanent == null) {
             return false;
         }
-        permanent.removeAllAbilities(source.getSourceId(), game);
 
         // Set any previous copy effects to 'discarded'
         for (Effect effect : game.getState().getContinuousEffects().getLayeredEffects(game)) {
@@ -155,10 +154,6 @@ class VesuvanShapeshifterFaceDownEffect extends OneShotEffect {
         }
 
         permanent.turnFaceDown(source, game, source.getControllerId());
-        permanent.setManifested(false);
-        permanent.setDisguised(false);
-        permanent.setCloaked(false);
-        permanent.setMorphed(true); // cause it morph card TODO: smells bad
         return permanent.isFaceDown();
 
     }
