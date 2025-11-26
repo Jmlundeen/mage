@@ -1,6 +1,8 @@
 package mage.game;
 
 import mage.abilities.Ability;
+import mage.abilities.SpellAbility;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.TransformAbility;
 import mage.cards.*;
 import mage.constants.Outcome;
@@ -376,6 +378,10 @@ public final class ZonesHandler {
             // any card can be moved as face down (doubled faced cards also support face down)
             card.setFaceDown(true);
             isGoodToMove = true;
+            if (event.getToZone().equals(Zone.BATTLEFIELD) && !(source instanceof SpellAbility)) {
+                // set face down characteristics
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, info.getFaceDownValues());
+            }
         } else if (event.getToZone().equals(Zone.BATTLEFIELD)) {
             // non-permanents can't move to battlefield
             // TODO: possible bug with Nightbound, search all usage of getValue(TransformAbility.VALUE_KEY_ENTER_TRANSFORMED and insert additional check Ability.checkCard

@@ -118,6 +118,28 @@ public class CopiableValues implements Serializable {
         this.imageNumber = mageObject.getImageNumber();
     }
 
+    public void copyFrom(CopiableValues values) {
+        this.name = values.name;
+        this.manaCost = values.manaCost.copy();
+        this.color = values.color.copy();
+        this.cardType.clear();
+        this.cardType.addAll(values.cardType);
+        this.superType.clear();
+        this.superType.addAll(values.superType);
+        this.subtype.copyFrom(values.subtype);
+        this.abilities = values.abilities.copy();
+        this.power = values.power.copy();
+        this.toughness = values.toughness.copy();
+        this.startingLoyalty = values.startingLoyalty;
+        this.startingDefense = values.startingDefense;
+        this.rarity = values.rarity;
+        this.expansionSetCode = values.expansionSetCode;
+        this.usesVariousArt = values.usesVariousArt;
+        this.cardNumber = values.cardNumber;
+        this.imageFileName = values.imageFileName;
+        this.imageNumber = values.imageNumber;
+    }
+
     /**
      * Applies the copiable values to the given mage object.
      * Does not use state, only use for blueprint/copy

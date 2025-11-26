@@ -1,13 +1,14 @@
 package mage.game;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import mage.abilities.Ability;
+import mage.cards.CopiableValues;
 import mage.cards.MeldCard;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.stack.Spell;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Dilnu on 9/4/16.
@@ -15,6 +16,7 @@ import mage.game.stack.Spell;
 public class ZoneChangeInfo {
 
     public boolean faceDown;
+    private CopiableValues faceDownValues; // to store characteristics to apply for face down cards
     public ZoneChangeEvent event;
     List<ZoneChangeInfo> additionalMoves = new ArrayList<>(); // additions objects move (example: meld parts), TODO: must research, can be un-used by real code
 
@@ -36,6 +38,14 @@ public class ZoneChangeInfo {
 
     public ZoneChangeInfo copy() {
         return new ZoneChangeInfo(this);
+    }
+
+    public CopiableValues getFaceDownValues() {
+        return faceDownValues;
+    }
+
+    public void setFaceDownValues(CopiableValues faceDownValues) {
+        this.faceDownValues = faceDownValues;
     }
 
     public static class Library extends ZoneChangeInfo {
