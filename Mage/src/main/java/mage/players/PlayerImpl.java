@@ -5098,6 +5098,9 @@ public abstract class PlayerImpl implements Player, Serializable {
             if (parameters.getFaceDownValues() != null) {
                 info.setFaceDownValues(parameters.getFaceDownValues());
             }
+            if (parameters.getFaceDownType() != null) {
+                info.setFaceDownType(parameters.getFaceDownType());
+            }
             infoList.add(info);
         }
         ZonesHandler.moveCards(infoList, source, game);
