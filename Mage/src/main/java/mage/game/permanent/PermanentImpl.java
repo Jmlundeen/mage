@@ -13,6 +13,7 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.RequirementEffect;
 import mage.abilities.effects.RestrictionEffect;
 import mage.abilities.effects.common.RegenerateSourceEffect;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.hint.HintUtils;
 import mage.abilities.keyword.*;
 import mage.cards.Card;
@@ -2202,8 +2203,18 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
         GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
         if (!game.replaceEvent(event)) {
             Abilities<Ability> dynamicAbilities = this.getDynamicAbilities();
-            setFaceDown(false);
-            this.reset(game);
+            if (this.isCopy()) {
+                CopiableValues restoreValues = this.copiableValues.copy();
+                this.setFaceDown(false);
+                this.reset(game);
+                restoreValues.applyTo(this);
+                if (copyFrom != null) {
+                    this.setName(copyFrom.getName());
+                }
+            } else {
+                setFaceDown(false);
+                this.reset(game);
+            }
             this.getAbilities().addAll(dynamicAbilities);
             setManifested(false);
             setMorphed(false);
@@ -2219,6 +2230,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
         GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_DOWN, getId(), source, playerId);
         if (!game.replaceEvent(event)) {
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(this, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
             setFaceDown(true);
             this.reset(game);
             game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_DOWN, getId(), source, playerId));
