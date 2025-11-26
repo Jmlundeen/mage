@@ -85,7 +85,7 @@ public enum SpellAbilityCastMode {
                 BecomesFaceDownCreatureEffect.FaceDownType faceDownType = this == MORPH
                         ? BecomesFaceDownCreatureEffect.FaceDownType.MORPHED
                         : BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
-                BecomesFaceDownCreatureEffect.makeFaceDownObject(game, spellAbility.getId(), cardCopy, faceDownType, null);
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(cardCopy, faceDownType, null);
                 cardCopy.getFaceDownValues().applyTo(cardCopy);
                 break;
             case NORMAL:

@@ -4,7 +4,6 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.mana.GreenManaAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -82,16 +81,14 @@ class YedoraGraveGardenerEffect extends OneShotEffect {
         if (player == null || card == null) {
             return false;
         }
-        BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
-        CopiableValues faceDownValues = card.getFaceDownValues();
-        faceDownValues.getCardType().clear();
+        CopiableValues faceDownValues = new CopiableValues(true);
         faceDownValues.getCardType().add(CardType.LAND);
-        faceDownValues.getSubtype().clear();
         faceDownValues.getSubtype().add(SubType.FOREST);
         faceDownValues.setPower(new MageInt(0));
         faceDownValues.setToughness(new MageInt(0));
         faceDownValues.getAbilities().add(new GreenManaAbility());
         MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setFaceDownValues(faceDownValues)
                 .setFaceDown(true)
                 .setByOwner(true);
         player.moveCards(parameters, source, game);

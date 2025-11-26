@@ -1,6 +1,7 @@
 package mage.game;
 
 import mage.cards.Card;
+import mage.cards.CopiableValues;
 import mage.constants.Zone;
 
 import java.util.*;
@@ -39,6 +40,8 @@ public class MoveCardsParameters {
 
     // Indicates whether the cards should be placed at the top of the library
     boolean toTopOfLibrary = true;
+
+    CopiableValues faceDownValues;
 
     /**
      * Constructs a new MoveCardsParameters object with the specified cards and destination zone.
@@ -266,6 +269,15 @@ public class MoveCardsParameters {
      */
     public MoveCardsParameters setToTopOfLibrary(boolean toTopOfLibrary) {
         this.toTopOfLibrary = toTopOfLibrary;
+        return this;
+    }
+
+    public CopiableValues getFaceDownValues() {
+        return faceDownValues;
+    }
+
+    public MoveCardsParameters setFaceDownValues(CopiableValues faceDownValues) {
+        this.faceDownValues = faceDownValues;
         return this;
     }
 }

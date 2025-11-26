@@ -88,7 +88,7 @@ class TezzeretCruelMachinistEffect extends OneShotEffect {
             return false;
         }
         for (Card card : cardsToMove.getCards(game)) {
-            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
             card.getFaceDownValues().getCardType().add(CardType.ARTIFACT);
             card.getFaceDownValues().setPower(new MageInt(5));
             card.getFaceDownValues().setToughness(new MageInt(5));

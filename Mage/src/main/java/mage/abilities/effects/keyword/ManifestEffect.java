@@ -130,7 +130,7 @@ public class ManifestEffect extends OneShotEffect {
             Card battlefieldCard = BecomesFaceDownCreatureEffect.findDefaultCardSideForFaceDown(game, card);
 
             // set face down characteristics
-            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), battlefieldCard, cloakNotManifest ? FaceDownType.CLOAKED : FaceDownType.MANIFESTED, null);
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(battlefieldCard, cloakNotManifest ? FaceDownType.CLOAKED : FaceDownType.MANIFESTED, null);
 
             // move to the battlefield
             MoveCardsParameters parameters = new MoveCardsParameters(battlefieldCard, Zone.BATTLEFIELD)

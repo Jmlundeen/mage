@@ -43,7 +43,7 @@ public class BecomesFaceDownCreatureAllEffect extends OneShotEffect {
                 if (type == null) {
                     type = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
                 }
-                BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), perm, type, null);
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(perm, type, null);
                 perm.setFaceDown(true);
             }
         }

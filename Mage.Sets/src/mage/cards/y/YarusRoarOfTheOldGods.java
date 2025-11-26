@@ -95,7 +95,7 @@ class YarusRoarOfTheOldGodsEffect extends OneShotEffect {
             return false;
         }
 
-        BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
+        BecomesFaceDownCreatureEffect.makeFaceDownObject(card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
         MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
                 .setFaceDown(true)
                 .setByOwner(true);

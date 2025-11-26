@@ -5094,7 +5094,11 @@ public abstract class PlayerImpl implements Player, Serializable {
 
             ZoneChangeEvent event = new ZoneChangeEvent(card.getId(), source,
                     parameters.isByOwner() ? card.getOwnerId() : getId(), fromZone, Zone.BATTLEFIELD);
-            infoList.add(new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source));
+            ZoneChangeInfo info = new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source);
+            if (parameters.getFaceDownValues() != null) {
+                info.setFaceDownValues(parameters.getFaceDownValues());
+            }
+            infoList.add(info);
         }
         ZonesHandler.moveCards(infoList, source, game);
         for (ZoneChangeInfo info : infoList) {

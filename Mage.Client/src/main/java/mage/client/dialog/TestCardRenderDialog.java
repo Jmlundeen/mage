@@ -182,12 +182,9 @@ public class TestCardRenderDialog extends MageDialog {
         // workaround to apply face down image and other settings
         if (perm.isFaceDown()) {
             BecomesFaceDownCreatureEffect.makeFaceDownObject(
-                    game,
-                    null,
                     perm,
                     BecomesFaceDownCreatureEffect.findFaceDownType(game, perm),
-                    null
-            );
+                    null);
         }
 
         PermanentView cardView = new PermanentView(perm, permCard, controllerId, game);

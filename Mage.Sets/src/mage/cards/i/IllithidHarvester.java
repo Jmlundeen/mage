@@ -95,7 +95,7 @@ class IllithidHarvesterEffect extends OneShotEffect {
                 Permanent permanent = game.getPermanent(targetId);
                 if (!permanent.isFaceDown() && !permanent.isTransformable() && !(((PermanentCard) permanent).getCard() instanceof ModalDoubleFacedCardHalf)) {
                     BecomesFaceDownCreatureEffect.FaceDownType type = BecomesFaceDownCreatureEffect.findFaceDownType(game, permanent);
-                    BecomesFaceDownCreatureEffect.makeFaceDownObject(game, source.getSourceId(), permanent, type, null);
+                    BecomesFaceDownCreatureEffect.makeFaceDownObject(permanent, type, null);
                     permanent.setFaceDown(true);
                     permanent.getFaceDownValues().getSubtype().add(SubType.HORROR);
                 }

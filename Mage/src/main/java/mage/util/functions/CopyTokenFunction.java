@@ -80,7 +80,7 @@ public class CopyTokenFunction {
             PermanentCard sourcePermanent = (PermanentCard) source;
             BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.findFaceDownType(game, sourcePermanent);
             if (faceDownType != null) {
-                BecomesFaceDownCreatureEffect.makeFaceDownObject(game, null, target, faceDownType, null);
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(target, faceDownType, null);
                 target.getFaceDownValues().applyTo(target);
                 return;
             }
