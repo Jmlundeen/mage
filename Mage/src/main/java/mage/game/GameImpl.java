@@ -55,6 +55,7 @@ import mage.game.mulligan.Mulligan;
 import mage.game.permanent.Battlefield;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
+import mage.game.permanent.PermanentToken;
 import mage.game.stack.Spell;
 import mage.game.stack.SpellStack;
 import mage.game.stack.StackAbility;
@@ -128,8 +129,6 @@ public abstract class GameImpl implements Game {
     // For checking "becomes the target" triggers accurately. Cleared on short living LKI reset
     protected Map<String, Map<UUID, Set<UUID>>> targetedMap = new HashMap<>();
 
-    // Permanents entering the Battlefield while handling replacement effects before they are added to the battlefield
-    protected Map<UUID, Permanent> permanentsEntering = new HashMap<>();
     // used to set the counters a permanent adds the battlefield (if no replacement effect is used e.g. Persist)
     protected Map<UUID, Counters> enterWithCounters = new HashMap<>();
 
@@ -213,7 +212,6 @@ public abstract class GameImpl implements Game {
         this.lkiShortLiving = CardUtil.deepCopyObject(game.lkiShortLiving);
         this.targetedMap = CardUtil.deepCopyObject(game.targetedMap);
 
-        this.permanentsEntering = CardUtil.deepCopyObject(game.permanentsEntering);
         this.enterWithCounters = CardUtil.deepCopyObject(game.enterWithCounters);
 
         this.state = game.state.copy();
@@ -340,13 +338,13 @@ public abstract class GameImpl implements Game {
                 Card rightCard = ((SplitCard) card).getRightHalfCard();
                 rightCard.setOwnerId(ownerId);
                 addCardToState(rightCard);
-            } else if (card instanceof ModalDoubleFacedCard) {
+            } else if (card instanceof DoubleFacedCard) {
                 // left
-                Card leftCard = ((ModalDoubleFacedCard) card).getLeftHalfCard();
+                Card leftCard = ((DoubleFacedCard) card).getLeftHalfCard();
                 leftCard.setOwnerId(ownerId);
                 addCardToState(leftCard);
                 // right
-                Card rightCard = ((ModalDoubleFacedCard) card).getRightHalfCard();
+                Card rightCard = ((DoubleFacedCard) card).getRightHalfCard();
                 rightCard.setOwnerId(ownerId);
                 addCardToState(rightCard);
             } else if (card instanceof CardWithSpellOption) {
@@ -763,12 +761,12 @@ public abstract class GameImpl implements Game {
 
     @Override
     public Permanent getPermanentEntering(UUID permanentId) {
-        return permanentsEntering.get(permanentId);
+        return state.getBattlefield().getPermanentsEntering().get(permanentId);
     }
 
     @Override
     public Map<UUID, Permanent> getPermanentsEntering() {
-        return permanentsEntering;
+        return state.getBattlefield().getPermanentsEntering();
     }
 
     @Override
@@ -2090,6 +2088,7 @@ public abstract class GameImpl implements Game {
         Permanent newBluePrint = copyFromPermanent.copy();
 
         // reset to original characteristics
+        newBluePrint.resetLockedStatus(); // reset locked status so room characteristics are correct
         copyFromPermanent.getCopiableValues().applyTo(newBluePrint);
         if (applier != null) {
             applier.apply(this, newBluePrint, source, copyToPermanentId);
@@ -3777,7 +3776,7 @@ public abstract class GameImpl implements Game {
             loadCards(ownerId, hand);
             loadCards(ownerId, battlefield
                     .stream()
-                    .map(PutToBattlefieldInfo::getCard)
+                    .map(PutToBattlefieldInfo::getMainCard)
                     .collect(Collectors.toList())
             );
             loadCards(ownerId, graveyard);

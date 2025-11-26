@@ -1,5 +1,6 @@
 package mage.cards;
 
+import mage.MageInt;
 import mage.MageObject;
 import mage.MageObjectImpl;
 import mage.Mana;
@@ -127,6 +128,11 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         nightCard = card.nightCard;
         secondSideCardClazz = card.secondSideCardClazz;
         secondSideCard = null; // will be set on first getSecondCardFace call if card has one
+        // TODO: temporary until cards tdfc cards are converted
+        //  can do normal copy after
+        if (card.secondSideCard instanceof DoubleFacedCardHalf) {
+            secondSideCard = card.secondSideCard.copy();
+        }
         if (card.secondSideCard instanceof MockableCard) {
             // workaround to support gui's mock cards
             secondSideCard = card.secondSideCard.copy();
@@ -412,6 +418,17 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
+    public void setPT(int power, int toughness) {
+        this.setPT(new MageInt(power), new MageInt(toughness));
+    }
+
+    @Override
+    public void setPT(MageInt power, MageInt toughness) {
+        this.power = power;
+        this.toughness = toughness;
+    }
+
+    @Override
     public UUID getControllerOrOwnerId() {
         return getOwnerId();
     }
@@ -541,15 +558,15 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
                     }
                 }
 
-                // handle half of Modal Double Faces Cards on stack
-                if (stackObject == null && (this instanceof ModalDoubleFacedCard)) {
-                    stackObject = game.getStack().getSpell(((ModalDoubleFacedCard) this).getLeftHalfCard().getId(),
-                            isCopy());
-                    if (stackObject == null) {
-                        stackObject = game.getStack()
-                                .getSpell(((ModalDoubleFacedCard) this).getRightHalfCard().getId(), isCopy());
+                    // handle half of Double Faces Cards on stack
+                    if (stackObject == null && (this instanceof DoubleFacedCard)) {
+                        stackObject = game.getStack().getSpell(((DoubleFacedCard) this).getLeftHalfCard().getId(),
+                                false);
+                        if (stackObject == null) {
+                            stackObject = game.getStack()
+                                    .getSpell(((DoubleFacedCard) this).getRightHalfCard().getId(), false);
+                        }
                     }
-                }
 
                 if (stackObject == null && (this instanceof CardWithSpellOption)) {
                     stackObject = game.getStack().getSpell(((CardWithSpellOption) this).getSpellCard().getId(), isCopy());
@@ -635,7 +652,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         // If a spell or ability instructs a player to transform a permanent that
         // isn’t represented by a transforming token or a transforming double-faced
         // card, nothing happens.
-        return this.secondSideCardClazz != null || this.nightCard;
+        return this.secondSideCardClazz != null || this.nightCard || this.secondSideCard != null;
     }
 
     @Override
@@ -932,7 +949,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
                     }
                 }
             }
-            if (controller != null && spellAbility != null && !spellAbility.getTargets().isEmpty()){
+            if (controller != null && spellAbility != null && !spellAbility.getTargets().isEmpty()) {
                 // Line of code below functionally gets the target of the aura's Enchant ability, then compares to this permanent. Enchant improperly implemented in XMage, see #9583
                 // Note: stillLegalTarget used exclusively to account for Dream Leash. Can be made canTarget in the event that that card is rewritten (and "stillLegalTarget" removed from TargetImpl).
                 canAttach &= spellAbility.getTargets().get(0).copy().withNotTarget(true).stillLegalTarget(controller, this.getId(), source, game);

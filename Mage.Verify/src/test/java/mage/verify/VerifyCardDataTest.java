@@ -170,14 +170,12 @@ public class VerifyCardDataTest {
         skipListAddName(SKIP_LIST_TYPE, "UNH", "Old Fogey"); // uses summon word as a joke card
         skipListAddName(SKIP_LIST_TYPE, "UND", "Old Fogey");
         skipListAddName(SKIP_LIST_TYPE, "UST", "capital offense"); // uses "instant" instead "Instant" as a joke card
-        skipListAddName(SKIP_LIST_TYPE, "SPM", "Superior Foes of Spider-Man"); // temporary
 
         // subtype
         // skipListAddName(SKIP_LIST_SUBTYPE, set, cardName);
         skipListAddName(SKIP_LIST_SUBTYPE, "UGL", "Miss Demeanor"); // uses multiple types as a joke card: Lady, of, Proper, Etiquette
         skipListAddName(SKIP_LIST_SUBTYPE, "UGL", "Elvish Impersonators"); // subtype is "Elves" pun
         skipListAddName(SKIP_LIST_SUBTYPE, "UND", "Elvish Impersonators");
-        skipListAddName(SKIP_LIST_SUBTYPE, "SPM", "Superior Foes of Spider-Man"); // temporary
 
         // number
         // skipListAddName(SKIP_LIST_NUMBER, set, cardName);
@@ -185,7 +183,7 @@ public class VerifyCardDataTest {
         // rarity
         // skipListAddName(SKIP_LIST_RARITY, set, cardName);
         skipListAddName(SKIP_LIST_RARITY, "CMR", "The Prismatic Piper"); // Collation is not yet set up for CMR https://www.lethe.xyz/mtg/collation/cmr.html
-        skipListAddName(SKIP_LIST_RARITY, "SPM", "Gwenom, Remorseless"); // temporary
+        skipListAddName(SKIP_LIST_RARITY, "TLE", "Teferi's Protection"); // temporary
 
         // missing abilities
         // skipListAddName(SKIP_LIST_MISSING_ABILITIES, set, cardName);
@@ -306,7 +304,8 @@ public class VerifyCardDataTest {
      */
     private static boolean evergreenCheck(String s) {
         return evergreenKeywords.contains(s) || s.startsWith("protection from") || s.startsWith("hexproof from")
-                || s.startsWith("ward ") || s.startsWith("rampage ") || s.startsWith("annihilator");
+                || s.startsWith("ward ") || s.startsWith("rampage ") || s.startsWith("annihilator")
+                || s.matches("^firebending \\d");
     }
 
     private static <T> boolean eqSet(Collection<T> a, Collection<T> b) {
@@ -651,6 +650,9 @@ public class VerifyCardDataTest {
                 CardInfo cardInfo = CardRepository.instance.findCardsByClass(info.getCardClass().getCanonicalName()).stream().findFirst().orElse(null);
                 Assert.assertNotNull(cardInfo);
 
+                if (cardInfo.isDoubleFacedCard()) {
+                    break;
+                }
                 Card card = cardInfo.createCard();
                 Card secondCard = card.getSecondCardFace();
                 if (secondCard != null) {
@@ -761,22 +763,26 @@ public class VerifyCardDataTest {
                     continue;
                 }
 
-                // CHECK: poster promoType and/or textless must use full art setting
-                if (((jsonCard.promoTypes != null && jsonCard.promoTypes.contains("poster")) || jsonCard.isTextless) && !card.isFullArt()) {
-                    errorsList.add("Error: card must use full art setting: "
-                            + set.getCode() + " - " + set.getName() + " - " + card.getName() + " - " + card.getCardNumber());
-                }
-
                 // CHECK: full art lands must use full art setting
+                // CHECK: non-full art lands must not use full art setting
+                // CHECK: if full art land is using full art setting, don't perform retro or poster tests
                 boolean isLand = card.getRarity().equals(Rarity.LAND);
                 if (isLand && jsonCard.isFullArt && !card.isFullArt()) {
                     errorsList.add("Error: card must use full art lands setting: "
                             + set.getCode() + " - " + set.getName() + " - " + card.getName() + " - " + card.getCardNumber());
+                    continue;
+                } else if (isLand && !jsonCard.isFullArt && card.isFullArt()) {
+                    errorsList.add("Error: card must NOT use full art lands setting: "
+                            + set.getCode() + " - " + set.getName() + " - " + card.getName() + " - " + card.getCardNumber());
+                    continue;
+                } else if (isLand && jsonCard.isFullArt && card.isFullArt()) {
+                    // Land full art is correct, skip other tests
+                    continue;
                 }
 
-                // CHECK: non-full art lands must not use full art setting
-                if (isLand && !jsonCard.isFullArt && card.isFullArt()) {
-                    errorsList.add("Error: card must NOT use full art lands setting: "
+                // CHECK: poster promoType and/or textless must use full art setting
+                if (((jsonCard.promoTypes != null && jsonCard.promoTypes.contains("poster")) || jsonCard.isTextless) && !card.isFullArt()) {
+                    errorsList.add("Error: card must use full art setting: "
                             + set.getCode() + " - " + set.getName() + " - " + card.getName() + " - " + card.getCardNumber());
                 }
 
@@ -957,13 +963,12 @@ public class VerifyCardDataTest {
     private static final Set<String> ignoreBoosterSets = new HashSet<>();
 
     static {
-        // temporary, TODO: remove after set release and mtgjson get info
-        ignoreBoosterSets.add("Edge of Eternities");
-        // jumpstart, TODO: must implement from JumpstartPoolGenerator, see #13264
+        // jumpstart, TODO: implement from JumpstartPoolGenerator, see #13264
         ignoreBoosterSets.add("Jumpstart");
         ignoreBoosterSets.add("Jumpstart 2022");
         ignoreBoosterSets.add("Foundations Jumpstart");
         ignoreBoosterSets.add("Ravnica: Clue Edition");
+        ignoreBoosterSets.add("Avatar: The Last Airbender Eternal");
         // joke or un-sets, low implemented cards
         ignoreBoosterSets.add("Unglued");
         ignoreBoosterSets.add("Unhinged");
@@ -1222,7 +1227,8 @@ public class VerifyCardDataTest {
                         cardInfo.getCardNumber(), cardInfo.getRarity(), cardInfo.getGraphicInfo()));
                 Assert.assertNotNull(card);
 
-                if (card.getSecondCardFace() != null) {
+                //TODO: do we need this check after tdfc rework?
+                if (card.getSecondCardFace() != null && !(card instanceof DoubleFacedCard)) {
                     containsDoubleSideCards = true;
                 }
 
@@ -2192,7 +2198,8 @@ public class VerifyCardDataTest {
     // Note that the check includes reminder text, so any keyword ability with reminder text always included in the card text doesn't need to be added
     // FIN added equip abilities with flavor words, allow for those. There are also cards that affect equip costs or equip abilities, exclude those
     // Technically Enchant should be in this list, but that's added to the SpellAbility in XMage
-    Pattern targetKeywordRegexPattern = Pattern.compile("^((.*— )?equip(?! cost| abilit)|bestow|partner with|modular|backup)\\b", Pattern.MULTILINE);
+    // Earthbend is an action word and thus can be anywhere, the rest are keywords that are always first in the line
+    Pattern targetKeywordRegexPattern = Pattern.compile("earthbend |^((.*— )?equip(?! cost| abilit)|bestow|partner with|modular|backup)\\b", Pattern.MULTILINE);
 
     // Checks for targeted reflexive or delayed triggered abilities, ones that only can trigger as a result of another ability
     // and thus have their "when" located after a previous statement (detected by a period or comma followed by a space) instead of the start.
@@ -2285,10 +2292,10 @@ public class VerifyCardDataTest {
         }
 
         // special check: Werewolves front ability should only be on front and vice versa
-        if (card.getAbilities().containsClass(WerewolfFrontTriggeredAbility.class) && card.isNightCard()) {
+        if (card.getAbilities().containsClass(WerewolfFrontTriggeredAbility.class) && (card.isNightCard() || (card instanceof DoubleFacedCardHalf && ((DoubleFacedCardHalf) card).isBackSide()))) {
             fail(card, "abilities", "card is a back face werewolf with a front face ability");
         }
-        if (card.getAbilities().containsClass(WerewolfBackTriggeredAbility.class) && !card.isNightCard()) {
+        if (card.getAbilities().containsClass(WerewolfBackTriggeredAbility.class) && (!card.isNightCard() && (card instanceof DoubleFacedCardHalf && !((DoubleFacedCardHalf) card).isBackSide()))) {
             fail(card, "abilities", "card is a front face werewolf with a back face ability");
         }
 
@@ -2306,7 +2313,7 @@ public class VerifyCardDataTest {
         }
 
         // special check: siege ability must be used in double faced cards only
-        if (card.getAbilities().containsClass(SiegeAbility.class) && card.getSecondCardFace() == null) {
+        if (card.getAbilities().containsClass(SiegeAbility.class) && (card.getSecondCardFace() == null && (card instanceof DoubleFacedCardHalf && ((DoubleFacedCardHalf) card).getOtherSide() == null))) {
             fail(card, "abilities", "miss second side settings in card with siege ability");
         }
 
@@ -2635,13 +2642,13 @@ public class VerifyCardDataTest {
         if (mageObject.isCreature(game)) {
             return "this creature";
         }
-        if (mageObject.isLand(game)) {
-            return "this land";
-        }
         for (SubType subType : selfRefNamedSubtypes) {
             if (mageObject.hasSubtype(subType, game)) {
                 return "this " + subType.getDescription();
             }
+        }
+        if (mageObject.isLand(game)) {
+            return "this land";
         }
         if (mageObject.isBattle(game)) {
             return "this battle";

@@ -225,7 +225,10 @@ public interface Permanent extends Card, Controllable {
 
     boolean fight(Permanent fightTarget, Ability source, Game game);
 
-    boolean fight(Permanent fightTarget, Ability source, Game game, boolean batchTrigger);
+    /**
+     * Resolves a fight and returns the amount of excess damage dealt to fightTarget
+     */
+    int fightWithExcess(Permanent fightTarget, Ability source, Game game, boolean batchTrigger);
 
     boolean entersBattlefield(Ability source, Game game, Zone fromZone, boolean fireEvent);
 
@@ -489,7 +492,14 @@ public interface Permanent extends Card, Controllable {
     void setHarnessed(boolean value);
 
     boolean wasRoomUnlockedOnCast();
-    
+
+    /**
+     * used to reset the locked status of a room. Only used when copying a room
+     * or creating a token copy of a room permanent. Could most likely be removed
+     * after a designation class added.
+     */
+    void resetLockedStatus();
+
     boolean isLeftDoorUnlocked();
 
     boolean isRightDoorUnlocked();

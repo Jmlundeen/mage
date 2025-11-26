@@ -30,6 +30,7 @@ import mage.game.command.Dungeon;
 import mage.game.command.Emblem;
 import mage.game.command.Plane;
 import mage.game.permanent.Permanent;
+import mage.game.permanent.PermanentCard;
 import mage.game.permanent.PermanentToken;
 import mage.game.permanent.token.Token;
 import mage.game.stack.Spell;
@@ -113,7 +114,7 @@ public class CardView extends SimpleCardView {
     protected List<String> rightSplitRules;
     protected String rightSplitTypeLine;
 
-    protected boolean isModalDoubleFacedCard;
+    protected boolean isDoubleFacedCard;
 
     protected ArtRect artRect = ArtRect.NORMAL;
 
@@ -235,7 +236,7 @@ public class CardView extends SimpleCardView {
         this.rightSplitRules = cardView.rightSplitRules == null ? null : new ArrayList<>(cardView.rightSplitRules);
         this.rightSplitTypeLine = cardView.rightSplitTypeLine;
 
-        this.isModalDoubleFacedCard = cardView.isModalDoubleFacedCard;
+        this.isDoubleFacedCard = cardView.isDoubleFacedCard;
 
         this.artRect = cardView.artRect;
         this.targets = cardView.targets == null ? null : new ArrayList<>(cardView.targets);
@@ -534,12 +535,18 @@ public class CardView extends SimpleCardView {
                 this.manaCostLeftStr = splitCard.getLeftHalfCard().getManaCostSymbols();
                 this.manaCostRightStr = splitCard.getRightHalfCard().getManaCostSymbols();
             } else if (card instanceof ModalDoubleFacedCard) {
-                this.isModalDoubleFacedCard = true;
-                ModalDoubleFacedCard mainCard = ((ModalDoubleFacedCard) card);
+                this.isDoubleFacedCard = true;
+                DoubleFacedCard mainCard = ((DoubleFacedCard) card);
                 fullCardName = mainCard.getLeftHalfCard().getName() + MockCard.MODAL_DOUBLE_FACES_NAME_SEPARATOR + mainCard.getRightHalfCard().getName();
                 this.manaCostLeftStr = mainCard.getLeftHalfCard().getManaCostSymbols();
                 this.manaCostRightStr = mainCard.getRightHalfCard().getManaCostSymbols();
-            } else if (card instanceof CardWithSpellOption) {
+            } else if (card instanceof TransformingDoubleFacedCard) {
+                this.isDoubleFacedCard = true;
+                DoubleFacedCard mainCard = ((DoubleFacedCard) card);
+                fullCardName = mainCard.getLeftHalfCard().getName() + MockCard.MODAL_DOUBLE_FACES_NAME_SEPARATOR + mainCard.getRightHalfCard().getName();
+                this.manaCostLeftStr = mainCard.getLeftHalfCard().getManaCostSymbols();
+                this.manaCostRightStr = new ArrayList<>();
+            }  else if (card instanceof CardWithSpellOption) {
                 this.isSplitCard = true;
                 CardWithSpellOption mainCard = ((CardWithSpellOption) card);
                 leftSplitName = mainCard.getName();

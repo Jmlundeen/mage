@@ -40,6 +40,8 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
     private static final String alloyMyr = "Alloy Myr";
     // Land
     private static final String exoticOrchard = "Exotic Orchard";
+    // {U} Creature-Planeswalker TDFC
+    private static final String tamiyo = "Tamiyo, Inquisitive Student";
     // Creature with foretell {4}{R}
     private static final String doomskarTitan = "Doomskar Titan";
 
@@ -60,7 +62,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
         execute();
-        assertExileCount(playerA, 1);
+        assertExileCount(playerA, alloyMyr, 1);
 
         setStopAt(3, PhaseStep.PRECOMBAT_MAIN);
         activateAbility(3, PhaseStep.PRECOMBAT_MAIN, playerA, "Foretell");
@@ -87,7 +89,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
         execute();
-        assertExileCount(playerA, 1);
+        assertExileCount(playerA, exoticOrchard, 1);
 
         checkPlayableAbility("Can't fortell land", 1, PhaseStep.POSTCOMBAT_MAIN, playerA, "Foretell", false);
 
@@ -114,7 +116,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
         execute();
-        assertExileCount(playerA, 1);
+        assertExileCount(playerA, blightclimbPathway, 1);
         checkPlayableAbility("Can't fortell land", 1, PhaseStep.POSTCOMBAT_MAIN, playerA, "Foretell", false);
     }
 
@@ -137,7 +139,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
         execute();
-        assertExileCount(playerA, 1);
+        assertExileCount(playerA, akoumWarrior, 1);
 
         // TODO: Add functionality to test for this programmatically by changing assertAbilityCount
         showAvailableAbilities("Should only be 1 Foretell ability", 3, PhaseStep.PRECOMBAT_MAIN, playerA);
@@ -145,7 +147,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(3, PhaseStep.PRECOMBAT_MAIN);
         execute();
-        assertExileCount(playerA, 0);
+        assertExileCount(playerA, akoumWarrior, 0);
         assertPermanentCount(playerA, akoumWarrior, 1);
     }
 
@@ -171,7 +173,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(1, PhaseStep.END_TURN);
         execute();
-        assertExileCount(playerA, 2);
+        assertExileCount(playerA, alrund, 2);
 
         activateAbility(3, PhaseStep.PRECOMBAT_MAIN, playerA, "Foretell {1}{U}{U}");
         waitStackResolved(3, PhaseStep.PRECOMBAT_MAIN);
@@ -179,7 +181,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(3, PhaseStep.PRECOMBAT_MAIN);
         execute();
-        assertExileCount(playerA, 0);
+        assertExileCount(playerA, alrund, 0);
         assertPermanentCount(playerA, alrund, 1);
         assertPermanentCount(playerA, hakka, 1);
     }
@@ -201,7 +203,7 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
 
         setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
         execute();
-        assertExileCount(playerA, 1);
+        assertExileCount(playerA, ancestralVision, 1);
 
         checkPlayableAbility("Can't fortell suspend-only card", 1, PhaseStep.POSTCOMBAT_MAIN, playerA, "Foretell", false);
 
@@ -234,5 +236,28 @@ public class EtherealValkyrieTest extends CardTestPlayerBase {
                 );
             }
         }
+    }
+
+    /**
+     * Test a TDFC, which should be castable.
+     */
+    @Test
+    public void testTransformingDoubleFacedCard() {
+        addCard(Zone.BATTLEFIELD, playerA, "Plains", 1);
+        addCard(Zone.BATTLEFIELD, playerA, "Island", 1);
+        addCard(Zone.BATTLEFIELD, playerA, "Island", 4);
+        addCard(Zone.HAND, playerA, etherealValkyrie);
+        addCard(Zone.HAND, playerA, tamiyo);
+
+        setStrictChooseMode(true);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, etherealValkyrie);
+        addTarget(playerA, tamiyo);
+
+        activateAbility(3, PhaseStep.PRECOMBAT_MAIN, playerA, "Foretell {U}");
+
+        setStopAt(3, PhaseStep.PRECOMBAT_MAIN);
+
+        execute();
+        assertPermanentCount(playerA, tamiyo, 1);
     }
 }
