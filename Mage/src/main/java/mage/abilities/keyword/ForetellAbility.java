@@ -243,9 +243,9 @@ public class ForetellAbility extends SpecialAction {
                 ability.setAbilityName(rightHalfCard.getName());
                 rightHalfCard.getFaceDownValues().getAbilities().add(ability);
             }
-        } else if (card instanceof ModalDoubleFacedCard) {
+        } else if (card instanceof DoubleFacedCard) {
             if (foretellCost != null) {
-                ModalDoubleFacedCardHalf leftHalfCard = ((ModalDoubleFacedCard) card).getLeftHalfCard();
+                DoubleFacedCardHalf leftHalfCard = ((DoubleFacedCard) card).getLeftHalfCard();
                 // some MDFC's are land IE: sea gate restoration
                 if (!leftHalfCard.isLand(game)) {
                     ForetellCostAbility ability = new ForetellCostAbility(foretellCost);
@@ -257,7 +257,7 @@ public class ForetellAbility extends SpecialAction {
                 }
             }
             if (foretellSplitCost != null) {
-                ModalDoubleFacedCardHalf rightHalfCard = ((ModalDoubleFacedCard) card).getRightHalfCard();
+                DoubleFacedCardHalf rightHalfCard = ((DoubleFacedCard) card).getRightHalfCard();
                 // some MDFC's are land IE: sea gate restoration
                 if (!rightHalfCard.isLand(game)) {
                     ForetellCostAbility ability = new ForetellCostAbility(foretellSplitCost);
