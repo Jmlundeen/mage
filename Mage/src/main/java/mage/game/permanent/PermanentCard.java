@@ -125,8 +125,12 @@ public class PermanentCard extends PermanentImpl {
         this.card = permanent.card.copy();
         this.maxLevelCounters = permanent.maxLevelCounters;
         this.zoneChangeCounter = permanent.zoneChangeCounter;
-        this.originalColor = permanent.originalColor.copy();
-        this.originalFrameColor = permanent.originalFrameColor.copy();
+        if (permanent.originalColor != null) {
+            this.originalColor = permanent.originalColor.copy();
+        }
+        if (permanent.originalFrameColor != null) {
+            this.originalFrameColor = permanent.originalFrameColor.copy();
+        }
     }
 
     @Override
@@ -214,6 +218,11 @@ public class PermanentCard extends PermanentImpl {
             this.originalColor = card.getColor(game).copy();
             this.originalFrameColor = card.getFrameColor(game).copy();
         } else {
+            if (originalColor == null || originalFrameColor == null) {
+                // in case original colors are missing, set them now
+                originalColor = card.getColor().copy();
+                originalFrameColor = card.getFrameColor(game).copy();
+            }
             this.color = originalColor.copy();
             this.frameColor = originalFrameColor.copy();
         }
