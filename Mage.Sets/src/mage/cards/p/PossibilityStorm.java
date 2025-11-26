@@ -126,6 +126,7 @@ class PossibilityStormEffect extends OneShotEffect {
                 .setExileName(sourceObject.getIdName());
         if (!noLongerOnStack) {
             spellController.moveCards(parameters, source, game);
+            spell = (Spell) game.getLastKnownInformation(spell.getId(), Zone.STACK);
         }
 
         if (!spellController.getLibrary().hasCards()) { return true; }
