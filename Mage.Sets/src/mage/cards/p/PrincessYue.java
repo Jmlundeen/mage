@@ -15,6 +15,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
@@ -104,7 +105,10 @@ class PrincessYueReturnEffect extends OneShotEffect {
         }
         game.addEffect(new PrincessYueTypeEffect()
                 .setTargetPointer(new FixedTarget(new MageObjectReference(card, game, 1))), source);
-        return player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        return player.moveCards(parameters, source, game);
     }
 }
 

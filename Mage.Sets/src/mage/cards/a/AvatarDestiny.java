@@ -101,10 +101,7 @@ class AvatarDestinyEffect extends OneShotEffect {
         TargetCard target = new TargetCard(0, 1, Zone.ALL, StaticFilters.FILTER_CARD_CREATURE);
         target.withNotTarget(true);
         player.choose(Outcome.PutCreatureInPlay, cards, target, source, game);
-        player.moveCards(
-                game.getCard(target.getFirstTarget()), Zone.BATTLEFIELD, source,
-                game, true, false, false, null
-        );
+        player.moveCards(game.getCard(target.getFirstTarget()), Zone.BATTLEFIELD, source, game);
         return true;
     }
 }

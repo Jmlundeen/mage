@@ -2,7 +2,10 @@ package mage.constants;
 
 import mage.abilities.Ability;
 import mage.abilities.keyword.TransformAbility;
-import mage.cards.*;
+import mage.cards.Card;
+import mage.cards.Cards;
+import mage.cards.CardsImpl;
+import mage.cards.TransformingDoubleFacedCard;
 import mage.game.Game;
 import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
@@ -10,6 +13,7 @@ import mage.players.Player;
 import mage.util.CardUtil;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author awjackson
@@ -61,6 +65,7 @@ public enum PutCards {
     }
 
     public boolean moveCard(Player player, Card card, Ability source, Game game, String description) {
+        MoveCardsParameters parameters;
         switch (this) {
             case TOP_OR_BOTTOM:
                 if (player.chooseUse(Outcome.Neutral,
@@ -78,11 +83,11 @@ public enum PutCards {
             case BOTTOM_RANDOM:
                 return player.putCardsOnBottomOfLibrary(new CardsImpl(card), game, source, false);
             case BATTLEFIELD_TAPPED:
-                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
                         .setTapped(true);
                 return player.moveCards(parameters, source, game);
             case BATTLEFIELD_TAPPED_ATTACKING:
-                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
                         .setTapped(true);
                 if (player.moveCards(parameters, source, game)) {
                     Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
@@ -110,6 +115,7 @@ public enum PutCards {
     }
 
     public boolean moveCards(Player player, Cards cards, Ability source, Game game) {
+        MoveCardsParameters parameters;
         switch (this) {
             case TOP_OR_BOTTOM:
                 throw new UnsupportedOperationException("PutCards.TOP_OR_BOTTOM does not support moving multiple cards");
@@ -120,18 +126,20 @@ public enum PutCards {
             case BOTTOM_RANDOM:
                 return player.putCardsOnBottomOfLibrary(cards, game, source, false);
             case BATTLEFIELD_TAPPED:
-                MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
                         .setTapped(true);
                 return player.moveCards(parameters, source, game);
             case BATTLEFIELD_TAPPED_ATTACKING:
-                MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
                         .setTapped(true);
-                if (player.moveCards(parameters, source, game)) {
-                    for (Card card : cardSet) {
-                        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-                        if (permanent != null) {
-                            game.getCombat().addAttackingCreature(permanent.getId(), game);
-                        }
+                Set<Permanent> permanents = player.moveCardsWithResult(parameters, source, game)
+                        .stream()
+                        .filter(c -> c instanceof Permanent)
+                        .map(c -> (Permanent) c)
+                        .collect(Collectors.toSet());
+                if (!permanents.isEmpty()) {
+                    for (Permanent permanent : permanents) {
+                        game.getCombat().addAttackingCreature(permanent.getId(), game);
                     }
                     return true;
                 }
