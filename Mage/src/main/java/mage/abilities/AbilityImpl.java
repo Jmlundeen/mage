@@ -1399,7 +1399,8 @@ public abstract class AbilityImpl implements Ability {
         }
 
         if (!object.hasAbility(this, game)) {
-            return false;
+            // check if ability works face down
+            return object.isFaceDown() && this.getWorksFaceDown();
         }
 
         // phase in/out support
