@@ -64,7 +64,7 @@ public class AliasesApiTest extends CardTestPlayerBase {
         // name with face down spells: face down spells don't have names, see https://github.com/magefree/mage/issues/6569
         Card bearCard = CardRepository.instance.findCard("Balduvian Bears").createCard();
         Spell normalSpell = new Spell(bearCard, bearCard.getSpellAbility(), playerA.getId(), Zone.HAND, currentGame);
-        Spell faceDownSpell = new Spell(bearCard, bearCard.getSpellAbility(), playerA.getId(), Zone.HAND, currentGame);
+        Spell faceDownSpell = new Spell(bearCard.copy(), bearCard.getSpellAbility(), playerA.getId(), Zone.HAND, currentGame);
         faceDownSpell.setFaceDown(true);
         // normal spell
         Assert.assertFalse(CardUtil.haveSameNames(normalSpell, "", currentGame));
