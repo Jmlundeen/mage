@@ -93,14 +93,7 @@ public class Spell extends StackObjectImpl implements Card {
         }
 
         if (ability.getSpellAbilityCastMode().isFaceDown()) {
-            BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
-            if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.MORPH) {
-                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
-            } else if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.DISGUISE){
-                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
-            } else {
-                faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
-            }
+            BecomesFaceDownCreatureEffect.FaceDownType faceDownType = getFaceDownType(ability);
             BecomesFaceDownCreatureEffect.makeFaceDownObject(card, faceDownType, null);
         } else if (affectedCard.isFaceDown()) {
             affectedCard.setFaceDown(false);
@@ -139,6 +132,18 @@ public class Spell extends StackObjectImpl implements Card {
         this.controllerId = controllerId;
         this.fromZone = fromZone;
         this.countered = false;
+    }
+
+    private static BecomesFaceDownCreatureEffect.FaceDownType getFaceDownType(SpellAbility ability) {
+        BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
+        if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.MORPH) {
+            faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
+        } else if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.DISGUISE){
+            faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
+        } else {
+            faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
+        }
+        return faceDownType;
     }
 
     protected Spell(final Spell spell) {
@@ -404,8 +409,7 @@ public class Spell extends StackObjectImpl implements Card {
             if (bestow) {
                 MageObjectReference mor = new MageObjectReference(getSpellAbility());
                 game.storePermanentCostsTags(mor, getSpellAbility());
-                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
-                        .setFaceDown(isFaceDown());
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD);
                 return controller.moveCards(parameters, ability, game);
             } else {
                 //20091005 - 608.2b
@@ -424,6 +428,7 @@ public class Spell extends StackObjectImpl implements Card {
             MageObjectReference mor = new MageObjectReference(getSpellAbility());
             game.storePermanentCostsTags(mor, getSpellAbility());
             MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setFaceDownType(getFaceDownType(ability))
                     .setFaceDown(isFaceDown());
             return controller.moveCards(parameters, ability, game);
         }
