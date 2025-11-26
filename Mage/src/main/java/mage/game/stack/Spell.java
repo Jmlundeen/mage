@@ -914,12 +914,6 @@ public class Spell extends StackObjectImpl implements Card {
 
     @Override
     public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
-        // 706.10a If a copy of a spell is in a zone other than the stack, it ceases to exist.
-        // If a copy of a card is in any zone other than the stack or the battlefield, it ceases to exist.
-        // These are state-based actions. See rule 704.
-        if (this.isCopy() && parameters.getToZone() != Zone.STACK) {
-            return true;
-        }
         return card.moveToZone(parameters, source, game, appliedEffects);
     }
 
