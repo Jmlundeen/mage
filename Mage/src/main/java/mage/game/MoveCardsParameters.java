@@ -1,5 +1,6 @@
 package mage.game;
 
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.cards.Card;
 import mage.cards.CopiableValues;
 import mage.constants.Zone;
@@ -41,7 +42,11 @@ public class MoveCardsParameters {
     // Indicates whether the cards should be placed at the top of the library
     boolean toTopOfLibrary = true;
 
+    // Values to set for face-down cards
     CopiableValues faceDownValues;
+
+    // Type of effect setting the face-down status
+    BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
 
     /**
      * Constructs a new MoveCardsParameters object with the specified cards and destination zone.
@@ -278,6 +283,15 @@ public class MoveCardsParameters {
 
     public MoveCardsParameters setFaceDownValues(CopiableValues faceDownValues) {
         this.faceDownValues = faceDownValues;
+        return this;
+    }
+
+    public BecomesFaceDownCreatureEffect.FaceDownType getFaceDownType() {
+        return faceDownType;
+    }
+
+    public MoveCardsParameters setFaceDownType(BecomesFaceDownCreatureEffect.FaceDownType faceDownType) {
+        this.faceDownType = faceDownType;
         return this;
     }
 }
