@@ -286,7 +286,7 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
             )));
         } else {
             Abilities<Ability> abilities = object instanceof Permanent
-                    ? ((Permanent) object).getCopiableValues().getAbilities()
+                    ? ((Permanent) object).getMainCard().getAbilities()
                     : object.getAbilities();
             for (Ability ability : abilities) {
                 // 701.33c
@@ -298,13 +298,6 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
                 if (ability instanceof MorphAbility || ability instanceof DisguiseAbility) {
                     TurnFaceUpAbility turnFaceUpAbility = getTurnFaceUpAbility(ability);
                     objectFaceDownValues.getAbilities().add(turnFaceUpAbility);
-                }
-
-                // Add abilities that work face down
-                if (ability.getWorksFaceDown()) {
-                    Ability copy = ability.copy();
-                    copy.setRuleVisible(false);
-                    faceDownValues.getAbilities().add(copy);
                 }
             }
             if (faceDownType == FaceDownType.CLOAKED || faceDownType == FaceDownType.DISGUISED) {
