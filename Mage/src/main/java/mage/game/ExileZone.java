@@ -117,4 +117,13 @@ public class ExileZone extends CardsImpl {
     public ExileZone copy() {
         return new ExileZone(this);
     }
+
+    @Override
+    public String toString() {
+        return "ExileZone{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", cards=" + this.size() +
+                '}';
+    }
 }
