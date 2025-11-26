@@ -177,6 +177,13 @@ public abstract class DoubleFacedCard extends CardImpl implements CardWithHalves
     }
 
     @Override
+    public void setFaceDown(boolean faceDown) {
+        super.setFaceDown(faceDown);
+        leftHalfCard.setFaceDown(faceDown);
+        rightHalfCard.setFaceDown(faceDown);
+    }
+
+    @Override
     public Counters getCounters(Game game) {
         return getCounters(game.getState());
     }
