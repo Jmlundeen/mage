@@ -40,9 +40,9 @@ public final class AutumnalGloom extends TransformingDoubleFacedCard {
 
         // Ancient of the Equinox
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getRightHalfCard().addAbility(TrampleAbility.getInstance());
         // Hexproof
-        this.addAbility(HexproofAbility.getInstance());
+        this.getRightHalfCard().addAbility(HexproofAbility.getInstance());
     }
 
     private AutumnalGloom(final AutumnalGloom card) {

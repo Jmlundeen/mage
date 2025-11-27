@@ -125,10 +125,14 @@ public final class AvatarTheLastAirbenderEternal extends ExpansionSet {
         cards.add(new SetCardInfo("Fevered Visions", 49, Rarity.MYTHIC, mage.cards.f.FeveredVisions.class));
         cards.add(new SetCardInfo("Fierce Guardianship", 307, Rarity.RARE, mage.cards.f.FierceGuardianship.class));
         cards.add(new SetCardInfo("Fiery Confluence", 165, Rarity.RARE, mage.cards.f.FieryConfluence.class));
+        cards.add(new SetCardInfo("Fire Lord Ozai", 104, Rarity.MYTHIC, mage.cards.f.FireLordOzai.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Fire Lord Ozai", 186, Rarity.MYTHIC, mage.cards.f.FireLordOzai.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Fire Nation Ambushers", 229, Rarity.COMMON, mage.cards.f.FireNationAmbushers.class));
         cards.add(new SetCardInfo("Fire Nation Archers", 237, Rarity.RARE, mage.cards.f.FireNationArchers.class));
         cards.add(new SetCardInfo("Fire Nation Occupation", 105, Rarity.RARE, mage.cards.f.FireNationOccupation.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Fire Nation Occupation", 187, Rarity.RARE, mage.cards.f.FireNationOccupation.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Fire Nation Salvagers", 106, Rarity.RARE, mage.cards.f.FireNationSalvagers.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Fire Nation Salvagers", 188, Rarity.RARE, mage.cards.f.FireNationSalvagers.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Fire Nation Sentinels", 230, Rarity.RARE, mage.cards.f.FireNationSentinels.class));
         cards.add(new SetCardInfo("Fire Nation Soldier", 238, Rarity.COMMON, mage.cards.f.FireNationSoldier.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Fire Nation Soldier", 280, Rarity.COMMON, mage.cards.f.FireNationSoldier.class, NON_FULL_USE_VARIOUS));
@@ -199,6 +203,7 @@ public final class AvatarTheLastAirbenderEternal extends ExpansionSet {
         cards.add(new SetCardInfo("Meteorite", 54, Rarity.MYTHIC, mage.cards.m.Meteorite.class));
         cards.add(new SetCardInfo("Mirrorwing Dragon", 33, Rarity.MYTHIC, mage.cards.m.MirrorwingDragon.class));
         cards.add(new SetCardInfo("Moku, Meandering Drummer", 122, Rarity.UNCOMMON, mage.cards.m.MokuMeanderingDrummer.class));
+        cards.add(new SetCardInfo("Momo's Heist", 72, Rarity.RARE, mage.cards.m.MomosHeist.class));
         cards.add(new SetCardInfo("Momo, Rambunctious Rascal", 217, Rarity.UNCOMMON, mage.cards.m.MomoRambunctiousRascal.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Momo, Rambunctious Rascal", 270, Rarity.UNCOMMON, mage.cards.m.MomoRambunctiousRascal.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Monk Gyatso", 173, Rarity.RARE, mage.cards.m.MonkGyatso.class, NON_FULL_USE_VARIOUS));
@@ -215,6 +220,8 @@ public final class AvatarTheLastAirbenderEternal extends ExpansionSet {
         cards.add(new SetCardInfo("Mystical Tutor", 308, Rarity.RARE, mage.cards.m.MysticalTutor.class));
         cards.add(new SetCardInfo("Nightmares and Daydreams", 94, Rarity.RARE, mage.cards.n.NightmaresAndDaydreams.class));
         cards.add(new SetCardInfo("Noxious Gearhulk", 25, Rarity.MYTHIC, mage.cards.n.NoxiousGearhulk.class));
+        cards.add(new SetCardInfo("Nyla, Shirshu Sleuth", 109, Rarity.RARE, mage.cards.n.NylaShirshuSleuth.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Nyla, Shirshu Sleuth", 190, Rarity.RARE, mage.cards.n.NylaShirshuSleuth.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Obscuring Haze", 313, Rarity.RARE, mage.cards.o.ObscuringHaze.class));
         cards.add(new SetCardInfo("Overwhelming Victory", 123, Rarity.RARE, mage.cards.o.OverwhelmingVictory.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Overwhelming Victory", 196, Rarity.RARE, mage.cards.o.OverwhelmingVictory.class, NON_FULL_USE_VARIOUS));
@@ -264,6 +271,8 @@ public final class AvatarTheLastAirbenderEternal extends ExpansionSet {
         cards.add(new SetCardInfo("Solid Ground", 142, Rarity.UNCOMMON, mage.cards.s.SolidGround.class));
         cards.add(new SetCardInfo("Stand United", 149, Rarity.COMMON, mage.cards.s.StandUnited.class));
         cards.add(new SetCardInfo("Standstill", 19, Rarity.MYTHIC, mage.cards.s.Standstill.class));
+        cards.add(new SetCardInfo("Storm of Memories", 126, Rarity.RARE, mage.cards.s.StormOfMemories.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Storm of Memories", 199, Rarity.RARE, mage.cards.s.StormOfMemories.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Suki, Kyoshi Captain", 175, Rarity.RARE, mage.cards.s.SukiKyoshiCaptain.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Suki, Kyoshi Captain", 85, Rarity.RARE, mage.cards.s.SukiKyoshiCaptain.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Sunbaked Canyon", 58, Rarity.MYTHIC, mage.cards.s.SunbakedCanyon.class));
@@ -316,6 +325,8 @@ public final class AvatarTheLastAirbenderEternal extends ExpansionSet {
         cards.add(new SetCardInfo("Warship Scout", 285, Rarity.COMMON, mage.cards.w.WarshipScout.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Warstorm Surge", 38, Rarity.MYTHIC, mage.cards.w.WarstormSurge.class));
         cards.add(new SetCardInfo("Water Whip", 227, Rarity.RARE, mage.cards.w.WaterWhip.class));
+        cards.add(new SetCardInfo("Waterbender's Restoration", 183, Rarity.RARE, mage.cards.w.WaterbendersRestoration.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Waterbender's Restoration", 99, Rarity.RARE, mage.cards.w.WaterbendersRestoration.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Whirlwind Technique", 100, Rarity.UNCOMMON, mage.cards.w.WhirlwindTechnique.class));
         cards.add(new SetCardInfo("Wolf Cove Villager", 221, Rarity.COMMON, mage.cards.w.WolfCoveVillager.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Wolf Cove Villager", 276, Rarity.COMMON, mage.cards.w.WolfCoveVillager.class, NON_FULL_USE_VARIOUS));

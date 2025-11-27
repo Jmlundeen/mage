@@ -14,7 +14,10 @@ import mage.abilities.keyword.EnchantAbility;
 import mage.abilities.keyword.TransformAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardSetInfo;
+import mage.cards.TransformingDoubleFacedCard;
+import mage.cards.DoubleFacedCardHalf;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
 import mage.filter.FilterCard;
@@ -107,15 +110,15 @@ class AccursedWitchReturnTransformedEffect extends OneShotEffect {
             return false;
         }
 
-        Card card = game.getCard(source.getSourceId());
+        DoubleFacedCardHalf card = (DoubleFacedCardHalf) game.getCard(source.getSourceId());
         if (card == null) {
             return false;
         }
 
         game.getState().setValue(TransformAbility.VALUE_KEY_ENTER_TRANSFORMED + source.getSourceId(), Boolean.TRUE);
-        game.getState().setValue("attachTo:" + source.getSourceId(), attachTo.getId());
+        game.getState().setValue("attachTo:" + card.getOtherSide().getId(), attachTo.getId());
         if (controller.moveCards(card, Zone.BATTLEFIELD, source, game)) {
-            attachTo.addAttachment(card.getId(), source, game);
+            attachTo.addAttachment(card.getOtherSide().getId(), source, game);
         }
         return true;
     }
