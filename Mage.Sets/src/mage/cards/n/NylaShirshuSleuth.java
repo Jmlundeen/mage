@@ -21,6 +21,7 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.ObjectSourcePlayerPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.ClueArtifactToken;
 import mage.players.Player;
 import mage.target.common.TargetCardInExile;
@@ -120,11 +121,10 @@ class NylaShirshuSleuthEffect extends OneShotEffect {
             return false;
         }
         int mv = card.getManaValue();
-        player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceName(game, source));
+        player.moveCards(parameters, source, game);
         if (mv > 0) {
             player.loseLife(mv, game, source, false);
             new ClueArtifactToken().putOntoBattlefield(mv, game, source);

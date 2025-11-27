@@ -17,6 +17,7 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInGraveyard;
@@ -93,11 +94,10 @@ class HamaTheBloodbenderExileEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        controller.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceName(game, source));
+        controller.moveCards(parameters, source, game);
         if (source.getSourcePermanentIfItStillExists(game) != null) {
             game.addEffect(new HamaTheBloodbenderCastEffect(card, game), source);
         }
