@@ -17,6 +17,7 @@ import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.effects.common.UntapSourceEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.mana.ColorlessManaAbility;
+import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.CardType;
@@ -112,7 +113,7 @@ class CreepingInnEffect extends OneShotEffect {
             target.withNotTarget(true);
             if (target.canChoose(player.getId(), source, game)) {
                 if (player.choose(Outcome.Exile, target, source, game)) {
-                    mage.cards.Card cardChosen = game.getCard(target.getFirstTarget());
+                    Card cardChosen = game.getCard(target.getFirstTarget());
                     if (cardChosen != null) {
                         int lifeAmount = 0;
                         MoveCardsParameters parameters = new MoveCardsParameters(cardChosen, Zone.EXILED)
