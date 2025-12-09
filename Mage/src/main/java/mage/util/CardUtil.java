@@ -40,7 +40,6 @@ import mage.game.events.BatchEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
-import mage.game.permanent.PermanentMeld;
 import mage.game.permanent.PermanentToken;
 import mage.game.permanent.token.Token;
 import mage.game.stack.Spell;
@@ -1211,12 +1210,7 @@ public final class CardUtil {
         // prepare card and permanent
         permCard.setZone(Zone.BATTLEFIELD, game);
         permCard.setOwnerId(player.getId());
-        PermanentCard permanent;
-        if (permCard instanceof MeldCard) {
-            permanent = new PermanentMeld(permCard, player.getId(), game);
-        } else {
-            permanent = new PermanentCard(permCard, player.getId(), game);
-        }
+        PermanentCard permanent = new PermanentCard(permCard, player.getId(), game);
 
         // put onto battlefield with possible counters without ETB
         game.getPermanentsEntering().put(permanent.getId(), permanent);

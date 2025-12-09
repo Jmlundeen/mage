@@ -29,7 +29,6 @@ import mage.game.command.Emblem;
 import mage.game.command.Plane;
 import mage.game.match.Match;
 import mage.game.permanent.PermanentCard;
-import mage.game.permanent.PermanentMeld;
 import mage.game.permanent.PermanentToken;
 import mage.game.permanent.token.Token;
 import mage.players.Player;
@@ -133,12 +132,7 @@ public class TestCardRenderDialog extends MageDialog {
         }
 
         // meld card must be a special class, see CardUtils.putCardOntoBattlefieldWithEffects
-        PermanentCard permanent;
-        if (permCard instanceof MeldCard) {
-            permanent = new PermanentMeld(permCard, controllerId, game);
-        } else {
-            permanent = new PermanentCard(permCard, controllerId, game);
-        }
+        PermanentCard permanent = new PermanentCard(permCard, controllerId, game);
 
         if (transform) {
             permanent.setTransformed(true);
