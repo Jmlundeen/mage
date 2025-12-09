@@ -53,7 +53,7 @@ public final class CardScanner {
         // check cards (only add mode, without updates)
         for (ExpansionSet set : Sets.getInstance().values()) {
             for (ExpansionSet.SetCardInfo setInfo : set.getSetCardInfo()) {
-                if (CardRepository.instance.findCard(set.getCode(), setInfo.getCardNumber(), false) == null) {
+                if (CardRepository.instance.findCard(set.getCode(), setInfo.getCardNumber()) == null) {
                     // found new card
                     Card card = CardImpl.createCard(
                             setInfo.getCardClass(),

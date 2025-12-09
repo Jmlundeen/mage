@@ -96,12 +96,6 @@ public class CardInfo {
     @DatabaseField
     protected boolean flipCard;
     @DatabaseField
-    protected boolean doubleFaced;
-    @DatabaseField(indexName = "nightCard_index")
-    protected boolean nightCard;
-    @DatabaseField
-    protected boolean meldCard;
-    @DatabaseField
     protected String flipCardName;
     @DatabaseField
     protected String secondSideName;
@@ -149,9 +143,6 @@ public class CardInfo {
             this.meldsToCardName = meldToCard.getName();
         }
 
-        this.doubleFaced = card.isTransformable() && card.getSecondCardFace() != null;
-        this.nightCard = card.isNightCard();
-        this.meldCard = card instanceof MeldCard;
         Card secondSide = card.getSecondCardFace();
         if (secondSide != null) {
             this.secondSideName = secondSide.getName();
@@ -453,18 +444,6 @@ public class CardInfo {
 
     public String getMeldsToCardName() {
         return meldsToCardName;
-    }
-
-    public boolean isDoubleFaced() {
-        return doubleFaced;
-    }
-
-    public boolean isNightCard() {
-        return nightCard;
-    }
-
-    public boolean isMeldCard() {
-        return meldCard;
     }
 
     public String getSecondSideName() {

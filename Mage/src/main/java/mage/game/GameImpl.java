@@ -351,10 +351,6 @@ public abstract class GameImpl implements Game {
                 Card spellCard = ((CardWithSpellOption) card).getSpellCard();
                 spellCard.setOwnerId(ownerId);
                 addCardToState(spellCard);
-            } else if (card.isTransformable() && card.getSecondCardFace() != null) {
-                Card nightCard = card.getSecondCardFace();
-                nightCard.setOwnerId(ownerId);
-                addCardToState(nightCard);
             }
         }
     }

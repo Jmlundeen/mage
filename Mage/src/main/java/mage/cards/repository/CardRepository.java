@@ -329,28 +329,12 @@ public enum CardRepository {
         }
         return names;
     }
-
     public CardInfo findCard(String setCode, String cardNumber) {
-        return findCard(setCode, cardNumber, true);
-    }
-
-    public CardInfo findCard(String setCode, String cardNumber, boolean ignoreNightCards) {
         try {
             QueryBuilder<CardInfo, Object> queryBuilder = cardsDao.queryBuilder();
-            if (ignoreNightCards) {
-                queryBuilder.limit(1L).where()
-                        .eq("setCode", new SelectArg(setCode))
-                        .and().eq("cardNumber", new SelectArg(cardNumber))
-                        .and().eq("nightCard", new SelectArg(false));
-            } else {
-                queryBuilder.limit(1L).where()
-                        .eq("setCode", new SelectArg(setCode))
-                        .and().eq("cardNumber", new SelectArg(cardNumber));
-
-                // some double faced cards can use second side card with same number as main side
-                // (example: vow - 65 - Jacob Hauken, Inspector), so make priority for main side first
-                queryBuilder.orderBy("nightCard", true);
-            }
+            queryBuilder.limit(1L).where()
+                    .eq("setCode", new SelectArg(setCode))
+                    .and().eq("cardNumber", new SelectArg(cardNumber));
             List<CardInfo> result = cardsDao.query(queryBuilder.prepare());
             if (!result.isEmpty()) {
                 return result.get(0);

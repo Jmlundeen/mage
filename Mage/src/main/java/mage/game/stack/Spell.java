@@ -810,11 +810,6 @@ public class Spell extends StackObjectImpl implements Card {
         return null;
     }
 
-    @Override
-    public boolean isNightCard() {
-        return false;
-    }
-
     public boolean isPrototyped() {
         return prototyped;
     }

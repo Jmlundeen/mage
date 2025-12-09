@@ -199,7 +199,6 @@ public class PermanentCard extends PermanentImpl {
         this.setImageFileName(card.getImageFileName());
         this.setImageNumber(card.getImageNumber());
 
-        this.nightCard = card.isNightCard();
         this.flipCard = card.isFlipCard();
         this.flipCardName = card.getFlipCardName();
         // Rooms set characteristics at the end so nothing gets overwritten

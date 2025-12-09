@@ -361,13 +361,6 @@ public class VerifyCardDataTest {
             for (ExpansionSet.SetCardInfo checkCard : set.getSetCardInfo()) {
                 String cardNumber = checkCard.getCardNumber();
 
-                // ignore double faced
-                Card realCard = CardImpl.createCard(checkCard.getCardClass(), new CardSetInfo(checkCard.getName(), set.getCode(),
-                        checkCard.getCardNumber(), checkCard.getRarity(), checkCard.getGraphicInfo()));
-                if (realCard.isNightCard()) {
-                    continue;
-                }
-
                 if (cardsList.containsKey(cardNumber)) {
                     ExpansionSet.SetCardInfo prevCard = cardsList.get(cardNumber);
 
@@ -397,7 +390,7 @@ public class VerifyCardDataTest {
             System.out.println(error);
         }
 
-        if (doubleErrors.size() > 0) {
+        if (!doubleErrors.isEmpty()) {
             Assert.fail("DB has duplicated card numbers, found errors: " + doubleErrors.size());
         }
     }
@@ -2294,11 +2287,6 @@ public class VerifyCardDataTest {
         }
         if (card.getAbilities().containsClass(WerewolfBackTriggeredAbility.class) && (card instanceof DoubleFacedCardHalf && !((DoubleFacedCardHalf) card).isBackSide())) {
             fail(card, "abilities", "card is a front face werewolf with a back face ability");
-        }
-
-        // special check: back side in TDFC must be only night card
-        if (card.getSecondCardFace() != null && !card.getSecondCardFace().isNightCard()) {
-            fail(card, "abilities", "the back face of a double-faced card should be nightCard = true");
         }
 
         // special check: siege ability must be used in double faced cards only

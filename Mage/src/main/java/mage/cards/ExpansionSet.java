@@ -723,7 +723,7 @@ public abstract class ExpansionSet implements Serializable {
             cardInfos.addAll(CardRepository.instance.findCards(new CardCriteria()
                     .setCodes(this.code)
                     .rarities(rarity)
-                    .doubleFaced(true)
+                    .doubleFacedCard(true)
                     .maxCardNumber(maxCardNumberInBooster)));
         }
 

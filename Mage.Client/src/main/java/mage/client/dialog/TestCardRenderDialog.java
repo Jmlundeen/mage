@@ -116,7 +116,7 @@ public class TestCardRenderDialog extends MageDialog {
     }
 
     private PermanentView createPermanentCard(Game game, UUID controllerId, String code, String cardNumber, int powerBoosted, int toughnessBoosted, int damage, boolean tapped, boolean transform, List<Ability> extraAbilities) {
-        CardInfo cardInfo = CardRepository.instance.findCard(code, cardNumber, false);
+        CardInfo cardInfo = CardRepository.instance.findCard(code, cardNumber);
         ExpansionInfo setInfo = ExpansionRepository.instance.getSetByCode(code);
         CardSetInfo testSet = new CardSetInfo(cardInfo.getName(), setInfo.getCode(), cardNumber, cardInfo.getRarity(),
                 new CardGraphicInfo(cardInfo.getFrameStyle(), cardInfo.usesVariousArt()));
@@ -150,7 +150,7 @@ public class TestCardRenderDialog extends MageDialog {
     }
 
     private CardView createFaceDownCard(Game game, UUID controllerId, String code, String cardNumber, boolean isMorphed, boolean isManifested, boolean tapped) {
-        CardInfo cardInfo = CardRepository.instance.findCard(code, cardNumber, false);
+        CardInfo cardInfo = CardRepository.instance.findCard(code, cardNumber);
         ExpansionInfo setInfo = ExpansionRepository.instance.getSetByCode(code);
         CardSetInfo testSet = new CardSetInfo(cardInfo.getName(), setInfo.getCode(), cardNumber, cardInfo.getRarity(),
                 new CardGraphicInfo(cardInfo.getFrameStyle(), cardInfo.usesVariousArt()));
@@ -189,7 +189,7 @@ public class TestCardRenderDialog extends MageDialog {
     }
 
     private CardView createHandCard(Game game, UUID controllerId, String code, String cardNumber) {
-        CardInfo cardInfo = CardRepository.instance.findCard(code, cardNumber, false);
+        CardInfo cardInfo = CardRepository.instance.findCard(code, cardNumber);
         ExpansionInfo setInfo = ExpansionRepository.instance.getSetByCode(code);
         CardSetInfo testSet = new CardSetInfo(cardInfo.getName(), setInfo.getCode(), cardNumber, cardInfo.getRarity(),
                 new CardGraphicInfo(cardInfo.getFrameStyle(), cardInfo.usesVariousArt()));

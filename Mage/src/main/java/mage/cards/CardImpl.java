@@ -44,11 +44,9 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     protected Class<? extends Card> meldsWithClazz;
     protected MeldCardHalf meldsToCard;
     protected Card secondSideCard;
-    protected boolean nightCard;
     protected SpellAbility spellAbility;
     protected boolean flipCard;
     protected String flipCardName;
-    protected boolean morphCard;
     protected List<UUID> attachments = new ArrayList<>();
     protected boolean extraDeckCard = false;
 
@@ -91,7 +89,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
             }
         }
 
-        this.morphCard = false;
     }
 
     private void setDefaultColor() {
@@ -119,7 +116,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         ownerId = card.ownerId;
         rarity = card.rarity;
 
-        nightCard = card.nightCard;
         if (card.secondSideCard != null) {
             secondSideCard = card.secondSideCard.copy();
         }
@@ -134,7 +130,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         spellAbility = null; // will be set on first getSpellAbility call if card has one
         flipCard = card.flipCard;
         flipCardName = card.flipCardName;
-        morphCard = card.morphCard;
         extraDeckCard = card.extraDeckCard;
 
         this.attachments.addAll(card.attachments);
@@ -713,11 +708,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         }
 
         return meldsToCard;
-    }
-
-    @Override
-    public boolean isNightCard() {
-        return this.nightCard;
     }
 
     @Override

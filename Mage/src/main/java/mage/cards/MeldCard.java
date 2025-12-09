@@ -56,10 +56,18 @@ public abstract class MeldCard extends DoubleFacedCard {
 
     @Override
     public boolean cast(Game game, Zone fromZone, SpellAbility ability, UUID controllerId) {
-        if (ability.getSpellAbilityType() == SpellAbilityType.BASE) {
+        if (ability.getSpellAbilityType() == SpellAbilityType.MELD) {
             return this.leftHalfCard.cast(game, fromZone, ability, controllerId);
         }
         return super.cast(game, fromZone, ability, controllerId);
+    }
+
+    @Override
+    public boolean isTransformable() {
+        // 712.9. Only permanents represented by double-faced tokens and double-faced cards that are not meld cards can transform or convert.
+        // (See rule 701.27, "Transform," and rule 701.28, "Convert.") If a spell or ability instructs a player to transform or convert
+        // any permanent that isn't represented by a double-faced token or a double-faced card, nothing happens.
+        return false;
     }
 
     @Override
