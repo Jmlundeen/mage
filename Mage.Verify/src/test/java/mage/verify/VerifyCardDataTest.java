@@ -2006,7 +2006,6 @@ public class VerifyCardDataTest {
 
                     // Special fields for CardImpl.class
                     boolean hasSpellAbilityField = false;
-                    boolean hasMeldField = false;
                     boolean hasSecondSideCardField = false;
                     // Special fields for AbilityImpl.class
                     boolean hasWatchersField = false;
@@ -2061,9 +2060,6 @@ public class VerifyCardDataTest {
                     if (class1 == CardImpl.class) {
                         if (!hasSpellAbilityField) {
                             fail(originalCard, "copy", "was expecting a spellAbility field, but found none " + msg + "]");
-                        }
-                        if (!hasMeldField) {
-                            fail(originalCard, "copy", "was expecting a meldsToCard field, but found none " + msg + "]");
                         }
                         if (!hasSecondSideCardField) {
                             fail(originalCard, "copy", "was expecting a secondSideCard field, but found none " + msg + "]");
@@ -2278,7 +2274,7 @@ public class VerifyCardDataTest {
 
         // special check: DFC main card should not have abilities
         if (card instanceof DoubleFacedCardHalf && !card.getMainCard().getInitAbilities().isEmpty()) {
-            fail(card, "abilities", "transforming double-faced card should not have abilities on the main card");
+            fail(card, "abilities", "double-faced cards should not have abilities on the main card");
         }
 
         // special check: Werewolves front ability should only be on front and vice versa
