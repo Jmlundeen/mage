@@ -2035,10 +2035,6 @@ public class VerifyCardDataTest {
                                     compareClassRecursive(((CardImpl) obj1).getSpellAbility(), ((CardImpl) obj2).getSpellAbility(), originalCard, msg + "<" + obj1.getClass() + ">" + "::" + field1.getName(), maxDepth - 1, alreadyChecked, doRecurse);
                                     doFieldRecurse = false;
                                     hasSpellAbilityField = true;
-                                } else if (field1.getName().equals("meldsToCard")) {
-                                    compareClassRecursive(((CardImpl) obj1).getMeldsToCard(), ((CardImpl) obj2).getMeldsToCard(), originalCard, msg + "::" + field1.getName(), maxDepth - 1, alreadyChecked, doRecurse);
-                                    doFieldRecurse = false;
-                                    hasMeldField = true;
                                 } else if (field1.getName().equals("secondSideCard")) {
                                     compareClassRecursive(((CardImpl) obj1).getSecondCardFace(), ((CardImpl) obj2).getSecondCardFace(), originalCard, msg + "::" + field1.getName(), maxDepth - 1, alreadyChecked, doRecurse);
                                     doFieldRecurse = false;

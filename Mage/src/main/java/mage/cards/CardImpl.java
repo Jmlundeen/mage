@@ -42,8 +42,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     protected UUID ownerId;
     protected Rarity rarity;
     protected Class<? extends Card> meldsWithClazz;
-    protected Class<? extends MeldCard> meldsToClazz;
-    protected MeldCard meldsToCard;
+    protected MeldCardHalf meldsToCard;
     protected Card secondSideCard;
     protected boolean nightCard;
     protected SpellAbility spellAbility;
@@ -126,7 +125,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         }
 
         meldsWithClazz = card.meldsWithClazz;
-        meldsToClazz = card.meldsToClazz;
         meldsToCard = null; // will be set on first getMeldsToCard call if card has one
         if (card.meldsToCard instanceof MockableCard) {
             // workaround to support gui's mock cards
@@ -689,19 +687,29 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
-    public Class<? extends Card> getMeldsToClazz() {
-        return this.meldsToClazz;
+    public Card getMeldedWith(Game game) {
+        return game.getState().getCardState(this.objectId).getMeldedWith();
     }
 
     @Override
-    public MeldCard getMeldsToCard() {
+    public void setMeldedWith(Card meldedWith, Game game) {
+        game.getState().getCardState(this.objectId).setMeldedWith(meldedWith);
+    }
+
+    @Override
+    public MeldCardHalf getMeldsToCard() {
         // init card on first call
-        if (meldsToClazz == null && meldsToCard == null) {
+        // only for regular cards that a part of meld to show back side in GUI
+        if (this instanceof MeldCard || this instanceof MeldCardHalf || (meldsWithClazz == null && meldsToCard == null)) {
             return null;
         }
 
         if (meldsToCard == null) {
-            meldsToCard = (MeldCard) initSecondSideCard(meldsToClazz);
+            MeldCard meldCard = (MeldCard) initSecondSideCard(meldsWithClazz);
+            if (meldCard == null) {
+                return null;
+            }
+            meldsToCard = meldCard.getRightHalfCard();
         }
 
         return meldsToCard;
