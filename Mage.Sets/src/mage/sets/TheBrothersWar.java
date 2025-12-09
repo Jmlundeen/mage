@@ -242,7 +242,6 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Mishra's Research Desk", 162, Rarity.UNCOMMON, mage.cards.m.MishrasResearchDesk.class));
         cards.add(new SetCardInfo("Mishra, Claimed by Gix", 216, Rarity.MYTHIC, mage.cards.m.MishraClaimedByGix.class));
         cards.add(new SetCardInfo("Mishra, Excavation Prodigy", 140, Rarity.UNCOMMON, mage.cards.m.MishraExcavationProdigy.class));
-        cards.add(new SetCardInfo("Mishra, Lost to Phyrexia", "163b", Rarity.MYTHIC, mage.cards.m.MishraLostToPhyrexia.class));
         cards.add(new SetCardInfo("Mishra, Tamer of Mak Fawa", 217, Rarity.RARE, mage.cards.m.MishraTamerOfMakFawa.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Mishra, Tamer of Mak Fawa", 295, Rarity.RARE, mage.cards.m.MishraTamerOfMakFawa.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Moment of Defiance", 108, Rarity.COMMON, mage.cards.m.MomentOfDefiance.class));
@@ -378,8 +377,6 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Thraxodemon", 115, Rarity.COMMON, mage.cards.t.Thraxodemon.class));
         cards.add(new SetCardInfo("Titania's Command", 194, Rarity.RARE, mage.cards.t.TitaniasCommand.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Titania's Command", 349, Rarity.RARE, mage.cards.t.TitaniasCommand.class, NON_FULL_USE_VARIOUS));
-        cards.add(new SetCardInfo("Titania, Gaea Incarnate", "256b", Rarity.MYTHIC, mage.cards.t.TitaniaGaeaIncarnate.class));
-        cards.add(new SetCardInfo("Titania, Voice of Gaea", 193, Rarity.MYTHIC, mage.cards.t.TitaniaVoiceOfGaea.class));
         cards.add(new SetCardInfo("Tocasia's Dig Site", 266, Rarity.COMMON, mage.cards.t.TocasiasDigSite.class));
         cards.add(new SetCardInfo("Tocasia's Onulet", 39, Rarity.COMMON, mage.cards.t.TocasiasOnulet.class));
         cards.add(new SetCardInfo("Tocasia's Welcome", 30, Rarity.RARE, mage.cards.t.TocasiasWelcome.class, NON_FULL_USE_VARIOUS));
@@ -405,7 +402,6 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Urza's Sylex", 312, Rarity.MYTHIC, mage.cards.u.UrzasSylex.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Urza's Sylex", 40, Rarity.MYTHIC, mage.cards.u.UrzasSylex.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Urza, Lord Protector", 225, Rarity.MYTHIC, mage.cards.u.UrzaLordProtector.class));
-        cards.add(new SetCardInfo("Urza, Planeswalker", "238b", Rarity.MYTHIC, mage.cards.u.UrzaPlaneswalker.class));
         cards.add(new SetCardInfo("Urza, Powerstone Prodigy", 69, Rarity.UNCOMMON, mage.cards.u.UrzaPowerstoneProdigy.class));
         cards.add(new SetCardInfo("Urza, Prince of Kroog", 226, Rarity.RARE, mage.cards.u.UrzaPrinceOfKroog.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Urza, Prince of Kroog", 296, Rarity.RARE, mage.cards.u.UrzaPrinceOfKroog.class, NON_FULL_USE_VARIOUS));

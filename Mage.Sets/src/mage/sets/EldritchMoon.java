@@ -58,14 +58,12 @@ public final class EldritchMoon extends ExpansionSet {
         cards.add(new SetCardInfo("Borrowed Hostility", 121, Rarity.COMMON, mage.cards.b.BorrowedHostility.class));
         cards.add(new SetCardInfo("Borrowed Malevolence", 82, Rarity.COMMON, mage.cards.b.BorrowedMalevolence.class));
         cards.add(new SetCardInfo("Brazen Wolves", 122, Rarity.COMMON, mage.cards.b.BrazenWolves.class));
-        cards.add(new SetCardInfo("Brisela, Voice of Nightmares", "15b", Rarity.MYTHIC, mage.cards.b.BriselaVoiceOfNightmares.class));
         cards.add(new SetCardInfo("Bruna, the Fading Light", "15a", Rarity.RARE, mage.cards.b.BrunaTheFadingLight.class));
         cards.add(new SetCardInfo("Campaign of Vengeance", 182, Rarity.UNCOMMON, mage.cards.c.CampaignOfVengeance.class));
         cards.add(new SetCardInfo("Cathar's Shield", 192, Rarity.COMMON, mage.cards.c.CatharsShield.class));
         cards.add(new SetCardInfo("Cemetery Recruitment", 83, Rarity.COMMON, mage.cards.c.CemeteryRecruitment.class));
         cards.add(new SetCardInfo("Certain Death", 84, Rarity.COMMON, mage.cards.c.CertainDeath.class));
         cards.add(new SetCardInfo("Chilling Grasp", 50, Rarity.UNCOMMON, mage.cards.c.ChillingGrasp.class));
-        cards.add(new SetCardInfo("Chittering Host", "96b", Rarity.COMMON, mage.cards.c.ChitteringHost.class));
         cards.add(new SetCardInfo("Choking Restraints", 16, Rarity.COMMON, mage.cards.c.ChokingRestraints.class));
         cards.add(new SetCardInfo("Clear Shot", 152, Rarity.UNCOMMON, mage.cards.c.ClearShot.class));
         cards.add(new SetCardInfo("Coax from the Blind Eternities", 51, Rarity.RARE, mage.cards.c.CoaxFromTheBlindEternities.class));
@@ -133,7 +131,6 @@ public final class EldritchMoon extends ExpansionSet {
         cards.add(new SetCardInfo("Hamlet Captain", 161, Rarity.UNCOMMON, mage.cards.h.HamletCaptain.class));
         cards.add(new SetCardInfo("Hanweir Battlements", 204, Rarity.RARE, mage.cards.h.HanweirBattlements.class));
         cards.add(new SetCardInfo("Hanweir Garrison", "130a", Rarity.RARE, mage.cards.h.HanweirGarrison.class));
-        cards.add(new SetCardInfo("Hanweir, the Writhing Township", "130b", Rarity.RARE, mage.cards.h.HanweirTheWrithingTownship.class));
         cards.add(new SetCardInfo("Harmless Offering", 131, Rarity.RARE, mage.cards.h.HarmlessOffering.class));
         cards.add(new SetCardInfo("Haunted Dead", 92, Rarity.UNCOMMON, mage.cards.h.HauntedDead.class));
         cards.add(new SetCardInfo("Heron's Grace Champion", 185, Rarity.RARE, mage.cards.h.HeronsGraceChampion.class));
