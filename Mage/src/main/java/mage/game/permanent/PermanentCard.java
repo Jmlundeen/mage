@@ -32,6 +32,7 @@ public class PermanentCard extends PermanentImpl {
     protected int zoneChangeCounter;
     protected ObjectColor originalColor;
     protected ObjectColor originalFrameColor;
+    protected Card meldedWith;
 
     public PermanentCard(Card card, UUID controllerId, Game game) {
         super(card.getId(), card.getOwnerId(), controllerId, card.getName()); // card id
@@ -48,6 +49,7 @@ public class PermanentCard extends PermanentImpl {
         // if you use it in test code or for permanent's copy effects then call CardUtil.getDefaultCardSideForBattlefield for default side
         // it's a basic check and still allows to create permanent from instant or sorcery
         boolean goodForBattlefield = true;
+        boolean isMeld = false;
         if (card instanceof DoubleFacedCard) {
             goodForBattlefield = false;
         } else if (card instanceof SplitCard) {
@@ -56,6 +58,11 @@ public class PermanentCard extends PermanentImpl {
             if (card.getSpellAbility() != null && !card.getSpellAbility().getSpellAbilityType().equals(SpellAbilityType.SPLIT_FUSED) && !(card instanceof RoomCard)) {
                 goodForBattlefield = false;
             }
+        } else if (card instanceof MeldCardHalf) {
+            if (((MeldCardHalf) card).isBackSide()) {
+                goodForBattlefield = card.getMeldedWith(game) != null;
+            }
+            isMeld = true;
         }
 
         // face down cards allows in any forms (only face up restricted for non-permanents)
@@ -67,8 +74,8 @@ public class PermanentCard extends PermanentImpl {
             throw new IllegalArgumentException("Wrong code usage: can't create permanent card from split or mdf: " + card.getName());
         }
 
-        // if two permanent sides, set front and second side
-        if (card instanceof DoubleFacedCardHalf && card.isPermanent() && ((DoubleFacedCardHalf) card).getOtherSide().isPermanent()) {
+        // if two permanent sides, and not meld, set front and second side
+        if (!isMeld && card instanceof DoubleFacedCardHalf && card.isPermanent() && ((DoubleFacedCardHalf) card).getOtherSide().isPermanent()) {
             if (((DoubleFacedCardHalf) card).isBackSide()) {
                 secondSideCard = card;
                 this.card = ((DoubleFacedCardHalf) card).getOtherSide().copy();
@@ -92,6 +99,7 @@ public class PermanentCard extends PermanentImpl {
         toughness = card.getToughness().copy();
         startingLoyalty = card.getStartingLoyalty();
         startingDefense = card.getStartingDefense();
+        meldedWith = card.getMeldedWith(game);
         copyFromCard(card, game, false);
         // if temporary added abilities to the spell/card exist, you need to add it to the permanent derived from that card
         Abilities<Ability> otherAbilities = game.getState().getAllOtherAbilities(card.getId());
@@ -110,6 +118,7 @@ public class PermanentCard extends PermanentImpl {
         this.zoneChangeCounter = permanent.zoneChangeCounter;
         this.originalColor = permanent.originalColor.copy();
         this.originalFrameColor = permanent.originalFrameColor.copy();
+        this.meldedWith = permanent.meldedWith;
     }
 
     @Override
@@ -190,9 +199,6 @@ public class PermanentCard extends PermanentImpl {
         this.setImageFileName(card.getImageFileName());
         this.setImageNumber(card.getImageNumber());
 
-        if (card.getMeldsToCard() != null) {
-            this.meldsToClazz = card.getMeldsToCard().getClass();
-        }
         this.nightCard = card.isNightCard();
         this.flipCard = card.isFlipCard();
         this.flipCardName = card.getFlipCardName();
@@ -268,11 +274,18 @@ public class PermanentCard extends PermanentImpl {
 
     @Override
     public int getManaValue() {
-        if (isTransformed()) {
-            // 711.4b While a double-faced permanent's back face is up, it has only the characteristics of its back face.
-            // However, its converted mana cost is calculated using the mana cost of its front face. This is a change from previous rules.
-            // If a permanent is copying the back face of a double-faced card (even if the card representing that copy
-            // is itself a double-faced card), the converted mana cost of that permanent is 0.
+        // 712.8e. While a nonmodal double-faced permanent has its back face up, it has only the characteristics of its back face.
+        // However, its mana value is calculated using the mana cost of its front face.
+        // If a permanent is copying the back face of a nonmodal double-faced permanent
+        // (even if the object representing that copy is itself a double-faced permanent), the mana value of that permanent is 0. See rule 202.3b.
+        if (isCopy() && copyFrom instanceof DoubleFacedCardHalf && ((DoubleFacedCardHalf) copyFrom).isBackSide()) {
+            return copyFrom instanceof ModalDoubleFacedCardHalf ? super.getManaValue() : 0;
+        }
+        if (isTransformed() || getCard() instanceof MeldCardHalf && ((MeldCardHalf) getCard()).isBackSide()) {
+            Card refCard = getCard();
+            if (refCard instanceof MeldCardHalf) {
+                return refCard.getMainCard().getManaValue() + meldedWith.getManaValue();
+            }
             return getCard().getManaValue();
         }
         if (faceDown) { // game not neccessary
