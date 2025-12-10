@@ -45,6 +45,8 @@ public interface Permanent extends Card, Controllable {
 
     boolean flip(Game game);
 
+    MageObject getOtherFace();
+
     boolean transform(Ability source, Game game);
 
     boolean transform(Ability source, Game game, boolean ignoreDayNight);

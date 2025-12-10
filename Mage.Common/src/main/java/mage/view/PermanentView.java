@@ -4,6 +4,7 @@ import mage.cards.Card;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
+import mage.game.permanent.token.Token;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -54,30 +55,23 @@ public class PermanentView extends CardView {
         this.attachedTo = permanent.getAttachedTo();
 
         // store original card, e.g. for sides switch in GUI
-        if (isToken()) {
-            original = new CardView(((PermanentToken) permanent).getToken().copy(), (Game) null);
-            original.expansionSetCode = permanent.getExpansionSetCode(); // TODO: miss card number and other?
-            expansionSetCode = permanent.getExpansionSetCode();
-        } else {
-            // face down card must be hidden from opponent, but shown on game end for all
-            boolean showFaceDownInfo = controlled || (game != null && game.hasEnded());
-            if (card != null && showFaceDownInfo) {
-                original = new CardView(card.copy(), (Game) null);
-            } else {
-                original = null;
-            }
-        }
-        //this.transformed = permanent.isTransformed();
+        boolean showFaceDownInfo = controlled || (game != null && game.hasEnded());
         this.copy = permanent.isCopy();
-
-        // for fipped, transformed or copied cards, switch the names
-        if (original != null && !original.getName().equals(this.getName())) {
-            // TODO: wtf, why copy check here?! Need research
-            if (permanent.isCopy() && permanent.isFlipCard()) {
-                this.alternateName = permanent.getFlipCardName();
+        if (showFaceDownInfo && permanent.getOtherFace() != null) {
+            if (isToken) {
+                original = new CardView((Token) permanent.getOtherFace().copy(), null);
             } else {
-                this.alternateName = original.getName();
+                original = new CardView((Card) permanent.getOtherFace().copy(), (Game) null);
             }
+        } else if (copy) {
+            if (isToken) {
+                original = new CardView(((PermanentToken) permanent).getToken().copy(), null);
+            } else {
+                original = new CardView(card.copy(), (Game) null);
+            }
+            this.setAlternateName(original.getName());
+        } else {
+            original = null;
         }
 
         if (permanent.getOwnerId() != null && !permanent.getOwnerId().equals(permanent.getControllerId())) {
