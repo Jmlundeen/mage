@@ -535,14 +535,16 @@ public class DownloadPicturesService extends DefaultBoundedRangeModel implements
                         if (card.getDoubleFacedSecondSideName() == null || card.getDoubleFacedSecondSideName().trim().isEmpty()) {
                             throw new IllegalStateException("MDF card can't have empty name.");
                         }
+                        String cardNumber = card.getMeldCardNumber().isEmpty() ? card.getCardNumber() : card.getMeldCardNumber();
+                        boolean secondSide = !card.getMeldCardNumber().isEmpty();
                         CardDownloadData cardDownloadData = new CardDownloadData(
                                 card.getDoubleFacedSecondSideName(),
                                 card.getSetCode(),
-                                card.getCardNumber(),
+                                cardNumber,
                                 card.usesVariousArt(),
                                 0
                         );
-                        cardDownloadData.setSecondSide(true);
+                        cardDownloadData.setSecondSide(secondSide);
                         allCardsUrls.add(cardDownloadData);
                     }
                 } else if (card.getCardNumber().isEmpty() || "0".equals(card.getCardNumber())) {
