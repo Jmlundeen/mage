@@ -240,6 +240,11 @@ public class Commander extends CommandObjectImpl {
     }
 
     @Override
+    public void setFrameStyle(FrameStyle frameStyle) {
+        sourceObject.setFrameStyle(frameStyle);
+    }
+
+    @Override
     public ManaCosts<ManaCost> getManaCost() {
         return sourceObject.getManaCost();
     }

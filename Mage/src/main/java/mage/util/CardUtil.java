@@ -2423,25 +2423,27 @@ public final class CardUtil {
         String needImageFileName;
         int needImageNumber;
         boolean needUsesVariousArt = false;
+        FrameStyle needFrameStyle;
 
         needSetCode = copyFromObject.getExpansionSetCode();
         needCardNumber = copyFromObject.getCardNumber();
         needImageFileName = copyFromObject.getImageFileName();
         needImageNumber = copyFromObject.getImageNumber();
         needUsesVariousArt = copyFromObject.getUsesVariousArt();
+        needFrameStyle = copyFromObject.getFrameStyle();
 
         if (targetObject instanceof Permanent) {
-            copySetAndCardNumber((Permanent) targetObject, needSetCode, needCardNumber, needImageFileName, needImageNumber, needUsesVariousArt);
+            copySetAndCardNumber((Permanent) targetObject, needSetCode, needCardNumber, needImageFileName, needImageNumber, needUsesVariousArt, needFrameStyle);
         } else if (targetObject instanceof Token) {
-            copySetAndCardNumber((Token) targetObject, needSetCode, needCardNumber, needImageFileName, needImageNumber, needUsesVariousArt);
+            copySetAndCardNumber((Token) targetObject, needSetCode, needCardNumber, needImageFileName, needImageNumber, needUsesVariousArt, needFrameStyle);
         } else if (targetObject instanceof Card) {
-            copySetAndCardNumber((Card) targetObject, needSetCode, needCardNumber, needImageFileName, needImageNumber, needUsesVariousArt);
+            copySetAndCardNumber((Card) targetObject, needSetCode, needCardNumber, needImageFileName, needImageNumber, needUsesVariousArt, needFrameStyle);
         } else {
             throw new IllegalStateException("Unsupported target object class: " + targetObject.getClass().getSimpleName());
         }
     }
 
-    private static void copySetAndCardNumber(Permanent targetPermanent, String newSetCode, String newCardNumber, String newImageFileName, Integer newImageNumber, boolean usesVariousArt) {
+    private static void copySetAndCardNumber(Permanent targetPermanent, String newSetCode, String newCardNumber, String newImageFileName, Integer newImageNumber, boolean usesVariousArt, FrameStyle newFrameStyle) {
         if (targetPermanent instanceof PermanentCard
                 || targetPermanent instanceof PermanentToken) {
             targetPermanent.setExpansionSetCode(newSetCode);
@@ -2449,16 +2451,18 @@ public final class CardUtil {
             targetPermanent.setCardNumber(newCardNumber);
             targetPermanent.setImageFileName(newImageFileName);
             targetPermanent.setImageNumber(newImageNumber);
+            targetPermanent.setFrameStyle(newFrameStyle);
         } else {
             throw new IllegalArgumentException("Wrong code usage: un-supported target permanent type: " + targetPermanent.getClass().getSimpleName());
         }
     }
 
-    private static void copySetAndCardNumber(Token targetToken, String newSetCode, String newCardNumber, String newImageFileName, Integer newImageNumber, boolean newUsesVariousArt) {
+    private static void copySetAndCardNumber(Token targetToken, String newSetCode, String newCardNumber, String newImageFileName, Integer newImageNumber, boolean newUsesVariousArt, FrameStyle newFrameStyle) {
         targetToken.setExpansionSetCode(newSetCode);
         targetToken.setCardNumber(newCardNumber);
         targetToken.setImageFileName(newImageFileName);
         targetToken.setImageNumber(newImageNumber);
+        targetToken.setFrameStyle(newFrameStyle);
 
         // runtime check
         if (newUsesVariousArt && newCardNumber.isEmpty()) {
@@ -2467,12 +2471,13 @@ public final class CardUtil {
         targetToken.setUsesVariousArt(newUsesVariousArt);
     }
 
-    private static void copySetAndCardNumber(Card targetCard, String newSetCode, String newCardNumber, String newImageFileName, Integer newImageNumber, boolean usesVariousArt) {
+    private static void copySetAndCardNumber(Card targetCard, String newSetCode, String newCardNumber, String newImageFileName, Integer newImageNumber, boolean usesVariousArt, FrameStyle newFrameStyle) {
         targetCard.setExpansionSetCode(newSetCode);
         targetCard.setUsesVariousArt(usesVariousArt);
         targetCard.setCardNumber(newCardNumber);
         targetCard.setImageFileName(newImageFileName);
         targetCard.setImageNumber(newImageNumber);
+        targetCard.setFrameStyle(newFrameStyle);
     }
 
     /**

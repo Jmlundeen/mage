@@ -578,6 +578,7 @@ public class CardView extends SimpleCardView {
             }
 
             if (card instanceof PermanentToken && card.isTransformable()) {
+                this.transformable = true;
                 Token backFace = (Token) ((PermanentToken) card).getOtherFace();
                 this.secondCardFace = new CardView(backFace, game);
                 this.alternateName = backFace.getName();
@@ -1160,6 +1161,8 @@ public class CardView extends SimpleCardView {
         this.cardNumber = token.getCardNumber();
         this.imageFileName = token.getImageFileName();
         this.imageNumber = token.getImageNumber();
+        this.usesVariousArt = token.getUsesVariousArt();
+        this.frameStyle = token.getFrameStyle();
     }
 
     protected final void addTargets(Targets targets, Effects effects, Ability source, Game game) {

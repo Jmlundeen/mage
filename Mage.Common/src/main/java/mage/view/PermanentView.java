@@ -57,20 +57,20 @@ public class PermanentView extends CardView {
         // store original card, e.g. for sides switch in GUI
         boolean showFaceDownInfo = controlled || (game != null && game.hasEnded());
         this.copy = permanent.isCopy();
-        if (showFaceDownInfo && permanent.getOtherFace() != null) {
-            if (isToken) {
-                original = new CardView((Token) permanent.getOtherFace().copy(), null);
-            } else {
-                original = new CardView((Card) permanent.getOtherFace().copy(), (Game) null);
-            }
-        } else if (copy) {
-            if (isToken) {
-                original = new CardView(((PermanentToken) permanent).getToken().copy(), null);
-            } else {
-                original = new CardView(card.copy(), (Game) null);
-            }
+        if (copy) {
+            // Handle the case where the permanent is a copy
+            original = isToken
+                ? new CardView(((PermanentToken) permanent).getToken().copy(), null)
+                : new CardView(card.copy(), (Game) null);
             this.setAlternateName(original.getName());
+            this.transformable = false;
+        } else if (permanent.getOtherFace() != null) {
+            // Handle the case where the permanent has another face
+            original = isToken
+                ? new CardView((Token) permanent.getOtherFace().copy(), null)
+                : new CardView((Card) permanent.getOtherFace().copy(), (Game) null);
         } else {
+            // Default case where no original card is available
             original = null;
         }
 
