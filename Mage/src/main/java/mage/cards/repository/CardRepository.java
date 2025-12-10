@@ -450,7 +450,7 @@ public enum CardRepository {
         cards = findCards(name, 0, returnSplitCardHalf, true);
         CardInfo bestCard = cards.stream()
                 .filter(card -> expansion == null || expansion.equalsIgnoreCase(card.getSetCode()))
-                .filter(card -> cardNumber == null || cardNumber.equals(card.getCardNumber()))
+                .filter(card -> cardNumber == null || cardNumber.equals(card.getCardNumber()) || cardNumber.equals(card.getMeldCardNumber()))
                 .findFirst()
                 .orElse(null);
 

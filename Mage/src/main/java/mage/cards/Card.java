@@ -85,7 +85,7 @@ public interface Card extends MageObject, Ownerable {
         throw new UnsupportedOperationException("Wrong code usage: can't set meld for " + this.getClass().getName());
     }
 
-    default MeldCardHalf getMeldsToCard() {
+    default Card getMeldsToCard() {
         return null;
     }
 

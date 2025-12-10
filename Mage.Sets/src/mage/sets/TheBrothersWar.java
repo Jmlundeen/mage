@@ -47,7 +47,7 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Arcane Proxy", 319, Rarity.MYTHIC, mage.cards.a.ArcaneProxy.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Arcane Proxy", 75, Rarity.MYTHIC, mage.cards.a.ArcaneProxy.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Argivian Avenger", 232, Rarity.UNCOMMON, mage.cards.a.ArgivianAvenger.class));
-        cards.add(new SetCardInfo("Argoth, Sanctum of Nature", 256, Rarity.RARE, mage.cards.a.ArgothSanctumOfNature.class));
+        cards.add(new SetCardInfo("Argoth, Sanctum of Nature", "256", "256b", Rarity.RARE, mage.cards.a.ArgothSanctumOfNature.class));
         cards.add(new SetCardInfo("Argothian Opportunist", 167, Rarity.COMMON, mage.cards.a.ArgothianOpportunist.class));
         cards.add(new SetCardInfo("Argothian Sprite", 168, Rarity.COMMON, mage.cards.a.ArgothianSprite.class));
         cards.add(new SetCardInfo("Arms Race", 126, Rarity.UNCOMMON, mage.cards.a.ArmsRace.class));
@@ -240,7 +240,7 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Mishra's Juggernaut", 161, Rarity.COMMON, mage.cards.m.MishrasJuggernaut.class));
         cards.add(new SetCardInfo("Mishra's Onslaught", 143, Rarity.COMMON, mage.cards.m.MishrasOnslaught.class));
         cards.add(new SetCardInfo("Mishra's Research Desk", 162, Rarity.UNCOMMON, mage.cards.m.MishrasResearchDesk.class));
-        cards.add(new SetCardInfo("Mishra, Claimed by Gix", 216, Rarity.MYTHIC, mage.cards.m.MishraClaimedByGix.class));
+        cards.add(new SetCardInfo("Mishra, Claimed by Gix", "216", "163b", Rarity.MYTHIC, mage.cards.m.MishraClaimedByGix.class));
         cards.add(new SetCardInfo("Mishra, Excavation Prodigy", 140, Rarity.UNCOMMON, mage.cards.m.MishraExcavationProdigy.class));
         cards.add(new SetCardInfo("Mishra, Tamer of Mak Fawa", 217, Rarity.RARE, mage.cards.m.MishraTamerOfMakFawa.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Mishra, Tamer of Mak Fawa", 295, Rarity.RARE, mage.cards.m.MishraTamerOfMakFawa.class, NON_FULL_USE_VARIOUS));
@@ -267,7 +267,7 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Perennial Behemoth", 350, Rarity.RARE, mage.cards.p.PerennialBehemoth.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Perimeter Patrol", 188, Rarity.COMMON, mage.cards.p.PerimeterPatrol.class));
         cards.add(new SetCardInfo("Phalanx Vanguard", 19, Rarity.COMMON, mage.cards.p.PhalanxVanguard.class));
-        cards.add(new SetCardInfo("Phyrexian Dragon Engine", 163, Rarity.RARE, mage.cards.p.PhyrexianDragonEngine.class));
+        cards.add(new SetCardInfo("Phyrexian Dragon Engine", "163", "163b", Rarity.RARE, mage.cards.p.PhyrexianDragonEngine.class));
         cards.add(new SetCardInfo("Phyrexian Fleshgorger", 121, Rarity.MYTHIC, mage.cards.p.PhyrexianFleshgorger.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Phyrexian Fleshgorger", 332, Rarity.MYTHIC, mage.cards.p.PhyrexianFleshgorger.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Plains", 268, Rarity.LAND, mage.cards.basiclands.Plains.class, NON_FULL_USE_VARIOUS));
@@ -359,7 +359,7 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Terror Ballista", 290, Rarity.RARE, mage.cards.t.TerrorBallista.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Terror Ballista", 375, Rarity.RARE, mage.cards.t.TerrorBallista.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("The Fall of Kroog", 133, Rarity.UNCOMMON, mage.cards.t.TheFallOfKroog.class));
-        cards.add(new SetCardInfo("The Mightstone and Weakstone", "238", Rarity.RARE, mage.cards.t.TheMightstoneAndWeakstone.class));
+        cards.add(new SetCardInfo("The Mightstone and Weakstone", "238", "238b", Rarity.RARE, mage.cards.t.TheMightstoneAndWeakstone.class));
         cards.add(new SetCardInfo("The Stasis Coffin", 245, Rarity.RARE, mage.cards.t.TheStasisCoffin.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("The Stasis Coffin", 366, Rarity.RARE, mage.cards.t.TheStasisCoffin.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("The Stone Brain", 247, Rarity.RARE, mage.cards.t.TheStoneBrain.class, NON_FULL_USE_VARIOUS));
@@ -375,6 +375,7 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Thran Spider", 368, Rarity.RARE, mage.cards.t.ThranSpider.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Thran Vigil", 114, Rarity.UNCOMMON, mage.cards.t.ThranVigil.class));
         cards.add(new SetCardInfo("Thraxodemon", 115, Rarity.COMMON, mage.cards.t.Thraxodemon.class));
+        cards.add(new SetCardInfo("Titania, Voice of Gaea", "193", "256b", Rarity.MYTHIC, mage.cards.t.TitaniaVoiceOfGaea.class));
         cards.add(new SetCardInfo("Titania's Command", 194, Rarity.RARE, mage.cards.t.TitaniasCommand.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Titania's Command", 349, Rarity.RARE, mage.cards.t.TitaniasCommand.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Tocasia's Dig Site", 266, Rarity.COMMON, mage.cards.t.TocasiasDigSite.class));
@@ -401,7 +402,7 @@ public final class TheBrothersWar extends ExpansionSet {
         cards.add(new SetCardInfo("Urza's Rebuff", 71, Rarity.COMMON, mage.cards.u.UrzasRebuff.class));
         cards.add(new SetCardInfo("Urza's Sylex", 312, Rarity.MYTHIC, mage.cards.u.UrzasSylex.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Urza's Sylex", 40, Rarity.MYTHIC, mage.cards.u.UrzasSylex.class, NON_FULL_USE_VARIOUS));
-        cards.add(new SetCardInfo("Urza, Lord Protector", 225, Rarity.MYTHIC, mage.cards.u.UrzaLordProtector.class));
+        cards.add(new SetCardInfo("Urza, Lord Protector", "225", "238b", Rarity.MYTHIC, mage.cards.u.UrzaLordProtector.class));
         cards.add(new SetCardInfo("Urza, Powerstone Prodigy", 69, Rarity.UNCOMMON, mage.cards.u.UrzaPowerstoneProdigy.class));
         cards.add(new SetCardInfo("Urza, Prince of Kroog", 226, Rarity.RARE, mage.cards.u.UrzaPrinceOfKroog.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Urza, Prince of Kroog", 296, Rarity.RARE, mage.cards.u.UrzaPrinceOfKroog.class, NON_FULL_USE_VARIOUS));

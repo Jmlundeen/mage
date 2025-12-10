@@ -87,6 +87,7 @@ public abstract class ExpansionSet implements Serializable {
 
         private final String name;
         private final String cardNumber;
+        private final String meldNumber;
         private final Rarity rarity;
         private final Class<?> cardClass;
         private final CardGraphicInfo graphicInfo;
@@ -104,8 +105,17 @@ public abstract class ExpansionSet implements Serializable {
         }
 
         public SetCardInfo(String name, String cardNumber, Rarity rarity, Class<?> cardClass, CardGraphicInfo graphicInfo) {
+            this(name, cardNumber, "", rarity, cardClass, graphicInfo);
+        }
+
+        public SetCardInfo(String name, String cardNumber, String meldNumber, Rarity rarity, Class<?> cardClass) {
+            this(name, cardNumber, meldNumber, rarity, cardClass, null);
+        }
+
+        public SetCardInfo(String name, String cardNumber, String meldNumber, Rarity rarity, Class<?> cardClass, CardGraphicInfo graphicInfo) {
             this.name = name;
             this.cardNumber = cardNumber;
+            this.meldNumber = meldNumber;
             this.rarity = rarity;
             this.cardClass = cardClass;
             this.graphicInfo = graphicInfo;
@@ -117,6 +127,10 @@ public abstract class ExpansionSet implements Serializable {
 
         public String getCardNumber() {
             return this.cardNumber;
+        }
+
+        public String getMeldNumber() {
+            return this.meldNumber;
         }
 
         public int getCardNumberAsInt() {

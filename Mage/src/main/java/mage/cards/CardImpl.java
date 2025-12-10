@@ -42,7 +42,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     protected UUID ownerId;
     protected Rarity rarity;
     protected Class<? extends Card> meldsWithClazz;
-    protected MeldCardHalf meldsToCard;
+    protected Card meldsToCard;
     protected Card secondSideCard;
     protected SpellAbility spellAbility;
     protected boolean flipCard;
@@ -61,6 +61,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         this.setExpansionSetCode(setInfo.getExpansionSetCode());
         this.setUsesVariousArt(setInfo.getUsesVariousArt());
         this.setCardNumber(setInfo.getCardNumber());
+        this.setMeldsToNumber(setInfo.getMeldNumber());
         this.setImageFileName(""); // use default
         this.setImageNumber(0);
         this.cardType.addAll(Arrays.asList(cardTypes));
@@ -660,11 +661,11 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         // must be non strict search in any sets, not one set
         // example: if set contains only one card side
         // method used in cards database creating, so can't use repository here
-        ExpansionSet.SetCardInfo info = Sets.findCardByClass(cardClazz, this.getExpansionSetCode(), this.getCardNumber());
+        ExpansionSet.SetCardInfo info = Sets.findCardByClass(cardClazz, this.getExpansionSetCode(), getMeldsToNumber());
         if (info == null) {
             return null;
         }
-        return createCard(cardClazz, new CardSetInfo(info.getName(), this.getExpansionSetCode(), info.getCardNumber(), info.getRarity(), info.getGraphicInfo()));
+        return createCard(cardClazz, new CardSetInfo(info.getName(), this.getExpansionSetCode(), info.getCardNumber(), info.getMeldNumber(), info.getRarity(), info.getGraphicInfo()));
     }
 
     @Override
@@ -692,7 +693,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
-    public MeldCardHalf getMeldsToCard() {
+    public Card getMeldsToCard() {
         // init card on first call
         // only for regular cards that a part of meld to show back side in GUI
         if (this instanceof MeldCard || this instanceof MeldCardHalf || (meldsWithClazz == null && meldsToCard == null)) {

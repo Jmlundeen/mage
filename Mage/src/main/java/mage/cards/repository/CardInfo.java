@@ -45,6 +45,10 @@ public class CardInfo {
      */
     @DatabaseField(indexName = "cardNumberAsInt_index")
     protected int cardNumberAsInt;
+    @DatabaseField(indexName = "setCode_meldNumber_index")
+    protected String meldCardNumber;
+    @DatabaseField(indexName = "meldCardNumberAsInt_index")
+    protected int meldCardNumberAsInt;
     @DatabaseField(indexName = "className_index")
     protected String className;
     @DatabaseField
@@ -125,6 +129,10 @@ public class CardInfo {
         this.name = card.getName();
         this.cardNumber = card.getCardNumber();
         this.cardNumberAsInt = CardUtil.parseCardNumberAsInt(card.getCardNumber());
+        this.meldCardNumber = card.getMeldsToNumber();
+        if (!this.meldCardNumber.isEmpty()) {
+            this.meldCardNumberAsInt = CardUtil.parseCardNumberAsInt(card.getMeldsToNumber());
+        }
         this.setCode = card.getExpansionSetCode();
         this.className = card.getClass().getCanonicalName();
         this.power = card.getPower().toString();
@@ -238,7 +246,7 @@ public class CardInfo {
      * Create normal card (with full abilities)
      */
     public Card createCard() {
-        return CardImpl.createCard(className, new CardSetInfo(name, setCode, cardNumber, rarity, new CardGraphicInfo(FrameStyle.valueOf(frameStyle), variousArt)));
+        return CardImpl.createCard(className, new CardSetInfo(name, setCode, cardNumber, meldCardNumber, rarity, new CardGraphicInfo(FrameStyle.valueOf(frameStyle), variousArt)));
     }
 
     /**
@@ -444,6 +452,10 @@ public class CardInfo {
 
     public String getMeldsToCardName() {
         return meldsToCardName;
+    }
+
+    public String getMeldCardNumber() {
+        return meldCardNumber;
     }
 
     public String getSecondSideName() {

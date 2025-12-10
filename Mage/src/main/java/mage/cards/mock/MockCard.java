@@ -43,6 +43,7 @@ public class MockCard extends CardImpl implements MockableCard {
         this.setExpansionSetCode(card.getSetCode());
         this.setUsesVariousArt(card.usesVariousArt());
         this.setCardNumber(card.getCardNumber());
+        this.setMeldsToNumber(card.getMeldCardNumber());
         this.setImageFileName(""); // use default
         this.setImageNumber(0);
         this.power = mageIntFromString(card.getPower());
@@ -64,7 +65,13 @@ public class MockCard extends CardImpl implements MockableCard {
         this.frameStyle = card.getFrameStyle();
 
         this.flipCard = card.isFlipCard();
-
+        if (card.getMeldsToCardName() != null) {
+            CardInfo meldInfo = CardRepository.instance.findCardWithPreferredSetAndNumber(card.getMeldsToCardName(), card.getSetCode(), card.getMeldCardNumber());
+            if (meldInfo != null) {
+                this.meldsToCard = new MockCard(CardRepository.instance.findCardWithPreferredSetAndNumber(meldInfo.getSecondSideName(), meldInfo.getSetCode(), meldInfo.getMeldCardNumber()))
+                        .getSecondCardFace();
+            }
+        }
         if (card.getSecondSideName() != null && !card.getSecondSideName().isEmpty() && !card.isDoubleFacedCard()) {
             this.secondSideCard = new MockCard(CardRepository.instance.findCardWithPreferredSetAndNumber(card.getSecondSideName(), card.getSetCode(), card.getCardNumber()));
         }

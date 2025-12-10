@@ -106,6 +106,7 @@ public class CardView extends SimpleCardView {
     protected boolean faceDown;
 
     protected String alternateName;
+    protected String alternateNumber = "";
 
     protected boolean isSplitCard;
     protected String leftSplitName;
@@ -228,6 +229,7 @@ public class CardView extends SimpleCardView {
         this.flipCard = cardView.flipCard;
         this.faceDown = cardView.faceDown;
         this.alternateName = cardView.alternateName;
+        this.alternateNumber = cardView.alternateNumber;
 
         this.isSplitCard = cardView.isSplitCard;
         this.leftSplitName = cardView.leftSplitName;
@@ -555,6 +557,15 @@ public class CardView extends SimpleCardView {
                 DoubleFacedCard doubleFacedCard = (DoubleFacedCard) card;
                 this.secondCardFace = new CardView(doubleFacedCard.getRightHalfCard(), game);
                 this.alternateName = doubleFacedCard.getRightHalfCard().getName();
+                this.alternateNumber = doubleFacedCard.getRightHalfCard().getMeldsToNumber();
+                this.secondCardFace.setAlternateNumber(this.getCardNumber());
+            } else if (card.getSecondCardFace() != null) {
+                // mock cards
+                this.transformable = true; // enable GUI day/night button
+                this.secondCardFace = new CardView(card.getSecondCardFace(), game);
+                this.alternateName = card.getSecondCardFace().getName();
+                this.alternateNumber = card.getSecondCardFace().getMeldsToNumber();
+                this.secondCardFace.setAlternateNumber(this.getCardNumber());
             }
 
             Card meldsToCard = card.getMeldsToCard();
@@ -562,6 +573,8 @@ public class CardView extends SimpleCardView {
                 this.transformable = true; // enable GUI day/night button
                 this.secondCardFace = new CardView(meldsToCard, game);
                 this.alternateName = meldsToCard.getName();
+                this.alternateNumber = meldsToCard.getMeldsToNumber();
+                this.secondCardFace.setAlternateNumber(this.getCardNumber());
             }
 
             if (card instanceof PermanentToken && card.isTransformable()) {
@@ -1401,6 +1414,14 @@ public class CardView extends SimpleCardView {
 
     public void setAlternateName(String alternateName) {
         this.alternateName = alternateName;
+    }
+
+    public String getAlternateNumber() {
+        return alternateNumber;
+    }
+
+    public void setAlternateNumber(String alternateNumber) {
+        this.alternateNumber = alternateNumber;
     }
 
     public String getLeftSplitName() {

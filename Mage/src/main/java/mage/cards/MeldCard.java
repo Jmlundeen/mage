@@ -28,6 +28,9 @@ public abstract class MeldCard extends DoubleFacedCard {
                 this.getOwnerId(), new CardSetInfo(secondSideName, setInfo),
                 superTypesRight, typesRight, subTypesRight, colorRight, this
         );
+        if (setInfo.getMeldNumber().isEmpty()) {
+            throw new IllegalArgumentException("Meld cards must have a meld number in set info");
+        }
         this.secondSideCard = rightHalfCard;
     }
 
@@ -40,18 +43,11 @@ public abstract class MeldCard extends DoubleFacedCard {
             CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
             String secondSideName,
             CardType[] typesRight, SubType[] subTypesRight, String colorRight) {
-        super(ownerId, setInfo, typesLeft, costsLeft, SpellAbilityType.MELD);
-        // main card name must be same as left side
-        leftHalfCard = new MeldCardHalf(
-                this.getOwnerId(), setInfo.copy(),
+        this(ownerId, setInfo,
                 new SuperType[]{}, typesLeft, subTypesLeft, costsLeft,
-                this, SpellAbilityType.MELD_LEFT
-        );
-        rightHalfCard = new MeldCardHalf(
-                this.getOwnerId(), new CardSetInfo(secondSideName, setInfo),
-                new SuperType[]{}, typesRight, subTypesRight, colorRight, this, SpellAbilityType.MELD_RIGHT
-        );
-        this.secondSideCard = rightHalfCard;
+                secondSideName,
+                new SuperType[]{}, typesRight, subTypesRight, colorRight);
+
     }
 
     @Override

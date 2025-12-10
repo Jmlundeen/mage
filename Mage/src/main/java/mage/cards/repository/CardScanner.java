@@ -57,7 +57,7 @@ public final class CardScanner {
                     // found new card
                     Card card = CardImpl.createCard(
                             setInfo.getCardClass(),
-                            new CardSetInfo(setInfo.getName(), set.getCode(), setInfo.getCardNumber(), setInfo.getRarity(), setInfo.getGraphicInfo()),
+                            new CardSetInfo(setInfo.getName(), set.getCode(), setInfo.getCardNumber(), setInfo.getMeldNumber(), setInfo.getRarity(), setInfo.getGraphicInfo()),
                             errorsList);
                     if (card != null) {
                         // Adds only main card, except night cards.
