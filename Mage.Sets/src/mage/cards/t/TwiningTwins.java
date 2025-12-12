@@ -35,13 +35,13 @@ public final class TwiningTwins extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // Ward {1}
-        this.addAbility(new WardAbility(new GenericManaCost(1), false));
+        this.getLeftHalfCard().addAbility(new WardAbility(new GenericManaCost(1), false));
 
         // Swift Spiral
         // Exile target nontoken creature. Return it to the battlefield under its owner's control at the beginning of the next end step.

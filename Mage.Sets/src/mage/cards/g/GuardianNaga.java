@@ -31,10 +31,10 @@ public final class GuardianNaga extends AdventureCard {
         this.getLeftHalfCard().setPT(5, 6);
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // As long as it's your turn, prevent all damage that would be dealt to Guardian Naga.
-        this.addAbility(new SimpleStaticAbility(new ConditionalPreventionEffect(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new ConditionalPreventionEffect(
                 new PreventAllDamageToSourceEffect(Duration.WhileOnBattlefield), MyTurnCondition.instance,
                 "during your turn, prevent all damage that would be dealt to {this}"
         )));

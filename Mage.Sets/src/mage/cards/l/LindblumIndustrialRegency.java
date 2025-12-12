@@ -23,10 +23,10 @@ public final class LindblumIndustrialRegency extends AdventureCard {
                 new CardType[]{CardType.INSTANT}, "{2}{R}");
 
         // This land enters tapped.
-        this.addAbility(new EntersBattlefieldTappedAbility());
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTappedAbility());
 
         // {T}: Add {R}.
-        this.addAbility(new RedManaAbility());
+        this.getLeftHalfCard().addAbility(new RedManaAbility());
 
         // Mage Siege
         // Create a 0/1 black Wizard creature token with "Whenever you cast a noncreature spell, this token deals 1 damage to each opponent."

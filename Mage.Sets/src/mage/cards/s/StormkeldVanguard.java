@@ -26,7 +26,7 @@ public final class StormkeldVanguard extends AdventureCard {
         this.getLeftHalfCard().setPT(6, 7);
 
         // Stormkeld Vanguard can't be blocked by creatures with power 2 or less.
-        this.addAbility(new DauntAbility());
+        this.getLeftHalfCard().addAbility(new DauntAbility());
 
         // Bear Down
         // Destroy target artifact or enchantment.

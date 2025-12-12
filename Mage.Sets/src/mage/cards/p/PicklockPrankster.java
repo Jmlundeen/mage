@@ -37,10 +37,10 @@ public final class PicklockPrankster extends AdventureCard {
         this.getLeftHalfCard().setPT(1, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // Free the Fae
         // Mill four cards. Then put an instant, sorcery, or Faerie card from among the milled cards into your hand.

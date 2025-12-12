@@ -42,13 +42,15 @@ public final class MoonshaePixie extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // When Moonshae Pixie enters the battlefield, draw cards equal to the number of opponents who were dealt combat damage this turn.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(
+        Ability ability = new EntersBattlefieldTriggeredAbility(
                 new DrawCardSourceControllerEffect(MoonshaePixieValue.instance)
                         .setText("draw cards equal to the number of opponents who were dealt combat damage this turn")
-        ).addHint(hint), new MoonshaePixieWatcher());
+        ).addHint(hint);
+        ability.addWatcher(new MoonshaePixieWatcher());
+        this.getLeftHalfCard().addAbility(ability);
 
         // Pixie Dust
         // Up to three target creatures gain flying until end of turn.

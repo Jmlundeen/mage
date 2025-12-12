@@ -34,7 +34,7 @@ public final class QueenOfIce extends AdventureCard {
         ability.addEffect(new DontUntapInControllersNextUntapStepTargetEffect()
                 .setText("It doesn't untap during its controller's next untap step")
         );
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Rage of Winter
         // Tap target creature. It doesn't untap during its controller's next untap step.

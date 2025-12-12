@@ -34,7 +34,7 @@ public final class MonsterManual extends AdventureCard {
                 new ManaCostsImpl<>("{1}{G}")
         );
         ability.addCost(new TapSourceCost());
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Zoological Study
         // Mill five cards, then return a creature card milled this way to your hand.

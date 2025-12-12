@@ -33,7 +33,7 @@ public final class ColossalBadger extends AdventureCard {
         this.getLeftHalfCard().setPT(6, 5);
 
         // When Colossal Badger enters the battlefield, you gain 3 life.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new GainLifeEffect(3)));
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTriggeredAbility(new GainLifeEffect(3)));
 
         // Dig Deep
         // Choose target creature. Mill four cards, then put a +1/+1 counter on that creature for each creature card milled this way.

@@ -28,19 +28,18 @@ public final class HildibrandManderville extends AdventureCard {
 
     public HildibrandManderville(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo,
-                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.DETECTIVE}, "{1}{W}",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.DETECTIVE}, "{1}{W}",
                 "Gentleman's Rise",
                 new CardType[]{CardType.INSTANT}, "{2}{B}");
 
         // Hildibrand Manderville
-        this.supertype.add(SuperType.LEGENDARY);
         this.getLeftHalfCard().setPT(2, 2);
 
         // Creature tokens you control get +1/+1.
-        this.addAbility(new SimpleStaticAbility(new BoostAllEffect(1, 1, Duration.WhileOnBattlefield, filter, false)));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new BoostAllEffect(1, 1, Duration.WhileOnBattlefield, filter, false)));
 
         // When Hildibrand Manderville dies, you may cast it from your graveyard as an Adventure until the end of your next turn.
-        this.addAbility(new DiesSourceTriggeredAbility(new MayCastFromGraveyardAsAdventureEffect()));
+        this.getLeftHalfCard().addAbility(new DiesSourceTriggeredAbility(new MayCastFromGraveyardAsAdventureEffect()));
 
         // Gentleman's Rise
         // Create a 2/2 black Zombie creature token.

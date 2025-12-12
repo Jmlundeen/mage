@@ -26,7 +26,7 @@ public final class TwoHeadedHunter extends AdventureCard {
         this.getLeftHalfCard().setPT(5, 4);
 
         // Menace
-        this.addAbility(new MenaceAbility());
+        this.getLeftHalfCard().addAbility(new MenaceAbility());
 
         // Twice the Rage
         // Target creature gains double strike until end of turn.

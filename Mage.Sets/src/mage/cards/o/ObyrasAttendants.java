@@ -25,7 +25,7 @@ public final class ObyrasAttendants extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Desperate Parry
         // Target creature gets -4/-0 until end of turn.

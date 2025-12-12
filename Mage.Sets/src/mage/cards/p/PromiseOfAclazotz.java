@@ -37,7 +37,7 @@ public class PromiseOfAclazotz extends AdventureCard {
                 new PopulateEffect(),
                 new SacrificeTargetCost(filter)
         ));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Foul Rebirth
         // Sacrifice a non-Demon creature. If you do, create a 4/3 white and black Vampire Demon creature token with flying.

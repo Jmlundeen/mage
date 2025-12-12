@@ -26,7 +26,7 @@ public final class RimrockKnight extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 1);
 
         // Rimrock Knight can't block
-        this.addAbility(new CantBlockAbility());
+        this.getLeftHalfCard().addAbility(new CantBlockAbility());
 
         // Boulder Rush
         // Target creature gets +2/+0 until end of turn.

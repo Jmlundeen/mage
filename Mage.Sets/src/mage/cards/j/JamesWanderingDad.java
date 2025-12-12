@@ -35,7 +35,7 @@ public final class JamesWanderingDad extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 4);
 
         // {T}: Add {C}{C}. Spend this mana only to activate abilities.
-        this.addAbility(new ConditionalColorlessManaAbility(
+        this.getLeftHalfCard().addAbility(new ConditionalColorlessManaAbility(
                 new TapSourceCost(), 2, new JamesWanderingDadManaBuilder()
         ));
 

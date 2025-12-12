@@ -43,7 +43,7 @@ public final class GiantKiller extends AdventureCard {
         Ability ability = new SimpleActivatedAbility(new TapTargetEffect(), new ManaCostsImpl<>("{1}{W}"));
         ability.addCost(new TapSourceCost());
         ability.addTarget(new TargetCreaturePermanent());
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Chop Down
         // Destroy target creature with power 4 or greater.

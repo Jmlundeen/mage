@@ -25,7 +25,7 @@ public final class FoulmireKnight extends AdventureCard {
         this.getLeftHalfCard().setPT(1, 1);
 
         // Deathtouch
-        this.addAbility(DeathtouchAbility.getInstance());
+        this.getLeftHalfCard().addAbility(DeathtouchAbility.getInstance());
 
         // Profane Insight
         // You draw a card and you lose 1 life.

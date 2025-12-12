@@ -40,10 +40,10 @@ public final class CrystalDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // Rob the Hoard
         // Return target artifact, enchantment, or legendary card from your graveyard to your hand.

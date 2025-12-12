@@ -37,10 +37,10 @@ public final class TwinmawStormbrood extends OmenCard {
         this.getLeftHalfCard().setPT(5, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // When this creature enters, you gain 5 life.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new GainLifeEffect(5)));
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTriggeredAbility(new GainLifeEffect(5)));
 
         // Charring Bite
         // deals 5 damage to target creature without flying.

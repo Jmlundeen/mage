@@ -32,7 +32,7 @@ public final class ReaperOfNight extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 5);
 
         // Whenever Reaper of Night attacks, if defending player has two or fewer cards in hand, it gains flying until end of turn.
-        this.addAbility(new AttacksTriggeredAbility(new GainAbilitySourceEffect(
+        this.getLeftHalfCard().addAbility(new AttacksTriggeredAbility(new GainAbilitySourceEffect(
                 FlyingAbility.getInstance(), Duration.EndOfTurn
         ).setText("it gains flying until end of turn")).withInterveningIf(ReaperOfNightCondition.instance));
 

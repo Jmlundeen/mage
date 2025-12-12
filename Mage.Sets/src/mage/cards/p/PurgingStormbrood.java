@@ -34,15 +34,15 @@ public final class PurgingStormbrood extends OmenCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Ward--Pay 2 life.
-        this.addAbility(new WardAbility(new PayLifeCost(2)));
+        this.getLeftHalfCard().addAbility(new WardAbility(new PayLifeCost(2)));
 
         // When this creature enters, remove all counters from up to one target creature.
         Ability ability = new EntersBattlefieldTriggeredAbility(new RemoveAllCountersPermanentTargetEffect());
         ability.addTarget(new TargetCreaturePermanent(0, 1));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Absorb Essence
         // Target creature gets +2/+2 and gains lifelink and hexproof until end of turn.

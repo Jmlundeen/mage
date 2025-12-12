@@ -41,15 +41,15 @@ public final class RilingDawnbreaker extends OmenCard {
         this.getLeftHalfCard().setPT(3, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // At the beginning of combat on your turn, another target creature you control gets +1/+0 until end of turn.
         Ability ability = new BeginningOfCombatTriggeredAbility(new BoostTargetEffect(1, 0));
         ability.addTarget(new TargetPermanent(filter));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Signaling Roar
         // Create a 2/2 white Soldier creature token.

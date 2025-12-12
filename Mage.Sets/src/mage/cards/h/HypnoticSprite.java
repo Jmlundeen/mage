@@ -34,7 +34,7 @@ public final class HypnoticSprite extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 1);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Mesmeric Glare
         // Counter target spell with converted mana cost 3 or less.

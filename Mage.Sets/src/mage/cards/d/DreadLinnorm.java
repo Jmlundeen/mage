@@ -40,7 +40,7 @@ public final class DreadLinnorm extends AdventureCard {
         this.getLeftHalfCard().setPT(7, 6);
 
         // Dread Linnorm can't be blocked by creatures with power 3 or less.
-        this.addAbility(new SimpleEvasionAbility(new CantBeBlockedByCreaturesSourceEffect(filter, Duration.WhileOnBattlefield)));
+        this.getLeftHalfCard().addAbility(new SimpleEvasionAbility(new CantBeBlockedByCreaturesSourceEffect(filter, Duration.WhileOnBattlefield)));
 
         // Scale Deflection
         // Put two +1/+1 counters on target creature and untap it. It gains hexproof until end of turn.

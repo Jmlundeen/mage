@@ -47,7 +47,7 @@ public final class Hezrou extends AdventureCard {
         this.getLeftHalfCard().setPT(6, 6);
 
         // Whenever one or more creatures you control become blocked, each blocking creature gets -1/-1 until end of turn.
-        this.addAbility(new HezrouTriggeredAbility(new BoostAllEffect(-1, -1, Duration.EndOfTurn, filterBlocking, false)));
+        this.getLeftHalfCard().addAbility(new HezrouTriggeredAbility(new BoostAllEffect(-1, -1, Duration.EndOfTurn, filterBlocking, false)));
 
         // Demonic Stench
         // Each creature that blocked this turn gets -1/-1 until end of turn.

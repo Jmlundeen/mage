@@ -31,7 +31,7 @@ public final class ShroudedShepherd extends AdventureCard {
         // When Veiled Shepherd enters the battlefield, target creature you control gets +2/+2 until end of turn.
         Ability ability = new EntersBattlefieldTriggeredAbility(new BoostTargetEffect(2, 2));
         ability.addTarget(new TargetControlledCreaturePermanent());
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Cleave Shadows
         // Creatures your opponents control get -1/-1 until end of turn.

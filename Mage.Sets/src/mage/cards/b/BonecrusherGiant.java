@@ -29,7 +29,7 @@ public final class BonecrusherGiant extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 3);
 
         // Whenever Bonecrusher Giant becomes the target of a spell, Bonecrusher Giant deals 2 damage to that spell's controller.
-        this.addAbility(new BecomesTargetSourceTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new BecomesTargetSourceTriggeredAbility(
                 new DamageTargetEffect(2).withTargetDescription("that spell's controller"),
                 StaticFilters.FILTER_SPELL_A, SetTargetPointer.PLAYER, false)
                 .withRuleTextReplacement(false));

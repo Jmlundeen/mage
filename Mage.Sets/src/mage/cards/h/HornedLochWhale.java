@@ -38,13 +38,13 @@ public final class HornedLochWhale extends AdventureCard {
         this.getLeftHalfCard().setPT(6, 6);
 
         // Flash
-        this.addAbility(FlashAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlashAbility.getInstance());
 
         // Ward {2}
-        this.addAbility(new WardAbility(new ManaCostsImpl<>("{2}"), false));
+        this.getLeftHalfCard().addAbility(new WardAbility(new ManaCostsImpl<>("{2}"), false));
 
         // Horned Loch-Whale enters the battlefield tapped unless it's your turn.
-        this.addAbility(new EntersBattlefieldTappedUnlessAbility(MyTurnCondition.instance, "it's your turn"));
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTappedUnlessAbility(MyTurnCondition.instance, "it's your turn"));
 
         // Lagoon Breach
         // The owner of target attacking creature you don't control puts it on the top or bottom of their library.

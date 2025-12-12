@@ -22,8 +22,9 @@ public final class ArdenvaleTactician extends AdventureCard {
 
         // Ardenvale Tactician
         this.getLeftHalfCard().setPT(2, 3);
+
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Dizzying Swoop
         // Tap up to two target creatures.

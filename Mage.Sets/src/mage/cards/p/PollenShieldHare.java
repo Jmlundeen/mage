@@ -33,7 +33,7 @@ public final class PollenShieldHare extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Creature tokens you control get +1/+1.
-        this.addAbility(new SimpleStaticAbility(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(
                 new BoostControlledEffect(1, 1, Duration.WhileOnBattlefield, StaticFilters.FILTER_CREATURE_TOKENS, false)
         ));
 

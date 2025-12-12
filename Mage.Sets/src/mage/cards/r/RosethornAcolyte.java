@@ -24,7 +24,7 @@ public final class RosethornAcolyte extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 3);
 
         // {T}: Add one mana of any color.
-        this.addAbility(new AnyColorManaAbility());
+        this.getLeftHalfCard().addAbility(new AnyColorManaAbility());
 
         // Seasonal Ritual
         // Add one mana of any color.

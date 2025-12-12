@@ -32,7 +32,7 @@ public final class VirtueOfKnowledge extends AdventureCard {
 
         // Virtue of Knowledge
         // If a permanent entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.
-        this.addAbility(new SimpleStaticAbility(new AdditionalTriggerControlledETBReplacementEffect()));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new AdditionalTriggerControlledETBReplacementEffect()));
 
         // Vantress Visions
         // Copy target activated or triggered ability you control. You may choose new targets for the copy.

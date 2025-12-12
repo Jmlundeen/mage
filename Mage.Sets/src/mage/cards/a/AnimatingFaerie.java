@@ -38,7 +38,7 @@ public final class AnimatingFaerie extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Bring to Life
         // Target noncreature artifact you control becomes a 0/0 artifact creature. Put four +1/+1 counters on it.

@@ -31,19 +31,18 @@ public final class BelunaGrandsquall extends AdventureCard {
 
     public BelunaGrandsquall(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo,
-                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.GIANT, SubType.NOBLE}, "{G}{U}{R}",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.GIANT, SubType.NOBLE}, "{G}{U}{R}",
                 "Seek Thrills",
                 new CardType[]{CardType.INSTANT}, "{2}{G}{U}{R}");
 
         // Beluna Grandsquall
-        this.supertype.add(SuperType.LEGENDARY);
         this.getLeftHalfCard().setPT(4, 4);
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         // Permanent spells you cast that have an Adventure cost {1} less to cast.
-        this.addAbility(new SimpleStaticAbility(new SpellsCostReductionControllerEffect(filter, 1)));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new SpellsCostReductionControllerEffect(filter, 1)));
 
         // Seek Thrills
         // Mill seven cards. Then put all cards that have an Adventure from among the milled cards into your hand.

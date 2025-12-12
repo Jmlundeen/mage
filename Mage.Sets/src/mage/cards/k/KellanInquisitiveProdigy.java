@@ -34,15 +34,15 @@ public final class KellanInquisitiveProdigy extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // Whenever Kellan, Inquisitive Prodigy attacks, destroy up to one target artifact. If you controlled that permanent, draw a card.
         Ability ability = new AttacksTriggeredAbility(new KellanInquisitiveProdigyEffect());
         ability.addTarget(new TargetPermanent(0, 1, StaticFilters.FILTER_PERMANENT_ARTIFACT));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Tail the Suspect
         // Investigate. You may play an additional land this turn.

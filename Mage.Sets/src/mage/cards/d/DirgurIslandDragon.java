@@ -29,10 +29,10 @@ public final class DirgurIslandDragon extends OmenCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Ward {2}
-        this.addAbility(new WardAbility(new ManaCostsImpl<>("{2}")));
+        this.getLeftHalfCard().addAbility(new WardAbility(new ManaCostsImpl<>("{2}")));
 
         // Skimming Strike
         // Tap up to one target creature. Draw a card.

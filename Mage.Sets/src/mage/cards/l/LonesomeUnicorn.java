@@ -25,7 +25,7 @@ public final class LonesomeUnicorn extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // Rider in Need
         // Create a 2/2 white Knight creature token with vigilance.

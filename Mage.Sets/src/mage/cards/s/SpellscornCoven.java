@@ -28,10 +28,10 @@ public final class SpellscornCoven extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // When Spellscorn Coven enters the battlefield, each opponent discards a card.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new DiscardEachPlayerEffect(TargetController.OPPONENT)));
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTriggeredAbility(new DiscardEachPlayerEffect(TargetController.OPPONENT)));
 
         // Take it Back
         // Return target spell to its owner's hand.

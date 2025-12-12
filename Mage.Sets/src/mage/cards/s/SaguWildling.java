@@ -28,10 +28,10 @@ public final class SaguWildling extends OmenCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // When this creature enters, you gain 3 life.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new GainLifeEffect(3)));
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTriggeredAbility(new GainLifeEffect(3)));
 
         // Roost Seek
         // Search your library for a basic land card, reveal it, put it into your hand, then shuffle.

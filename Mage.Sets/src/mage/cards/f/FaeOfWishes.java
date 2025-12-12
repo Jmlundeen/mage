@@ -32,14 +32,14 @@ public final class FaeOfWishes extends AdventureCard {
         this.getLeftHalfCard().setPT(1, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // {1}{U}, Discard two cards: Return Fae of Wishes to its owner's hand.
         Ability ability = new SimpleActivatedAbility(
                 new ReturnToHandSourceEffect(true), new ManaCostsImpl<>("{1}{U}")
         );
         ability.addCost(new DiscardTargetCost(new TargetCardInHand(2, StaticFilters.FILTER_CARD_CARDS)));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Granted
         // You may reveal a noncreature card you own from outside the game and put it into your hand.

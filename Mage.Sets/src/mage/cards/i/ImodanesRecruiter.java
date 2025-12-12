@@ -39,7 +39,7 @@ public final class ImodanesRecruiter extends AdventureCard {
                 HasteAbility.getInstance(), Duration.EndOfTurn,
                 StaticFilters.FILTER_CONTROLLED_CREATURES
         ).setText("and gain haste until end of turn"));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Train Troops
         // Create two 2/2 white Knight creature tokens with vigilance.

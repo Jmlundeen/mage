@@ -30,7 +30,7 @@ public final class WoodlandAcolyte extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // When Woodland Acolyte enters the battlefield, draw a card.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new DrawCardSourceControllerEffect(1)));
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTriggeredAbility(new DrawCardSourceControllerEffect(1)));
 
         // Mend the Wilds
         // Put target permanent card from your graveyard on top of your library.

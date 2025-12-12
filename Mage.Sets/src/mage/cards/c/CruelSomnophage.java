@@ -32,7 +32,7 @@ public final class CruelSomnophage extends AdventureCard {
         this.getLeftHalfCard().setPT(0, 0);
 
         // Cruel Somnophage's power and toughness are each equal to the number of creature cards in all graveyards.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new SetBasePowerToughnessSourceEffect(xValue)));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(Zone.ALL, new SetBasePowerToughnessSourceEffect(xValue)));
 
         // Can't Wake Up
         // Target player mills four cards.

@@ -43,7 +43,7 @@ public final class GraySlaad extends AdventureCard {
         ability.addEffect(new ConditionalContinuousEffect(new GainAbilitySourceEffect(
                 DeathtouchAbility.getInstance(), Duration.WhileOnBattlefield
         ), condition, "and deathtouch"));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Entropic Decay
         // Mill four cards.

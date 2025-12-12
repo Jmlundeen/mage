@@ -33,7 +33,7 @@ public final class BeanstalkGiant extends AdventureCard {
         this.getLeftHalfCard().setPT(0, 0);
 
         // Beanstalk Giant's power and toughness are each equal to the number of lands you control.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new SetBasePowerToughnessSourceEffect(xValue)));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(Zone.ALL, new SetBasePowerToughnessSourceEffect(xValue)));
 
         // Fertile Footsteps
         // Search your library for a basic land card, put it onto the battlefield, then shuffle your library.

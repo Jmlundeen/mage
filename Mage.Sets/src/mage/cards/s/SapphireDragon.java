@@ -28,10 +28,10 @@ public final class SapphireDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(5, 6);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Whenever Sapphire Dragon attacks or blocks, scry 2.
-        this.addAbility(new AttacksOrBlocksTriggeredAbility(new ScryEffect(2), false));
+        this.getLeftHalfCard().addAbility(new AttacksOrBlocksTriggeredAbility(new ScryEffect(2), false));
 
         // Psionic Pulse
         // Counter target noncreature spell.

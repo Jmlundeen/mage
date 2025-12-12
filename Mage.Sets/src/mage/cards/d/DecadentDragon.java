@@ -30,13 +30,13 @@ public final class DecadentDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         // Whenever Decadent Dragon attacks, create a Treasure token.
-        this.addAbility(new AttacksTriggeredAbility(new CreateTokenEffect(new TreasureToken())));
+        this.getLeftHalfCard().addAbility(new AttacksTriggeredAbility(new CreateTokenEffect(new TreasureToken())));
 
         // Expensive Taste
         // Exile the top two cards of target opponent's library face down. You may look at and play those cards for as long as they remain exiled.

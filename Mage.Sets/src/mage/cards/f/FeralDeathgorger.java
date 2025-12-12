@@ -35,15 +35,15 @@ public final class FeralDeathgorger extends OmenCard {
         this.getLeftHalfCard().setPT(3, 5);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Deathtouch
-        this.addAbility(DeathtouchAbility.getInstance());
+        this.getLeftHalfCard().addAbility(DeathtouchAbility.getInstance());
 
         // When this creature enters, exile up to two target cards from a single graveyard.
         Ability ability = new EntersBattlefieldTriggeredAbility(new ExileTargetEffect());
         ability.addTarget(new TargetCardInASingleGraveyard(0, 2, new FilterCard("cards")));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Dusk Sight
         // Put a +1/+1 counter on up to one target creature. Draw a card.

@@ -1,5 +1,6 @@
 package mage.cards.p;
 
+import mage.abilities.Ability;
 import mage.abilities.condition.common.RevoltCondition;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.ExileThenReturnTargetEffect;
@@ -31,13 +32,15 @@ public final class PegasusGuardian extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // At the beginning of your end step, if a permanent you controlled left the battlefield this turn, create a 1/1 white Pegasus creature token with flying.
-        this.addAbility(new BeginningOfEndStepTriggeredAbility(
+        Ability ability = new BeginningOfEndStepTriggeredAbility(
                 TargetController.YOU, new CreateTokenEffect(new PegasusToken()),
                 false, RevoltCondition.instance
-        ).addHint(RevoltCondition.getHint()), new RevoltWatcher());
+        ).addHint(RevoltCondition.getHint());
+        ability.addWatcher(new RevoltWatcher());
+        this.getLeftHalfCard().addAbility(ability);
 
         // Rescue the Foal
         // Exile target creature you control, then return that card to the battlefield under its owner's control.

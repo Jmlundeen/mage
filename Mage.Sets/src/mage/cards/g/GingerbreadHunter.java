@@ -27,7 +27,7 @@ public final class GingerbreadHunter extends AdventureCard {
         this.getLeftHalfCard().setPT(5, 5);
 
         // When Gingerbread Hunter enters the battlefield, create a Food token.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new CreateTokenEffect(new FoodToken())));
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTriggeredAbility(new CreateTokenEffect(new FoodToken())));
 
         // Puny Snack
         // Target creature gets -2/-2 until end of turn.

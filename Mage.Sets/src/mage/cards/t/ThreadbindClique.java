@@ -34,7 +34,7 @@ public final class ThreadbindClique extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Rip the Seams
         // Destroy target tapped creature.

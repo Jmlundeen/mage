@@ -36,16 +36,16 @@ public final class KarvanistaLoyalLupari extends AdventureCard {
         this.getLeftHalfCard().setPT(5, 5);
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         // Haste
-        this.addAbility(HasteAbility.getInstance());
+        this.getLeftHalfCard().addAbility(HasteAbility.getInstance());
 
         // Whenever Karvanista attacks, put a +1/+1 counter on each Human you control.
-        this.addAbility(new AttacksTriggeredAbility(new AddCountersAllEffect(CounterType.P1P1.createInstance(), filter)));
+        this.getLeftHalfCard().addAbility(new AttacksTriggeredAbility(new AddCountersAllEffect(CounterType.P1P1.createInstance(), filter)));
 
         // Lupari Shield
         // Humans you control gain indestructible until your next turn.

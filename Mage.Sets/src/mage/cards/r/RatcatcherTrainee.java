@@ -31,7 +31,7 @@ public final class RatcatcherTrainee extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 1);
 
         // As long as it's your turn, Ratcatcher Trainee has first strike.
-        this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
                 new GainAbilitySourceEffect(FirstStrikeAbility.getInstance(), Duration.WhileOnBattlefield),
                 MyTurnCondition.instance, "During your turn, {this} has first strike."
         )).addHint(MyTurnHint.instance));

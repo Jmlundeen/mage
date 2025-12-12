@@ -29,7 +29,7 @@ public final class SeaHag extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 5);
 
         // When Sea Hag enters the battlefield, creatures your opponents control get -4/-0 until end of turn.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new BoostAllEffect(
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTriggeredAbility(new BoostAllEffect(
                 -4, 0, Duration.EndOfTurn,
                 StaticFilters.FILTER_OPPONENTS_PERMANENT_CREATURES, false
         )));

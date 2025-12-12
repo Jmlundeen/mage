@@ -25,7 +25,7 @@ public final class BeanstalkWurm extends AdventureCard {
         this.getLeftHalfCard().setPT(5, 4);
 
         // Reach
-        this.addAbility(ReachAbility.getInstance());
+        this.getLeftHalfCard().addAbility(ReachAbility.getInstance());
 
         // Plant Beans
         // You may play an additional land this turn.

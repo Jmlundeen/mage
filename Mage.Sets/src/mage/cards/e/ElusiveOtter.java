@@ -29,10 +29,10 @@ public final class ElusiveOtter extends AdventureCard {
         this.getLeftHalfCard().setPT(1, 1);
 
         // Prowess
-        this.addAbility(new ProwessAbility());
+        this.getLeftHalfCard().addAbility(new ProwessAbility());
 
         // Creatures with power less than Elusive Otter's power can't block it.
-        this.addAbility(new SimpleStaticAbility(new CantBeBlockedByCreaturesWithLessPowerEffect()));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new CantBeBlockedByCreaturesWithLessPowerEffect()));
 
         // Grove's Bounty
         // Distribute X +1/+1 counters among any number of target creatures you control.

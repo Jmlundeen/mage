@@ -29,7 +29,7 @@ public final class SmittenSwordmaster extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 1);
 
         // Lifelink
-        this.addAbility(LifelinkAbility.getInstance());
+        this.getLeftHalfCard().addAbility(LifelinkAbility.getInstance());
 
         // Curry Favor
         // You gain X life and each opponent loses X life, where X is the number of Knights you control.

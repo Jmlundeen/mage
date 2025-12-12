@@ -37,13 +37,13 @@ public final class BrazenBorrower extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 1);
 
         // Flash
-        this.addAbility(FlashAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlashAbility.getInstance());
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Bazen Borrower can block only creatures with flying.
-        this.addAbility(new CanBlockOnlyFlyingAbility());
+        this.getLeftHalfCard().addAbility(new CanBlockOnlyFlyingAbility());
 
         // Petty Theft
         // Return target nonland permanent an opponent controls to its owner's hand.

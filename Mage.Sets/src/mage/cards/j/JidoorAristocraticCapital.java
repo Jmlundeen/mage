@@ -23,10 +23,10 @@ public final class JidoorAristocraticCapital extends AdventureCard {
                 new CardType[]{CardType.SORCERY}, "{4}{U}{U}");
 
         // This land enters tapped.
-        this.addAbility(new EntersBattlefieldTappedAbility());
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTappedAbility());
 
         // {T}: Add {U}.
-        this.addAbility(new BlueManaAbility());
+        this.getLeftHalfCard().addAbility(new BlueManaAbility());
 
         // Overture
         // Target opponent mills half their library, rounded down.

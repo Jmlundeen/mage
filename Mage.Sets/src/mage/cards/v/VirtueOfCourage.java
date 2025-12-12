@@ -26,7 +26,7 @@ public final class VirtueOfCourage extends AdventureCard {
 
         // Virtue of Courage
         // Whenever a source you control deals noncombat damage to an opponent, you may exile that many cards from the top of your library. You may play those cards this turn.
-        this.addAbility(new SourceDealsNoncombatDamageToOpponentTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new SourceDealsNoncombatDamageToOpponentTriggeredAbility(
                 new ExileTopXMayPlayUntilEffect(SavedDamageValue.MANY, false, Duration.EndOfTurn)
                         .setText("you may exile that many cards from the top of your library. You may play those cards this turn.")
                 , true, SetTargetPointer.NONE));

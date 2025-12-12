@@ -34,7 +34,7 @@ public final class GhostLantern extends AdventureCard {
         ), false, StaticFilters.FILTER_CONTROLLED_A_CREATURE));
 
         // Equip {1}
-        this.addAbility(new EquipAbility(Outcome.BoostCreature, new GenericManaCost(1), new TargetControlledCreaturePermanent(), false));
+        this.getLeftHalfCard().addAbility(new EquipAbility(Outcome.BoostCreature, new GenericManaCost(1), new TargetControlledCreaturePermanent(), false));
 
         // Bind Spirit
         // Return target creature card from your graveyard to your hand.

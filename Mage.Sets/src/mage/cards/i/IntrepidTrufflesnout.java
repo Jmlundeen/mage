@@ -28,7 +28,7 @@ public final class IntrepidTrufflesnout extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 1);
 
         // Whenever Intrepid Trufflesnout attacks alone, create a Food token.
-        this.addAbility(new AttacksAloneSourceTriggeredAbility(new CreateTokenEffect(new FoodToken())));
+        this.getLeftHalfCard().addAbility(new AttacksAloneSourceTriggeredAbility(new CreateTokenEffect(new FoodToken())));
 
         // Target creature gets +2/+2 until end of turn.
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostTargetEffect(2, 2, Duration.EndOfTurn));

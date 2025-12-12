@@ -45,13 +45,13 @@ public final class DevouringSugarmaw extends AdventureCard {
         this.getLeftHalfCard().setPT(6, 6);
 
         // Menace
-        this.addAbility(new MenaceAbility(false));
+        this.getLeftHalfCard().addAbility(new MenaceAbility(false));
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         //  At the beginning of your upkeep, you may sacrifice an artifact, enchantment, or token. If you don't, tap Devouring Sugarmaw.
-        this.addAbility(new BeginningOfUpkeepTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new BeginningOfUpkeepTriggeredAbility(
                 new DoIfCostPaid(
                         null,
                         new TapSourceEffect(),

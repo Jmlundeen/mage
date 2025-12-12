@@ -38,7 +38,7 @@ public final class FlaxenIntruder extends AdventureCard {
         ability.addTarget(new TargetPermanent(StaticFilters.FILTER_PERMANENT_ARTIFACT_OR_ENCHANTMENT));
         Cost cost = new SacrificeSourceCost();
         cost.setText("sacrifice it");
-        this.addAbility(new DealsCombatDamageToAPlayerTriggeredAbility(new DoWhenCostPaid(
+        this.getLeftHalfCard().addAbility(new DealsCombatDamageToAPlayerTriggeredAbility(new DoWhenCostPaid(
                 ability, cost, "Sacrifice {this}?"
         ), false));
 

@@ -25,10 +25,10 @@ public final class MidgarCityOfMako extends AdventureCard {
                 new CardType[]{CardType.SORCERY}, "{2}{B}");
 
         // This land enters tapped.
-        this.addAbility(new EntersBattlefieldTappedAbility());
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTappedAbility());
 
         // {T}: Add {B}.
-        this.addAbility(new BlackManaAbility());
+        this.getLeftHalfCard().addAbility(new BlackManaAbility());
 
         // Reactor Raid
         // You may sacrifice an artifact or creature. If you do, draw two cards.

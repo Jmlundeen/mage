@@ -25,7 +25,7 @@ public final class YoungBlueDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Sand Augury
         // Scry 1, then draw a card.

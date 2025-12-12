@@ -31,12 +31,12 @@ public final class TwoHandedAxe extends AdventureCard {
 
         // Two-Handed Axe
         // Whenever equipped creature attacks, double its power until end of turn.
-        this.addAbility(new AttacksAttachedTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new AttacksAttachedTriggeredAbility(
                 new TwoHandedAxeEffect(), AttachmentType.EQUIPMENT, false, SetTargetPointer.PERMANENT
         ));
 
         // Equip {1}{R}
-        this.addAbility(new EquipAbility(Outcome.AddAbility, new ManaCostsImpl<>("{1}{R}"), false));
+        this.getLeftHalfCard().addAbility(new EquipAbility(Outcome.AddAbility, new ManaCostsImpl<>("{1}{R}"), false));
 
         // Sweeping Cleave
         // Target creature you control gains double strike until end of turn.

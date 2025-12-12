@@ -26,7 +26,7 @@ public final class BellowingBruiser extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Haste
-        this.addAbility(HasteAbility.getInstance());
+        this.getLeftHalfCard().addAbility(HasteAbility.getInstance());
 
         // Beat a Path
         // Up to two target creatures can't block this turn.

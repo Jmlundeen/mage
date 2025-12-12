@@ -37,12 +37,12 @@ public final class MarangRiverRegent extends OmenCard {
         this.getLeftHalfCard().setPT(6, 7);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // When this creature enters, return up to two other target nonland permanents to their owners' hands.
         Ability ability = new EntersBattlefieldTriggeredAbility(new ReturnToHandTargetEffect());
         ability.addTarget(new TargetPermanent(0, 2, filter));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Coil and Catch
         // Draw three cards, then discard a card.

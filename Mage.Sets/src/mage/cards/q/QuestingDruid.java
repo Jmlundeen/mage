@@ -42,7 +42,7 @@ public final class QuestingDruid extends AdventureCard {
         this.getLeftHalfCard().setPT(1, 1);
 
         // Whenever you cast a spell that's white, blue, black, or red, put a +1/+1 counter on Questing Druid.
-        this.addAbility(new SpellCastControllerTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new SpellCastControllerTriggeredAbility(
                 new AddCountersSourceEffect(CounterType.P1P1.createInstance()), filter, false
         ));
 

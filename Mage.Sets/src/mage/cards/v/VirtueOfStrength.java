@@ -44,7 +44,7 @@ public final class VirtueOfStrength extends AdventureCard {
 
         // Virtue of Strength
         // If you tap a basic land for mana, it produces three times as much of that mana instead.
-        this.addAbility(new SimpleStaticAbility(new VirtueOfStrengthReplacementEffect()));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new VirtueOfStrengthReplacementEffect()));
 
         // Garenbrig Growth
         // Return target creature or land card from your graveyard to your hand.

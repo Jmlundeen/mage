@@ -35,7 +35,7 @@ public final class LovestruckBeast extends AdventureCard {
         this.getLeftHalfCard().setPT(5, 5);
 
         // Lovestruck Beast can't attack unless you control a 1/1 creature.
-        this.addAbility(new SimpleStaticAbility(new LovestruckBeastEffect()));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new LovestruckBeastEffect()));
 
         // Heart's Desire
         // Create a 1/1 white Human creature token.

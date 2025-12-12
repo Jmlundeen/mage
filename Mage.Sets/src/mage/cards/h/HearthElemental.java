@@ -53,7 +53,7 @@ public final class HearthElemental extends AdventureCard {
                 .setText("This spell costs {X} less to cast, where X is the number of cards in your graveyard " +
                         "that are instant cards, sorcery cards, and/or have an Adventure")
         ).addHint(hint);
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Stoke Genius
         // Discard your hand, then draw two cards.

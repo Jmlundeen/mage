@@ -28,10 +28,10 @@ public final class MosswoodDreadknight extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 2);
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         // When Mosswood Dreadknight dies, you may cast it from your graveyard as an Adventure until the end of your next turn.
-        this.addAbility(new DiesSourceTriggeredAbility(new MayCastFromGraveyardAsAdventureEffect()));
+        this.getLeftHalfCard().addAbility(new DiesSourceTriggeredAbility(new MayCastFromGraveyardAsAdventureEffect()));
 
         // Dread Whispers
         // You draw a card and you lose 1 life.

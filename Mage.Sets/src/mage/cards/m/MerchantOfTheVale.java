@@ -32,7 +32,7 @@ public final class MerchantOfTheVale extends AdventureCard {
                 new DrawCardSourceControllerEffect(1), new ManaCostsImpl<>("{2}{R}")
         );
         ability.addCost(new DiscardCardCost());
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Haggle
         // You may discard a card. If you do, draw a card.

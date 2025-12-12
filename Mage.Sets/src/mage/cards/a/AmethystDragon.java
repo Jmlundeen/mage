@@ -26,10 +26,10 @@ public final class AmethystDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Haste
-        this.addAbility(HasteAbility.getInstance());
+        this.getLeftHalfCard().addAbility(HasteAbility.getInstance());
 
         // Explosive Crystal
         // Explosive Crystal deals 4 damage divided as you choose among any number of targets.

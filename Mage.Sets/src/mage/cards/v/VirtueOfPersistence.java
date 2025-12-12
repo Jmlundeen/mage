@@ -32,7 +32,7 @@ public final class VirtueOfPersistence extends AdventureCard {
                 new ReturnFromGraveyardToBattlefieldTargetEffect()
         );
         ability.addTarget(new TargetCardInGraveyard(StaticFilters.FILTER_CARD_CREATURE_A_GRAVEYARD));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Locthwain Scorn
         // Target creature gets -3/-3 until end of turn. You gain 2 life.

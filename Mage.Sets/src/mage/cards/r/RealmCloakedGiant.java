@@ -33,7 +33,7 @@ public final class RealmCloakedGiant extends AdventureCard {
         this.getLeftHalfCard().setPT(7, 7);
 
         // Vigilance
-        this.addAbility(VigilanceAbility.getInstance());
+        this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // Cast Off
         // Destroy all non-Giant creatures.

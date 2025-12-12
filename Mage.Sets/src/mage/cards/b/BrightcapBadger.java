@@ -40,12 +40,12 @@ public final class BrightcapBadger extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 4);
 
         // Each Fungus and Saproling you control has "{T}: Add {G}."
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
                 new GreenManaAbility(), Duration.WhileOnBattlefield, filter
         )));
 
         // At the beginning of your end step, create a 1/1 green Saproling token.
-        this.addAbility(new BeginningOfEndStepTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new BeginningOfEndStepTriggeredAbility(
                 new CreateTokenEffect(new SaprolingToken())
         ));
 

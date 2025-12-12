@@ -26,10 +26,10 @@ public final class YoungRedDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 2);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Young Red Dragon can't block.
-        this.addAbility(new CantBlockAbility());
+        this.getLeftHalfCard().addAbility(new CantBlockAbility());
 
         // Bathe in Gold
         // Create a Treasure token.

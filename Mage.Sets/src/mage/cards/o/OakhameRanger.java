@@ -28,7 +28,7 @@ public final class OakhameRanger extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // {T}: Creatures you control get +1/+1 until end of turn.
-        this.addAbility(new SimpleActivatedAbility(
+        this.getLeftHalfCard().addAbility(new SimpleActivatedAbility(
                 new BoostControlledEffect(1, 1, Duration.EndOfTurn), new TapSourceCost()
         ));
 

@@ -55,7 +55,7 @@ public final class IllithidHarvester extends AdventureCard {
         // of target tapped nontoken creatures face down. They're 2/2 Horror creatures.
         Ability ability = new EntersBattlefieldTriggeredAbility(new IllithidHarvesterEffect());
         ability.addTarget(new TargetPermanent(0, Integer.MAX_VALUE, filter));
-        this.addAbility(ability.withFlavorWord("Ceremorphosis"));
+        this.getLeftHalfCard().addAbility(ability.withFlavorWord("Ceremorphosis"));
 
         // Plant Tadpoles
         // Tap X target creatures. They don't untap during their controllers' next untap steps.

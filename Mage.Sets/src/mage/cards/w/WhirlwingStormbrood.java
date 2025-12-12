@@ -42,13 +42,13 @@ public final class WhirlwingStormbrood extends OmenCard {
         this.getLeftHalfCard().setPT(4, 3);
 
         // Flash
-        this.addAbility(FlashAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlashAbility.getInstance());
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // You may cast sorcery spells and Dragon spells as though they had flash.
-        this.addAbility(new SimpleStaticAbility(new CastAsThoughItHadFlashAllEffect(Duration.WhileOnBattlefield, filter)));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new CastAsThoughItHadFlashAllEffect(Duration.WhileOnBattlefield, filter)));
 
         // Dynamic Soar
         // Put three +1/+1 counters on target creature you control.

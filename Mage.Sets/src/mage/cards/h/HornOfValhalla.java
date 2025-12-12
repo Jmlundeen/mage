@@ -30,12 +30,12 @@ public final class HornOfValhalla extends AdventureCard {
                 new CardType[]{CardType.SORCERY}, "{X}{W}{W}");
 
         // Equipped creature gets +1/+1 for each creature you control.
-        this.addAbility(new SimpleStaticAbility(new BoostEquippedEffect(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new BoostEquippedEffect(
                 CreaturesYouControlCount.PLURAL, CreaturesYouControlCount.PLURAL
         ).setText("equipped creature gets +1/+1 for each creature you control")).addHint(CreaturesYouControlHint.instance));
 
         // Equip {3}
-        this.addAbility(new EquipAbility(Outcome.BoostCreature, new GenericManaCost(3), new TargetControlledCreaturePermanent(), false));
+        this.getLeftHalfCard().addAbility(new EquipAbility(Outcome.BoostCreature, new GenericManaCost(3), new TargetControlledCreaturePermanent(), false));
 
         // Ysgard's Call
         // Create X 1/1 white Soldier creature tokens.

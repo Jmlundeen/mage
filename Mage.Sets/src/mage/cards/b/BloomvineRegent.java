@@ -32,10 +32,10 @@ public final class BloomvineRegent extends OmenCard {
         this.getLeftHalfCard().setPT(4, 5);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Whenever this creature or another Dragon you control enters, you gain 3 life.
-        this.addAbility(new EntersBattlefieldThisOrAnotherTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldThisOrAnotherTriggeredAbility(
                 new GainLifeEffect(3),
                 new FilterCreaturePermanent(SubType.DRAGON, "Dragon"),
                 false,

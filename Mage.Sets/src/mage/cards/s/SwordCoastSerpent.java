@@ -34,7 +34,7 @@ public final class SwordCoastSerpent extends AdventureCard {
         this.getLeftHalfCard().setPT(6, 6);
 
         // Sword Coast Serpent can't be blocked as long as you've cast a noncreature spell this turn.
-        this.addAbility(new SimpleStaticAbility(new ConditionalRestrictionEffect(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new ConditionalRestrictionEffect(
                 new CantBeBlockedSourceEffect(), SwordCoastSerpentCondition.instance,
                 "{this} can't be blocked as long as you've cast a noncreature spell this turn"
         )));

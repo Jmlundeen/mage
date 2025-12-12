@@ -29,10 +29,10 @@ public final class FrolickingFamiliar extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Whenever you cast an instant or sorcery spell, Frolicking Familiar gets +1/+1 until end of turn.
-        this.addAbility(new SpellCastControllerTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new SpellCastControllerTriggeredAbility(
                 new BoostSourceEffect(1, 1, Duration.EndOfTurn),
                 StaticFilters.FILTER_SPELL_AN_INSTANT_OR_SORCERY, false
         ));

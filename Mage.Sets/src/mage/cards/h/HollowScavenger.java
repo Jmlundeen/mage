@@ -35,7 +35,7 @@ public final class HollowScavenger extends AdventureCard {
         Ability ability = new LimitedTimesPerTurnActivatedAbility(Zone.BATTLEFIELD,
                 new BoostSourceEffect(2, 2, Duration.EndOfTurn), new GenericManaCost(1));
         ability.addCost(new SacrificeTargetCost(StaticFilters.FILTER_CONTROLLED_FOOD));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Bakery Raid
         // Create a Food token.

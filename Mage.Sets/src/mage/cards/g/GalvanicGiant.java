@@ -42,7 +42,7 @@ public final class GalvanicGiant extends AdventureCard {
         Ability ability = new SpellCastControllerTriggeredAbility(new TapTargetEffect(), filter, false);
         ability.addEffect(new AddCountersTargetEffect(CounterType.STUN.createInstance(1)).setText("and put a stun counter on it."));
         ability.addTarget(new TargetOpponentsCreaturePermanent());
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Storm Reading
         // Draw four cards, then discard two cards.

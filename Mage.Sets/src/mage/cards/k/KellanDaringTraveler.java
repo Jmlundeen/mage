@@ -40,7 +40,7 @@ public final class KellanDaringTraveler extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 3);
 
         // Whenever Kellan, Daring Traveler attacks, reveal the top card of your library. If it's a creature card with mana value 3 or less, put it into your hand. Otherwise, you may put it into your graveyard.
-        this.addAbility(new AttacksTriggeredAbility(new KellanDaringTravelerEffect()));
+        this.getLeftHalfCard().addAbility(new AttacksTriggeredAbility(new KellanDaringTravelerEffect()));
 
         // Journey On
         // Create X Map tokens, where X is one plus the number of opponents who control an artifact.

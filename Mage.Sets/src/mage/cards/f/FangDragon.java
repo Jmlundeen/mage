@@ -25,7 +25,7 @@ public final class FangDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(6, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Forktail Sweep deals 1 damage to each creature you don't control.
         this.getRightHalfCard().getSpellAbility().addEffect(new DamageAllEffect(

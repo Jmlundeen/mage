@@ -40,10 +40,10 @@ public final class OnduKnotmaster extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Lifelink
-        this.addAbility(LifelinkAbility.getInstance());
+        this.getLeftHalfCard().addAbility(LifelinkAbility.getInstance());
 
         // Whenever another modified creature you control dies, put two +1/+1 counters on Ondu Knotmaster.
-        this.addAbility(new DiesCreatureTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new DiesCreatureTriggeredAbility(
                 new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
                 false, filter
         ));

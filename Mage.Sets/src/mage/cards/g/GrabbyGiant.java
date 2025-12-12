@@ -41,14 +41,14 @@ public final class GrabbyGiant extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 3);
 
         // Reach
-        this.addAbility(ReachAbility.getInstance());
+        this.getLeftHalfCard().addAbility(ReachAbility.getInstance());
 
         // {2}{R}, Sacrifice an artifact or land: Draw a card.
         Ability ability = new SimpleActivatedAbility(
                 new DrawCardSourceControllerEffect(1), new ManaCostsImpl<>("{2}{R}")
         );
         ability.addCost(new SacrificeTargetCost(filter));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // That's Mine
         // Create a Treasure token.

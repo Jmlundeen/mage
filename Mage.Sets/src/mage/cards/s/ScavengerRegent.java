@@ -40,10 +40,10 @@ public final class ScavengerRegent extends OmenCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Ward--Discard a card.
-        this.addAbility(new WardAbility(new DiscardCardCost()));
+        this.getLeftHalfCard().addAbility(new WardAbility(new DiscardCardCost()));
 
         // Exude Toxin
         // Each non-Dragon creature gets -X/-X until end of turn.

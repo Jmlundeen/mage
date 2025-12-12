@@ -37,8 +37,9 @@ public final class AquaticAlchemist extends AdventureCard {
 
         // Aquatic Alchemist
         this.getLeftHalfCard().setPT(1, 3);
+
         // Whenever you cast your first instant or sorcery spell each turn, Aquatic Alchemist gets +2/+0 until end of turn.
-        this.addAbility(new AquaticAlchemistTriggeredAbility());
+        this.getLeftHalfCard().addAbility(new AquaticAlchemistTriggeredAbility());
 
         // Bubble up
         // Put target instant or sorcery card from your graveyard on top of your library.

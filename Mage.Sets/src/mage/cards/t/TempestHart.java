@@ -36,10 +36,10 @@ public final class TempestHart extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 4);
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         // Whenever you cast a spell with mana value 5 or greater, put a +1/+1 counter on Tempest Hart.
-        this.addAbility(new SpellCastControllerTriggeredAbility(
+        this.getLeftHalfCard().addAbility(new SpellCastControllerTriggeredAbility(
                 new AddCountersSourceEffect(CounterType.P1P1.createInstance()), filter, false
         ));
 

@@ -40,10 +40,10 @@ public final class TlincalliHunter extends AdventureCard {
         this.getLeftHalfCard().setPT(7, 7);
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         // Once each turn, you may pay {0} rather than pay the mana cost for a creature spell you cast from exile.
-        this.addAbility(new SimpleStaticAbility(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(
                 new TlincalliHunterAddAltCostEffect()));
 
         // Retrieve Prey

@@ -44,10 +44,10 @@ public final class RunescaleStormbrood extends OmenCard {
         this.getLeftHalfCard().setPT(2, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Whenever you cast a noncreature spell or a Dragon spell, this creature gets +2/+0 until end of turn.
-        this.addAbility(new SpellCastControllerTriggeredAbility(new BoostSourceEffect(2, 0, Duration.EndOfTurn), castFilter, false));
+        this.getLeftHalfCard().addAbility(new SpellCastControllerTriggeredAbility(new BoostSourceEffect(2, 0, Duration.EndOfTurn), castFilter, false));
 
         // Chilling Screech
         // Counter target spell with mana value 2 or less.

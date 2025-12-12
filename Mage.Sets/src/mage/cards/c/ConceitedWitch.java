@@ -26,7 +26,7 @@ public final class ConceitedWitch extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 3);
 
         // Menace
-        this.addAbility(new MenaceAbility());
+        this.getLeftHalfCard().addAbility(new MenaceAbility());
 
         // Price of Beauty
         // Create a Wicked Role token attached to target creature you control.

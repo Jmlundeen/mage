@@ -39,12 +39,12 @@ public final class BlessedHippogriff extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Whenever Blessed Hippogriff attacks, target attacking creature without flying gains flying until end of turn.
         Ability ability = new AttacksTriggeredAbility(new GainAbilityTargetEffect(FlyingAbility.getInstance()));
         ability.addTarget(new TargetPermanent(filter));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Tyr's Blessing
         // Target creature gains indestructible until end of turn.

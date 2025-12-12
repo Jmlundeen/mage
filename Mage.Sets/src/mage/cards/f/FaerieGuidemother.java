@@ -27,7 +27,7 @@ public final class FaerieGuidemother extends AdventureCard {
         this.getLeftHalfCard().setPT(1, 1);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Gift of the Fae
         // Target creature gets +2/+1 and gains flying until end of turn.

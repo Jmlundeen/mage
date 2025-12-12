@@ -27,7 +27,7 @@ public final class FellHorseman extends AdventureCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // When Fell Horseman dies, put it on the bottom of its owner's library.
-        this.addAbility(new DiesSourceTriggeredAbility(new PutOnLibrarySourceEffect(
+        this.getLeftHalfCard().addAbility(new DiesSourceTriggeredAbility(new PutOnLibrarySourceEffect(
                 false, "put it on the bottom of its owner's library"
         ), false));
 

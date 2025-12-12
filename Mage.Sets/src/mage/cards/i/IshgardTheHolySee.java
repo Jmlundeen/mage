@@ -27,10 +27,10 @@ public final class IshgardTheHolySee extends AdventureCard {
                 new CardType[]{CardType.SORCERY}, "{3}{W}{W}");
 
         // This land enters tapped.
-        this.addAbility(new EntersBattlefieldTappedAbility());
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTappedAbility());
 
         // {T}: Add {W}.
-        this.addAbility(new WhiteManaAbility());
+        this.getLeftHalfCard().addAbility(new WhiteManaAbility());
 
         // Faith & Grief
         // Return up to two target artifact and/or enchantment cards from your graveyard to your hand.

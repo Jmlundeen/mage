@@ -27,10 +27,10 @@ public final class TopazDragon extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Deathtouch
-        this.addAbility(DeathtouchAbility.getInstance());
+        this.getLeftHalfCard().addAbility(DeathtouchAbility.getInstance());
 
         // Entropic Cloud
         // Creatures you control gain deathtouch until end of turn.

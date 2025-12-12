@@ -36,7 +36,7 @@ public final class AltarOfBhaal extends AdventureCard {
         ability.addCost(new TapSourceCost());
         ability.addCost(new ExileTargetCost(new TargetControlledPermanent(StaticFilters.FILTER_CONTROLLED_A_CREATURE)));
         ability.addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Bone Offering
         // Create a tapped 4/1 black Skeleton creature token with menace.

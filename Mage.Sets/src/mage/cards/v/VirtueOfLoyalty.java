@@ -31,7 +31,7 @@ public final class VirtueOfLoyalty extends AdventureCard {
                 new AddCountersAllEffect(CounterType.P1P1.createInstance(), StaticFilters.FILTER_CONTROLLED_CREATURE)
         );
         trigger.addEffect(new UntapAllEffect(StaticFilters.FILTER_CONTROLLED_CREATURE).setText("untap those creatures"));
-        this.addAbility(trigger);
+        this.getLeftHalfCard().addAbility(trigger);
 
         // Ardenvale Fealty
         // Create a 2/2 white Knight creature token with vigilance.

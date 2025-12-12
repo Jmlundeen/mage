@@ -44,10 +44,10 @@ public final class KellanTheFaeBlooded extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Double strike
-        this.addAbility(DoubleStrikeAbility.getInstance());
+        this.getLeftHalfCard().addAbility(DoubleStrikeAbility.getInstance());
 
         // Other creatures you control get +1/+0 for each Aura and Equipment attached to Kellan, the Fae-Blooded.
-        this.addAbility(new SimpleStaticAbility(
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(
                 new BoostControlledEffect(
                         new AdditiveDynamicValue(new AuraAttachedCount(), new EquipmentAttachedCount()),
                         StaticValue.get(0), Duration.WhileOnBattlefield, filter, true

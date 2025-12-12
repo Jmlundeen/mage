@@ -42,7 +42,7 @@ public final class BrambleFamiliar extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // {T}: Add {G}.
-        this.addAbility(new GreenManaAbility());
+        this.getLeftHalfCard().addAbility(new GreenManaAbility());
 
         // {1}{G}, {T}, Discard a card: Return Bramble Familiar to its owner's hand.
         Ability ability = new SimpleActivatedAbility(
@@ -51,7 +51,7 @@ public final class BrambleFamiliar extends AdventureCard {
         );
         ability.addCost(new TapSourceCost());
         ability.addCost(new DiscardTargetCost(new TargetCardInHand(StaticFilters.FILTER_CARD)));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Fetch Quest
         // Mill seven cards, then put a creature, enchantment, or land card from among cards milled this way onto the battlefield.

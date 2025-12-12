@@ -26,7 +26,7 @@ public final class Ettercap extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 5);
 
         // Reach
-        this.addAbility(ReachAbility.getInstance());
+        this.getLeftHalfCard().addAbility(ReachAbility.getInstance());
 
         // Web Shot
         // Destroy target creature with flying.

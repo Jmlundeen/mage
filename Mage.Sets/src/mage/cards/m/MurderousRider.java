@@ -28,10 +28,10 @@ public final class MurderousRider extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 3);
 
         // Lifelink
-        this.addAbility(LifelinkAbility.getInstance());
+        this.getLeftHalfCard().addAbility(LifelinkAbility.getInstance());
 
         // When Murderous Rider dies, put it on the bottom of its owner's library.
-        this.addAbility(new DiesSourceTriggeredAbility(new PutOnLibrarySourceEffect(
+        this.getLeftHalfCard().addAbility(new DiesSourceTriggeredAbility(new PutOnLibrarySourceEffect(
                 false, "put it on the bottom of its owner's library"
         ), false));
 

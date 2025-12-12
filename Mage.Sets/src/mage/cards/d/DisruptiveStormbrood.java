@@ -39,12 +39,12 @@ public final class DisruptiveStormbrood extends OmenCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // When this creature enters, destroy up to one target artifact or enchantment.
         Ability ability = new EntersBattlefieldTriggeredAbility(new DestroyTargetEffect());
         ability.addTarget(new TargetPermanent(0, 1, StaticFilters.FILTER_PERMANENT_ARTIFACT_OR_ENCHANTMENT));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // Petty Revenge
         // Destroy target creature with power 3 or less.

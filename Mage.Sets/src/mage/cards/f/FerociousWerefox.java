@@ -26,7 +26,7 @@ public final class FerociousWerefox extends AdventureCard {
         this.getLeftHalfCard().setPT(4, 3);
 
         // Trample
-        this.addAbility(TrampleAbility.getInstance());
+        this.getLeftHalfCard().addAbility(TrampleAbility.getInstance());
 
         // Guard Change
         // Create a Monster Role token attached to target creature you control.

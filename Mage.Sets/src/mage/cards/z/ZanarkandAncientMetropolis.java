@@ -32,10 +32,10 @@ public final class ZanarkandAncientMetropolis extends AdventureCard {
 
         // Zanarkand, Ancient Metropolis
         // This land enters tapped.
-        this.addAbility(new EntersBattlefieldTappedAbility());
+        this.getLeftHalfCard().addAbility(new EntersBattlefieldTappedAbility());
 
         // {T}: Add {G}.
-        this.addAbility(new GreenManaAbility());
+        this.getLeftHalfCard().addAbility(new GreenManaAbility());
 
         // Lasting Fayth
         // Create a 1/1 colorless Hero creature token. Put a +1/+1 counter on it for each land you control.

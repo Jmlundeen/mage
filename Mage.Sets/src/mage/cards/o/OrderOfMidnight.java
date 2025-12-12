@@ -27,10 +27,10 @@ public final class OrderOfMidnight extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Order of Midnight can't block.
-        this.addAbility(new CantBlockAbility());
+        this.getLeftHalfCard().addAbility(new CantBlockAbility());
 
         // Alter Fate
         // Return target creature card from your graveyard to your hand.

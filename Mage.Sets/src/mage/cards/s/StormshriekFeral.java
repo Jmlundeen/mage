@@ -32,13 +32,13 @@ public final class StormshriekFeral extends OmenCard {
         this.getLeftHalfCard().setPT(3, 3);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Haste
-        this.addAbility(HasteAbility.getInstance());
+        this.getLeftHalfCard().addAbility(HasteAbility.getInstance());
 
         // {1}{R}: This creature gets +1/+0 until end of turn.
-        this.addAbility(new SimpleActivatedAbility(new BoostSourceEffect(1, 0 , Duration.EndOfTurn), new ManaCostsImpl<>("{1}{R}")));
+        this.getLeftHalfCard().addAbility(new SimpleActivatedAbility(new BoostSourceEffect(1, 0 , Duration.EndOfTurn), new ManaCostsImpl<>("{1}{R}")));
 
         // Flush Out
         // Discard a card. If you do, draw two cards.
