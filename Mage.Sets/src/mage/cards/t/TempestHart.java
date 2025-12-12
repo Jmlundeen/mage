@@ -1,6 +1,5 @@
 package mage.cards.t;
 
-import mage.MageInt;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.effects.common.DrawDiscardControllerEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
@@ -28,12 +27,13 @@ public final class TempestHart extends AdventureCard {
     }
 
     public TempestHart(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{3}{G}", "Scan the Clouds", "{1}{U}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.ELEMENTAL, SubType.ELK}, "{3}{G}",
+                "Scan the Clouds",
+                new CardType[]{CardType.INSTANT}, "{1}{U}");
 
-        this.subtype.add(SubType.ELEMENTAL);
-        this.subtype.add(SubType.ELK);
-        this.power = new MageInt(3);
-        this.toughness = new MageInt(4);
+        // Tempest Hart
+        this.getLeftHalfCard().setPT(3, 4);
 
         // Trample
         this.addAbility(TrampleAbility.getInstance());
@@ -45,9 +45,7 @@ public final class TempestHart extends AdventureCard {
 
         // Scan the Clouds
         // Draw two cards, then discard two cards.
-        this.getSpellCard().getSpellAbility().addEffect(new DrawDiscardControllerEffect(2, 2));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new DrawDiscardControllerEffect(2, 2));
     }
 
     private TempestHart(final TempestHart card) {

@@ -1,6 +1,5 @@
 package mage.cards.t;
 
-import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -32,12 +31,13 @@ import java.util.UUID;
 public final class TlincalliHunter extends AdventureCard {
 
     public TlincalliHunter(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{5}{G}{G}", "Retrieve Prey", "{1}{G}");
-        
-        this.subtype.add(SubType.SCORPION);
-        this.subtype.add(SubType.SCOUT);
-        this.power = new MageInt(7);
-        this.toughness = new MageInt(7);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.SCORPION, SubType.SCOUT}, "{5}{G}{G}",
+                "Retrieve Prey",
+                new CardType[]{CardType.SORCERY}, "{1}{G}");
+
+        // Tlincalli Hunter
+        this.getLeftHalfCard().setPT(7, 7);
 
         // Trample
         this.addAbility(TrampleAbility.getInstance());
@@ -48,9 +48,8 @@ public final class TlincalliHunter extends AdventureCard {
 
         // Retrieve Prey
         // Exile target creature card from your graveyard. Until the end of your next turn, you may cast that card.
-        this.getSpellCard().getSpellAbility().addEffect(new RetrievePreyEffect());
-        this.getSpellCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new RetrievePreyEffect());
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
     }
 
     private TlincalliHunter(final TlincalliHunter card) {
