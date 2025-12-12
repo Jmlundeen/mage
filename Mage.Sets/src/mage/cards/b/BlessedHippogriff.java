@@ -1,6 +1,5 @@
 package mage.cards.b;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
@@ -31,11 +30,13 @@ public final class BlessedHippogriff extends AdventureCard {
     }
 
     public BlessedHippogriff(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{3}{W}", "Tyr's Blessing", "{W}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HIPPOGRIFF}, "{3}{W}",
+                "Tyr's Blessing",
+                new CardType[]{CardType.INSTANT}, "{W}");
 
-        this.subtype.add(SubType.HIPPOGRIFF);
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(3);
+        // Blessed Hippogriff
+        this.getLeftHalfCard().setPT(2, 3);
 
         // Flying
         this.addAbility(FlyingAbility.getInstance());
@@ -47,10 +48,8 @@ public final class BlessedHippogriff extends AdventureCard {
 
         // Tyr's Blessing
         // Target creature gains indestructible until end of turn.
-        this.getSpellCard().getSpellAbility().addEffect(new GainAbilityTargetEffect(IndestructibleAbility.getInstance()));
-        this.getSpellCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new GainAbilityTargetEffect(IndestructibleAbility.getInstance()));
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
     }
 
     private BlessedHippogriff(final BlessedHippogriff card) {

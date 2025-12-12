@@ -1,6 +1,5 @@
 package mage.cards.b;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.DiscardTargetCost;
@@ -34,12 +33,13 @@ import java.util.UUID;
 public final class BrambleFamiliar extends AdventureCard {
 
     public BrambleFamiliar(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{1}{G}", "Fetch Quest", "{5}{G}{G}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.ELEMENTAL, SubType.RACCOON}, "{1}{G}",
+                "Fetch Quest",
+                new CardType[]{CardType.SORCERY}, "{5}{G}{G}");
 
-        this.subtype.add(SubType.ELEMENTAL);
-        this.subtype.add(SubType.RACCOON);
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(2);
+        // Bramble Familiar
+        this.getLeftHalfCard().setPT(2, 2);
 
         // {T}: Add {G}.
         this.addAbility(new GreenManaAbility());
@@ -55,9 +55,7 @@ public final class BrambleFamiliar extends AdventureCard {
 
         // Fetch Quest
         // Mill seven cards, then put a creature, enchantment, or land card from among cards milled this way onto the battlefield.
-        this.getSpellCard().getSpellAbility().addEffect(new FetchQuestEffect());
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new FetchQuestEffect());
     }
 
     private BrambleFamiliar(final BrambleFamiliar card) {

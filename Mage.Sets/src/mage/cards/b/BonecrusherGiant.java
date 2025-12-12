@@ -1,6 +1,5 @@
 package mage.cards.b;
 
-import mage.MageInt;
 import mage.abilities.common.BecomesTargetSourceTriggeredAbility;
 import mage.abilities.effects.common.DamageTargetEffect;
 import mage.abilities.effects.common.continuous.DamageCantBePreventedEffect;
@@ -21,11 +20,13 @@ import java.util.UUID;
 public final class BonecrusherGiant extends AdventureCard {
 
     public BonecrusherGiant(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{2}{R}", "Stomp", "{1}{R}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.GIANT}, "{2}{R}",
+                "Stomp",
+                new CardType[]{CardType.INSTANT}, "{1}{R}");
 
-        this.subtype.add(SubType.GIANT);
-        this.power = new MageInt(4);
-        this.toughness = new MageInt(3);
+        // Bonecrusher Giant
+        this.getLeftHalfCard().setPT(4, 3);
 
         // Whenever Bonecrusher Giant becomes the target of a spell, Bonecrusher Giant deals 2 damage to that spell's controller.
         this.addAbility(new BecomesTargetSourceTriggeredAbility(
@@ -34,12 +35,10 @@ public final class BonecrusherGiant extends AdventureCard {
                 .withRuleTextReplacement(false));
 
         // Stomp
-        // Damage can’t be prevented this turn. Stomp deals 2 damage to any target.
-        this.getSpellCard().getSpellAbility().addEffect(new DamageCantBePreventedEffect(Duration.EndOfTurn));
-        this.getSpellCard().getSpellAbility().addEffect(new DamageTargetEffect(2));
-        this.getSpellCard().getSpellAbility().addTarget(new TargetAnyTarget());
-
-        this.finalizeAdventure();
+        // Damage can't be prevented this turn. Stomp deals 2 damage to any target.
+        this.getRightHalfCard().getSpellAbility().addEffect(new DamageCantBePreventedEffect(Duration.EndOfTurn));
+        this.getRightHalfCard().getSpellAbility().addEffect(new DamageTargetEffect(2));
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetAnyTarget());
     }
 
     private BonecrusherGiant(final BonecrusherGiant card) {

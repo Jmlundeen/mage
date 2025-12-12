@@ -1,6 +1,5 @@
 package mage.cards.b;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
@@ -31,13 +30,14 @@ public final class BelunaGrandsquall extends AdventureCard {
     }
 
     public BelunaGrandsquall(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{G}{U}{R}", "Seek Thrills", "{2}{G}{U}{R}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.GIANT, SubType.NOBLE}, "{G}{U}{R}",
+                "Seek Thrills",
+                new CardType[]{CardType.INSTANT}, "{2}{G}{U}{R}");
 
+        // Beluna Grandsquall
         this.supertype.add(SuperType.LEGENDARY);
-        this.subtype.add(SubType.GIANT);
-        this.subtype.add(SubType.NOBLE);
-        this.power = new MageInt(4);
-        this.toughness = new MageInt(4);
+        this.getLeftHalfCard().setPT(4, 4);
 
         // Trample
         this.addAbility(TrampleAbility.getInstance());
@@ -47,9 +47,7 @@ public final class BelunaGrandsquall extends AdventureCard {
 
         // Seek Thrills
         // Mill seven cards. Then put all cards that have an Adventure from among the milled cards into your hand.
-        this.getSpellCard().getSpellAbility().addEffect(new SeekThrillsEffect());
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new SeekThrillsEffect());
     }
 
     private BelunaGrandsquall(final BelunaGrandsquall card) {
