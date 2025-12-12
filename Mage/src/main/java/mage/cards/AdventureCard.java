@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 public abstract class AdventureCard extends CardWithSpellOption<AdventureCardHalf, AdventureCard> {
 
     public AdventureCard(
-        UUID ownerId, CardSetInfo setInfo,
-                SuperType[] superTypesLeft, CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
-                String adventureName,
-                CardType[] typesRight, String costsRight
+            UUID ownerId, CardSetInfo setInfo,
+            SuperType[] superTypesLeft, CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+            String adventureName,
+            CardType[] typesRight, String costsRight
     ) {
         this(
                 ownerId, setInfo,
@@ -31,10 +31,10 @@ public abstract class AdventureCard extends CardWithSpellOption<AdventureCardHal
     }
 
     public AdventureCard (
-        UUID ownerId, CardSetInfo setInfo,
-                CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
-                String adventureName,
-                CardType[] typesRight, String costsRight
+            UUID ownerId, CardSetInfo setInfo,
+            CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+            String adventureName,
+            CardType[] typesRight, String costsRight
     ) {
         this(
                 ownerId, setInfo,
@@ -44,7 +44,11 @@ public abstract class AdventureCard extends CardWithSpellOption<AdventureCardHal
         );
     }
 
-    public AdventureCard(UUID ownerId, CardSetInfo setInfo, CardType[] typesLeft, String costsLeft, String adventureName, CardType[] typesRight, String costsRight) {
+    public AdventureCard(
+            UUID ownerId, CardSetInfo setInfo,
+            CardType[] typesLeft, String costsLeft,
+            String adventureName,
+            CardType[] typesRight, String costsRight) {
         this(
                 ownerId, setInfo,
                 new SuperType[]{}, typesLeft, new SubType[]{}, costsLeft,
@@ -54,10 +58,10 @@ public abstract class AdventureCard extends CardWithSpellOption<AdventureCardHal
     }
 
     public AdventureCard(
-        UUID ownerId, CardSetInfo setInfo,
-                SuperType[] superTypesLeft, CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
-                String adventureName,
-                SuperType[] superTypesRight,  CardType[] typesRight, SubType[] subTypesRight, String costsRight
+            UUID ownerId, CardSetInfo setInfo,
+            SuperType[] superTypesLeft, CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+            String adventureName,
+            SuperType[] superTypesRight,  CardType[] typesRight, SubType[] subTypesRight, String costsRight
     ) {
         super(ownerId, setInfo, typesLeft, costsLeft + costsRight, SpellAbilityType.ADVENTURE_OMEN);
         // main card name must be same as left side

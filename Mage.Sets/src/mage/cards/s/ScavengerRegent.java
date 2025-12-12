@@ -1,21 +1,21 @@
 package mage.cards.s;
 
-import java.util.UUID;
-import mage.MageInt;
 import mage.abilities.costs.common.DiscardCardCost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.dynamicvalue.common.SignInversionDynamicValue;
 import mage.abilities.effects.common.continuous.BoostAllEffect;
-import mage.cards.OmenCard;
-import mage.constants.Duration;
-import mage.constants.SubType;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.WardAbility;
 import mage.cards.CardSetInfo;
+import mage.cards.OmenCard;
 import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicates;
+
+import java.util.UUID;
 
 /**
  *
@@ -31,11 +31,13 @@ public final class ScavengerRegent extends OmenCard {
     }
 
     public ScavengerRegent(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{3}{B}", "Exude Toxin", "{X}{B}{B}");
-        
-        this.subtype.add(SubType.DRAGON);
-        this.power = new MageInt(4);
-        this.toughness = new MageInt(4);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.DRAGON}, "{3}{B}",
+                "Exude Toxin",
+                new CardType[]{CardType.SORCERY}, "{X}{B}{B}");
+
+        // Scavenger Regent
+        this.getLeftHalfCard().setPT(4, 4);
 
         // Flying
         this.addAbility(FlyingAbility.getInstance());
@@ -45,8 +47,7 @@ public final class ScavengerRegent extends OmenCard {
 
         // Exude Toxin
         // Each non-Dragon creature gets -X/-X until end of turn.
-        this.getSpellCard().getSpellAbility().addEffect(new BoostAllEffect(xValue, xValue, Duration.EndOfTurn, filter, false));
-        this.finalizeOmen();
+        this.getRightHalfCard().getSpellAbility().addEffect(new BoostAllEffect(xValue, xValue, Duration.EndOfTurn, filter, false));
     }
 
     private ScavengerRegent(final ScavengerRegent card) {

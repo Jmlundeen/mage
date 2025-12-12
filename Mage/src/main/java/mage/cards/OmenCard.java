@@ -18,15 +18,42 @@ public abstract class OmenCard extends CardWithSpellOption<OmenCardHalf, OmenCar
 
     public OmenCard(
             UUID ownerId, CardSetInfo setInfo,
+            SuperType[] superTypesLeft, CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+            String omenName,
+            CardType[] typesRight, String costsRight
+    ) {
+        this(
+                ownerId, setInfo,
+                superTypesLeft, typesLeft, subTypesLeft, costsLeft,
+                omenName,
+                new SuperType[]{}, typesRight, new SubType[]{SubType.OMEN}, costsRight
+        );
+    }
+
+    public OmenCard (
+            UUID ownerId, CardSetInfo setInfo,
             CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
             String omenName,
-            CardType[] typesRight, SubType[] subTypesRight, String costsRight
+            CardType[] typesRight, String costsRight
     ) {
         this(
                 ownerId, setInfo,
                 new SuperType[]{}, typesLeft, subTypesLeft, costsLeft,
                 omenName,
-                new SuperType[]{}, typesRight, subTypesRight, costsRight
+                new SuperType[]{}, typesRight, new SubType[]{SubType.OMEN}, costsRight
+        );
+    }
+
+    public OmenCard(
+            UUID ownerId, CardSetInfo setInfo,
+            CardType[] typesLeft, String costsLeft,
+            String adventureName,
+            CardType[] typesRight, String costsRight) {
+        this(
+                ownerId, setInfo,
+                new SuperType[]{}, typesLeft, new SubType[]{}, costsLeft,
+                adventureName,
+                new SuperType[]{}, typesRight, new SubType[]{SubType.OMEN}, costsRight
         );
     }
 
