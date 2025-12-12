@@ -1,6 +1,5 @@
 package mage.cards.o;
 
-import mage.MageInt;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.effects.common.counter.DistributeCountersEffect;
@@ -32,12 +31,13 @@ public final class OnduKnotmaster extends AdventureCard {
     }
 
     public OnduKnotmaster(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{2}{W}{B}", "Throw a Line", "{W}{B}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.KOR, SubType.ROGUE}, "{2}{W}{B}",
+                "Throw a Line",
+                new CardType[]{CardType.SORCERY}, "{W}{B}");
 
-        this.subtype.add(SubType.KOR);
-        this.subtype.add(SubType.ROGUE);
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(2);
+        // Ondu Knotmaster
+        this.getLeftHalfCard().setPT(2, 2);
 
         // Lifelink
         this.addAbility(LifelinkAbility.getInstance());
@@ -50,10 +50,8 @@ public final class OnduKnotmaster extends AdventureCard {
 
         // Throw a Line
         // Distribute two +1/+1 counters among one or two target creatures.
-        this.getSpellCard().getSpellAbility().addEffect(new DistributeCountersEffect());
-        this.getSpellCard().getSpellAbility().addTarget(new TargetCreaturePermanentAmount(2));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new DistributeCountersEffect());
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanentAmount(2));
     }
 
     private OnduKnotmaster(final OnduKnotmaster card) {
