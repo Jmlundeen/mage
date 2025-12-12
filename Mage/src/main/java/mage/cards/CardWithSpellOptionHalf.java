@@ -3,6 +3,7 @@ package mage.cards;
 import mage.constants.*;
 import mage.game.Game;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -17,8 +18,8 @@ public abstract class CardWithSpellOptionHalf<C extends CardWithSpellOption<?, C
             String costs, C parentCard, SpellAbilityType spellAbilityType
     ) {
         super(ownerId, setInfo, cardTypes, costs, parentCard, spellAbilityType);
-        this.supertype.addAll(java.util.Arrays.asList(cardSuperTypes));
-        this.subtype.addAll(java.util.Arrays.asList(cardSubTypes));
+        this.supertype.addAll(Arrays.asList(cardSuperTypes));
+        this.subtype.addAll(Arrays.asList(cardSubTypes));
     }
 
     protected CardWithSpellOptionHalf(final CardWithSpellOptionHalf<C> card) {

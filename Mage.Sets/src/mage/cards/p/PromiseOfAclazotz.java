@@ -28,7 +28,7 @@ public class PromiseOfAclazotz extends AdventureCard {
 
     public PromiseOfAclazotz(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo,
-                new CardType[]{CardType.ENCHANTMENT}, null, "{1}{B}",
+                new CardType[]{CardType.ENCHANTMENT}, new SubType[]{}, "{1}{B}",
                 "Foul Rebirth",
                 new CardType[]{CardType.SORCERY}, "{2}{B}");
 
