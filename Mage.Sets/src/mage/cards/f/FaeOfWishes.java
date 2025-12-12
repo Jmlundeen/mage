@@ -1,6 +1,5 @@
 package mage.cards.f;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.DiscardTargetCost;
@@ -24,12 +23,13 @@ import java.util.UUID;
 public final class FaeOfWishes extends AdventureCard {
 
     public FaeOfWishes(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{1}{U}", "Granted", "{3}{U}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.FAERIE, SubType.WIZARD}, "{1}{U}",
+                "Granted",
+                new CardType[]{CardType.SORCERY}, "{3}{U}");
 
-        this.subtype.add(SubType.FAERIE);
-        this.subtype.add(SubType.WIZARD);
-        this.power = new MageInt(1);
-        this.toughness = new MageInt(4);
+        // Fae of Wishes
+        this.getLeftHalfCard().setPT(1, 4);
 
         // Flying
         this.addAbility(FlyingAbility.getInstance());
@@ -43,10 +43,8 @@ public final class FaeOfWishes extends AdventureCard {
 
         // Granted
         // You may reveal a noncreature card you own from outside the game and put it into your hand.
-        this.getSpellCard().getSpellAbility().addEffect(new WishEffect(StaticFilters.FILTER_CARD_A_NON_CREATURE));
-        this.getSpellCard().getSpellAbility().addHint(OpenSideboardHint.instance);
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new WishEffect(StaticFilters.FILTER_CARD_A_NON_CREATURE));
+        this.getRightHalfCard().getSpellAbility().addHint(OpenSideboardHint.instance);
     }
 
     private FaeOfWishes(final FaeOfWishes card) {
