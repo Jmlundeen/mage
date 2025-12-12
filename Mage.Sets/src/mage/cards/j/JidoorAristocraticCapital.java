@@ -17,9 +17,10 @@ import java.util.UUID;
 public final class JidoorAristocraticCapital extends AdventureCard {
 
     public JidoorAristocraticCapital(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.LAND}, new CardType[]{CardType.SORCERY}, "", "Overture", "{4}{U}{U}");
-
-        this.subtype.add(SubType.TOWN);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.LAND}, new SubType[]{SubType.TOWN}, "",
+                "Overture",
+                new CardType[]{CardType.SORCERY}, "{4}{U}{U}");
 
         // This land enters tapped.
         this.addAbility(new EntersBattlefieldTappedAbility());
@@ -29,9 +30,8 @@ public final class JidoorAristocraticCapital extends AdventureCard {
 
         // Overture
         // Target opponent mills half their library, rounded down.
-        this.getSpellCard().getSpellAbility().addEffect(new MillHalfLibraryTargetEffect(false));
-        this.getSpellCard().getSpellAbility().addTarget(new TargetOpponent());
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new MillHalfLibraryTargetEffect(false));
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetOpponent());
     }
 
     private JidoorAristocraticCapital(final JidoorAristocraticCapital card) {
