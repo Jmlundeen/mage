@@ -16,6 +16,20 @@ import java.util.stream.Collectors;
  */
 public abstract class AdventureCard extends CardWithSpellOption<AdventureCardHalf, AdventureCard> {
 
+    public AdventureCard(
+        UUID ownerId, CardSetInfo setInfo,
+                SuperType[] superTypesLeft, CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+                String adventureName,
+                CardType[] typesRight, String costsRight
+    ) {
+        this(
+                ownerId, setInfo,
+                superTypesLeft, typesLeft, subTypesLeft, costsLeft,
+                adventureName,
+                new SuperType[]{}, typesRight, new SubType[]{SubType.ADVENTURE}, costsRight
+        );
+    }
+
     public AdventureCard (
         UUID ownerId, CardSetInfo setInfo,
                 CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
