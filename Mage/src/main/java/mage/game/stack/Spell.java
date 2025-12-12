@@ -212,9 +212,9 @@ public class Spell extends StackObjectImpl implements Card {
                     + " using " + this.getSpellAbility().getSpellAbilityCastMode();
         }
 
-        if (card instanceof SpellOptionCard) {
-            CardWithSpellOption parentCard = ((SpellOptionCard) card).getParentCard();
-            String type = ((SpellOptionCard) card).getSpellType();
+        if (card instanceof CardWithSpellOptionHalf) {
+            CardWithParts parentCard = ((CardWithSpellOptionHalf<?>) card).getParentCard();
+            String type = ((CardWithSpellOptionHalf<?>) card).getSpellType();
             return GameLog.replaceNameByColoredName(card, getSpellAbility().toString(), parentCard)
                     + " as " + type + " spell of " + GameLog.getColoredObjectIdName(parentCard);
         }
@@ -527,11 +527,7 @@ public class Spell extends StackObjectImpl implements Card {
     public String getIdName() {
         String idName;
         if (card != null) {
-            if (card instanceof SpellOptionCard) {
-                idName = ((SpellOptionCard) card).getParentCard().getId().toString().substring(0, 3);
-            } else {
-                idName = card.getId().toString().substring(0, 3);
-            }
+            idName = card.getId().toString().substring(0, 3);
         } else {
             idName = getId().toString().substring(0, 3);
         }

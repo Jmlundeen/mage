@@ -17,7 +17,7 @@ import java.util.UUID;
 public class MayCastFromGraveyardAsAdventureEffect extends AsThoughEffectImpl {
 
     public MayCastFromGraveyardAsAdventureEffect() {
-        super(AsThoughEffectType.CAST_ADVENTURE_FROM_NOT_OWN_HAND_ZONE, Duration.UntilEndOfYourNextTurn, Outcome.Benefit);
+        super(AsThoughEffectType.CAST_ADVENTURE_SPELL_FROM_NOT_OWN_HAND_ZONE, Duration.UntilEndOfYourNextTurn, Outcome.Benefit);
         staticText = "you may cast it from your graveyard as an Adventure until the end of your next turn";
     }
 

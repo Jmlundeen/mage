@@ -165,12 +165,6 @@ public class ForetellAbility extends SpecialAction {
             } else if (!leftHalfCost.isEmpty()) {
                 foretellAbility = new ForetellAbility(card, leftHalfCost, rightHalfCost);
             }
-        } else if (card instanceof CardWithSpellOption) {
-            String creatureCost = CardUtil.reduceCost(card.getMainCard().getManaCost(), amountToReduceCost).getText();
-            String spellCost = CardUtil.reduceCost(((CardWithSpellOption) card).getSpellCard().getManaCost(), amountToReduceCost).getText();
-            game.getState().setValue(card.getMainCard().getId().toString() + "Foretell Cost", creatureCost);
-            game.getState().setValue(card.getMainCard().getId().toString() + "Foretell Split Cost", spellCost);
-            foretellAbility = new ForetellAbility(card, creatureCost, spellCost);
         } else if (!card.isLand(game)) {
             // normal card
             String costText = CardUtil.reduceCost(card.getManaCost(), amountToReduceCost).getText();
@@ -420,12 +414,6 @@ class ForetellCostAbility extends SpellAbility {
                         return ((CardWithParts) card).getLeftHalfCard().getSpellAbility().canActivate(playerId, game);
                     } else if (((CardWithParts) card).getRightHalfCard().getName().equals(abilityName)) {
                         return ((CardWithParts) card).getRightHalfCard().getSpellAbility().canActivate(playerId, game);
-                    }
-                } else if (card instanceof CardWithSpellOption) {
-                    if (card.getMainCard().getName().equals(abilityName)) {
-                        return card.getMainCard().getSpellAbility().canActivate(playerId, game);
-                    } else if (((CardWithSpellOption) card).getSpellCard().getName().equals(abilityName)) {
-                        return ((CardWithSpellOption) card).getSpellCard().getSpellAbility().canActivate(playerId, game);
                     }
                 }
                 return card.getSpellAbility().canActivate(playerId, game);

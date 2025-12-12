@@ -11,7 +11,10 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.abilities.keyword.TrampleAbility;
-import mage.cards.*;
+import mage.cards.AdventureCard;
+import mage.cards.Card;
+import mage.cards.CardPart;
+import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
@@ -66,7 +69,7 @@ enum ExiledCreatureSpellCondition implements Condition {
     @Override
     public boolean apply(Game game, Ability source) {
         MageObject object = game.getObject(source);
-        if (object instanceof CardPart || object instanceof SpellOptionCard) {
+        if (object instanceof CardPart) {
             UUID mainCardId = ((Card) object).getMainCard().getId();
             object = game.getObject(mainCardId);
         }

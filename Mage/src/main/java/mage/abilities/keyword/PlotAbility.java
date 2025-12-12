@@ -270,12 +270,6 @@ class PlotSpellAbility extends SpellAbility {
                     } else if (((CardWithParts) mainCard).getRightHalfCard().getName().equals(faceCardName)) {
                         return ((CardWithParts) mainCard).getRightHalfCard().getSpellAbility().canActivate(playerId, game);
                     }
-                } else if (card instanceof CardWithSpellOption) {
-                    if (card.getMainCard().getName().equals(faceCardName)) {
-                        return card.getMainCard().getSpellAbility().canActivate(playerId, game);
-                    } else if (((CardWithSpellOption) card).getSpellCard().getName().equals(faceCardName)) {
-                        return ((CardWithSpellOption) card).getSpellCard().getSpellAbility().canActivate(playerId, game);
-                    }
                 }
                 return card.getSpellAbility().canActivate(playerId, game);
             }

@@ -5,7 +5,7 @@ import mage.abilities.MageSingleton;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.AdventureSpellCard;
+import mage.cards.AdventureCardHalf;
 import mage.cards.Card;
 import mage.constants.AsThoughEffectType;
 import mage.constants.Duration;
@@ -51,14 +51,12 @@ public class ExileAdventureSpellEffect extends OneShotEffect implements MageSing
             Spell spell = game.getStack().getSpell(source.getId());
             if (spell != null) {
                 Card spellCard = spell.getCard();
-                if (spellCard instanceof AdventureSpellCard) {
+                if (spellCard instanceof AdventureCardHalf) {
                     UUID exileId = adventureExileId(controller.getId(), game);
                     game.getExile().createZone(exileId, "On an Adventure from " + controller.getName());
-                    AdventureSpellCard adventureSpellCard = (AdventureSpellCard) spellCard;
-                    Card parentCard = adventureSpellCard.getParentCard();
-                    if (controller.moveCardsToExile(parentCard, source, game, true, exileId, "On an Adventure from " + controller.getName())) {
+                    if (controller.moveCardsToExile(spellCard, source, game, true, exileId, "On an Adventure from " + controller.getName())) {
                         ContinuousEffect effect = new AdventureCastFromExileEffect();
-                        effect.setTargetPointer(new FixedTarget(parentCard, game));
+                        effect.setTargetPointer(new FixedTarget(spellCard.getMainCard(), game));
                         game.addEffect(effect, source);
                     }
                 }
@@ -72,7 +70,7 @@ public class ExileAdventureSpellEffect extends OneShotEffect implements MageSing
 class AdventureCastFromExileEffect extends AsThoughEffectImpl {
 
     public AdventureCastFromExileEffect() {
-        super(AsThoughEffectType.PLAY_FROM_NOT_OWN_HAND_ZONE, Duration.Custom, Outcome.Benefit);
+        super(AsThoughEffectType.CAST_ADVENTURE_CARD_FROM_NOT_OWN_HAND_ZONE, Duration.Custom, Outcome.Benefit);
         staticText = "Then exile this card. You may cast the creature later from exile.";
     }
 
