@@ -1,7 +1,6 @@
 
 package mage.cards.p;
 
-import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CreaturesYouControlCount;
 import mage.abilities.effects.common.continuous.BoostControlledEffect;
@@ -25,11 +24,13 @@ import java.util.UUID;
 public final class PollenShieldHare extends AdventureCard {
     
     public PollenShieldHare(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{1}{W}", "Hare Raising", "{G}");
-        this.subtype.add(SubType.RABBIT);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.RABBIT}, "{1}{W}",
+                "Hare Raising",
+                new CardType[]{CardType.SORCERY}, "{G}");
 
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(2);
+        // Pollen-Shield Hare
+        this.getLeftHalfCard().setPT(2, 2);
 
         // Creature tokens you control get +1/+1.
         this.addAbility(new SimpleStaticAbility(
@@ -38,18 +39,16 @@ public final class PollenShieldHare extends AdventureCard {
 
         // Hare Raising
         // Target creature you control gains vigilance and gets +X/+X until end of turn, where X is the number of creatures you control.
-        this.getSpellCard().getSpellAbility().addEffect(
+        this.getRightHalfCard().getSpellAbility().addEffect(
                 new GainAbilityTargetEffect(VigilanceAbility.getInstance())
                         .setText("target creature you control gains vigilance")
         );
-        this.getSpellCard().getSpellAbility().addEffect(
+        this.getRightHalfCard().getSpellAbility().addEffect(
                 new BoostTargetEffect(CreaturesYouControlCount.PLURAL, CreaturesYouControlCount.PLURAL)
                         .setText("and gets +X/+X until end of turn, where X is the number of creatures you control")
         );
-        this.getSpellCard().getSpellAbility().addTarget(new TargetControlledCreaturePermanent());
-        this.getSpellCard().getSpellAbility().addHint(CreaturesYouControlHint.instance);
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetControlledCreaturePermanent());
+        this.getRightHalfCard().getSpellAbility().addHint(CreaturesYouControlHint.instance);
     }
 
     private PollenShieldHare(final PollenShieldHare card) {
