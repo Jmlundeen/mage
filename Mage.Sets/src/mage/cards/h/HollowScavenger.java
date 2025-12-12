@@ -1,6 +1,5 @@
 package mage.cards.h;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.LimitedTimesPerTurnActivatedAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
@@ -24,11 +23,13 @@ import java.util.UUID;
 public final class HollowScavenger extends AdventureCard {
 
     public HollowScavenger(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{2}{G}", "Bakery Raid", "{G}");
-        
-        this.subtype.add(SubType.WOLF);
-        this.power = new MageInt(3);
-        this.toughness = new MageInt(2);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.WOLF}, "{2}{G}",
+                "Bakery Raid",
+                new CardType[]{CardType.SORCERY}, "{G}");
+
+        // Hollow Scavenger
+        this.getLeftHalfCard().setPT(3, 2);
 
         // {1}, Sacrifice a Food: Hollow Scavenger gets +2/+2 until end of turn. Activate only once each turn.
         Ability ability = new LimitedTimesPerTurnActivatedAbility(Zone.BATTLEFIELD,
@@ -38,9 +39,7 @@ public final class HollowScavenger extends AdventureCard {
 
         // Bakery Raid
         // Create a Food token.
-        this.getSpellCard().getSpellAbility().addEffect(new CreateTokenEffect(new FoodToken()));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new FoodToken()));
     }
 
     private HollowScavenger(final HollowScavenger card) {

@@ -1,6 +1,5 @@
 package mage.cards.h;
 
-import mage.MageInt;
 import mage.abilities.common.DiesSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.CreateTokenEffect;
@@ -28,13 +27,14 @@ public final class HildibrandManderville extends AdventureCard {
     }
 
     public HildibrandManderville(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{1}{W}", "Gentleman's Rise", "{2}{B}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.DETECTIVE}, "{1}{W}",
+                "Gentleman's Rise",
+                new CardType[]{CardType.INSTANT}, "{2}{B}");
 
+        // Hildibrand Manderville
         this.supertype.add(SuperType.LEGENDARY);
-        this.subtype.add(SubType.HUMAN);
-        this.subtype.add(SubType.DETECTIVE);
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(2);
+        this.getLeftHalfCard().setPT(2, 2);
 
         // Creature tokens you control get +1/+1.
         this.addAbility(new SimpleStaticAbility(new BoostAllEffect(1, 1, Duration.WhileOnBattlefield, filter, false)));
@@ -44,9 +44,7 @@ public final class HildibrandManderville extends AdventureCard {
 
         // Gentleman's Rise
         // Create a 2/2 black Zombie creature token.
-        this.getSpellCard().getSpellAbility().addEffect(new CreateTokenEffect(new ZombieToken()));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new ZombieToken()));
     }
 
     private HildibrandManderville(final HildibrandManderville card) {

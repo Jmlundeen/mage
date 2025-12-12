@@ -24,9 +24,10 @@ import java.util.UUID;
 public final class HornOfValhalla extends AdventureCard {
 
     public HornOfValhalla(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, new CardType[]{CardType.SORCERY}, "{1}{W}", "Ysgard's Call", "{X}{W}{W}");
-
-        this.subtype.add(SubType.EQUIPMENT);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.ARTIFACT}, new SubType[]{SubType.EQUIPMENT}, "{1}{W}",
+                "Ysgard's Call",
+                new CardType[]{CardType.SORCERY}, "{X}{W}{W}");
 
         // Equipped creature gets +1/+1 for each creature you control.
         this.addAbility(new SimpleStaticAbility(new BoostEquippedEffect(
@@ -38,11 +39,9 @@ public final class HornOfValhalla extends AdventureCard {
 
         // Ysgard's Call
         // Create X 1/1 white Soldier creature tokens.
-        this.getSpellCard().getSpellAbility().addEffect(new CreateTokenEffect(
+        this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(
                 new SoldierToken(), GetXValue.instance
         ));
-        
-        this.finalizeAdventure();
     }
 
     private HornOfValhalla(final HornOfValhalla card) {

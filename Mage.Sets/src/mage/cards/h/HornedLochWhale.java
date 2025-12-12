@@ -1,6 +1,5 @@
 package mage.cards.h;
 
-import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldTappedUnlessAbility;
 import mage.abilities.condition.common.MyTurnCondition;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -30,11 +29,13 @@ public final class HornedLochWhale extends AdventureCard {
     }
 
     public HornedLochWhale(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{4}{U}{U}", "Lagoon Breach", "{1}{U}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.WHALE}, "{4}{U}{U}",
+                "Lagoon Breach",
+                new CardType[]{CardType.INSTANT}, "{1}{U}");
 
-        this.subtype.add(SubType.WHALE);
-        this.power = new MageInt(6);
-        this.toughness = new MageInt(6);
+        // Horned Loch-Whale
+        this.getLeftHalfCard().setPT(6, 6);
 
         // Flash
         this.addAbility(FlashAbility.getInstance());
@@ -47,10 +48,8 @@ public final class HornedLochWhale extends AdventureCard {
 
         // Lagoon Breach
         // The owner of target attacking creature you don't control puts it on the top or bottom of their library.
-        this.getSpellCard().getSpellAbility().addEffect(new PutOnTopOrBottomLibraryTargetEffect(true));
-        this.getSpellCard().getSpellAbility().addTarget(new TargetPermanent(filter));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new PutOnTopOrBottomLibraryTargetEffect(true));
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
     }
 
     private HornedLochWhale(final HornedLochWhale card) {
