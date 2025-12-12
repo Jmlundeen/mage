@@ -42,6 +42,9 @@ public class Commander extends CommandObjectImpl {
         for (Ability ability : card.getAbilities()) {
             if (ability instanceof SpellAbility) {
                 SpellAbility spellAbility = (SpellAbility) ability;
+                if (!spellAbility.getSpellAbilityType().canCast()) {
+                    continue;
+                }
                 switch (spellAbility.getSpellAbilityType()) {
                     case BASE:
                     case BASE_ALTERNATE:

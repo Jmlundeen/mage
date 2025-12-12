@@ -14,6 +14,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -66,17 +67,42 @@ public abstract class RoomCard extends SplitCard {
     }
 
     @Override
-    public void setZone(Zone zone, Game game) {
-        super.setZone(zone, game);
-
+    protected void updatePartZones(Zone zone, Game game) {
         if (zone == Zone.BATTLEFIELD) {
             game.setZone(getLeftHalfCard().getId(), Zone.OUTSIDE);
             game.setZone(getRightHalfCard().getId(), Zone.OUTSIDE);
-            return;
+            checkGoodZones(game);
+        } else {
+            super.updatePartZones(zone, game);
+        }
+    }
+
+    @Override
+    protected void checkGoodZones(Game game) {
+        Card leftPart = this.getLeftHalfCard();
+        Card rightPart = this.getRightHalfCard();
+
+        Zone zoneMain = game.getState().getZone(this.getId());
+        Zone zoneLeft = game.getState().getZone(leftPart.getId());
+        Zone zoneRight = game.getState().getZone(rightPart.getId());
+
+        Zone needZoneLeft;
+        Zone needZoneRight;
+        needZoneLeft = needZoneRight = zoneMain;
+
+        if (Objects.requireNonNull(zoneMain) == Zone.BATTLEFIELD) {
+            needZoneLeft = Zone.OUTSIDE;
+            needZoneRight = Zone.OUTSIDE;
         }
 
-        game.setZone(getLeftHalfCard().getId(), zone);
-        game.setZone(getRightHalfCard().getId(), zone);
+        if (zoneLeft != needZoneLeft || zoneRight != needZoneRight) {
+            String className = this.getClass().getSimpleName();
+            throw new IllegalStateException("Wrong code usage: " + className + " uses wrong zones - " + this
+                    + "\r\n" + String.format("* main zone: %s", zoneMain)
+                    + "\r\n" + String.format("* left side: need %s, actual %s", needZoneLeft, zoneLeft)
+                    + "\r\n" + String.format("* right side: need %s, actual %s", needZoneRight, zoneRight));
+
+        }
     }
 
     public static void setRoomCharacteristics(Permanent permanent, Game game) {

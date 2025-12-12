@@ -60,15 +60,7 @@ public final class CardScanner {
                             new CardSetInfo(setInfo.getName(), set.getCode(), setInfo.getCardNumber(), setInfo.getMeldNumber(), setInfo.getRarity(), setInfo.getGraphicInfo()),
                             errorsList);
                     if (card != null) {
-                        // Adds only main card, except night cards.
-
-                        // TODO: remove night cards from sets and db someday
-                        // Possible reasons for night cards in sets:
-                        // - direct put night card to battlefield by name in tests;
-                        // - images download;
-                        // - in old days xmage client was able to works without card classes, e.g.
-                        //   downloads unknown cards from the server as texts (images, hints and all other works fine with it)
-
+                        // Adds only main card and each side of split cards
                         cardsToAdd.add(new CardInfo(card));
                         if (card instanceof SplitCard) {
                             SplitCard splitCard = (SplitCard) card;
@@ -95,7 +87,7 @@ public final class CardScanner {
             }
             for (ExpansionSet.SetCardInfo setInfo : set.getSetCardInfo()) {
                 cards.add(CardImpl.createCard(setInfo.getCardClass(), new CardSetInfo(setInfo.getName(), set.getCode(),
-                        setInfo.getCardNumber(), setInfo.getRarity(), setInfo.getGraphicInfo())));
+                        setInfo.getCardNumber(), setInfo.getMeldNumber(), setInfo.getRarity(), setInfo.getGraphicInfo())));
             }
         }
         return cards;

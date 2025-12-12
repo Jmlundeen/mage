@@ -11,7 +11,7 @@ import mage.abilities.costs.mana.ManaCosts;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.Card;
-import mage.cards.SplitCard;
+import mage.cards.RoomCard;
 import mage.constants.Duration;
 import mage.constants.Layer;
 import mage.constants.Outcome;
@@ -72,11 +72,11 @@ public class RoomCharacteristicsEffect extends ContinuousEffectImpl {
     public boolean removeCharacteristics(Game game, Permanent permanent) {
         Card roomCardBlueprint = getCard(permanent);
 
-        if (!(roomCardBlueprint instanceof SplitCard)) {
+        if (!(roomCardBlueprint instanceof RoomCard)) {
             return false;
         }
 
-        SplitCard roomCard = (SplitCard) roomCardBlueprint;
+        RoomCard roomCard = (RoomCard) roomCardBlueprint;
 
         // Remove the name based on unlocked halves
         String newName = permanent.getName();
@@ -198,7 +198,7 @@ public class RoomCharacteristicsEffect extends ContinuousEffectImpl {
         }
         // restore removed abilities
         // copies need abilities to be added back to game state for triggers
-        SplitCard roomCard = (SplitCard) getCard(permanent);
+        RoomCard roomCard = (RoomCard) getCard(permanent);
         UUID sourceId = permanent.isCopy() ? permanent.getId() : null;
         Game gameParam = permanent.isCopy() ? game : null;
         if (permanent.isLeftDoorUnlocked()) {

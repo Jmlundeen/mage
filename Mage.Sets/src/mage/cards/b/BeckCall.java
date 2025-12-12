@@ -1,7 +1,6 @@
 
 package mage.cards.b;
 
-import java.util.UUID;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
@@ -12,11 +11,12 @@ import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.SpellAbilityType;
 import mage.filter.StaticFilters;
-import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.BirdToken;
+
+import java.util.UUID;
 
 public final class BeckCall extends SplitCard {
 

@@ -75,14 +75,14 @@ public class PermanentCard extends PermanentImpl {
         }
 
         // if two permanent sides, and not meld, set front and second side
-        if (!isMeld && card instanceof DoubleFacedCardHalf && card.isPermanent() && ((DoubleFacedCardHalf) card).getOtherSide().isPermanent()) {
-            if (((DoubleFacedCardHalf) card).isBackSide()) {
+        if (!isMeld && card instanceof DoubleFacedCardHalf && card.isPermanent() && ((DoubleFacedCardHalf<?>) card).getOtherSide().isPermanent()) {
+            if (((DoubleFacedCardHalf<?>) card).isBackSide()) {
                 secondSideCard = card;
-                this.card = ((DoubleFacedCardHalf) card).getOtherSide().copy();
+                this.card = ((DoubleFacedCardHalf<?>) card).getOtherSide().copy();
                 this.transformed = true;
                 init(secondSideCard, game);
             } else {
-                secondSideCard = ((DoubleFacedCardHalf) card).getOtherSide().copy();
+                secondSideCard = ((DoubleFacedCardHalf<?>) card).getOtherSide().copy();
                 this.card = card;
                 init(card, game);
             }
@@ -277,7 +277,7 @@ public class PermanentCard extends PermanentImpl {
         // However, its mana value is calculated using the mana cost of its front face.
         // If a permanent is copying the back face of a nonmodal double-faced permanent
         // (even if the object representing that copy is itself a double-faced permanent), the mana value of that permanent is 0. See rule 202.3b.
-        if (isCopy() && copyFrom instanceof DoubleFacedCardHalf && ((DoubleFacedCardHalf) copyFrom).isBackSide()) {
+        if (isCopy() && copyFrom instanceof DoubleFacedCardHalf && ((DoubleFacedCardHalf<?>) copyFrom).isBackSide()) {
             return copyFrom instanceof ModalDoubleFacedCardHalf ? super.getManaValue() : 0;
         }
         if (isTransformed() || getCard() instanceof MeldCardHalf && ((MeldCardHalf) getCard()).isBackSide()) {

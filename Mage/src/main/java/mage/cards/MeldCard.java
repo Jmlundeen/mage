@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * @author emerald000
  */
-public abstract class MeldCard extends DoubleFacedCard {
+public abstract class MeldCard extends DoubleFacedCard<MeldCardHalf, MeldCard> {
 
     public MeldCard(
             UUID ownerId, CardSetInfo setInfo,
@@ -64,16 +64,6 @@ public abstract class MeldCard extends DoubleFacedCard {
         // (See rule 701.27, "Transform," and rule 701.28, "Convert.") If a spell or ability instructs a player to transform or convert
         // any permanent that isn't represented by a double-faced token or a double-faced card, nothing happens.
         return false;
-    }
-
-    @Override
-    public MeldCardHalf getLeftHalfCard() {
-        return (MeldCardHalf) super.getLeftHalfCard();
-    }
-
-    @Override
-    public MeldCardHalf getRightHalfCard() {
-        return (MeldCardHalf) super.getRightHalfCard();
     }
 
     @Override

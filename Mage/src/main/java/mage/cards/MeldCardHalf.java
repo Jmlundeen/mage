@@ -8,12 +8,12 @@ import mage.game.Game;
 
 import java.util.UUID;
 
-public class MeldCardHalf extends DoubleFacedCardHalf {
+public class MeldCardHalf extends DoubleFacedCardHalf<MeldCard> {
 
     public MeldCardHalf(
             java.util.UUID ownerId, CardSetInfo setInfo,
             SuperType[] superTypes, CardType[] cardTypes, SubType[] subTypes, String costs,
-            DoubleFacedCard parentCard,
+            MeldCard parentCard,
             SpellAbilityType spellAbilityType
     ) {
         super(ownerId, setInfo, superTypes, cardTypes, subTypes, costs, parentCard, spellAbilityType);
@@ -21,7 +21,6 @@ public class MeldCardHalf extends DoubleFacedCardHalf {
 
     protected MeldCardHalf(final MeldCardHalf card) {
         super(card);
-        this.parentCard = card.parentCard;
     }
 
     public MeldCardHalf(
@@ -59,17 +58,7 @@ public class MeldCardHalf extends DoubleFacedCardHalf {
     }
 
     @Override
-    public Card getOtherSide() {
-        return super.getOtherSide();
-    }
-
-    @Override
     public MeldCardHalf copy() {
         return new MeldCardHalf(this);
-    }
-
-    @Override
-    public MeldCard getParentCard() {
-        return (MeldCard) parentCard;
     }
 }

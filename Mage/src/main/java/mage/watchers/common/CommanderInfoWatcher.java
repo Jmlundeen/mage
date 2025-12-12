@@ -1,12 +1,8 @@
 package mage.watchers.common;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import mage.MageObject;
 import mage.cards.Card;
-import mage.cards.DoubleFacedCard;
-import mage.cards.DoubleFacedCardHalf;
+import mage.cards.CardWithParts;
 import mage.constants.WatcherScope;
 import mage.game.Game;
 import mage.game.events.DamagedPlayerEvent;
@@ -14,6 +10,10 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.watchers.Watcher;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /* 20130711
  *903.14a A player that's been dealt 21 or more combat damage by the same commander
@@ -73,8 +73,8 @@ public class CommanderInfoWatcher extends Watcher {
         MageObject rightObject = null;
         if (object == null) {
             object = game.getCard(sourceId);
-            if (object instanceof DoubleFacedCard) {
-                DoubleFacedCard cardObject = (DoubleFacedCard)object;
+            if (object instanceof CardWithParts) {
+                CardWithParts cardObject = (CardWithParts)object;
                 leftObject = game.getPermanent(cardObject.getLeftHalfCard().getId());
                 rightObject = game.getPermanent(cardObject.getRightHalfCard().getId());
             }

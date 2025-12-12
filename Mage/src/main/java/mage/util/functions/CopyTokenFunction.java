@@ -5,7 +5,9 @@ import mage.abilities.Abilities;
 import mage.abilities.Ability;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.PrototypeAbility;
-import mage.cards.*;
+import mage.cards.Card;
+import mage.cards.CardPart;
+import mage.cards.DoubleFacedCardHalf;
 import mage.constants.CardType;
 import mage.constants.SuperType;
 import mage.game.Game;
@@ -91,13 +93,9 @@ public class CopyTokenFunction {
             copyToToken(target, sourceObj, game);
             CardUtil.copySetAndCardNumber(target, sourceObj);
             // second side
-            if (sourceObj.isTransformable() && !(sourceObj instanceof DoubleFacedCardHalf)) {
+            if (sourceObj.isTransformable()) {
                 copyToToken(target.getBackFace(), sourceObj.getSecondCardFace(), game);
                 CardUtil.copySetAndCardNumber(target.getBackFace(), sourceObj.getSecondCardFace());
-            } else if (sourceObj.isTransformable() && sourceObj instanceof DoubleFacedCardHalf) {
-                // double faced card
-                copyToToken(target.getBackFace(), ((DoubleFacedCardHalf) sourceObj).getOtherSide(), game);
-                CardUtil.copySetAndCardNumber(target.getBackFace(), ((DoubleFacedCardHalf) sourceObj).getOtherSide());
             }
 
             // apply prototyped status
@@ -113,8 +111,8 @@ public class CopyTokenFunction {
         }
 
         // from double faced card spell
-        if (source instanceof DoubleFacedCardHalf) {
-            DoubleFacedCardHalf sourceCard = (DoubleFacedCardHalf) source;
+        if (source instanceof CardPart) {
+            DoubleFacedCardHalf<?> sourceCard = (DoubleFacedCardHalf<?>) source;
             Card frontSide;
             Card backSide = null;
             if (sourceCard.isTransformable()) {
@@ -154,12 +152,7 @@ public class CopyTokenFunction {
                 // must create back face??
                 throw new IllegalStateException("Wrong code usage: back face must be non null: " + target.getName() + " - " + target.getClass().getSimpleName());
             }
-            Card secondFace;
-            if (source instanceof DoubleFacedCard) {
-                secondFace = ((DoubleFacedCard) source).getRightHalfCard();
-            } else {
-                secondFace = source.getSecondCardFace();
-            }
+            Card secondFace = source.getSecondCardFace();
             copyToToken(target.getBackFace(), secondFace, game);
             CardUtil.copySetAndCardNumber(target.getBackFace(), secondFace);
         }

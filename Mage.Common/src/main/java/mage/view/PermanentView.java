@@ -1,6 +1,7 @@
 package mage.view;
 
 import mage.cards.Card;
+import mage.cards.RoomCard;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
@@ -69,11 +70,19 @@ public class PermanentView extends CardView {
             original = isToken
                 ? new CardView((Token) permanent.getOtherFace().copy(), null)
                 : new CardView((Card) permanent.getOtherFace().copy(), (Game) null);
+        } else if (isFaceDown() && showFaceDownInfo) {
+            // face down card must be hidden from opponent, but shown on game end for all
+            original = isToken
+                ? new CardView(((PermanentToken) permanent).getToken().copy(), null)
+                : new CardView(card.copy(), (Game) null);
         } else {
             // Default case where no original card is available
             original = null;
         }
 
+        if (!copy && card instanceof RoomCard || card != null && card.isFlipCard()) {
+            this.imageFileName = card.getName();
+        }
         if (permanent.getOwnerId() != null && !permanent.getOwnerId().equals(permanent.getControllerId())) {
             Player owner = game.getPlayer(permanent.getOwnerId());
             if (owner != null) {
