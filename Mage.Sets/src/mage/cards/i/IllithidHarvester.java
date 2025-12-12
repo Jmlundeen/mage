@@ -1,6 +1,5 @@
 package mage.cards.i;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
@@ -44,10 +43,13 @@ public final class IllithidHarvester extends AdventureCard {
     }
 
     public IllithidHarvester(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{4}{U}", "Plant Tadpoles", "{X}{U}{U}");
-        this.subtype.add(SubType.HORROR);
-        this.power = new MageInt(4);
-        this.toughness = new MageInt(4);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HORROR}, "{4}{U}",
+                "Plant Tadpoles",
+                new CardType[]{CardType.SORCERY}, "{X}{U}{U}");
+
+        // Illithid Harvester
+        this.getLeftHalfCard().setPT(4, 4);
 
         // Ceremorphosis — When Illithid Harvester enters the battlefield, turn any number
         // of target tapped nontoken creatures face down. They're 2/2 Horror creatures.
@@ -57,13 +59,11 @@ public final class IllithidHarvester extends AdventureCard {
 
         // Plant Tadpoles
         // Tap X target creatures. They don't untap during their controllers' next untap steps.
-        this.getSpellCard().getSpellAbility().addEffect(new TapTargetEffect("tap X target creatures"));
-        this.getSpellCard().getSpellAbility().addEffect(new DontUntapInControllersNextUntapStepTargetEffect()
+        this.getRightHalfCard().getSpellAbility().addEffect(new TapTargetEffect("tap X target creatures"));
+        this.getRightHalfCard().getSpellAbility().addEffect(new DontUntapInControllersNextUntapStepTargetEffect()
                 .setText("They don't untap during their controllers' next untap steps"));
-        this.getSpellCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
-        this.getSpellCard().getSpellAbility().setTargetAdjuster(new XTargetsCountAdjuster());
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+        this.getRightHalfCard().getSpellAbility().setTargetAdjuster(new XTargetsCountAdjuster());
     }
 
     private IllithidHarvester(final IllithidHarvester card) {

@@ -21,9 +21,10 @@ public final class IshgardTheHolySee extends AdventureCard {
     private static final FilterCard filter = new FilterArtifactOrEnchantmentCard("artifact and/or enchantment cards from your graveyard");
 
     public IshgardTheHolySee(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.LAND}, new CardType[]{CardType.SORCERY}, "", "Faith & Grief", "{3}{W}{W}");
-
-        this.subtype.add(SubType.TOWN);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.LAND}, new SubType[]{SubType.TOWN}, "",
+                "Faith & Grief",
+                new CardType[]{CardType.SORCERY}, "{3}{W}{W}");
 
         // This land enters tapped.
         this.addAbility(new EntersBattlefieldTappedAbility());
@@ -33,9 +34,8 @@ public final class IshgardTheHolySee extends AdventureCard {
 
         // Faith & Grief
         // Return up to two target artifact and/or enchantment cards from your graveyard to your hand.
-        this.getSpellCard().getSpellAbility().addEffect(new ReturnFromGraveyardToHandTargetEffect());
-        this.getSpellCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(0, 2, filter));
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new ReturnFromGraveyardToHandTargetEffect());
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(0, 2, filter));
     }
 
     private IshgardTheHolySee(final IshgardTheHolySee card) {
