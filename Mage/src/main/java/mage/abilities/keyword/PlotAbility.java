@@ -12,7 +12,6 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.cards.CardWithParts;
-import mage.cards.CardWithSpellOption;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.events.GameEvent;
@@ -289,12 +288,6 @@ class PlotSpellAbility extends SpellAbility {
                         spellAbilityCopy = ((CardWithParts) card).getLeftHalfCard().getSpellAbility().copy();
                     } else if (((CardWithParts) card).getRightHalfCard().getName().equals(faceCardName)) {
                         spellAbilityCopy = ((CardWithParts) card).getRightHalfCard().getSpellAbility().copy();
-                    }
-                } else if (card instanceof CardWithSpellOption) {
-                    if (card.getMainCard().getName().equals(faceCardName)) {
-                        spellAbilityCopy = card.getMainCard().getSpellAbility().copy();
-                    } else if (((CardWithSpellOption) card).getSpellCard().getName().equals(faceCardName)) {
-                        spellAbilityCopy = ((CardWithSpellOption) card).getSpellCard().getSpellAbility().copy();
                     }
                 } else {
                     spellAbilityCopy = card.getSpellAbility().copy();
