@@ -1,6 +1,5 @@
 package mage.cards.m;
 
-import mage.MageInt;
 import mage.abilities.common.DiesSourceTriggeredAbility;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.LoseLifeSourceControllerEffect;
@@ -20,12 +19,13 @@ public final class MosswoodDreadknight extends AdventureCard {
 
 
     public MosswoodDreadknight(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{1}{G}", "Dread Whispers", "{1}{B}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.KNIGHT}, "{1}{G}",
+                "Dread Whispers",
+                new CardType[]{CardType.SORCERY}, "{1}{B}");
 
-        this.subtype.add(SubType.HUMAN);
-        this.subtype.add(SubType.KNIGHT);
-        this.power = new MageInt(3);
-        this.toughness = new MageInt(2);
+        // Mosswood Dreadknight
+        this.getLeftHalfCard().setPT(3, 2);
 
         // Trample
         this.addAbility(TrampleAbility.getInstance());
@@ -35,10 +35,8 @@ public final class MosswoodDreadknight extends AdventureCard {
 
         // Dread Whispers
         // You draw a card and you lose 1 life.
-        this.getSpellCard().getSpellAbility().addEffect(new DrawCardSourceControllerEffect(1, true));
-        this.getSpellCard().getSpellAbility().addEffect(new LoseLifeSourceControllerEffect(1).concatBy("and"));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new DrawCardSourceControllerEffect(1, true));
+        this.getRightHalfCard().getSpellAbility().addEffect(new LoseLifeSourceControllerEffect(1).concatBy("and"));
     }
 
     private MosswoodDreadknight(final MosswoodDreadknight card) {

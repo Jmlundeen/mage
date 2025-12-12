@@ -1,6 +1,5 @@
 package mage.cards.m;
 
-import mage.MageInt;
 import mage.abilities.common.DiesSourceTriggeredAbility;
 import mage.abilities.effects.common.DestroyTargetEffect;
 import mage.abilities.effects.common.LoseLifeSourceControllerEffect;
@@ -20,12 +19,13 @@ import java.util.UUID;
 public final class MurderousRider extends AdventureCard {
 
     public MurderousRider(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{1}{B}{B}", "Swift End", "{1}{B}{B}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.ZOMBIE, SubType.KNIGHT}, "{1}{B}{B}",
+                "Swift End",
+                new CardType[]{CardType.INSTANT}, "{1}{B}{B}");
 
-        this.subtype.add(SubType.ZOMBIE);
-        this.subtype.add(SubType.KNIGHT);
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(3);
+        // Murderous Rider
+        this.getLeftHalfCard().setPT(2, 3);
 
         // Lifelink
         this.addAbility(LifelinkAbility.getInstance());
@@ -37,13 +37,11 @@ public final class MurderousRider extends AdventureCard {
 
         // Swift End
         // Destroy target creature or planeswalker. You lose 2 life.
-        this.getSpellCard().getSpellAbility().addEffect(new DestroyTargetEffect());
-        this.getSpellCard().getSpellAbility().addEffect(
+        this.getRightHalfCard().getSpellAbility().addEffect(new DestroyTargetEffect());
+        this.getRightHalfCard().getSpellAbility().addEffect(
                 new LoseLifeSourceControllerEffect(2).setText("You lose 2 life.")
         );
-        this.getSpellCard().getSpellAbility().addTarget(new TargetCreatureOrPlaneswalker());
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreatureOrPlaneswalker());
     }
 
     private MurderousRider(final MurderousRider card) {

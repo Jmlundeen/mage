@@ -23,7 +23,10 @@ import java.util.UUID;
 public final class MonsterManual extends AdventureCard {
 
     public MonsterManual(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, new CardType[]{CardType.SORCERY}, "{3}{G}", "Zoological Study", "{2}{G}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.ARTIFACT}, "{3}{G}",
+                "Zoological Study",
+                new CardType[]{CardType.SORCERY}, "{2}{G}");
 
         // {1}{G}, {T}: You may put a creature card from your hand onto the battlefield.
         Ability ability = new SimpleActivatedAbility(
@@ -35,9 +38,7 @@ public final class MonsterManual extends AdventureCard {
 
         // Zoological Study
         // Mill five cards, then return a creature card milled this way to your hand.
-        this.getSpellCard().getSpellAbility().addEffect(new ZoologicalStudyEffect());
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new ZoologicalStudyEffect());
     }
 
     private MonsterManual(final MonsterManual card) {
