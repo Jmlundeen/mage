@@ -1,6 +1,5 @@
 package mage.cards.k;
 
-import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.AdditiveDynamicValue;
 import mage.abilities.dynamicvalue.common.AuraAttachedCount;
@@ -36,13 +35,13 @@ public final class KellanTheFaeBlooded extends AdventureCard {
     }
 
     public KellanTheFaeBlooded(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.SORCERY}, "{2}{R}", "Birthright Boon", "{1}{W}");
+        super(ownerId, setInfo,
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.FAERIE}, "{2}{R}",
+                "Birthright Boon",
+                new CardType[]{CardType.SORCERY}, "{1}{W}");
 
-        this.supertype.add(SuperType.LEGENDARY);
-        this.subtype.add(SubType.HUMAN);
-        this.subtype.add(SubType.FAERIE);
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(2);
+        // Kellan, the Fae-Blooded
+        this.getLeftHalfCard().setPT(2, 2);
 
         // Double strike
         this.addAbility(DoubleStrikeAbility.getInstance());
@@ -57,9 +56,7 @@ public final class KellanTheFaeBlooded extends AdventureCard {
 
         // Birthright Boon
         // Search your library for an Aura or Equipment card, reveal it, put it into your hand, then shuffle.
-        this.getSpellCard().getSpellAbility().addEffect(new SearchLibraryPutInHandEffect(new TargetCardInLibrary(auraOrEquipmentCard), true));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new SearchLibraryPutInHandEffect(new TargetCardInLibrary(auraOrEquipmentCard), true));
     }
 
     private KellanTheFaeBlooded(final KellanTheFaeBlooded card) {
