@@ -1,6 +1,5 @@
 package mage.cards.g;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.effects.common.DrawDiscardControllerEffect;
@@ -31,12 +30,13 @@ public final class GalvanicGiant extends AdventureCard {
     }
 
     public GalvanicGiant(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{3}{U}", "Storm Reading", "{5}{U}{U}");
-        
-        this.subtype.add(SubType.GIANT);
-        this.subtype.add(SubType.WIZARD);
-        this.power = new MageInt(3);
-        this.toughness = new MageInt(3);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.GIANT, SubType.WIZARD}, "{3}{U}",
+                "Storm Reading",
+                new CardType[]{CardType.INSTANT}, "{5}{U}{U}");
+
+        // Galvanic Giant
+        this.getLeftHalfCard().setPT(3, 3);
 
         // Whenever you cast a spell with mana value 5 or greater, tap target creature an opponent controls and put a stun counter on it.
         Ability ability = new SpellCastControllerTriggeredAbility(new TapTargetEffect(), filter, false);
@@ -46,9 +46,7 @@ public final class GalvanicGiant extends AdventureCard {
 
         // Storm Reading
         // Draw four cards, then discard two cards.
-        this.getSpellCard().getSpellAbility().addEffect(new DrawDiscardControllerEffect(4, 2));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new DrawDiscardControllerEffect(4, 2));
     }
 
     private GalvanicGiant(final GalvanicGiant card) {

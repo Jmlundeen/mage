@@ -1,6 +1,5 @@
 package mage.cards.g;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -27,12 +26,13 @@ public final class GumdropPoisoner extends AdventureCard {
     private static final DynamicValue xValue = new SignInversionDynamicValue(ControllerGainedLifeCount.instance);
 
     public GumdropPoisoner(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{2}{B}", "Tempt with Treats", "{B}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.WARLOCK}, "{2}{B}",
+                "Tempt with Treats",
+                new CardType[]{CardType.INSTANT}, "{B}");
 
-        this.subtype.add(SubType.HUMAN);
-        this.subtype.add(SubType.WARLOCK);
-        this.power = new MageInt(3);
-        this.toughness = new MageInt(2);
+        // Gumdrop Poisoner
+        this.getLeftHalfCard().setPT(3, 2);
 
         // Lifelink
         this.addAbility(LifelinkAbility.getInstance());
@@ -45,9 +45,7 @@ public final class GumdropPoisoner extends AdventureCard {
 
         // Tempt with Treats
         // Create a Food token.
-        this.getSpellCard().getSpellAbility().addEffect(new CreateTokenEffect(new FoodToken()));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new FoodToken()));
     }
 
     private GumdropPoisoner(final GumdropPoisoner card) {

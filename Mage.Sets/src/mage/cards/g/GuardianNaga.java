@@ -1,6 +1,5 @@
 package mage.cards.g;
 
-import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.MyTurnCondition;
 import mage.abilities.decorator.ConditionalPreventionEffect;
@@ -23,11 +22,13 @@ import java.util.UUID;
 public final class GuardianNaga extends AdventureCard {
 
     public GuardianNaga(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{5}{W}{W}", "Banishing Coils", "{2}{W}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.SNAKE}, "{5}{W}{W}",
+                "Banishing Coils",
+                new CardType[]{CardType.INSTANT}, "{2}{W}");
 
-        this.subtype.add(SubType.SNAKE);
-        this.power = new MageInt(5);
-        this.toughness = new MageInt(6);
+        // Guardian Naga
+        this.getLeftHalfCard().setPT(5, 6);
 
         // Vigilance
         this.addAbility(VigilanceAbility.getInstance());
@@ -40,10 +41,8 @@ public final class GuardianNaga extends AdventureCard {
 
         // Banishing Coils
         // Exile target artifact or enchantment.
-        this.getSpellCard().getSpellAbility().addEffect(new ExileTargetEffect());
-        this.getSpellCard().getSpellAbility().addTarget(new TargetPermanent(StaticFilters.FILTER_PERMANENT_ARTIFACT_OR_ENCHANTMENT));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new ExileTargetEffect());
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(StaticFilters.FILTER_PERMANENT_ARTIFACT_OR_ENCHANTMENT));
     }
 
     private GuardianNaga(final GuardianNaga card) {
