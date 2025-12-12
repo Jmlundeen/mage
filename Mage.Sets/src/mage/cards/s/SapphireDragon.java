@@ -1,6 +1,5 @@
 package mage.cards.s;
 
-import mage.MageInt;
 import mage.abilities.common.AttacksOrBlocksTriggeredAbility;
 import mage.abilities.effects.common.CounterTargetEffect;
 import mage.abilities.effects.keyword.ScryEffect;
@@ -20,11 +19,13 @@ import java.util.UUID;
 public final class SapphireDragon extends AdventureCard {
 
     public SapphireDragon(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{5}{U}{U}", "Psionic Pulse", "{2}{U}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.DRAGON}, "{5}{U}{U}",
+                "Psionic Pulse",
+                new CardType[]{CardType.INSTANT}, "{2}{U}");
 
-        this.subtype.add(SubType.DRAGON);
-        this.power = new MageInt(5);
-        this.toughness = new MageInt(6);
+        // Sapphire Dragon
+        this.getLeftHalfCard().setPT(5, 6);
 
         // Flying
         this.addAbility(FlyingAbility.getInstance());
@@ -34,10 +35,8 @@ public final class SapphireDragon extends AdventureCard {
 
         // Psionic Pulse
         // Counter target noncreature spell.
-        this.getSpellCard().getSpellAbility().addEffect(new CounterTargetEffect());
-        this.getSpellCard().getSpellAbility().addTarget(new TargetSpell(StaticFilters.FILTER_SPELL_NON_CREATURE));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new CounterTargetEffect());
+        this.getRightHalfCard().getSpellAbility().addTarget(new TargetSpell(StaticFilters.FILTER_SPELL_NON_CREATURE));
     }
 
     private SapphireDragon(final SapphireDragon card) {
