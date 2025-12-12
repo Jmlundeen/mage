@@ -1,13 +1,12 @@
 package mage.cards.d;
 
-import mage.MageInt;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.TapSourceEffect;
 import mage.abilities.keyword.MenaceAbility;
 import mage.abilities.keyword.TrampleAbility;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.AdventureCard;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -37,11 +36,13 @@ public final class DevouringSugarmaw extends AdventureCard {
     }
 
     public DevouringSugarmaw(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, new CardType[]{CardType.INSTANT}, "{2}{B}{B}", "Have for Dinner", "{1}{W}");
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HORROR}, "{2}{B}{B}",
+                "Have for Dinner",
+                new CardType[]{CardType.INSTANT}, "{1}{W}");
 
-        this.subtype.add(SubType.HORROR);
-        this.power = new MageInt(6);
-        this.toughness = new MageInt(6);
+        // Devouring Sugarmaw
+        this.getLeftHalfCard().setPT(6, 6);
 
         // Menace
         this.addAbility(new MenaceAbility(false));
@@ -61,9 +62,7 @@ public final class DevouringSugarmaw extends AdventureCard {
 
         // Have for Dinner
         // Create a 1/1 white Human creature token and a Food token.
-        this.getSpellCard().getSpellAbility().addEffect(new CreateTokenEffect(new HumanToken()).withAdditionalTokens(new FoodToken()));
-
-        this.finalizeAdventure();
+        this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new HumanToken()).withAdditionalTokens(new FoodToken()));
     }
 
     private DevouringSugarmaw(final DevouringSugarmaw card) {
