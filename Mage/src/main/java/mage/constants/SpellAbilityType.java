@@ -18,11 +18,9 @@ public enum SpellAbilityType {
     MODAL_LEFT("LeftModal SpellAbility"),
     MODAL_RIGHT("RightModal SpellAbility"),
     SPLICE("Spliced SpellAbility"),
-    ADVENTURE_OMEN("Adventure/Omen SpellAbility"),
+    ADVENTURE_OMEN("Adventure/Omen SpellAbility", false),
     ADVENTURE_OMEN_LEFT("Adventure/Omen Left SpellAbility"),
-    ADVENTURE_OMEN_RIGHT("Adventure/Omen Right SpellAbility", false),
-    ADVENTURE_SPELL("Adventure SpellAbility"),
-    OMEN_SPELL("Omen SpellAbility"),
+    ADVENTURE_OMEN_RIGHT("Adventure/Omen Right SpellAbility"),
     MELD("Meld SpellAbility", false),
     MELD_LEFT("MeldLeft SpellAbility"),
     MELD_RIGHT("MeldRight SpellAbility", false);
