@@ -29,6 +29,7 @@ public final class MtgJsonService {
 
     static {
         //mtgJsonToXMageCodes.put("pPRE", "PPRE");
+        mtgJsonToXMageCodes.put("PLST", "MB1"); // mystery booster 1 cards are in The List(PLST) set in mtgjson
 
         // revert search
         for (Map.Entry<String, String> entry : mtgJsonToXMageCodes.entrySet()) {
@@ -143,6 +144,7 @@ public final class MtgJsonService {
         // card number notation must be same for all sets (replace non-ascii symbols)
         // so your set generation tools must use same replaces
         return number
+                .replaceAll("[A-z]{3,5}-", "") // the list contains set codes prefix in number
                 .replace("★", "*")
                 .replace("†", "+");
     }
