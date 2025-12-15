@@ -1247,4 +1247,9 @@ public class Spell extends StackObjectImpl implements Card {
     public boolean hasSubTypeForDeckbuilding(SubType subType) {
         return false;
     }
+
+    @Override
+    public UUID getIdForBattlefield(Game game, Ability source) {
+        return card.getIdForBattlefield(game, source);
+    }
 }
