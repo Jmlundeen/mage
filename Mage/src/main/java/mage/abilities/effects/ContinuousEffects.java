@@ -641,7 +641,7 @@ public class ContinuousEffects implements Serializable {
                 Set<Ability> abilities = asThoughEffectsMap.get(type).getAbility(effect.getId());
                 for (Ability ability : abilities) {
                     if (!(ability instanceof StaticAbility) || ability.isInUseableZone(game, null, null)) {
-                        if (effect.getDuration() != Duration.OneUse || !effect.isUsed()) {
+                        if (effect.getDuration() != Duration.OneUse && !effect.isUsed()) {
                             asThoughEffectsList.add(effect);
                             break;
                         }
