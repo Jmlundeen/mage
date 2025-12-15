@@ -6,7 +6,6 @@ import mage.abilities.Ability;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.cards.Card;
-import mage.cards.CardPart;
 import mage.cards.DoubleFacedCardHalf;
 import mage.constants.CardType;
 import mage.constants.SuperType;
@@ -93,9 +92,9 @@ public class CopyTokenFunction {
             copyToToken(target, sourceObj, game);
             CardUtil.copySetAndCardNumber(target, sourceObj);
             // second side
-            if (sourceObj.isTransformable()) {
-                copyToToken(target.getBackFace(), sourceObj.getSecondCardFace(), game);
-                CardUtil.copySetAndCardNumber(target.getBackFace(), sourceObj.getSecondCardFace());
+            if (sourcePermanent.isTransformable()) {
+                copyToToken(target.getBackFace(), sourcePermanent.getSecondCardFace(), game);
+                CardUtil.copySetAndCardNumber(target.getBackFace(), sourcePermanent.getSecondCardFace());
             }
 
             // apply prototyped status
@@ -111,7 +110,7 @@ public class CopyTokenFunction {
         }
 
         // from double faced card spell
-        if (source instanceof CardPart) {
+        if (source instanceof DoubleFacedCardHalf) {
             DoubleFacedCardHalf<?> sourceCard = (DoubleFacedCardHalf<?>) source;
             Card frontSide;
             Card backSide = null;
