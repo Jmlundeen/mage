@@ -30,7 +30,7 @@ public class PlotAbility extends SpecialAction {
     private final String rule;
 
     public PlotAbility(String plotCost) {
-        super(Zone.ALL); // Usually, plot only works from hand. However [[Fblthp, Lost on the Range]] allows plotting from library
+        super(Zone.HAND);
         this.addCost(new ManaCostsImpl<>(plotCost));
         this.addEffect(new PlotSourceExileEffect());
         this.setTiming(TimingRule.SORCERY);
@@ -58,27 +58,6 @@ public class PlotAbility extends SpecialAction {
         // Plot ability uses card's timing restriction
         Card card = game.getCard(getSourceId());
         if (card == null) {
-            return ActivationStatus.getFalse();
-        }
-        // plot can only be activated from hand or from top of library if allowed to.
-        Zone zone = game.getState().getZone(getSourceId());
-        if (zone == Zone.HAND) {
-            // Allowed from hand
-        } else if (zone == Zone.LIBRARY) {
-            // Allowed only if permitted for top card, and only if the card is on top and is nonland
-            // Note: if another effect changes zones where permitted, or if different card categories are permitted,
-            //       it would be better to refactor this as an unique AsThoughEffect.
-            //       As of now, only Fblthp, Lost on the Range changes permission of plot.
-            Player player = game.getPlayer(getControllerId());
-            if (player == null || !player.canPlotFromTopOfLibrary()) {
-                return ActivationStatus.getFalse();
-            }
-            Card topCardLibrary = player.getLibrary().getFromTop(game);
-            if (topCardLibrary == null || !topCardLibrary.getId().equals(card.getId()) || card.isLand()) {
-                return ActivationStatus.getFalse();
-            }
-        } else {
-            // Not Allowed from other zones
             return ActivationStatus.getFalse();
         }
         Set<MageIdentifier> allowedToBeCastNow = card.getSpellAbility().spellCanBeActivatedNow(playerId, game);
