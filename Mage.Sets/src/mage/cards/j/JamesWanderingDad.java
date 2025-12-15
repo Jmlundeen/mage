@@ -47,6 +47,8 @@ public final class JamesWanderingDad extends AdventureCard {
                 new InvestigateEffect(GetXValue.instance)
                         .setText("Investigate X times")
         );
+
+        finalizeCard();
     }
 
     private JamesWanderingDad(final JamesWanderingDad card) {

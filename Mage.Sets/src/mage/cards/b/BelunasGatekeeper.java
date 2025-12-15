@@ -40,6 +40,8 @@ public final class BelunasGatekeeper extends AdventureCard {
         // Return target creature you don't control with mana value 3 or less to its owner's hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
+
+        finalizeCard();
     }
 
     private BelunasGatekeeper(final BelunasGatekeeper card) {

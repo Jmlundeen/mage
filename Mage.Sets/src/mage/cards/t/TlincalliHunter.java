@@ -50,6 +50,8 @@ public final class TlincalliHunter extends AdventureCard {
         // Exile target creature card from your graveyard. Until the end of your next turn, you may cast that card.
         this.getRightHalfCard().getSpellAbility().addEffect(new RetrievePreyEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
+
+        finalizeCard();
     }
 
     private TlincalliHunter(final TlincalliHunter card) {

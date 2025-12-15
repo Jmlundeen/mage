@@ -31,6 +31,8 @@ public final class FangDragon extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new DamageAllEffect(
                 1, StaticFilters.FILTER_CREATURE_YOU_DONT_CONTROL
         ));
+
+        finalizeCard();
     }
 
     private FangDragon(final FangDragon card) {

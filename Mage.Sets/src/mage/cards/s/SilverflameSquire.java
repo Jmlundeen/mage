@@ -30,6 +30,8 @@ public final class SilverflameSquire extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostTargetEffect(2, 2, Duration.EndOfTurn));
         this.getRightHalfCard().getSpellAbility().addEffect(new UntapTargetEffect().setText("Untap it"));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private SilverflameSquire(final SilverflameSquire card) {

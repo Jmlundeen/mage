@@ -64,6 +64,8 @@ public final class IllithidHarvester extends AdventureCard {
                 .setText("They don't untap during their controllers' next untap steps"));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
         this.getRightHalfCard().getSpellAbility().setTargetAdjuster(new XTargetsCountAdjuster());
+
+        finalizeCard();
     }
 
     private IllithidHarvester(final IllithidHarvester card) {

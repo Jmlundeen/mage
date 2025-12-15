@@ -48,6 +48,8 @@ public final class KellanInquisitiveProdigy extends AdventureCard {
         // Investigate. You may play an additional land this turn.
         this.getRightHalfCard().getSpellAbility().addEffect(new InvestigateEffect(false));
         this.getRightHalfCard().getSpellAbility().addEffect(new PlayAdditionalLandsControllerEffect(1, Duration.EndOfTurn));
+
+        finalizeCard();
     }
 
     private KellanInquisitiveProdigy(final KellanInquisitiveProdigy card) {

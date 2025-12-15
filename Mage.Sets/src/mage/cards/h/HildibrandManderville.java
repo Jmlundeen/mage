@@ -44,6 +44,8 @@ public final class HildibrandManderville extends AdventureCard {
         // Gentleman's Rise
         // Create a 2/2 black Zombie creature token.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new ZombieToken()));
+
+        finalizeCard();
     }
 
     private HildibrandManderville(final HildibrandManderville card) {

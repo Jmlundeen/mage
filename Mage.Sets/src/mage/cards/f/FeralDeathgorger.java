@@ -50,6 +50,8 @@ public final class FeralDeathgorger extends OmenCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new AddCountersTargetEffect(CounterType.P1P1.createInstance(), StaticValue.get(1)));
         this.getRightHalfCard().getSpellAbility().addEffect(new DrawCardSourceControllerEffect(1));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent(0, 1));
+
+        finalizeCard();
     }
 
     private FeralDeathgorger(final FeralDeathgorger card) {

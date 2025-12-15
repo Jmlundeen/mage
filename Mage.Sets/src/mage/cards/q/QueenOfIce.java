@@ -42,6 +42,8 @@ public final class QueenOfIce extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new DontUntapInControllersNextUntapStepTargetEffect()
                 .setText("It doesn't untap during its controller's next untap step"));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private QueenOfIce(final QueenOfIce card) {

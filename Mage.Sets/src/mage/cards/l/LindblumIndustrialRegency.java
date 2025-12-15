@@ -31,6 +31,8 @@ public final class LindblumIndustrialRegency extends AdventureCard {
         // Mage Siege
         // Create a 0/1 black Wizard creature token with "Whenever you cast a noncreature spell, this token deals 1 damage to each opponent."
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new BlackWizardToken()));
+
+        finalizeCard();
     }
 
     private LindblumIndustrialRegency(final LindblumIndustrialRegency card) {

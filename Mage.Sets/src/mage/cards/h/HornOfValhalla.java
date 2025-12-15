@@ -42,6 +42,8 @@ public final class HornOfValhalla extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(
                 new SoldierToken(), GetXValue.instance
         ));
+
+        finalizeCard();
     }
 
     private HornOfValhalla(final HornOfValhalla card) {

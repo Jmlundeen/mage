@@ -51,6 +51,8 @@ public final class DisruptiveStormbrood extends OmenCard {
         Effect spellEffect = new DestroyTargetEffect();
         this.getRightHalfCard().getSpellAbility().addEffect(spellEffect);
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
+
+        finalizeCard();
     }
 
     private DisruptiveStormbrood(final DisruptiveStormbrood card) {

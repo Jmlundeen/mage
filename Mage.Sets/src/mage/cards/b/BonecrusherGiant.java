@@ -39,6 +39,8 @@ public final class BonecrusherGiant extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new DamageCantBePreventedEffect(Duration.EndOfTurn));
         this.getRightHalfCard().getSpellAbility().addEffect(new DamageTargetEffect(2));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetAnyTarget());
+
+        finalizeCard();
     }
 
     private BonecrusherGiant(final BonecrusherGiant card) {

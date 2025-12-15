@@ -39,6 +39,8 @@ public final class ColossalBadger extends AdventureCard {
         // Choose target creature. Mill four cards, then put a +1/+1 counter on that creature for each creature card milled this way.
         this.getRightHalfCard().getSpellAbility().addEffect(new ColossalBadgerEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private ColossalBadger(final ColossalBadger card) {

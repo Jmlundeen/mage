@@ -31,6 +31,8 @@ public final class ObyrasAttendants extends AdventureCard {
         // Target creature gets -4/-0 until end of turn.
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostTargetEffect(-4, 0));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private ObyrasAttendants(final ObyrasAttendants card) {

@@ -48,6 +48,8 @@ public final class GraySlaad extends AdventureCard {
         // Entropic Decay
         // Mill four cards.
         this.getRightHalfCard().getSpellAbility().addEffect(new MillCardsControllerEffect(4));
+
+        finalizeCard();
     }
 
     private GraySlaad(final GraySlaad card) {

@@ -49,6 +49,8 @@ public final class CrystalDragon extends AdventureCard {
         // Return target artifact, enchantment, or legendary card from your graveyard to your hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnFromGraveyardToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(filter));
+
+        finalizeCard();
     }
 
     private CrystalDragon(final CrystalDragon card) {

@@ -31,6 +31,8 @@ public final class YoungBlueDragon extends AdventureCard {
         // Scry 1, then draw a card.
         this.getRightHalfCard().getSpellAbility().addEffect(new ScryEffect(1, false));
         this.getRightHalfCard().getSpellAbility().addEffect(new DrawCardSourceControllerEffect(1).concatBy(", then"));
+
+        finalizeCard();
     }
 
     private YoungBlueDragon(final YoungBlueDragon card) {

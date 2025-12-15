@@ -37,6 +37,8 @@ public final class SpellscornCoven extends AdventureCard {
         // Return target spell to its owner's hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetSpell());
+
+        finalizeCard();
     }
 
     private SpellscornCoven(final SpellscornCoven card) {

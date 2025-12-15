@@ -27,6 +27,8 @@ public final class EmberethShieldbreaker extends AdventureCard {
         // Destroy target artifact.
         this.getRightHalfCard().getSpellAbility().addEffect(new DestroyTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetArtifactPermanent());
+
+        finalizeCard();
     }
 
     private EmberethShieldbreaker(final EmberethShieldbreaker card) {

@@ -28,6 +28,8 @@ public final class BesottedKnight extends AdventureCard {
         // Create a Royal Role token attached to target creature you control.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateRoleAttachedTargetEffect(RoleType.ROYAL));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetControlledCreaturePermanent());
+
+        finalizeCard();
     }
 
     private BesottedKnight(final BesottedKnight card) {

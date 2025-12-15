@@ -32,6 +32,8 @@ public final class JidoorAristocraticCapital extends AdventureCard {
         // Target opponent mills half their library, rounded down.
         this.getRightHalfCard().getSpellAbility().addEffect(new MillHalfLibraryTargetEffect(false));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetOpponent());
+
+        finalizeCard();
     }
 
     private JidoorAristocraticCapital(final JidoorAristocraticCapital card) {

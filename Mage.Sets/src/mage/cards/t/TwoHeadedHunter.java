@@ -32,6 +32,8 @@ public final class TwoHeadedHunter extends AdventureCard {
         // Target creature gains double strike until end of turn.
         this.getRightHalfCard().getSpellAbility().addEffect(new GainAbilityTargetEffect(DoubleStrikeAbility.getInstance()));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private TwoHeadedHunter(final TwoHeadedHunter card) {

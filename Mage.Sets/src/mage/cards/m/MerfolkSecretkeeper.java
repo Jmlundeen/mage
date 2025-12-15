@@ -27,6 +27,8 @@ public final class MerfolkSecretkeeper extends AdventureCard {
         // Target player puts the top four cards of their library into their graveyard.
         this.getRightHalfCard().getSpellAbility().addEffect(new MillCardsTargetEffect(4));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPlayer());
+
+        finalizeCard();
     }
 
     private MerfolkSecretkeeper(final MerfolkSecretkeeper card) {

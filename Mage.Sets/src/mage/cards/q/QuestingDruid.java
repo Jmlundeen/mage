@@ -51,6 +51,8 @@ public final class QuestingDruid extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(
                 new ExileTopXMayPlayUntilEffect(2, Duration.UntilYourNextEndStep)
         );
+
+        finalizeCard();
     }
 
     private QuestingDruid(final QuestingDruid card) {

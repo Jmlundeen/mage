@@ -47,6 +47,8 @@ public final class GumdropPoisoner extends AdventureCard {
         // Tempt with Treats
         // Create a Food token.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new FoodToken()));
+
+        finalizeCard();
     }
 
     private GumdropPoisoner(final GumdropPoisoner card) {

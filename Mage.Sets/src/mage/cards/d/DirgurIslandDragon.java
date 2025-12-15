@@ -39,6 +39,8 @@ public final class DirgurIslandDragon extends OmenCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new TapTargetEffect());
         this.getRightHalfCard().getSpellAbility().addEffect(new DrawCardSourceControllerEffect(1));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent(0, 1));
+
+        finalizeCard();
     }
 
     private DirgurIslandDragon(final DirgurIslandDragon card) {

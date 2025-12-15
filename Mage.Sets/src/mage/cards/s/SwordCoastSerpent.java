@@ -43,6 +43,8 @@ public final class SwordCoastSerpent extends AdventureCard {
         // Return target creature to its owner's hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private SwordCoastSerpent(final SwordCoastSerpent card) {

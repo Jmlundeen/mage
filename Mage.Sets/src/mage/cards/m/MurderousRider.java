@@ -42,6 +42,8 @@ public final class MurderousRider extends AdventureCard {
                 new LoseLifeSourceControllerEffect(2).setText("You lose 2 life.")
         );
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreatureOrPlaneswalker());
+
+        finalizeCard();
     }
 
     private MurderousRider(final MurderousRider card) {

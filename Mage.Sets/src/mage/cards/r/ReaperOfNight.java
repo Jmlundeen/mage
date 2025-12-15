@@ -40,6 +40,8 @@ public final class ReaperOfNight extends AdventureCard {
         // Target opponent discards two cards.
         this.getRightHalfCard().getSpellAbility().addEffect(new DiscardTargetEffect(2));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetOpponent());
+
+        finalizeCard();
     }
 
     private ReaperOfNight(final ReaperOfNight card) {

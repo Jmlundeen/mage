@@ -47,6 +47,8 @@ public final class BelunaGrandsquall extends AdventureCard {
         // Seek Thrills
         // Mill seven cards. Then put all cards that have an Adventure from among the milled cards into your hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new SeekThrillsEffect());
+
+        finalizeCard();
     }
 
     private BelunaGrandsquall(final BelunaGrandsquall card) {

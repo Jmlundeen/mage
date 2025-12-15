@@ -36,6 +36,8 @@ public final class VirtueOfLoyalty extends AdventureCard {
         // Ardenvale Fealty
         // Create a 2/2 white Knight creature token with vigilance.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new KnightToken()));
+
+        finalizeCard();
     }
 
     private VirtueOfLoyalty(final VirtueOfLoyalty card) {

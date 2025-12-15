@@ -42,6 +42,8 @@ public final class ScaldingViper extends AdventureCard {
         // Return target nonland permanent to its owner's hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetNonlandPermanent());
+
+        finalizeCard();
     }
 
     private ScaldingViper(final ScaldingViper card) {

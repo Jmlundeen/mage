@@ -47,6 +47,8 @@ public final class MarangRiverRegent extends OmenCard {
         // Coil and Catch
         // Draw three cards, then discard a card.
         this.getRightHalfCard().getSpellAbility().addEffect(new DrawDiscardControllerEffect(3, 1));
+
+        finalizeCard();
     }
 
     private MarangRiverRegent(final MarangRiverRegent card) {

@@ -54,6 +54,8 @@ public final class WhirlwingStormbrood extends OmenCard {
         // Put three +1/+1 counters on target creature you control.
         this.getRightHalfCard().getSpellAbility().addEffect(new AddCountersTargetEffect(CounterType.P1P1.createInstance(3), StaticValue.get(3)));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetControlledCreaturePermanent());
+
+        finalizeCard();
     }
 
     private WhirlwingStormbrood(final WhirlwingStormbrood card) {

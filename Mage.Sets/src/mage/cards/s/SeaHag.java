@@ -39,6 +39,8 @@ public final class SeaHag extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostTargetEffect(1, 0).setText("up to two target creatures each get +1/+0 until end of turn"));
         this.getRightHalfCard().getSpellAbility().addEffect(new CantBeBlockedTargetEffect().setText("and can't be blocked this turn"));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent(0, 2));
+
+        finalizeCard();
     }
 
     private SeaHag(final SeaHag card) {

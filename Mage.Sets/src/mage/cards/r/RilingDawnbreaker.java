@@ -54,6 +54,8 @@ public final class RilingDawnbreaker extends OmenCard {
         // Signaling Roar
         // Create a 2/2 white Soldier creature token.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new Soldier22Token()));
+
+        finalizeCard();
     }
 
     private RilingDawnbreaker(final RilingDawnbreaker card) {

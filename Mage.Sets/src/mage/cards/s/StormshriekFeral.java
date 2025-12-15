@@ -46,6 +46,8 @@ public final class StormshriekFeral extends OmenCard {
                 new DrawCardSourceControllerEffect(2),
                 null, new DiscardCardCost(), false
         ));
+
+        finalizeCard();
     }
 
     private StormshriekFeral(final StormshriekFeral card) {

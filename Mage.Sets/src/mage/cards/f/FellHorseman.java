@@ -35,6 +35,8 @@ public final class FellHorseman extends AdventureCard {
         // Return target creature card from your graveyard to your hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnFromGraveyardToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
+
+        finalizeCard();
     }
 
     private FellHorseman(final FellHorseman card) {

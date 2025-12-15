@@ -39,6 +39,8 @@ public final class ElusiveOtter extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new DistributeCountersEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(
                 new TargetCreaturePermanentAmount(GetXValue.instance, StaticFilters.FILTER_CONTROLLED_CREATURES));
+
+        finalizeCard();
     }
 
     private ElusiveOtter(final ElusiveOtter card) {

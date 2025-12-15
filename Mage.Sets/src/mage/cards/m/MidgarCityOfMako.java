@@ -36,6 +36,8 @@ public final class MidgarCityOfMako extends AdventureCard {
                 new DrawCardSourceControllerEffect(2),
                 new SacrificeTargetCost(StaticFilters.FILTER_PERMANENT_ARTIFACT_OR_CREATURE)
         ));
+
+        finalizeCard();
     }
 
     private MidgarCityOfMako(final MidgarCityOfMako card) {

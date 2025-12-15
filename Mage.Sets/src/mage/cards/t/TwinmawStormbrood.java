@@ -46,6 +46,8 @@ public final class TwinmawStormbrood extends OmenCard {
         // deals 5 damage to target creature without flying.
         this.getRightHalfCard().getSpellAbility().addEffect(new DamageTargetEffect(5));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
+
+        finalizeCard();
     }
 
     private TwinmawStormbrood(final TwinmawStormbrood card) {

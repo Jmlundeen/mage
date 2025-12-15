@@ -45,6 +45,8 @@ public final class FlaxenIntruder extends AdventureCard {
         // Welcome Home
         // Create three 2/2 green Bear creature tokens.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new BearToken(), 3));
+
+        finalizeCard();
     }
 
     private FlaxenIntruder(final FlaxenIntruder card) {

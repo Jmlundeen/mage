@@ -40,6 +40,8 @@ public final class HypnoticSprite extends AdventureCard {
         // Counter target spell with converted mana cost 3 or less.
         this.getRightHalfCard().getSpellAbility().addEffect(new CounterTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetSpell(filter));
+
+        finalizeCard();
     }
 
     private HypnoticSprite(final HypnoticSprite card) {

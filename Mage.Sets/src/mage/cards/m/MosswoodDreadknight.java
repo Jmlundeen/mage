@@ -37,6 +37,8 @@ public final class MosswoodDreadknight extends AdventureCard {
         // You draw a card and you lose 1 life.
         this.getRightHalfCard().getSpellAbility().addEffect(new DrawCardSourceControllerEffect(1, true));
         this.getRightHalfCard().getSpellAbility().addEffect(new LoseLifeSourceControllerEffect(1).concatBy("and"));
+
+        finalizeCard();
     }
 
     private MosswoodDreadknight(final MosswoodDreadknight card) {

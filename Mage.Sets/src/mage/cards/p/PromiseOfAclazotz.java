@@ -45,6 +45,8 @@ public class PromiseOfAclazotz extends AdventureCard {
                 new CreateTokenEffect(new VampireDemonToken()),
                 new SacrificeTargetCost(filter), null, false
         ));
+
+        finalizeCard();
     }
 
     private PromiseOfAclazotz(final PromiseOfAclazotz card) {

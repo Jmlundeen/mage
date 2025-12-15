@@ -34,6 +34,8 @@ public final class YoungRedDragon extends AdventureCard {
         // Bathe in Gold
         // Create a Treasure token.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new TreasureToken()));
+
+        finalizeCard();
     }
 
     private YoungRedDragon(final YoungRedDragon card) {

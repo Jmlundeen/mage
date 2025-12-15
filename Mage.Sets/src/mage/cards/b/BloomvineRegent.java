@@ -46,6 +46,8 @@ public final class BloomvineRegent extends OmenCard {
         // Search your library for up to two basic Forest cards, reveal them, put one onto the battlefield tapped and the other into your hand, then shuffle. (Also shuffle this card.)
         TargetCardInLibrary target = new TargetCardInLibrary(0, 2, filter);
         this.getRightHalfCard().getSpellAbility().addEffect(new SearchLibraryPutOntoBattlefieldTappedRestInHandEffect(target, 1));
+
+        finalizeCard();
     }
 
     private BloomvineRegent(final BloomvineRegent card) {

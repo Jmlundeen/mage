@@ -41,6 +41,8 @@ public final class ZanarkandAncientMetropolis extends AdventureCard {
         // Create a 1/1 colorless Hero creature token. Put a +1/+1 counter on it for each land you control.
         this.getRightHalfCard().getSpellAbility().addEffect(new ZanarkandAncientMetropolisEffect());
         this.getRightHalfCard().getSpellAbility().addHint(LandsYouControlHint.instance);
+
+        finalizeCard();
     }
 
     private ZanarkandAncientMetropolis(final ZanarkandAncientMetropolis card) {

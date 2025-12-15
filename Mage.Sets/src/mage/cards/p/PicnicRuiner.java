@@ -40,6 +40,8 @@ public final class PicnicRuiner extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addTarget(
                 new TargetCreaturePermanentAmount(3, 0, 3, StaticFilters.FILTER_CONTROLLED_CREATURES)
         );
+
+        finalizeCard();
     }
 
     private PicnicRuiner(final PicnicRuiner card) {

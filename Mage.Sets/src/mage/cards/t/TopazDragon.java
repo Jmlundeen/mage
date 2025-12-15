@@ -38,6 +38,8 @@ public final class TopazDragon extends AdventureCard {
                 DeathtouchAbility.getInstance(), Duration.EndOfTurn,
                 StaticFilters.FILTER_CONTROLLED_CREATURES
         ));
+
+        finalizeCard();
     }
 
     private TopazDragon(final TopazDragon card) {

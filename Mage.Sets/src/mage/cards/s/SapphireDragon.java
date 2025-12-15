@@ -37,6 +37,8 @@ public final class SapphireDragon extends AdventureCard {
         // Counter target noncreature spell.
         this.getRightHalfCard().getSpellAbility().addEffect(new CounterTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetSpell(StaticFilters.FILTER_SPELL_NON_CREATURE));
+
+        finalizeCard();
     }
 
     private SapphireDragon(final SapphireDragon card) {

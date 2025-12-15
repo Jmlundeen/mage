@@ -35,6 +35,8 @@ public final class AmethystDragon extends AdventureCard {
         // Explosive Crystal deals 4 damage divided as you choose among any number of targets.
         this.getRightHalfCard().getSpellAbility().addEffect(new DamageMultiEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetAnyTargetAmount(4));
+
+        finalizeCard();
     }
 
     private AmethystDragon(final AmethystDragon card) {

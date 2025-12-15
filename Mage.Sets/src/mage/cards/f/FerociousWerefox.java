@@ -32,6 +32,8 @@ public final class FerociousWerefox extends AdventureCard {
         // Create a Monster Role token attached to target creature you control.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateRoleAttachedTargetEffect(RoleType.MONSTER));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetControlledCreaturePermanent());
+
+        finalizeCard();
     }
 
     private FerociousWerefox(final FerociousWerefox card) {

@@ -49,6 +49,8 @@ public final class GiantKiller extends AdventureCard {
         // Destroy target creature with power 4 or greater.
         this.getRightHalfCard().getSpellAbility().addEffect(new DestroyTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
+
+        finalizeCard();
     }
 
     private GiantKiller(final GiantKiller card) {

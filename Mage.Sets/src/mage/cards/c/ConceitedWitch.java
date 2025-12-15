@@ -32,6 +32,8 @@ public final class ConceitedWitch extends AdventureCard {
         // Create a Wicked Role token attached to target creature you control.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateRoleAttachedTargetEffect(RoleType.WICKED));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetControlledCreaturePermanent());
+
+        finalizeCard();
     }
 
     private ConceitedWitch(final ConceitedWitch card) {

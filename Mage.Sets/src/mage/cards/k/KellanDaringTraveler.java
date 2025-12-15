@@ -49,6 +49,8 @@ public final class KellanDaringTraveler extends AdventureCard {
                         .setText("create X Map tokens, where X is one plus the number of opponents who control an artifact")
         );
         this.getRightHalfCard().getSpellAbility().addHint(hint);
+
+        finalizeCard();
     }
 
     private KellanDaringTraveler(final KellanDaringTraveler card) {

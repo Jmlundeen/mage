@@ -36,6 +36,8 @@ public final class IshgardTheHolySee extends AdventureCard {
         // Return up to two target artifact and/or enchantment cards from your graveyard to your hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnFromGraveyardToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(0, 2, filter));
+
+        finalizeCard();
     }
 
     private IshgardTheHolySee(final IshgardTheHolySee card) {

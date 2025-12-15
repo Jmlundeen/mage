@@ -40,6 +40,8 @@ public final class HollowScavenger extends AdventureCard {
         // Bakery Raid
         // Create a Food token.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new FoodToken()));
+
+        finalizeCard();
     }
 
     private HollowScavenger(final HollowScavenger card) {

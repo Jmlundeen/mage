@@ -39,6 +39,8 @@ public final class MerchantOfTheVale extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addEffect(new DoIfCostPaid(
                 new DrawCardSourceControllerEffect(1), new DiscardCardCost()
         ));
+
+        finalizeCard();
     }
 
     private MerchantOfTheVale(final MerchantOfTheVale card) {

@@ -28,6 +28,8 @@ public final class TuinvaleTreefolk extends AdventureCard {
         // Put two +1/+1 counters on target creature.
         this.getRightHalfCard().getSpellAbility().addEffect(new AddCountersTargetEffect(CounterType.P1P1.createInstance(2)));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private TuinvaleTreefolk(final TuinvaleTreefolk card) {

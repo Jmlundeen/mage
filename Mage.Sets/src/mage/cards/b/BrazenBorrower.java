@@ -49,6 +49,8 @@ public final class BrazenBorrower extends AdventureCard {
         // Return target nonland permanent an opponent controls to its owner's hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
+
+        finalizeCard();
     }
 
     private BrazenBorrower(final BrazenBorrower card) {

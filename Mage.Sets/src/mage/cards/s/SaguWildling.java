@@ -37,6 +37,8 @@ public final class SaguWildling extends OmenCard {
         // Search your library for a basic land card, reveal it, put it into your hand, then shuffle.
         TargetCardInLibrary target = new TargetCardInLibrary(StaticFilters.FILTER_CARD_BASIC_LAND);
         this.getRightHalfCard().getSpellAbility().addEffect(new SearchLibraryPutInHandEffect(target, true));
+
+        finalizeCard();
     }
 
     private SaguWildling(final SaguWildling card) {

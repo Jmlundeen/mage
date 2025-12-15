@@ -44,6 +44,8 @@ public final class ImodanesRecruiter extends AdventureCard {
         // Train Troops
         // Create two 2/2 white Knight creature tokens with vigilance.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new KnightToken(), 2));
+
+        finalizeCard();
     }
 
     private ImodanesRecruiter(final ImodanesRecruiter card) {

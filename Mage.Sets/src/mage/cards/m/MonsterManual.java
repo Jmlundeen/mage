@@ -39,6 +39,8 @@ public final class MonsterManual extends AdventureCard {
         // Zoological Study
         // Mill five cards, then return a creature card milled this way to your hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ZoologicalStudyEffect());
+
+        finalizeCard();
     }
 
     private MonsterManual(final MonsterManual card) {

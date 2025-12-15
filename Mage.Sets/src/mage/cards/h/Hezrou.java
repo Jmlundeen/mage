@@ -53,6 +53,8 @@ public final class Hezrou extends AdventureCard {
         // Each creature that blocked this turn gets -1/-1 until end of turn.
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostAllEffect(-1, -1, Duration.EndOfTurn, filterBlocked, false));
         this.getRightHalfCard().getSpellAbility().addWatcher(new BlockedThisTurnWatcher());
+
+        finalizeCard();
     }
 
     private Hezrou(final Hezrou card) {

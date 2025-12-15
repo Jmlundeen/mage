@@ -35,6 +35,8 @@ public final class VirtueOfCourage extends AdventureCard {
         // Embereth Blaze deals 2 damage to any target.
         this.getRightHalfCard().getSpellAbility().addEffect(new DamageTargetEffect(2));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetAnyTarget());
+
+        finalizeCard();
     }
 
     private VirtueOfCourage(final VirtueOfCourage card) {

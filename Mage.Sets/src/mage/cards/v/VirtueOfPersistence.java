@@ -39,6 +39,8 @@ public final class VirtueOfPersistence extends AdventureCard {
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostTargetEffect(-3, -3, Duration.EndOfTurn));
         this.getRightHalfCard().getSpellAbility().addEffect(new GainLifeEffect(2));
+
+        finalizeCard();
     }
 
     private VirtueOfPersistence(final VirtueOfPersistence card) {

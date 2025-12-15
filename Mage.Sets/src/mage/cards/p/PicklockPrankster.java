@@ -45,6 +45,8 @@ public final class PicklockPrankster extends AdventureCard {
         // Free the Fae
         // Mill four cards. Then put an instant, sorcery, or Faerie card from among the milled cards into your hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new MillThenPutInHandEffect(4, filter, false));
+
+        finalizeCard();
     }
 
     private PicklockPrankster(final PicklockPrankster card) {

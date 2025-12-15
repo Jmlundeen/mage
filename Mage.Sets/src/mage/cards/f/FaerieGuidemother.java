@@ -38,6 +38,8 @@ public final class FaerieGuidemother extends AdventureCard {
                 FlyingAbility.getInstance(), Duration.EndOfTurn
         ).setText("and gains flying until end of turn"));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private FaerieGuidemother(final FaerieGuidemother card) {

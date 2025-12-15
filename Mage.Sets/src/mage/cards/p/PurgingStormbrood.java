@@ -55,6 +55,8 @@ public final class PurgingStormbrood extends OmenCard {
                 .setText("hexproof until end of turn")
                 .concatBy("and"));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private PurgingStormbrood(final PurgingStormbrood card) {

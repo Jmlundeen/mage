@@ -52,6 +52,8 @@ public final class OnduKnotmaster extends AdventureCard {
         // Distribute two +1/+1 counters among one or two target creatures.
         this.getRightHalfCard().getSpellAbility().addEffect(new DistributeCountersEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanentAmount(2));
+
+        finalizeCard();
     }
 
     private OnduKnotmaster(final OnduKnotmaster card) {

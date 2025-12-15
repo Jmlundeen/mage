@@ -52,6 +52,8 @@ public final class AnimatingFaerie extends AdventureCard {
                 CounterType.P1P1.createInstance(4)
         ).setText(" "));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
+
+        finalizeCard();
     }
 
     private AnimatingFaerie(final AnimatingFaerie card) {

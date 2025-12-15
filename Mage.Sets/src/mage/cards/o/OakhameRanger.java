@@ -35,6 +35,8 @@ public final class OakhameRanger extends AdventureCard {
         // Bring Back
         // Create two 1/1 white Human creature tokens.
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new HumanToken(), 2));
+
+        finalizeCard();
     }
 
     private OakhameRanger(final OakhameRanger card) {

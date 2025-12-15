@@ -46,6 +46,8 @@ public final class DecadentDragon extends AdventureCard {
                                 + "You may look at and play those cards for as long as they remain exiled.")
         );
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetOpponent());
+
+        finalizeCard();
     }
 
     private DecadentDragon(final DecadentDragon card) {

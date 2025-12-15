@@ -27,6 +27,8 @@ public final class MinecartDaredevil extends AdventureCard {
         // Target creature gets +2/+1 until end of turn.
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostTargetEffect(2, 1));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCreaturePermanent());
+
+        finalizeCard();
     }
 
     private MinecartDaredevil(final MinecartDaredevil card) {

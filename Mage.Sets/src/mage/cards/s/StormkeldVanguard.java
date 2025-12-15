@@ -32,6 +32,8 @@ public final class StormkeldVanguard extends AdventureCard {
         // Destroy target artifact or enchantment.
         this.getRightHalfCard().getSpellAbility().addEffect(new DestroyTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(StaticFilters.FILTER_PERMANENT_ARTIFACT_OR_ENCHANTMENT));
+
+        finalizeCard();
     }
 
     private StormkeldVanguard(final StormkeldVanguard card) {

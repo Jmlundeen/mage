@@ -39,6 +39,8 @@ public final class RatcatcherTrainee extends AdventureCard {
         // Pest Problem
         // Create two 1/1 black Rat creature tokens with "This creature can't block."
         this.getRightHalfCard().getSpellAbility().addEffect(new CreateTokenEffect(new RatCantBlockToken(), 2));
+
+        finalizeCard();
     }
 
     private RatcatcherTrainee(final RatcatcherTrainee card) {

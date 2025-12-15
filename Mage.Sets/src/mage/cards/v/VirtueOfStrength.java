@@ -50,6 +50,8 @@ public final class VirtueOfStrength extends AdventureCard {
         // Return target creature or land card from your graveyard to your hand.
         this.getRightHalfCard().getSpellAbility().addEffect(new ReturnFromGraveyardToHandTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetCardInYourGraveyard(filter));
+
+        finalizeCard();
     }
 
     private VirtueOfStrength(final VirtueOfStrength card) {

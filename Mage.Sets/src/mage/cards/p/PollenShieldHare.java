@@ -49,6 +49,8 @@ public final class PollenShieldHare extends AdventureCard {
         );
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetControlledCreaturePermanent());
         this.getRightHalfCard().getSpellAbility().addHint(CreaturesYouControlHint.instance);
+
+        finalizeCard();
     }
 
     private PollenShieldHare(final PollenShieldHare card) {

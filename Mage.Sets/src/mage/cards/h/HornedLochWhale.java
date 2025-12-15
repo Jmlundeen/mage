@@ -50,6 +50,8 @@ public final class HornedLochWhale extends AdventureCard {
         // The owner of target attacking creature you don't control puts it on the top or bottom of their library.
         this.getRightHalfCard().getSpellAbility().addEffect(new PutOnTopOrBottomLibraryTargetEffect(true));
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetPermanent(filter));
+
+        finalizeCard();
     }
 
     private HornedLochWhale(final HornedLochWhale card) {

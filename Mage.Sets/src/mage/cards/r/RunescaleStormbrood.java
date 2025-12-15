@@ -53,6 +53,8 @@ public final class RunescaleStormbrood extends OmenCard {
         // Counter target spell with mana value 2 or less.
         this.getRightHalfCard().getSpellAbility().addEffect(new CounterTargetEffect());
         this.getRightHalfCard().getSpellAbility().addTarget(new TargetSpell(filter));
+
+        finalizeCard();
     }
 
     private RunescaleStormbrood(final RunescaleStormbrood card) {

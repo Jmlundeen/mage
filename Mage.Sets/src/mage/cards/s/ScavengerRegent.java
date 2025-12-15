@@ -48,6 +48,8 @@ public final class ScavengerRegent extends OmenCard {
         // Exude Toxin
         // Each non-Dragon creature gets -X/-X until end of turn.
         this.getRightHalfCard().getSpellAbility().addEffect(new BoostAllEffect(xValue, xValue, Duration.EndOfTurn, filter, false));
+
+        finalizeCard();
     }
 
     private ScavengerRegent(final ScavengerRegent card) {

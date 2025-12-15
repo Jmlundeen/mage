@@ -47,6 +47,8 @@ public final class GalvanicGiant extends AdventureCard {
         // Storm Reading
         // Draw four cards, then discard two cards.
         this.getRightHalfCard().getSpellAbility().addEffect(new DrawDiscardControllerEffect(4, 2));
+
+        finalizeCard();
     }
 
     private GalvanicGiant(final GalvanicGiant card) {
