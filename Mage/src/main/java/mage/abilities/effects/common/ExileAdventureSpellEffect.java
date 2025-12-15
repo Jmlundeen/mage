@@ -56,7 +56,7 @@ public class ExileAdventureSpellEffect extends OneShotEffect implements MageSing
                     game.getExile().createZone(exileId, "On an Adventure from " + controller.getName());
                     if (controller.moveCardsToExile(spellCard, source, game, true, exileId, "On an Adventure from " + controller.getName())) {
                         ContinuousEffect effect = new AdventureCastFromExileEffect();
-                        effect.setTargetPointer(new FixedTarget(spellCard.getMainCard(), game));
+                        effect.setTargetPointer(new FixedTarget(((AdventureCardHalf) spellCard).getOtherSide(), game));
                         game.addEffect(effect, source);
                     }
                 }
@@ -70,7 +70,7 @@ public class ExileAdventureSpellEffect extends OneShotEffect implements MageSing
 class AdventureCastFromExileEffect extends AsThoughEffectImpl {
 
     public AdventureCastFromExileEffect() {
-        super(AsThoughEffectType.CAST_ADVENTURE_CARD_FROM_NOT_OWN_HAND_ZONE, Duration.Custom, Outcome.Benefit);
+        super(AsThoughEffectType.PLAY_FROM_NOT_OWN_HAND_ZONE, Duration.Custom, Outcome.Benefit);
         staticText = "Then exile this card. You may cast the creature later from exile.";
     }
 
@@ -95,10 +95,13 @@ class AdventureCastFromExileEffect extends AsThoughEffectImpl {
         if (targetId == null) {
             this.discard();
         } else if (objectId.equals(targetId)
-                && affectedControllerId.equals(source.getControllerId())
-                && adventureExileZone.contains(objectId)) {
+                && affectedControllerId.equals(source.getControllerId())) {
             Card card = game.getCard(objectId);
-            return card != null;
+            if (card == null || adventureExileZone == null) {
+                this.discard();
+                return false;
+            }
+            return adventureExileZone.contains(card.getMainCard().getId());
         }
         return false;
     }
