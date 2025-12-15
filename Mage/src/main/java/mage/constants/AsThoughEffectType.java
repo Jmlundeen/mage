@@ -37,14 +37,7 @@ public enum AsThoughEffectType {
     // TODO: search all PLAY_FROM_NOT_OWN_HAND_ZONE and CAST_AS_INSTANT effects and add support of mainCard and objectId
     PLAY_FROM_NOT_OWN_HAND_ZONE(true, true), // for play lands & cast spells
     CAST_FROM_NOT_OWN_HAND_ZONE(true, true), // for cast spells
-    /**
-     * For casting adventure spell from non-hand zone (e.g. Mosswood Dreadknight dies trigger)
-     */
-    CAST_ADVENTURE_SPELL_FROM_NOT_OWN_HAND_ZONE(true, true), // for adventure spell casting
-    /**
-     * For casting adventure main card from non-hand zone (e.g. exile after adventure spell)
-     */
-    CAST_ADVENTURE_CARD_FROM_NOT_OWN_HAND_ZONE(true, true),
+    ACTIVATE_FROM_NOT_OWN_HAND_ZONE(true, false), // for activate abilities
     CAST_AS_INSTANT(true, true),
     //
     ACTIVATE_AS_INSTANT(true, false),

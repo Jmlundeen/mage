@@ -151,7 +151,6 @@ public abstract class PlayerImpl implements Player, Serializable {
     protected boolean canLoseLife = true;
     protected EnumSet<PayLifeCostRestriction> payLifeCostRestrictions = EnumSet.noneOf(PayLifeCostRestriction.class);
     protected boolean loseByZeroOrLessLife = true;
-    protected boolean canPlotFromTopOfLibrary = false;
     protected boolean drawsFromBottom = false;
     protected boolean drawsOnOpponentsTurn = false;
     protected int speed = 0;
@@ -251,7 +250,6 @@ public abstract class PlayerImpl implements Player, Serializable {
         this.canGainLife = player.canGainLife;
         this.canLoseLife = player.canLoseLife;
         this.loseByZeroOrLessLife = player.loseByZeroOrLessLife;
-        this.canPlotFromTopOfLibrary = player.canPlotFromTopOfLibrary;
         this.drawsFromBottom = player.drawsFromBottom;
         this.drawsOnOpponentsTurn = player.drawsOnOpponentsTurn;
         this.speed = player.speed;
@@ -363,7 +361,6 @@ public abstract class PlayerImpl implements Player, Serializable {
         this.inRange.addAll(((PlayerImpl) player).inRange);
         this.payLifeCostRestrictions = player.getPayLifeCostRestrictions();
         this.loseByZeroOrLessLife = player.canLoseByZeroOrLessLife();
-        this.canPlotFromTopOfLibrary = player.canPlotFromTopOfLibrary();
         this.drawsFromBottom = player.isDrawsFromBottom();
         this.drawsOnOpponentsTurn = player.isDrawsOnOpponentsTurn();
         this.alternativeSourceCosts = CardUtil.deepCopyObject(((PlayerImpl) player).alternativeSourceCosts);
@@ -478,7 +475,6 @@ public abstract class PlayerImpl implements Player, Serializable {
         this.canLoseLife = true;
         this.payLifeCostRestrictions.clear();
         this.loseByZeroOrLessLife = true;
-        this.canPlotFromTopOfLibrary = false;
         this.drawsFromBottom = false;
         this.drawsOnOpponentsTurn = false;
         this.speed = 0;
@@ -520,7 +516,6 @@ public abstract class PlayerImpl implements Player, Serializable {
         this.canLoseLife = true;
         this.payLifeCostRestrictions.clear();
         this.loseByZeroOrLessLife = true;
-        this.canPlotFromTopOfLibrary = false;
         this.drawsFromBottom = false;
         this.drawsOnOpponentsTurn = false;
         this.topCardRevealed = false;
@@ -4150,21 +4145,14 @@ public abstract class PlayerImpl implements Player, Serializable {
                 continue;
             }
 
-            Set<ApprovingObject> approvingObjects;
+            Set<ApprovingObject> approvingObjects = new HashSet<>();
             if ((isPlaySpell || isPlayLand) && (fromZone != Zone.BATTLEFIELD)) {
                 // play card from non hand zone (except battlefield - you can't play already played permanents)
-                approvingObjects = new HashSet<>();
                 approvingObjects.addAll(game.getContinuousEffects().asThough(object.getId(),
                         AsThoughEffectType.PLAY_FROM_NOT_OWN_HAND_ZONE, ability, this.getId(), game));
                 if (isPlaySpell) {
                     approvingObjects.addAll(game.getContinuousEffects().asThough(object.getId(),
                             AsThoughEffectType.CAST_FROM_NOT_OWN_HAND_ZONE, ability, this.getId(), game));
-                }
-
-                if (approvingObjects.isEmpty() && isPlaySpell
-                        && ((SpellAbility) ability).getSpellAbilityType().equals(SpellAbilityType.ADVENTURE_SPELL)) {
-                    approvingObjects = game.getContinuousEffects().asThough(object.getId(),
-                            AsThoughEffectType.CAST_ADVENTURE_SPELL_FROM_NOT_OWN_HAND_ZONE, ability, this.getId(), game);
                 }
 
                 // TODO: warning, PLAY_FROM_NOT_OWN_HAND_ZONE save some playable info in player's castSourceXXX fields
@@ -4174,14 +4162,12 @@ public abstract class PlayerImpl implements Player, Serializable {
                 this.castSourceIdCosts = new HashMap<>(simPlayer.getCastSourceIdCosts());
                 this.castSourceIdManaCosts = new HashMap<>(simPlayer.getCastSourceIdManaCosts());
                 this.castSourceIdWithAlternateMana = new HashMap<>(simPlayer.getCastSourceIdWithAlternateMana());
-            } else {
-                // other abilities from direct zones
-                approvingObjects = new HashSet<>();
+            } else if (fromZone != Zone.HAND && ability.getZone().match(Zone.HAND)) {
+                approvingObjects.addAll(game.getContinuousEffects().asThough(object.getId(),
+                        AsThoughEffectType.ACTIVATE_FROM_NOT_OWN_HAND_ZONE, ability, this.getId(), game));
             }
 
-            boolean possibleToPlay = !approvingObjects.isEmpty()
-                    && ability.getZone().match(Zone.HAND)
-                    && (isPlaySpell || isPlayLand);
+            boolean possibleToPlay = !approvingObjects.isEmpty() && ability.getZone().match(Zone.HAND);
 
             // spell/hand abilities (play from all zones)
             // need permittingObject or canPlayCardsFromGraveyard
@@ -4719,16 +4705,6 @@ public abstract class PlayerImpl implements Player, Serializable {
     @Override
     public void setLoseByZeroOrLessLife(boolean loseByZeroOrLessLife) {
         this.loseByZeroOrLessLife = loseByZeroOrLessLife;
-    }
-
-    @Override
-    public boolean canPlotFromTopOfLibrary() {
-        return canPlotFromTopOfLibrary;
-    }
-
-    @Override
-    public void setPlotFromTopOfLibrary(boolean canPlotFromTopOfLibrary) {
-        this.canPlotFromTopOfLibrary = canPlotFromTopOfLibrary;
     }
 
     @Override
