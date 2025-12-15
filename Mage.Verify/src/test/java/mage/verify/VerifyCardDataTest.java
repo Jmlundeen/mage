@@ -330,13 +330,14 @@ public class VerifyCardDataTest {
 
         int cardIndex = 0;
         List<Card> allCards = CardScanner.getAllCards();
+        Set<String> checkedNamesLocal = new HashSet<>();
         for (Card card : allCards) {
             cardIndex++;
             if (card instanceof CardWithParts) {
-                check(((CardWithParts) card).getLeftHalfCard(), cardIndex);
-                check(((CardWithParts) card).getRightHalfCard(), cardIndex);
+                check(((CardWithParts) card).getLeftHalfCard(), cardIndex, checkedNamesLocal);
+                check(((CardWithParts) card).getRightHalfCard(), cardIndex, checkedNamesLocal);
             } else {
-                check(card, cardIndex);
+                check(card, cardIndex, checkedNamesLocal);
             }
         }
 
@@ -1215,7 +1216,7 @@ public class VerifyCardDataTest {
             Map<String, String> cardNumbers = new HashMap<>();
             for (ExpansionSet.SetCardInfo cardInfo : set.getSetCardInfo()) {
                 Card card = CardImpl.createCard(cardInfo.getCardClass(), new CardSetInfo(cardInfo.getName(), set.getCode(),
-                        cardInfo.getCardNumber(), cardInfo.getRarity(), cardInfo.getGraphicInfo()));
+                        cardInfo.getCardNumber(), cardInfo.getMeldNumber(), cardInfo.getRarity(), cardInfo.getGraphicInfo()));
                 Assert.assertNotNull(card);
 
                 // CHECK: all planeswalkers must be legendary
@@ -1838,9 +1839,10 @@ public class VerifyCardDataTest {
         }
     }
 
-    private void check(Card card, int cardIndex) {
-        MtgJsonCard ref = MtgJsonService.cardFromSet(card.getExpansionSetCode(), card.getName(), card.getCardNumber());
-        if (ref != null) {
+    private void check(Card card, int cardIndex, Set<String> checkedNames) {
+        String cardNumber = card.getMeldsToNumber().isEmpty() ? card.getCardNumber() : card.getMeldsToNumber();
+        MtgJsonCard ref = MtgJsonService.cardFromSet(card.getExpansionSetCode(), card.getName(), cardNumber);
+        if (ref != null && !checkedNames.contains(card.getName())) {
             if ((card instanceof CardWithSpellOption || card instanceof CardWithSpellOptionHalf) && ref.layout.equals("reversible_card")) {
                 // TODO: Remove when MtgJson updated
                 // workaround for reversible omen cards e.g. Bloomvine Regent // Claim Territory // Bloomvine Regent
@@ -1848,7 +1850,8 @@ public class VerifyCardDataTest {
                 return;
             }
             checkAll(card, ref, cardIndex);
-        } else if (!CHECK_ONLY_ABILITIES_TEXT) {
+            checkedNames.add(card.getName());
+        } else if (ref == null && !CHECK_ONLY_ABILITIES_TEXT) {
             warn(card, "Can't find card in mtgjson to verify");
         }
     }
@@ -2292,6 +2295,11 @@ public class VerifyCardDataTest {
             fail(card, "abilities", "legendary nonpermanent cards need to have LegendarySpellAbility");
         }
 
+        // special check: adventure and omen cards need to be finalized
+        if (card instanceof CardWithSpellOptionHalf && !((CardWithSpellOptionHalf<?>) card).getParentCard().isFinalized()) {
+            fail(card, "abilities", "adventure/omen card's parent card must be finalized");
+        }
+
         // special check: mutate is not supported yet, so must be removed from sets
         if (card.getAbilities().containsClass(MutateAbility.class)) {
             // how-to fix: add that code at the end of the set
@@ -2661,6 +2669,77 @@ public class VerifyCardDataTest {
         newRule = CardNameUtil.normalizeCardName(newRule);
 
         return CardUtil.getTextWithFirstCharUpperCase(newRule.trim());
+    }
+
+    @Test
+    public void test_verifyTargetCardData() {
+        // debug only: verify specific cards from certain sets have correct data
+        //  - search by card name and set code: Spark Double|RVR|;Brisela, Voice of Nightmares|EMN|
+        //  - search by set code and number: |IKO|192;|AKH|107
+        String cardSearches = "Spark Double|RVR|;Brisela, Voice of Nightmares|EMN|";
+
+        // command line support, e.g. check passed in data
+        if (System.getProperty("xmage.targetCardData") != null) {
+            cardSearches = System.getProperty("xmage.targetCardData");
+        }
+
+        // prepare DBs
+        CardScanner.scan();
+        MtgJsonService.cards();
+
+        Arrays.stream(cardSearches.split(";")).forEach(searchEntry -> {
+            String[] parts = searchEntry.split("\\|");
+            String searchName = parts.length > 0 ? parts[0].trim() : "";
+            String searchSet = parts.length > 1 ? parts[1].trim() : "";
+            String searchNumber = parts.length > 2 ? parts[2].trim() : "";
+
+            List<CardInfo> foundCards = new ArrayList<>();
+
+            // search by name, set and number
+            if (!searchName.isEmpty() && !searchSet.isEmpty() && !searchNumber.isEmpty()) {
+                foundCards = CardRepository.instance.findCards(
+                        new CardCriteria()
+                                .name(searchName)
+                                .setCodes(searchSet)
+                                .cardNumber(searchNumber)
+                );
+            }
+
+            // search by name and set
+            if (!searchName.isEmpty() && !searchSet.isEmpty()) {
+                foundCards = CardRepository.instance.findCards(
+                        new CardCriteria()
+                                .name(searchName)
+                                .setCodes(searchSet)
+                );
+            }
+
+            // search by set and number
+            if (foundCards.isEmpty() && !searchSet.isEmpty() && !searchNumber.isEmpty()) {
+                foundCards = Collections.singletonList(CardRepository.instance.findCard(searchSet, searchNumber));
+            }
+
+            if (foundCards.isEmpty()) {
+                Assert.fail("Can't find card by name/set or set/number: " + searchEntry);
+            }
+
+            Set<String> checkedNamesLocal = new HashSet<>();
+            for (CardInfo cardInfo : foundCards) {
+                CardSetInfo testSet = new CardSetInfo(cardInfo.getName(), cardInfo.getSetCode(), cardInfo.getCardNumber(), cardInfo.getMeldCardNumber(), cardInfo.getRarity());
+                Card card = CardImpl.createCard(cardInfo.getClassName(), testSet);
+                Assert.assertNotNull("Card can't be loaded: " + cardInfo.getClassName(), card);
+                if (card instanceof CardWithParts) {
+                    check(((CardWithParts) card).getLeftHalfCard(), 0, checkedNamesLocal);
+                    check(((CardWithParts) card).getRightHalfCard(), 0, checkedNamesLocal);
+                } else {
+                    check(card, 0, checkedNamesLocal);
+                }
+            }
+        });
+        printMessages(outputMessages);
+        if (failed > 0) {
+            Assert.fail(String.format("found %d errors in %d cards verify (see errors list above)", failed, cardSearches.split(";").length));
+        }
     }
 
     @Test
@@ -3316,7 +3395,7 @@ public class VerifyCardDataTest {
             for (ExpansionSet.SetCardInfo setInfo : set.getSetCardInfo()) {
                 try {
                     Card card = CardImpl.createCard(setInfo.getCardClass(), new CardSetInfo(setInfo.getName(), set.getCode(),
-                            setInfo.getCardNumber(), setInfo.getRarity(), setInfo.getGraphicInfo()));
+                            setInfo.getCardNumber(), setInfo.getMeldNumber(), setInfo.getRarity(), setInfo.getGraphicInfo()));
                     if (card == null) {
                         errorsList.add("Error: can't create card - " + setInfo.getCardClass() + " - see logs for errors");
                         continue;

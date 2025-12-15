@@ -20,6 +20,7 @@ public class CardCriteria {
 
     private String nameContains;
     private String name;
+    private String cardNumber;
     private String rules;
     private final List<String> setCodes;
     private final List<String> ignoreSetCodes; // sets to ignore, use with little amount of sets (example: ignore sets with snow lands)
@@ -113,6 +114,11 @@ public class CardCriteria {
 
     public CardCriteria name(String name) {
         this.name = name;
+        return this;
+    }
+
+    public CardCriteria cardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
         return this;
     }
 
@@ -213,11 +219,18 @@ public class CardCriteria {
                     .like("secondSideName", new SelectArg('%' + nameContains + '%'));
             clausesCount++;
         }
+
         if (name != null) {
             where.eq("name", new SelectArg(name)).or()
                     .eq("secondSideName", new SelectArg(name));
             clausesCount++;
         }
+
+        if (cardNumber != null) {
+            where.eq("cardNumber", new SelectArg(cardNumber));
+            clausesCount++;
+        }
+
         if (rules != null) {
             where.like("rules", new SelectArg('%' + rules + '%'));
             clausesCount++;
@@ -388,6 +401,10 @@ public class CardCriteria {
 
     public String getName() {
         return name;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
     }
 
     public String getRules() {
