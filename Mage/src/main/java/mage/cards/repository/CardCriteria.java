@@ -209,11 +209,13 @@ public class CardCriteria {
         where.eq("splitCardHalf", false);
         clausesCount++;
         if (nameContains != null) {
-            where.like("name", new SelectArg('%' + nameContains + '%'));
+            where.like("name", new SelectArg('%' + nameContains + '%')).or()
+                    .like("secondSideName", new SelectArg('%' + nameContains + '%'));
             clausesCount++;
         }
         if (name != null) {
-            where.eq("name", new SelectArg(name));
+            where.eq("name", new SelectArg(name)).or()
+                    .eq("secondSideName", new SelectArg(name));
             clausesCount++;
         }
         if (rules != null) {
