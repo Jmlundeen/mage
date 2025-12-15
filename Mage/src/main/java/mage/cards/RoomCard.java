@@ -14,7 +14,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
 
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -74,6 +73,9 @@ public abstract class RoomCard extends SplitCard {
             checkGoodZones(game);
         } else {
             super.updatePartZones(zone, game);
+            if (zone != Zone.OUTSIDE) {
+                setLastCastHalf(null);
+            }
         }
     }
 
@@ -88,11 +90,25 @@ public abstract class RoomCard extends SplitCard {
 
         Zone needZoneLeft;
         Zone needZoneRight;
-        needZoneLeft = needZoneRight = zoneMain;
 
-        if (Objects.requireNonNull(zoneMain) == Zone.BATTLEFIELD) {
-            needZoneLeft = Zone.OUTSIDE;
-            needZoneRight = Zone.OUTSIDE;
+        switch (zoneMain) {
+            case BATTLEFIELD:
+            case STACK:
+                if (zoneMain == zoneLeft) {
+                    needZoneLeft = zoneMain;
+                    needZoneRight = Zone.OUTSIDE;
+                } else if (zoneMain == zoneRight) {
+                    needZoneLeft = Zone.OUTSIDE;
+                    needZoneRight = zoneMain;
+                } else {
+                    needZoneLeft = Zone.OUTSIDE;
+                    needZoneRight = Zone.OUTSIDE;
+                }
+                break;
+            default:
+                needZoneLeft = zoneMain;
+                needZoneRight = zoneMain;
+                break;
         }
 
         if (zoneLeft != needZoneLeft || zoneRight != needZoneRight) {
@@ -138,6 +154,11 @@ public abstract class RoomCard extends SplitCard {
         for (Ability ability : rightAbilities) {
             permanent.addAbility(ability, roomCard.getRightHalfCard().getId(), game, true);
         }
+    }
+
+    @Override
+    public UUID getIdForBattlefield(Game game, Ability source) {
+        return getId();
     }
 }
 
@@ -190,6 +211,7 @@ class RoomEnterUnlockEffect extends OneShotEffect {
 
         if (lastCastHalf == SpellAbilityType.SPLIT_LEFT || lastCastHalf == SpellAbilityType.SPLIT_RIGHT) {
             roomCard.setLastCastHalf(null);
+            ((RoomCard) permanent.getMainCard()).setLastCastHalf(null);
             return permanent.unlockDoor(game, source, lastCastHalf == SpellAbilityType.SPLIT_LEFT);
         }
 

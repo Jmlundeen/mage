@@ -1,5 +1,6 @@
 package mage.cards;
 
+import mage.abilities.Ability;
 import mage.constants.*;
 import mage.game.Game;
 
@@ -61,5 +62,13 @@ public abstract class DoubleFacedCardHalf<C extends DoubleFacedCard<?, C>> exten
         } else {
             throw new IllegalStateException("Wrong code usage: MDF halves must use different ids");
         }
+    }
+
+    @Override
+    public UUID getIdForBattlefield(Game game, Ability source) {
+        if (!source.getAbilityType().isPlayCardAbility()) {
+            return getParentCard().getDefaultCardSide().getId();
+        }
+        return this.getId();
     }
 }

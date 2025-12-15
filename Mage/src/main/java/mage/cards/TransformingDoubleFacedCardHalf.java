@@ -1,6 +1,7 @@
 package mage.cards;
 
 import mage.ObjectColor;
+import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.constants.*;
 import mage.game.Game;
@@ -39,5 +40,20 @@ public class TransformingDoubleFacedCardHalf extends DoubleFacedCardHalf<Transfo
     @Override
     public TransformingDoubleFacedCardHalf copy() {
         return new TransformingDoubleFacedCardHalf(this);
+    }
+
+    @Override
+    public UUID getIdForBattlefield(Game game, Ability source) {
+        Boolean enterTransformed = (Boolean) game.getState().getValue(TransformingDoubleFacedCard.VALUE_KEY_ENTER_TRANSFORMED + getId());
+        if (enterTransformed == null) {
+            enterTransformed = false;
+        }
+        if (enterTransformed && !isBackSide()) {
+            return getOtherSide().getId();
+        }
+        if (!enterTransformed && isBackSide()) {
+            return null;
+        }
+        return getId();
     }
 }

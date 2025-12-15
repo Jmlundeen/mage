@@ -2,8 +2,6 @@ package mage.cards;
 
 import mage.MageInt;
 import mage.ObjectColor;
-import mage.abilities.Abilities;
-import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.costs.mana.ManaCost;
@@ -17,6 +15,7 @@ import mage.util.CardUtil;
 import mage.util.SubTypes;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -26,24 +25,29 @@ import java.util.UUID;
  */
 public abstract class CardWithSpellOption<P extends CardWithSpellOptionHalf<C>, C extends CardWithSpellOption<P, C>> extends CardWithPartsImpl<P, C> {
 
+    boolean finalized = false;
+
     protected CardWithSpellOption(UUID ownerId, CardSetInfo setInfo, CardType[] types, String costs, SpellAbilityType spellAbilityType) {
         super(ownerId, setInfo, types, costs, spellAbilityType);
     }
 
     public CardWithSpellOption(CardWithSpellOption<P, C> card) {
         super(card);
+        finalized = card.finalized;
+    }
+
+    @Override
+    public Card getDefaultCardSide() {
+        return getLeftHalfCard();
     }
 
     @Override
     protected void updatePartZones(Zone zone, Game game) {
-        switch (zone) {
-            case BATTLEFIELD:
-            case STACK:
-                throw new IllegalArgumentException("Wrong code usage: you must put to battlefield/stack only real side card (half), not main");
-            default:
-                game.setZone(leftHalfCard.getId(), zone);
-                game.setZone(rightHalfCard.getId(), zone);
-                break;
+        if (Objects.requireNonNull(zone) == Zone.BATTLEFIELD) {
+            throw new IllegalArgumentException("Wrong code usage: attempting to put main card directly onto the battlefield - " + this);
+        } else {
+            game.setZone(leftHalfCard.getId(), zone);
+            game.setZone(rightHalfCard.getId(), zone);
         }
         checkGoodZones(game);
     }
@@ -143,11 +147,11 @@ public abstract class CardWithSpellOption<P extends CardWithSpellOptionHalf<C>, 
         return getLeftHalfCard().hasSubtype(subtype, game);
     }
 
-    @Override
-    public Abilities<Ability> getSharedAbilities(Game game) {
-        // no shared abilities for omen/adventure cards
-        return new AbilitiesImpl<>();
-    }
+//    @Override
+//    public Abilities<Ability> getSharedAbilities(Game game) {
+//        // no shared abilities for omen/adventure cards
+//        return new AbilitiesImpl<>();
+//    }
 
     @Override
     public List<String> getRules() {
@@ -212,5 +216,11 @@ public abstract class CardWithSpellOption<P extends CardWithSpellOptionHalf<C>, 
     @Override
     public MageInt getToughness() {
         return getLeftHalfCard().getToughness();
+    }
+
+    protected abstract void finalizeCard();
+
+    public boolean isFinalized() {
+        return finalized;
     }
 }

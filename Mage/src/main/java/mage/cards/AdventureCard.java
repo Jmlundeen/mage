@@ -1,13 +1,14 @@
 package mage.cards;
 
 import mage.abilities.SpellAbility;
+import mage.abilities.effects.common.ExileAdventureSpellEffect;
 import mage.constants.CardType;
 import mage.constants.SpellAbilityType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.util.CardUtil;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -63,7 +64,7 @@ public abstract class AdventureCard extends CardWithSpellOption<AdventureCardHal
             String adventureName,
             SuperType[] superTypesRight,  CardType[] typesRight, SubType[] subTypesRight, String costsRight
     ) {
-        super(ownerId, setInfo, typesLeft, costsLeft + costsRight, SpellAbilityType.ADVENTURE_OMEN);
+        super(ownerId, setInfo, typesLeft, costsLeft, SpellAbilityType.ADVENTURE_OMEN);
         // main card name must be same as left side
         leftHalfCard = new AdventureCardHalf(
                 this.getOwnerId(), setInfo.copy(),
@@ -75,35 +76,42 @@ public abstract class AdventureCard extends CardWithSpellOption<AdventureCardHal
                 superTypesRight, typesRight, subTypesRight, costsRight,
                 this, SpellAbilityType.ADVENTURE_OMEN_RIGHT
         );
-        AdventureCardSpellAbility adventureSpellAbility = new AdventureCardSpellAbility(
-                rightHalfCard.getSpellAbility(),
-                adventureName,
-                typesRight,
-                costsRight
-        );
-        this.getRightHalfCard().replaceSpellAbility(adventureSpellAbility);
+
     }
 
     public AdventureCard(final AdventureCard card) {
         super(card);
     }
+
+    @Override
+    protected void finalizeCard() {
+        AdventureCardSpellAbility adventureSpellAbility = new AdventureCardSpellAbility(
+                rightHalfCard.getSpellAbility(),
+                rightHalfCard.getName(),
+                rightHalfCard.getCardType(),
+                rightHalfCard.getManaCost().toString()
+        );
+        this.getRightHalfCard().replaceSpellAbility(adventureSpellAbility);
+        finalized = true;
+    }
 }
 
 class AdventureCardSpellAbility extends SpellAbility {
 
-    public AdventureCardSpellAbility(final SpellAbility baseSpellAbility, String omenName, CardType[] cardTypes, String costs) {
+    public AdventureCardSpellAbility(final SpellAbility baseSpellAbility, String omenName, List<CardType> cardTypes, String costs) {
         super(baseSpellAbility);
         this.setName(cardTypes, omenName, costs);
         this.setCardName(omenName);
+        this.addEffect(ExileAdventureSpellEffect.getInstance());
     }
 
     protected AdventureCardSpellAbility(final AdventureCardSpellAbility ability) {
         super(ability);
     }
 
-    public void setName(CardType[] cardTypes, String omenName, String costs) {
+    public void setName(List<CardType> cardTypes, String omenName, String costs) {
         this.name = "Adventure "
-                + Arrays.stream(cardTypes).map(CardType::toString).collect(Collectors.joining(" "))
+                + cardTypes.stream().map(CardType::toString).collect(Collectors.joining(" "))
                 + " &mdash; "
                 + omenName
                 + " " + costs;

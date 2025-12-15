@@ -1051,4 +1051,9 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     public boolean isExtraDeckCard() {
         return extraDeckCard;
     }
+
+    @Override
+    public UUID getIdForBattlefield(Game game, Ability source) {
+        return getId();
+    }
 }

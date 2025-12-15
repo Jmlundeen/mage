@@ -1,13 +1,15 @@
 package mage.cards;
 
 import mage.abilities.SpellAbility;
+import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.ShuffleIntoLibrarySourceEffect;
 import mage.constants.CardType;
 import mage.constants.SpellAbilityType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.util.CardUtil;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -63,7 +65,7 @@ public abstract class OmenCard extends CardWithSpellOption<OmenCardHalf, OmenCar
             String omenName,
             SuperType[] superTypesRight,  CardType[] typesRight, SubType[] subTypesRight, String costsRight
     ) {
-        super(ownerId, setInfo, typesLeft, costsLeft + costsRight, SpellAbilityType.ADVENTURE_OMEN);
+        super(ownerId, setInfo, typesLeft, costsLeft, SpellAbilityType.ADVENTURE_OMEN);
         // main card name must be same as left side
         leftHalfCard = new OmenCardHalf(
                 this.getOwnerId(), setInfo.copy(),
@@ -75,35 +77,43 @@ public abstract class OmenCard extends CardWithSpellOption<OmenCardHalf, OmenCar
                 superTypesRight, typesRight, subTypesRight, costsRight,
                 this, SpellAbilityType.ADVENTURE_OMEN_RIGHT
         );
-        OmenCardSpellAbility newSpellAbility = new OmenCardSpellAbility(
-                getSpellAbility(),
-                rightHalfCard.getName(),
-                typesLeft,
-                costsLeft
-        );
-        this.getRightHalfCard().replaceSpellAbility(newSpellAbility);
     }
 
     public OmenCard(final OmenCard card) {
         super(card);
     }
+
+    @Override
+    protected void finalizeCard() {
+        OmenCardSpellAbility newSpellAbility = new OmenCardSpellAbility(
+                rightHalfCard.getSpellAbility(),
+                rightHalfCard.getName(),
+                rightHalfCard.getCardType(),
+                rightHalfCard.getManaCost().toString()
+        );
+        this.getRightHalfCard().replaceSpellAbility(newSpellAbility);
+        finalized = true;
+    }
 }
 
 class OmenCardSpellAbility extends SpellAbility {
 
-    public OmenCardSpellAbility(final SpellAbility baseSpellAbility, String omenName, CardType[] cardTypes, String costs) {
+    public OmenCardSpellAbility(final SpellAbility baseSpellAbility, String omenName, List<CardType> cardTypes, String costs) {
         super(baseSpellAbility);
         this.setName(cardTypes, omenName, costs);
         this.setCardName(omenName);
+        Effect effect = new ShuffleIntoLibrarySourceEffect();
+        effect.setText("");
+        this.addEffect(effect);
     }
 
     protected OmenCardSpellAbility(final OmenCardSpellAbility ability) {
         super(ability);
     }
 
-    public void setName(CardType[] cardTypes, String omenName, String costs) {
+    public void setName(List<CardType> cardTypes, String omenName, String costs) {
         this.name = "Omen "
-                + Arrays.stream(cardTypes).map(CardType::toString).collect(Collectors.joining(" "))
+                + cardTypes.stream().map(CardType::toString).collect(Collectors.joining(" "))
                 + " &mdash; "
                 + omenName
                 + " " + costs;
