@@ -63,10 +63,6 @@ public interface Card extends MageObject, Ownerable {
     // TODO: need research, is it lost morph and other face down statuses?
     boolean turnFaceDown(Ability source, Game game, UUID playerId);
 
-    boolean isFlipCard();
-
-    String getFlipCardName();
-
     boolean isTransformable();
 
     Card getSecondCardFace();

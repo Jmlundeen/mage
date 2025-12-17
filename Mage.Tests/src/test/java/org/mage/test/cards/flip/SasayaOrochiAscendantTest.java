@@ -15,6 +15,21 @@ import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
  */
 public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
 
+    /*
+    Sasaya, Orochi Ascendant
+    {1}{G}{G}
+    Legendary Creature - Snake Monk
+    Reveal your hand: If you have seven or more land cards in your hand, flip Sasaya, Orochi Ascendant.
+    2/3
+
+    Sasaya's Essence
+    {1}{G}{G}
+    Legendary Enchantment
+    Whenever a land you control is tapped for mana, for each other land you control with the same name, add one mana of any type that land produced.
+    */
+    private static final String sasayaOrochiAscendant = "Sasaya, Orochi Ascendant";
+    private static final String sasayasEssence = "Sasaya's Essence";
+
     @Test
     public void test_SasayasEssence_SimpleManaCalculation() {
         addCard(Zone.HAND, playerA, "Plains", 7);
@@ -23,7 +38,7 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         // Reveal your hand: If you have seven or more land cards in your hand, flip Sasaya, Orochi Ascendant.
         // Sasaya's Essence: Legendary Enchantment
         // Whenever a land you control is tapped for mana, for each other land you control with the same name, add one mana of any type that land produced.
-        addCard(Zone.BATTLEFIELD, playerA, "Sasaya, Orochi Ascendant", 1);
+        addCard(Zone.BATTLEFIELD, playerA, sasayaOrochiAscendant, 1);
         //
         // Mana pools don't empty as steps and phases end.
         addCard(Zone.HAND, playerA, "Upwelling", 1); // Enchantment {3}{G}
@@ -32,10 +47,10 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         addCard(Zone.BATTLEFIELD, playerB, "Fountain of Renewal", 1);
 
         // prepare Sasaya's Essence
-        checkPermanentCount("before prepare", 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Sasaya's Essence", 0);
+        checkPermanentCount("before prepare", 1, PhaseStep.PRECOMBAT_MAIN, playerA, sasayasEssence, 0);
         activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Reveal your hand: If you have seven or more land cards in your hand, flip");
         waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
-        checkPermanentCount("after prepare", 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Sasaya's Essence", 1);
+        checkPermanentCount("after prepare", 1, PhaseStep.PRECOMBAT_MAIN, playerA, sasayasEssence, 1);
 
         setStrictChooseMode(true);
         setStopAt(1, PhaseStep.END_TURN);
@@ -56,7 +71,7 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         // Reveal your hand: If you have seven or more land cards in your hand, flip Sasaya, Orochi Ascendant.
         // Sasaya's Essence: Legendary Enchantment
         // Whenever a land you control is tapped for mana, for each other land you control with the same name, add one mana of any type that land produced.
-        addCard(Zone.BATTLEFIELD, playerA, "Sasaya, Orochi Ascendant", 1);
+        addCard(Zone.BATTLEFIELD, playerA, sasayaOrochiAscendant, 1);
         // Mana pools don't empty as steps and phases end.
         addCard(Zone.HAND, playerA, "Upwelling", 1); // Enchantment {3}{G}
 
@@ -70,7 +85,7 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         setStopAt(1, PhaseStep.END_TURN);
         execute();
 
-        assertPermanentCount(playerA, "Sasaya's Essence", 1);
+        assertPermanentCount(playerA, sasayasEssence, 1);
         assertPermanentCount(playerA, "Upwelling", 1);
 
         assertManaPool(playerA, ManaType.GREEN, 2);
@@ -90,7 +105,7 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         // Reveal your hand: If you have seven or more land cards in your hand, flip Sasaya, Orochi Ascendant.
         // Sasaya's Essence: Legendary Enchantment
         // Whenever a land you control is tapped for mana, for each other land you control with the same name, add one mana of any type that land produced.
-        addCard(Zone.BATTLEFIELD, playerA, "Sasaya, Orochi Ascendant", 1);
+        addCard(Zone.BATTLEFIELD, playerA, sasayaOrochiAscendant, 1);
         // Mana pools don't empty as steps and phases end.
         addCard(Zone.HAND, playerA, "Upwelling", 1); // Enchantment {3}{G}
 
@@ -103,7 +118,7 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         setStopAt(1, PhaseStep.END_TURN);
         execute();
 
-        assertPermanentCount(playerA, "Sasaya's Essence", 1);
+        assertPermanentCount(playerA, sasayasEssence, 1);
         assertPermanentCount(playerA, "Upwelling", 1);
 
         assertManaPool(playerA, ManaType.GREEN, 2);
@@ -129,7 +144,7 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         // Reveal your hand: If you have seven or more land cards in your hand, flip Sasaya, Orochi Ascendant.
         // Sasaya's Essence: Legendary Enchantment
         // Whenever a land you control is tapped for mana, for each other land you control with the same name, add one mana of any type that land produced.
-        addCard(Zone.BATTLEFIELD, playerA, "Sasaya, Orochi Ascendant", 1);
+        addCard(Zone.BATTLEFIELD, playerA, sasayaOrochiAscendant, 1);
         // Mana pools don't empty as steps and phases end.
         addCard(Zone.HAND, playerA, "Upwelling", 1); // Enchantment {3}{G}
 
@@ -142,7 +157,7 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
         setStopAt(1, PhaseStep.END_TURN);
         execute();
 
-        assertPermanentCount(playerA, "Sasaya's Essence", 1);
+        assertPermanentCount(playerA, sasayasEssence, 1);
         assertPermanentCount(playerA, "Upwelling", 1);
 
         assertManaPool(playerA, ManaType.GREEN, 2);

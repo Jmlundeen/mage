@@ -1,17 +1,15 @@
 package mage.cards.r;
 
-import mage.MageInt;
 import mage.abilities.StateTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.effects.common.PreventAllDamageToAllEffect;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.FlipCard;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.events.GameEvent;
-import mage.game.permanent.token.TokenImpl;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -19,21 +17,24 @@ import java.util.UUID;
 /**
  * @author LevelX2
  */
-public final class RuneTailKitsuneAscendant extends CardImpl {
+public final class RuneTailKitsuneAscendant extends FlipCard {
 
     public RuneTailKitsuneAscendant(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{2}{W}");
-        this.supertype.add(SuperType.LEGENDARY);
-        this.subtype.add(SubType.FOX);
-        this.subtype.add(SubType.MONK);
+        super(ownerId, setInfo,
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.FOX, SubType.MONK}, "{2}{W}",
+                "Rune-Tail's Essence",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.ENCHANTMENT}, new SubType[]{});
 
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(2);
-        this.flipCard = true;
-        this.flipCardName = "Rune-Tail's Essence";
+        // Rune-Tail, Kitsune Ascendant
+        this.getLeftHalfCard().setPT(2, 2);
 
         // When you have 30 or more life, flip Rune-Tail, Kitsune Ascendant.
-        this.addAbility(new RuneTailKitsuneAscendantFlipAbility());
+        this.getLeftHalfCard().addAbility(new RuneTailKitsuneAscendantFlipAbility());
+
+        // Rune-Tail's Essence
+        // Prevent all damage that would be dealt to creatures you control.
+        this.getRightHalfCard().addAbility(new SimpleStaticAbility(
+                new PreventAllDamageToAllEffect(Duration.WhileOnBattlefield, StaticFilters.FILTER_CONTROLLED_CREATURES)));
     }
 
     private RuneTailKitsuneAscendant(final RuneTailKitsuneAscendant card) {
@@ -49,7 +50,7 @@ public final class RuneTailKitsuneAscendant extends CardImpl {
 class RuneTailKitsuneAscendantFlipAbility extends StateTriggeredAbility {
 
     public RuneTailKitsuneAscendantFlipAbility() {
-        super(Zone.BATTLEFIELD, new FlipSourceEffect(new RuneTailEssence()));
+        super(Zone.BATTLEFIELD, new FlipSourceEffect());
     }
 
     private RuneTailKitsuneAscendantFlipAbility(final RuneTailKitsuneAscendantFlipAbility ability) {
@@ -75,27 +76,4 @@ class RuneTailKitsuneAscendantFlipAbility extends StateTriggeredAbility {
         return "When you have 30 or more life, flip {this}.";
     }
 
-}
-
-class RuneTailEssence extends TokenImpl {
-
-    RuneTailEssence() {
-        super("Rune-Tail's Essence", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.ENCHANTMENT);
-
-        color.setWhite(true);
-
-        // Prevent all damage that would be dealt to creatures you control.
-        this.addAbility(new SimpleStaticAbility(
-                new PreventAllDamageToAllEffect(Duration.WhileOnBattlefield, StaticFilters.FILTER_CONTROLLED_CREATURES)));
-    }
-
-    private RuneTailEssence(final RuneTailEssence token) {
-        super(token);
-    }
-
-    public RuneTailEssence copy() {
-        return new RuneTailEssence(this);
-    }
 }

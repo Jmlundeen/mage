@@ -456,17 +456,18 @@ public class CardView extends SimpleCardView {
                 // deck editor omen cards
                 if (((MockCard) card).getSpellOptionCard() != null) {
                     this.isSplitCard = true;
+
                     leftSplitName = card.getName();
-                    leftSplitCostsStr = String.join("", card.getManaCostSymbols());
+                    leftSplitCostsStr = String.join("", ((MockCard) card).getManaCostStr(CardInfo.ManaCostSide.LEFT));
                     leftSplitRules = card.getRules(game);
                     leftSplitTypeLine = getCardTypeLine(game, card);
                     Card spellOptionCard = ((MockCard) card).getSpellOptionCard();
                     rightSplitName = spellOptionCard.getName();
-                    rightSplitCostsStr = String.join("", spellOptionCard.getManaCostSymbols());
+                    rightSplitCostsStr = String.join("", ((MockCard) card).getManaCostStr(CardInfo.ManaCostSide.RIGHT));
                     rightSplitRules = spellOptionCard.getRules(game);
                     rightSplitTypeLine = getCardTypeLine(game, spellOptionCard);
-                    this.manaCostLeftStr = card.getManaCostSymbols();
-                    this.manaCostRightStr = spellOptionCard.getManaCostSymbols();
+                    this.manaCostLeftStr = ((MockCard) card).getManaCostStr(CardInfo.ManaCostSide.LEFT);
+                    this.manaCostRightStr = ((MockCard) card).getManaCostStr(CardInfo.ManaCostSide.RIGHT);
                 } else {
                     // deck editor cards
                     this.manaCostLeftStr = ((MockCard) card).getManaCostStr(CardInfo.ManaCostSide.LEFT);
@@ -536,7 +537,6 @@ public class CardView extends SimpleCardView {
             this.subTypes = card.getSubtype(game).copy();
             this.superTypes = card.getSuperType(game);
             this.color = card.getColor(game).copy();
-            this.flipCard = card.isFlipCard();
 
             if (card instanceof PermanentToken) {
                 this.isToken = true;
@@ -557,9 +557,10 @@ public class CardView extends SimpleCardView {
                 this.alternateName = secondSideCard.getName();
             }
 
-            this.flipCard = card.isFlipCard();
-            if (card.isFlipCard() && card.getFlipCardName() != null) {
-                this.alternateName = card.getFlipCardName();
+            if (card instanceof FlipCard) {
+                this.alternateName = ((FlipCard) card).getRightHalfCard().getName();
+            } else if (card instanceof Permanent && card.getMainCard() instanceof FlipCardHalf) {
+                this.alternateName = ((FlipCardHalf) card.getMainCard()).getParentCard().getRightHalfCard().getName();
             }
 
             if (card instanceof DoubleFacedCard) {

@@ -1,7 +1,5 @@
 package mage.cards.a;
 
-import java.util.UUID;
-import mage.MageInt;
 import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -11,34 +9,44 @@ import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.ProtectionAbility;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.FlipCard;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.events.DamagedPlayerEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
-import mage.game.permanent.token.TokenImpl;
+
+import java.util.UUID;
 
 /**
  * @author Loki
  */
-public final class AkkiLavarunner extends CardImpl {
+public final class AkkiLavarunner extends FlipCard {
 
     public AkkiLavarunner(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId,setInfo,new CardType[]{CardType.CREATURE},"{3}{R}");
-        this.subtype.add(SubType.GOBLIN);
-        this.subtype.add(SubType.WARRIOR);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.GOBLIN, SubType.WARRIOR}, "{3}{R}",
+                "Tok-Tok, Volcano Born",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.GOBLIN, SubType.SHAMAN});
 
-        this.power = new MageInt(1);
-        this.toughness = new MageInt(1);
-        this.flipCard = true;
-        this.flipCardName = "Tok-Tok, Volcano Born";
+        // Akki Lavarunner
+        this.getLeftHalfCard().setPT(1, 1);
 
         // Haste
-        this.addAbility(HasteAbility.getInstance());
+        this.getLeftHalfCard().addAbility(HasteAbility.getInstance());
+
         // Whenever Akki Lavarunner deals damage to an opponent, flip it.
-        this.addAbility(new AkkiLavarunnerAbility());
+        this.getLeftHalfCard().addAbility(new AkkiLavarunnerAbility());
+
+        // Tok-Tok, Volcano Born
+        this.getRightHalfCard().setPT(2, 2);
+
+        // Protection from red
+        this.getRightHalfCard().addAbility(ProtectionAbility.from(ObjectColor.RED));
+
+        // If a red source would deal damage to a player, it deals that much damage plus 1 to that player instead.
+        this.getRightHalfCard().addAbility(new SimpleStaticAbility(new TokTokVolcanoBornEffect()));
     }
 
     private AkkiLavarunner(final AkkiLavarunner card) {
@@ -54,7 +62,7 @@ public final class AkkiLavarunner extends CardImpl {
 class AkkiLavarunnerAbility extends TriggeredAbilityImpl {
 
     public AkkiLavarunnerAbility() {
-        super(Zone.BATTLEFIELD, new FlipSourceEffect(new TokTokVolcanoBorn()));
+        super(Zone.BATTLEFIELD, new FlipSourceEffect());
     }
 
     private AkkiLavarunnerAbility(final AkkiLavarunnerAbility ability) {
@@ -83,28 +91,6 @@ class AkkiLavarunnerAbility extends TriggeredAbilityImpl {
     }
 }
 
-class TokTokVolcanoBorn extends TokenImpl {
-    TokTokVolcanoBorn() {
-        super("Tok-Tok, Volcano Born", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.CREATURE);
-        color.setRed(true);
-        subtype.add(SubType.GOBLIN);
-        subtype.add(SubType.SHAMAN);
-        power = new MageInt(2);
-        toughness = new MageInt(2);
-        this.addAbility(ProtectionAbility.from(ObjectColor.RED));
-        this.addAbility(new SimpleStaticAbility(new TokTokVolcanoBornEffect()));
-    }
-    private TokTokVolcanoBorn(final TokTokVolcanoBorn token) {
-        super(token);
-    }
-
-    public TokTokVolcanoBorn copy() {
-        return new TokTokVolcanoBorn(this);
-    }
-}
-
 class TokTokVolcanoBornEffect extends ReplacementEffectImpl {
 
     TokTokVolcanoBornEffect() {
@@ -125,10 +111,9 @@ class TokTokVolcanoBornEffect extends ReplacementEffectImpl {
     public boolean applies(GameEvent event, Ability source, Game game) {
         MageObject sourceObject;
         Permanent sourcePermanent = game.getPermanentOrLKIBattlefield(event.getSourceId());
-        if(sourcePermanent == null) {
+        if (sourcePermanent == null) {
             sourceObject = game.getObject(event.getSourceId());
-        }
-        else {
+        } else {
             sourceObject = sourcePermanent;
         }
 
@@ -148,5 +133,4 @@ class TokTokVolcanoBornEffect extends ReplacementEffectImpl {
     public TokTokVolcanoBornEffect copy() {
         return new TokTokVolcanoBornEffect(this);
     }
-
 }

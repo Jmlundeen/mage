@@ -1,38 +1,43 @@
 package mage.cards.b;
 
-import mage.MageInt;
 import mage.abilities.common.DealtDamageAndDiedTriggeredAbility;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.keyword.BushidoAbility;
 import mage.abilities.keyword.DoubleStrikeAbility;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.FlipCard;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.game.permanent.token.TokenImpl;
 
 import java.util.UUID;
 
 /**
  * @author LevelX
  */
-public final class BushiTenderfoot extends CardImpl {
+public final class BushiTenderfoot extends FlipCard {
 
     public BushiTenderfoot(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{W}");
-        this.subtype.add(SubType.HUMAN, SubType.SOLDIER);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.SOLDIER}, "{W}",
+                "Kenzo the Hardhearted",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.SAMURAI});
 
-        this.power = new MageInt(1);
-        this.toughness = new MageInt(1);
-        this.flipCard = true;
-        this.flipCardName = "Kenzo the Hardhearted";
+        // Bushi Tenderfoot
+        this.getLeftHalfCard().setPT(1, 1);
 
         // When a creature dealt damage by Bushi Tenderfoot this turn dies, flip Bushi Tenderfoot.
-        Effect effect = new FlipSourceEffect(new KenzoTheHardhearted());
+        Effect effect = new FlipSourceEffect();
         effect.setText("flip {this}");
-        this.addAbility(new DealtDamageAndDiedTriggeredAbility(effect));
+        this.getLeftHalfCard().addAbility(new DealtDamageAndDiedTriggeredAbility(effect));
+
+        // Kenzo the Hardhearted
+        this.getRightHalfCard().setPT(3, 4);
+
+        // Double strike; bushido 2 (When this blocks or becomes blocked, it gets +2/+2 until end of turn.)
+        this.getRightHalfCard().addAbility(DoubleStrikeAbility.getInstance());
+        this.getRightHalfCard().addAbility(new BushidoAbility(2));
     }
 
     private BushiTenderfoot(final BushiTenderfoot card) {
@@ -42,30 +47,5 @@ public final class BushiTenderfoot extends CardImpl {
     @Override
     public BushiTenderfoot copy() {
         return new BushiTenderfoot(this);
-    }
-}
-
-class KenzoTheHardhearted extends TokenImpl {
-
-    KenzoTheHardhearted() {
-        super("Kenzo the Hardhearted", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.CREATURE);
-        color.setWhite(true);
-        subtype.add(SubType.HUMAN, SubType.SAMURAI);
-        power = new MageInt(3);
-        toughness = new MageInt(4);
-
-        // Double strike; bushido 2 (When this blocks or becomes blocked, it gets +2/+2 until end of turn.)
-        this.addAbility(DoubleStrikeAbility.getInstance());
-        this.addAbility(new BushidoAbility(2));
-    }
-
-    private KenzoTheHardhearted(final KenzoTheHardhearted token) {
-        super(token);
-    }
-
-    public KenzoTheHardhearted copy() {
-        return new KenzoTheHardhearted(this);
     }
 }

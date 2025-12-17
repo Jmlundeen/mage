@@ -1,8 +1,5 @@
-
 package mage.cards.j;
 
-import java.util.UUID;
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.condition.common.CardsInHandCondition;
@@ -13,37 +10,45 @@ import mage.abilities.dynamicvalue.common.CardsInControllerHandCount;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.DrawCardTargetEffect;
 import mage.abilities.effects.common.FlipSourceEffect;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.FlipCard;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.ComparisonType;
+import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.game.permanent.token.TokenImpl;
 import mage.target.TargetPlayer;
 
+import java.util.UUID;
+
 /**
- *
  * @author LevelX2
  */
-public final class JushiApprentice extends CardImpl {
+public final class JushiApprentice extends FlipCard {
 
     public JushiApprentice(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId,setInfo,new CardType[]{CardType.CREATURE},"{1}{U}");
-        this.subtype.add(SubType.HUMAN);
-        this.subtype.add(SubType.WIZARD);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.WIZARD}, "{1}{U}",
+                "Tomoya the Revealer",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.WIZARD});
 
-        this.power = new MageInt(1);
-        this.toughness = new MageInt(2);
-        this.flipCard = true;
-        this.flipCardName = "Tomoya the Revealer";
+        // Jushi Apprentice
+        this.getLeftHalfCard().setPT(1, 2);
 
         // {2}{U}, {tap}: Draw a card. If you have nine or more cards in hand, flip Jushi Apprentice.
         Ability ability = new SimpleActivatedAbility(new DrawCardSourceControllerEffect(1), new ManaCostsImpl<>("{2}{U}"));
         ability.addCost(new TapSourceCost());
-        ability.addEffect(new ConditionalOneShotEffect(new FlipSourceEffect(new TomoyaTheRevealer()), new CardsInHandCondition(ComparisonType.MORE_THAN, 8),
-                    "If you have nine or more cards in hand, flip {this}"));
-        this.addAbility(ability);
+        ability.addEffect(new ConditionalOneShotEffect(new FlipSourceEffect(), new CardsInHandCondition(ComparisonType.MORE_THAN, 8),
+                "If you have nine or more cards in hand, flip {this}"));
+        this.getLeftHalfCard().addAbility(ability);
+
+        // Tomoya the Revealer
+        this.getRightHalfCard().setPT(2, 3);
+
+        // {3}{U}{U},{T} : Target player draws X cards, where X is the number of cards in your hand.
+        Ability ability2 = new SimpleActivatedAbility(new DrawCardTargetEffect(CardsInControllerHandCount.ANY), new ManaCostsImpl<>("{3}{U}{U}"));
+        ability2.addCost(new TapSourceCost());
+        ability2.addTarget(new TargetPlayer());
+        this.getRightHalfCard().addAbility(ability2);
     }
 
     private JushiApprentice(final JushiApprentice card) {
@@ -53,32 +58,5 @@ public final class JushiApprentice extends CardImpl {
     @Override
     public JushiApprentice copy() {
         return new JushiApprentice(this);
-    }
-}
-
-class TomoyaTheRevealer extends TokenImpl {
-
-    TomoyaTheRevealer() {
-        super("Tomoya the Revealer", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.CREATURE);
-        color.setBlue(true);
-        subtype.add(SubType.HUMAN);
-        subtype.add(SubType.WIZARD);
-        power = new MageInt(2);
-        toughness = new MageInt(3);
-
-        // {3}{U}{U},{T} : Target player draws X cards, where X is the number of cards in your hand.
-        Ability ability = new SimpleActivatedAbility(new DrawCardTargetEffect(CardsInControllerHandCount.ANY), new ManaCostsImpl<>("{3}{U}{U}"));
-        ability.addCost(new TapSourceCost());
-        ability.addTarget(new TargetPlayer());
-        this.addAbility(ability);
-    }
-    private TomoyaTheRevealer(final TomoyaTheRevealer token) {
-        super(token);
-    }
-
-    public TomoyaTheRevealer copy() {
-        return new TomoyaTheRevealer(this);
     }
 }

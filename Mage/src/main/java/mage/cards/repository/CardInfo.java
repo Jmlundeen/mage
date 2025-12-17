@@ -139,9 +139,6 @@ public class CardInfo {
         this.splitCardFuse = card.getSpellAbility() != null && card.getSpellAbility().getSpellAbilityType() == SpellAbilityType.SPLIT_FUSED;
         this.splitCardAftermath = card.getSpellAbility() != null && card.getSpellAbility().getSpellAbilityType() == SpellAbilityType.SPLIT_AFTERMATH;
 
-        this.flipCard = card.isFlipCard();
-        this.flipCardName = card.getFlipCardName();
-
         Card meldToCard = card.getMeldsToCard();
         if (meldToCard != null) {
             this.meldsToCardName = meldToCard.getName();
@@ -149,6 +146,7 @@ public class CardInfo {
 
         if (card instanceof CardWithParts) {
             this.doubleFacedCard = card instanceof DoubleFacedCard;
+            this.flipCard = card instanceof FlipCard;
             if (card instanceof CardWithSpellOption) {
                 this.cardWithSpellOption = true;
             }
@@ -173,6 +171,9 @@ public class CardInfo {
         // mana cost can contains multiple cards (split left/right, modal double faces, card/adventure)
         if (card instanceof CardWithParts) {
             List<String> manaCostLeft = ((CardWithParts) card).getLeftHalfCard().getManaCostSymbols();
+            if (manaCostLeft.isEmpty()) {
+                manaCostLeft = Collections.singletonList("");
+            }
             List<String> manaCostRight = ((CardWithParts) card).getRightHalfCard().getManaCostSymbols();
             this.setManaCosts(CardUtil.concatManaSymbols(SPLIT_MANA_SEPARATOR_FULL, manaCostLeft, manaCostRight));
         } else {

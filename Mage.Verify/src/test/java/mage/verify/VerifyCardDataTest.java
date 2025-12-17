@@ -27,6 +27,7 @@ import mage.cards.decks.Deck;
 import mage.cards.decks.DeckCardInfo;
 import mage.cards.decks.DeckCardLists;
 import mage.cards.decks.importer.DeckImporter;
+import mage.cards.mock.MockCard;
 import mage.cards.repository.*;
 import mage.choices.Choice;
 import mage.client.remote.XmageURLConnection;
@@ -2722,6 +2723,8 @@ public class VerifyCardDataTest {
             if (foundCards.isEmpty()) {
                 Assert.fail("Can't find card by name/set or set/number: " + searchEntry);
             }
+
+            MockCard mock = new MockCard(foundCards.get(0));
 
             Set<String> checkedNamesLocal = new HashSet<>();
             for (CardInfo cardInfo : foundCards) {

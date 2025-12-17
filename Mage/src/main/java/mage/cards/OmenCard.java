@@ -121,9 +121,7 @@ class OmenCardSpellAbility extends SpellAbility {
 
     @Override
     public String getRule(boolean all) {
-        return this.name
-                + " &mdash; "
-                + CardUtil.getTextWithFirstCharUpperCase(super.getRule(false)) // without cost
+        return CardUtil.getTextWithFirstCharUpperCase(super.getRule(false)) // without cost
                 + " <i>(Then shuffle this card into its owner's library.)</i>";
     }
 

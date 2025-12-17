@@ -1,44 +1,43 @@
-
 package mage.cards.s;
 
-import java.util.UUID;
-import mage.MageInt;
 import mage.abilities.StateTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.keyword.FlyingAbility;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.cards.FlipCard;
+import mage.constants.*;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
-import mage.game.permanent.token.TokenImpl;
+
+import java.util.UUID;
 
 /**
- *
  * @author LevelX2
  */
-public final class StudentOfElements extends CardImpl {
+public final class StudentOfElements extends FlipCard {
 
     public StudentOfElements(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId,setInfo,new CardType[]{CardType.CREATURE},"{1}{U}");
-        this.subtype.add(SubType.HUMAN);
-        this.subtype.add(SubType.WIZARD);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.WIZARD}, "{1}{U}",
+                "Tobita, Master of Winds",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.WIZARD});
 
-        this.power = new MageInt(1);
-        this.toughness = new MageInt(1);
-        this.flipCard = true;
-        this.flipCardName = "Tobita, Master of Winds";
+        // Student of Elements
+        this.getLeftHalfCard().setPT(1, 1);
 
         // When Student of Elements has flying, flip it.
-        this.addAbility(new StudentOfElementsHasFlyingAbility());
+        this.getLeftHalfCard().addAbility(new StudentOfElementsHasFlyingAbility());
+
+        // Tobita, Master of Winds
+        this.getRightHalfCard().setPT(3, 3);
+
+        // Creatures you control have flying.
+        this.getRightHalfCard().addAbility(new SimpleStaticAbility(
+                new GainAbilityControlledEffect(FlyingAbility.getInstance(), Duration.WhileOnBattlefield, new FilterCreaturePermanent())));
     }
 
     private StudentOfElements(final StudentOfElements card) {
@@ -54,7 +53,7 @@ public final class StudentOfElements extends CardImpl {
 class StudentOfElementsHasFlyingAbility extends StateTriggeredAbility {
 
     public StudentOfElementsHasFlyingAbility() {
-        super(Zone.BATTLEFIELD, new FlipSourceEffect(new TobitaMasterOfWinds()));
+        super(Zone.BATTLEFIELD, new FlipSourceEffect());
     }
 
     private StudentOfElementsHasFlyingAbility(final StudentOfElementsHasFlyingAbility ability) {
@@ -69,7 +68,7 @@ class StudentOfElementsHasFlyingAbility extends StateTriggeredAbility {
     @Override
     public boolean checkTrigger(GameEvent event, Game game) {
         Permanent permanent = game.getPermanent(getSourceId());
-        if(permanent != null && permanent.getAbilities().contains(FlyingAbility.getInstance())){
+        if (permanent != null && permanent.getAbilities().contains(FlyingAbility.getInstance())) {
             return true;
         }
         return false;
@@ -80,29 +79,4 @@ class StudentOfElementsHasFlyingAbility extends StateTriggeredAbility {
         return "When {this} has flying, flip it.";
     }
 
-}
-
-class TobitaMasterOfWinds extends TokenImpl {
-
-    TobitaMasterOfWinds() {
-        super("Tobita, Master of Winds", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.CREATURE);
-        color.setBlue(true);
-        subtype.add(SubType.HUMAN);
-        subtype.add(SubType.WIZARD);
-        power = new MageInt(3);
-        toughness = new MageInt(3);
-
-        // Creatures you control have flying.
-        this.addAbility(new SimpleStaticAbility(
-                new GainAbilityControlledEffect(FlyingAbility.getInstance(), Duration.WhileOnBattlefield, new FilterCreaturePermanent())));
-    }
-    private TobitaMasterOfWinds(final TobitaMasterOfWinds token) {
-        super(token);
-    }
-
-    public TobitaMasterOfWinds copy() {
-        return new TobitaMasterOfWinds(this);
-    }
 }

@@ -1,10 +1,6 @@
-
 package mage.cards.n;
 
-import java.util.UUID;
-import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
@@ -13,38 +9,46 @@ import mage.abilities.decorator.ConditionalOneShotEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.effects.common.discard.DiscardTargetEffect;
-import mage.cards.CardImpl;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardSetInfo;
+import mage.cards.FlipCard;
 import mage.constants.*;
 import mage.game.Game;
-import mage.game.permanent.token.TokenImpl;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
+
+import java.util.UUID;
 
 /**
  * @author LevelX2
  */
-public final class NezumiShortfang extends CardImpl {
+public final class NezumiShortfang extends FlipCard {
 
     public NezumiShortfang(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{B}");
-        this.subtype.add(SubType.RAT);
-        this.subtype.add(SubType.ROGUE);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.RAT, SubType.ROGUE}, "{1}{B}",
+                "Stabwhisker the Odious",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.RAT, SubType.SHAMAN});
 
-        this.power = new MageInt(1);
-        this.toughness = new MageInt(1);
-        this.flipCard = true;
-        this.flipCardName = "Stabwhisker the Odious";
+        // Nezumi Shortfang
+        this.getLeftHalfCard().setPT(1, 1);
 
         // {1}{B}, {tap}: Target opponent discards a card. Then if that player has no cards in hand, flip Nezumi Shortfang.
         Ability ability = new SimpleActivatedAbility(new DiscardTargetEffect(1), new ManaCostsImpl<>("{1}{B}"));
         ability.addCost(new TapSourceCost());
         ability.addTarget(new TargetOpponent());
         ability.addEffect(new ConditionalOneShotEffect(
-                new FlipSourceEffect(new StabwhiskerTheOdious()),
+                new FlipSourceEffect(),
                 new CardsInTargetOpponentHandCondition(ComparisonType.FEWER_THAN, 1),
                 "Then if that player has no cards in hand, flip {this}"));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
+
+        // Stabwhisker the Odious
+        this.getRightHalfCard().setPT(3, 3);
+
+        // At the beginning of each opponent's upkeep, that player loses 1 life for each card fewer than three in their hand.
+        this.getRightHalfCard().addAbility(new BeginningOfUpkeepTriggeredAbility(
+                TargetController.OPPONENT, new StabwhiskerLoseLifeEffect(), false));
     }
 
     private NezumiShortfang(final NezumiShortfang card) {
@@ -54,31 +58,6 @@ public final class NezumiShortfang extends CardImpl {
     @Override
     public NezumiShortfang copy() {
         return new NezumiShortfang(this);
-    }
-}
-
-class StabwhiskerTheOdious extends TokenImpl {
-
-    StabwhiskerTheOdious() {
-        super("Stabwhisker the Odious", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.CREATURE);
-        color.setBlack(true);
-        subtype.add(SubType.RAT);
-        subtype.add(SubType.SHAMAN);
-        power = new MageInt(3);
-        toughness = new MageInt(3);
-
-        // At the beginning of each opponent's upkeep, that player loses 1 life for each card fewer than three in their hand.
-        this.addAbility(new BeginningOfUpkeepTriggeredAbility(
-                TargetController.OPPONENT, new StabwhiskerLoseLifeEffect(), false));
-    }
-    private StabwhiskerTheOdious(final StabwhiskerTheOdious token) {
-        super(token);
-    }
-
-    public StabwhiskerTheOdious copy() {
-        return new StabwhiskerTheOdious(this);
     }
 }
 

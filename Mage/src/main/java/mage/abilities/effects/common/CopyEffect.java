@@ -4,9 +4,10 @@ import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.Abilities;
 import mage.abilities.Ability;
+import mage.abilities.common.RoomAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.Card;
-import mage.abilities.common.RoomAbility;
+import mage.cards.FlipCard;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -115,30 +116,35 @@ public class CopyEffect extends ContinuousEffectImpl {
             // copy object to object
             permanent.setCopy(true, copyFromObject);
         }
-        permanent.setName(copyFromObject.getName());
-        permanent.getColor(game).setColor(copyFromObject.getColor(game));
+        MageObject copyFrom = copyFromObject;
+        if (permanent.isFlipped() && copyFrom instanceof Card && ((Card) copyFrom).getMainCard() instanceof FlipCard) {
+            copyFrom = ((FlipCard) ((Card) copyFrom).getMainCard()).getRightHalfCard().copy();
+            applier.apply(game, copyFrom, source, permanent.getId());
+        }
+        permanent.setName(copyFrom.getName());
+        permanent.getColor(game).setColor(copyFrom.getColor(game));
         permanent.getManaCost().clear();
-        permanent.getManaCost().add(copyFromObject.getManaCost().copy());
+        permanent.getManaCost().add(copyFrom.getManaCost().copy());
         permanent.removeAllCardTypes(game);
-        for (CardType type : copyFromObject.getCardType(game)) {
+        for (CardType type : copyFrom.getCardType(game)) {
             permanent.addCardType(game, type);
         }
 
         permanent.removeAllSubTypes(game);
-        permanent.copySubTypesFrom(game, copyFromObject);
+        permanent.copySubTypesFrom(game, copyFrom);
 
         permanent.removeAllSuperTypes(game);
-        for (SuperType type : copyFromObject.getSuperType(game)) {
+        for (SuperType type : copyFrom.getSuperType(game)) {
             permanent.addSuperType(game, type);
         }
 
         permanent.removeAllAbilities(source.getSourceId(), game);
-        if (copyFromObject instanceof Permanent) {
-            for (Ability ability : ((Permanent) copyFromObject).getAbilities(game)) {
+        if (copyFrom instanceof Permanent) {
+            for (Ability ability : ((Permanent) copyFrom).getAbilities(game)) {
                 permanent.addAbility(ability, getSourceId(), game, true);
             }
         } else {
-            for (Ability ability : copyFromObject.getAbilities()) {
+            for (Ability ability : copyFrom.getAbilities()) {
                 permanent.addAbility(ability, getSourceId(), game, true);
             }
         }
@@ -146,12 +152,12 @@ public class CopyEffect extends ContinuousEffectImpl {
         // Primal Clay example:
         // If a creature that’s already on the battlefield becomes a copy of this creature, it copies the power, toughness,
         // and abilities that were chosen for this creature as it entered the battlefield. (2018-03-16)
-        permanent.getPower().setModifiedBaseValue(copyFromObject.getPower().getModifiedBaseValue());
-        permanent.getToughness().setModifiedBaseValue(copyFromObject.getToughness().getModifiedBaseValue());
-        permanent.setStartingLoyalty(copyFromObject.getStartingLoyalty());
-        permanent.setStartingDefense(copyFromObject.getStartingDefense());
-        if (copyFromObject instanceof Permanent) {
-            Permanent targetPermanent = (Permanent) copyFromObject;
+        permanent.getPower().setModifiedBaseValue(copyFrom.getPower().getModifiedBaseValue());
+        permanent.getToughness().setModifiedBaseValue(copyFrom.getToughness().getModifiedBaseValue());
+        permanent.setStartingLoyalty(copyFrom.getStartingLoyalty());
+        permanent.setStartingDefense(copyFrom.getStartingDefense());
+        if (copyFrom instanceof Permanent) {
+            Permanent targetPermanent = (Permanent) copyFrom;
             //707.2. When copying an object, the copy acquires the copiable values of the original object’s characteristics [..]
             //110.5. A permanent's status is its physical state. There are four status categories, each of which has two possible values:
             // tapped/untapped, flipped/unflipped, face up/face down, and phased in/phased out.
@@ -160,12 +166,10 @@ public class CopyEffect extends ContinuousEffectImpl {
             //Being transformed is not a copiable characteristic, nor is the back side of a DFC
             //permanent.setTransformed(targetPermanent.isTransformed());
             //permanent.setSecondCardFace(targetPermanent.getSecondCardFace());
-            permanent.setFlipCard(targetPermanent.isFlipCard());
-            permanent.setFlipCardName(targetPermanent.getFlipCardName());
             permanent.setPrototyped(targetPermanent.isPrototyped());
         }
 
-        CardUtil.copySetAndCardNumber(permanent, copyFromObject);
+        CardUtil.copySetAndCardNumber(permanent, copyFrom);
 
         return true;
     }

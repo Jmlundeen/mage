@@ -1,6 +1,7 @@
 package mage.view;
 
 import mage.cards.Card;
+import mage.cards.FlipCardHalf;
 import mage.cards.RoomCard;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -80,7 +81,7 @@ public class PermanentView extends CardView {
             original = null;
         }
 
-        if (!copy && card instanceof RoomCard || card != null && card.isFlipCard()) {
+        if (!copy && card instanceof RoomCard || card instanceof FlipCardHalf) {
             this.imageFileName = card.getName();
         }
         if (permanent.getOwnerId() != null && !permanent.getOwnerId().equals(permanent.getControllerId())) {

@@ -1,48 +1,48 @@
-
 package mage.cards.e;
 
-import java.util.UUID;
-import mage.MageInt;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.CounterTargetEffect;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.keyword.FlyingAbility;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.FlipCard;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
-import mage.game.permanent.token.TokenImpl;
 import mage.target.targetpointer.FixedTarget;
 import mage.watchers.common.CastSpellLastTurnWatcher;
 
+import java.util.UUID;
+
 /**
- *
  * @author LevelX2
  */
-public final class ErayoSoratamiAscendant extends CardImpl {
+public final class ErayoSoratamiAscendant extends FlipCard {
 
     public ErayoSoratamiAscendant(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId,setInfo,new CardType[]{CardType.CREATURE},"{1}{U}");
-        this.supertype.add(SuperType.LEGENDARY);
-        this.subtype.add(SubType.MOONFOLK);
-        this.subtype.add(SubType.MONK);
-        this.power = new MageInt(1);
-        this.toughness = new MageInt(1);
+        super(ownerId, setInfo,
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.MOONFOLK, SubType.MONK}, "{1}{U}",
+                "Erayo's Essence",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.ENCHANTMENT}, new SubType[]{});
 
-        this.flipCard = true;
-        this.flipCardName = "Erayo's Essence";
+        // Erayo, Soratami Ascendant
+        this.getLeftHalfCard().setPT(1, 1);
 
         // Flying
-        this.addAbility(FlyingAbility.getInstance());
-        // Whenever the fourth spell of a turn is cast, flip Erayo, Soratami Ascendant.
-        this.addAbility(new ErayoSoratamiAscendantTriggeredAbility());
+        this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
+        // Whenever the fourth spell of a turn is cast, flip Erayo, Soratami Ascendant.
+        this.getLeftHalfCard().addAbility(new ErayoSoratamiAscendantTriggeredAbility());
+
+        // Erayo's Essence
+        // Whenever an opponent casts a spell for the first time in a turn, counter that spell.
+        Effect effect = new CounterTargetEffect();
+        effect.setText("counter that spell");
+        this.getRightHalfCard().addAbility(new ErayosEssenceTriggeredAbility(effect));
     }
 
     private ErayoSoratamiAscendant(final ErayoSoratamiAscendant card) {
@@ -63,7 +63,7 @@ class ErayoSoratamiAscendantTriggeredAbility extends TriggeredAbilityImpl {
     }
 
     private static Effect getFlipEffect() {
-        Effect effect = new FlipSourceEffect(new ErayosEssenceToken());
+        Effect effect = new FlipSourceEffect();
         effect.setText("flip {this}");
         return effect;
     }
@@ -86,29 +86,6 @@ class ErayoSoratamiAscendantTriggeredAbility extends TriggeredAbilityImpl {
     @Override
     public ErayoSoratamiAscendantTriggeredAbility copy() {
         return new ErayoSoratamiAscendantTriggeredAbility(this);
-    }
-}
-
-class ErayosEssenceToken extends TokenImpl {
-
-    ErayosEssenceToken() {
-        super("Erayo's Essence", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.ENCHANTMENT);
-
-        color.setBlue(true);
-
-        // Whenever an opponent casts a spell for the first time in a turn, counter that spell.
-        Effect effect = new CounterTargetEffect();
-        effect.setText("counter that spell");
-        this.addAbility(new ErayosEssenceTriggeredAbility(effect));
-    }
-    private ErayosEssenceToken(final ErayosEssenceToken token) {
-        super(token);
-    }
-
-    public ErayosEssenceToken copy() {
-        return new ErayosEssenceToken(this);
     }
 }
 

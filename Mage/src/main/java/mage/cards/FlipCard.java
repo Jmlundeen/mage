@@ -19,24 +19,65 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * @author JayDi85 - originally from ModalDoubleFaceCard
- * @param <P> the type of the card halves
- * @param <C> the self-referential type for the concrete card class
- */
-public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extends DoubleFacedCard<P, C>> extends CardWithPartsImpl<P, C> {
+public abstract class FlipCard extends CardWithPartsImpl<FlipCardHalfImpl, FlipCard> {
 
-    protected DoubleFacedCard(UUID ownerId, CardSetInfo setInfo, CardType[] cardTypes, String costs, SpellAbilityType spellAbilityType) {
-        super(ownerId, setInfo, cardTypes, costs, spellAbilityType);
+    // this state value controls if a permanent enters the battlefield already flipped
+    public static final String VALUE_KEY_ENTER_FLIPPED = "EnterFlipped";
+
+    public FlipCard (
+            UUID ownerId, CardSetInfo setInfo,
+            CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+            String secondSideName,
+            CardType[] typesRight, SubType[] subTypesRight
+    ) {
+        this(
+                ownerId, setInfo,
+                new SuperType[]{}, typesLeft, subTypesLeft, costsLeft,
+                secondSideName,
+                new SuperType[]{}, typesRight, subTypesRight
+        );
+    }
+
+    public FlipCard(UUID ownerId, CardSetInfo setInfo,
+                    CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+                    String secondSideName,
+                    SuperType[] superTypesRight, CardType[] typesRight, SubType[] subTypesRight) {
+        this(
+                ownerId, setInfo,
+                new SuperType[]{}, typesLeft, subTypesLeft, costsLeft,
+                secondSideName,
+                superTypesRight, typesRight, subTypesRight);
+    }
+
+    public FlipCard(
+            UUID ownerId, CardSetInfo setInfo,
+            SuperType[] superTypesLeft, CardType[] typesLeft, SubType[] subTypesLeft, String costsLeft,
+            String secondSideName,
+            SuperType[] superTypesRight, CardType[] typesRight, SubType[] subTypesRight
+    ) {
+        super(ownerId, setInfo, typesLeft, costsLeft, SpellAbilityType.FLIP);
+
+        leftHalfCard = new FlipCardHalfImpl(
+                ownerId, setInfo,
+                superTypesLeft, typesLeft, subTypesLeft, costsLeft, this,
+                SpellAbilityType.FLIP_LEFT
+        );
+
+        rightHalfCard = new FlipCardHalfImpl(
+                ownerId, new CardSetInfo(secondSideName, setInfo),
+                superTypesRight, typesRight, subTypesRight, "", this,
+                SpellAbilityType.FLIP_RIGHT
+        );
+        rightHalfCard.getColor().setColor(leftHalfCard.getColor());
+    }
+
+    protected FlipCard(final FlipCard card) {
+        super(card);
     }
 
     @Override
     public Card getDefaultCardSide() {
         return getLeftHalfCard();
-    }
-
-    public DoubleFacedCard(DoubleFacedCard<P, C> card) {
-        super(card);
     }
 
     @Override
@@ -59,15 +100,6 @@ public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extend
         Zone zoneLeft = game.getState().getZone(leftPart.getId());
         Zone zoneRight = game.getState().getZone(rightPart.getId());
 
-        // runtime check:
-        // * in battlefield and stack - card + one of the sides (another side in outside zone)
-        // * in other zones - card + both sides (need both sides due cost reductions, spell and other access before put to stack)
-        //
-        // 712.8a While a double-faced card is outside the game or in a zone other than the battlefield or stack,
-        // it has only the characteristics of its front face.
-        //
-        // 712.8f While a modal double-faced spell is on the stack or a modal double-faced permanent is on the battlefield,
-        // it has only the characteristics of the face that’s up.
         Zone needZoneLeft;
         Zone needZoneRight;
         switch (zoneMain) {
@@ -75,15 +107,11 @@ public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extend
             case STACK:
                 if (zoneMain == zoneLeft) {
                     needZoneLeft = zoneMain;
-                    needZoneRight = Zone.OUTSIDE;
-                } else if (zoneMain == zoneRight) {
-                    needZoneLeft = Zone.OUTSIDE;
-                    needZoneRight = zoneMain;
                 } else {
                     // impossible
-                    needZoneLeft = zoneMain;
-                    needZoneRight = Zone.OUTSIDE;
+                    needZoneLeft = Zone.OUTSIDE;
                 }
+                needZoneRight = Zone.OUTSIDE;
                 break;
             default:
                 needZoneLeft = zoneMain;
@@ -92,7 +120,7 @@ public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extend
         }
 
         if (zoneLeft != needZoneLeft || zoneRight != needZoneRight) {
-            throw new IllegalStateException("Wrong code usage: MDF card uses wrong zones - " + this
+            throw new IllegalStateException("Wrong code usage: Flip card uses wrong zones - " + this
                     + "\r\n" + String.format("* main zone: %s", zoneMain)
                     + "\r\n" + String.format("* left side: need %s, actual %s", needZoneLeft, zoneLeft)
                     + "\r\n" + String.format("* right side: need %s, actual %s", needZoneRight, zoneRight));
@@ -126,15 +154,8 @@ public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extend
 
     @Override
     public boolean cast(Game game, Zone fromZone, SpellAbility ability, UUID controllerId) {
-        if (this.getLeftHalfCard().getSpellAbility() != null) {
-            this.getLeftHalfCard().getSpellAbility().setControllerId(controllerId);
-        }
-        if (this.getRightHalfCard().getSpellAbility() != null) {
-            this.getRightHalfCard().getSpellAbility().setControllerId(controllerId);
-        }
-        return super.cast(game, fromZone, ability, controllerId);
+        return this.leftHalfCard.cast(game, fromZone, ability, controllerId);
     }
-
 
     @Override
     public List<SuperType> getSuperType(Game game) {
@@ -210,12 +231,8 @@ public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extend
     @Override
     public int getManaValue() {
         // Rules:
-        // The converted mana cost of a modal double-faced card is based on the characteristics of the
-        // face that’s being considered. On the stack and battlefield, consider whichever face is up.
-        // In all other zones, consider only the front face. This is different than how the converted
-        // mana cost of a transforming double-faced card is determined.
-
-        // on stack or battlefield it must be half card with own cost
+        // In every zone other than the battlefield, and also on the battlefield before the permanent flips,
+        // a flip card has only the normal characteristics of the card.
         return getLeftHalfCard().getManaValue();
     }
 
@@ -233,4 +250,5 @@ public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extend
     public UUID getIdForBattlefield(Game game, Ability source) {
         return getDefaultCardSide().getId();
     }
+
 }

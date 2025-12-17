@@ -782,16 +782,6 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
-    public boolean isFlipCard() {
-        return false;
-    }
-
-    @Override
-    public String getFlipCardName() {
-        return null;
-    }
-
-    @Override
     public boolean isTransformable() {
         return false;
     }

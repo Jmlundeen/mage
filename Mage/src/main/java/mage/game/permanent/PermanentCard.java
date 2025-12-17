@@ -63,6 +63,8 @@ public class PermanentCard extends PermanentImpl {
                 goodForBattlefield = card.getMeldedWith(game) != null;
             }
             isMeld = true;
+        } else if (card instanceof FlipCardHalf) {
+            flipped = game.getState().getValue(FlipCard.VALUE_KEY_ENTER_FLIPPED + card.getId()) == Boolean.TRUE;
         }
 
         // face down cards allows in any forms (only face up restricted for non-permanents)
@@ -147,8 +149,11 @@ public class PermanentCard extends PermanentImpl {
         }
     }
 
-    protected void copyFromCard(final Card card, final Game game, boolean isReset) {
+    protected void copyFromCard(Card card, final Game game, boolean isReset) {
         // TODO: must research - is it copy all fields or something miss
+        if (this.isFlipped() && card instanceof FlipCardHalf) {
+            card = ((FlipCardHalf) card).getOtherSide();
+        }
         this.name = card.getName();
         this.abilities.clear();
         if (this.faceDown) {
@@ -199,8 +204,6 @@ public class PermanentCard extends PermanentImpl {
         this.setImageFileName(card.getImageFileName());
         this.setImageNumber(card.getImageNumber());
 
-        this.flipCard = card.isFlipCard();
-        this.flipCardName = card.getFlipCardName();
         // Rooms set characteristics at the end so nothing gets overwritten
         if (card instanceof RoomCard) {
             RoomCard.setRoomCharacteristics(this, game);

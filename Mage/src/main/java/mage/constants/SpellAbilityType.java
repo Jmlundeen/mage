@@ -23,7 +23,10 @@ public enum SpellAbilityType {
     ADVENTURE_OMEN_RIGHT("Adventure/Omen Right SpellAbility"),
     MELD("Meld SpellAbility", false),
     MELD_LEFT("MeldLeft SpellAbility"),
-    MELD_RIGHT("MeldRight SpellAbility", false);
+    MELD_RIGHT("MeldRight SpellAbility", false),
+    FLIP("Flip SpellAbility", false),
+    FLIP_LEFT("FlipLeft SpellAbility"),
+    FLIP_RIGHT("FlipRight SpellAbility", false);
 
     private final String text;
     private final boolean canCast;

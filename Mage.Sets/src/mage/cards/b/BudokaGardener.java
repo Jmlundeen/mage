@@ -1,7 +1,5 @@
-
 package mage.cards.b;
 
-import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
@@ -10,39 +8,49 @@ import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.FlipSourceEffect;
+import mage.abilities.effects.common.PutCardFromHandOntoBattlefieldEffect;
 import mage.abilities.hint.ValueHint;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.cards.FlipCard;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SubType;
+import mage.constants.SuperType;
+import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledLandPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
 import mage.game.permanent.token.DokaiWeaverofLifeToken;
-import mage.game.permanent.token.TokenImpl;
 import mage.players.Player;
 
 import java.util.UUID;
-import mage.abilities.effects.common.PutCardFromHandOntoBattlefieldEffect;
-import mage.filter.StaticFilters;
 
 /**
  * @author Loki
  */
-public final class BudokaGardener extends CardImpl {
+public final class BudokaGardener extends FlipCard {
 
     public BudokaGardener(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{G}");
-        this.subtype.add(SubType.HUMAN, SubType.MONK);
+        super(ownerId, setInfo,
+                new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.MONK}, "{1}{G}",
+                "Dokai, Weaver of Life",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.HUMAN, SubType.MONK});
 
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(1);
-        this.flipCard = true;
-        this.flipCardName = "Dokai, Weaver of Life";
+        // Budoka Gardener
+        this.getLeftHalfCard().setPT(2, 1);
 
         // {T}: You may put a land card from your hand onto the battlefield. If you control ten or more lands, flip Budoka Gardener.
         Ability ability = new SimpleActivatedAbility(new PutCardFromHandOntoBattlefieldEffect(StaticFilters.FILTER_CARD_LAND_A), new TapSourceCost());
         ability.addEffect(new BudokaGardenerEffect());
-        this.addAbility(ability.addHint(new ValueHint("Lands you control", new PermanentsOnBattlefieldCount(StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND))));
+        this.getLeftHalfCard().addAbility(ability.addHint(new ValueHint("Lands you control", new PermanentsOnBattlefieldCount(StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND))));
+
+        // Dokai, Weaver of Life
+        this.getRightHalfCard().setPT(3, 3);
+
+        // {4}{G}{G}, {T}: Create an X/X green Elemental creature token, where X is the number of lands you control.
+        Ability ability2 = new SimpleActivatedAbility(new CreateTokenEffect(new DokaiWeaverofLifeToken()), new ManaCostsImpl<>("{4}{G}{G}"));
+        ability2.addCost(new TapSourceCost());
+        this.getRightHalfCard().addAbility(ability2);
     }
 
     private BudokaGardener(final BudokaGardener card) {
@@ -79,7 +87,7 @@ class BudokaGardenerEffect extends OneShotEffect {
             return false;
         }
 
-        return new FlipSourceEffect(new DokaiWeaverofLife()).apply(game, source);
+        return new FlipSourceEffect().apply(game, source);
     }
 
     @Override
@@ -87,30 +95,4 @@ class BudokaGardenerEffect extends OneShotEffect {
         return new BudokaGardenerEffect(this);
     }
 
-}
-
-class DokaiWeaverofLife extends TokenImpl {
-
-    DokaiWeaverofLife() {
-        super("Dokai, Weaver of Life", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.CREATURE);
-        color.setGreen(true);
-        subtype.add(SubType.HUMAN, SubType.MONK);
-        power = new MageInt(3);
-        toughness = new MageInt(3);
-
-        // {4}{G}{G}, {T}: Create an X/X green Elemental creature token, where X is the number of lands you control.
-        Ability ability = new SimpleActivatedAbility(new CreateTokenEffect(new DokaiWeaverofLifeToken()), new ManaCostsImpl<>("{4}{G}{G}"));
-        ability.addCost(new TapSourceCost());
-        this.addAbility(ability);
-    }
-
-    private DokaiWeaverofLife(final DokaiWeaverofLife token) {
-        super(token);
-    }
-
-    public DokaiWeaverofLife copy() {
-        return new DokaiWeaverofLife(this);
-    }
 }

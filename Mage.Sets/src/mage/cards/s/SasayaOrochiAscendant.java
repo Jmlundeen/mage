@@ -1,17 +1,18 @@
 package mage.cards.s;
 
-import java.util.ArrayList;
-import mage.MageInt;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.TapForManaAllTriggeredManaAbility;
 import mage.abilities.costs.common.RevealHandSourceControllerCost;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.effects.mana.ManaEffect;
-import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.FlipCard;
+import mage.choices.Choice;
+import mage.choices.ChoiceColor;
 import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledLandPermanent;
@@ -22,36 +23,36 @@ import mage.filter.predicate.mageobject.NamePredicate;
 import mage.filter.predicate.permanent.PermanentIdPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
-import mage.game.permanent.token.TokenImpl;
 import mage.players.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import mage.abilities.effects.Effect;
-import mage.choices.Choice;
-import mage.choices.ChoiceColor;
 
 /**
  * @author LevelX2
  */
-public final class SasayaOrochiAscendant extends CardImpl {
+public final class SasayaOrochiAscendant extends FlipCard {
 
     public SasayaOrochiAscendant(UUID ownerId, CardSetInfo setInfo) {
-        super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{G}{G}");
-        this.supertype.add(SuperType.LEGENDARY);
-        this.subtype.add(SubType.SNAKE);
-        this.subtype.add(SubType.MONK);
+        super(ownerId, setInfo,
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.CREATURE}, new SubType[]{SubType.SNAKE, SubType.MONK}, "{1}{G}{G}",
+                "Sasaya's Essence",
+                new SuperType[]{SuperType.LEGENDARY}, new CardType[]{CardType.ENCHANTMENT}, new SubType[]{});
 
-        this.power = new MageInt(2);
-        this.toughness = new MageInt(3);
-
-        this.flipCard = true;
-        this.flipCardName = "Sasaya's Essence";
+        // Sasaya, Orochi Ascendant
+        this.getLeftHalfCard().setPT(2, 3);
 
         // Reveal your hand: If you have seven or more land cards in your hand, flip Sasaya, Orochi Ascendant.
         Effect effect = new SasayaOrochiAscendantFlipEffect();
         effect.setOutcome(Outcome.AIDontUseIt);  // repetition issues need to be fixed for the AI to use this effectively
-        this.addAbility(new SimpleActivatedAbility(effect, new RevealHandSourceControllerCost()));
+        this.getLeftHalfCard().addAbility(new SimpleActivatedAbility(effect, new RevealHandSourceControllerCost()));
+
+        // Sasaya's Essence
+        // Whenever a land you control is tapped for mana, for each other land you control with the same name, add one mana of any type that land produced.
+        this.getRightHalfCard().addAbility(new TapForManaAllTriggeredManaAbility(
+                new SasayasEssenceManaEffect(),
+                new FilterControlledLandPermanent(), SetTargetPointer.PERMANENT));
     }
 
     private SasayaOrochiAscendant(final SasayaOrochiAscendant card) {
@@ -85,36 +86,11 @@ class SasayaOrochiAscendantFlipEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
             if (controller.getHand().count(new FilterLandCard(), game) > 6) {
-                new FlipSourceEffect(new SasayasEssence()).apply(game, source);
+                new FlipSourceEffect().apply(game, source);
             }
             return true;
         }
         return false;
-    }
-}
-
-class SasayasEssence extends TokenImpl {
-
-    SasayasEssence() {
-        super("Sasaya's Essence", "");
-        this.supertype.add(SuperType.LEGENDARY);
-        cardType.add(CardType.ENCHANTMENT);
-
-        color.setGreen(true);
-
-        // Whenever a land you control is tapped for mana, for each other land you control with the same name, add one mana of any type that land produced.
-        this.addAbility(new TapForManaAllTriggeredManaAbility(
-                new SasayasEssenceManaEffect(),
-                new FilterControlledLandPermanent(), SetTargetPointer.PERMANENT));
-    }
-
-    private SasayasEssence(final SasayasEssence token) {
-        super(token);
-    }
-
-    @Override
-    public SasayasEssence copy() {
-        return new SasayasEssence(this);
     }
 }
 
@@ -146,11 +122,11 @@ class SasayasEssenceManaEffect extends ManaEffect {
             filter.add(new NamePredicate(permanent.getName()));
             int count = game.getBattlefield().countAll(filter, controller.getId(), game);
             if (count > 0) {
-               if (producedMana.getBlack() > 0) {
-                   netMana.add(Mana.BlackMana(count));
+                if (producedMana.getBlack() > 0) {
+                    netMana.add(Mana.BlackMana(count));
                 }
                 if (producedMana.getRed() > 0) {
-                   netMana.add(Mana.RedMana(count));
+                    netMana.add(Mana.RedMana(count));
                 }
                 if (producedMana.getBlue() > 0) {
                     netMana.add(Mana.BlueMana(count));
@@ -163,7 +139,7 @@ class SasayasEssenceManaEffect extends ManaEffect {
                 }
                 if (producedMana.getColorless() > 0) {
                     netMana.add(Mana.ColorlessMana(count));
-                }                
+                }
             }
         }
         return netMana;
@@ -264,7 +240,6 @@ class SasayasEssenceManaEffect extends ManaEffect {
                                 break;
                         }
                     }
-
                 }
             }
         }

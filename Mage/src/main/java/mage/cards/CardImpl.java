@@ -699,16 +699,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
-    public boolean isFlipCard() {
-        return flipCard;
-    }
-
-    @Override
-    public String getFlipCardName() {
-        return flipCardName;
-    }
-
-    @Override
     public Counters getCounters(Game game) {
         return getCounters(game.getState());
     }
