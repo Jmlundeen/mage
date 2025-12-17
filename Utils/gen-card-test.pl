@@ -20,6 +20,8 @@ my $dataFile = 'mtg-cards-data.txt';
 my $setsFile = 'mtg-sets-data.txt';
 my $knownSetsFile = 'known-sets.txt';
 my $keywordsFile = 'keywords.txt';
+my $cardInfoTemplate = Text::Template->new(TYPE => 'FILE', SOURCE => 'cardInfo.tmpl', DELIMITERS => [ '[=', '=]' ]);
+my $cardWithPartsInfoTemplate = Text::Template->new(TYPE => 'FILE', SOURCE => 'cardWithPartsInfo.tmpl', DELIMITERS => [ '[=', '=]' ]);
 
 my %cards;
 my %sets;
@@ -42,8 +44,9 @@ sub fixCost {
 # Resolve a user-provided card name to the canonical card key in %cards.
 # Tries:
 # 1) exact key
-# 2) case-insensitive exact match
-# 3) case-insensitive substring match (if single match => use it, if multiple => warn and return undef)
+# 2) case-insensitive exact match (ignoring punctuation)
+# 3) case-insensitive substring match (ignoring punctuation)
+# 4) for split cards (containing //), also match on individual card names
 sub resolveCardName {
     my ($input) = @_;
     return undef unless defined $input;
@@ -52,14 +55,42 @@ sub resolveCardName {
     return $input if exists $cards{$input};
 
     my $lc_input = lc $input;
+    # Remove punctuation for matching
+    my $normalized_input = $lc_input;
+    $normalized_input =~ s/[^\w\s]//g;  # Remove all non-alphanumeric except spaces
 
-    # case-insensitive exact
+    # case-insensitive exact (ignoring punctuation)
     foreach my $k (keys %cards) {
-        return $k if lc($k) eq $lc_input;
+        my $normalized_k = lc $k;
+        $normalized_k =~ s/[^\w\s]//g;
+        return $k if $normalized_k eq $normalized_input;
     }
 
-    # substring (partial) matches
-    my @matches = grep { index(lc($_), $lc_input) != -1 } keys %cards;
+    # substring (partial) matches (ignoring punctuation)
+    my @matches = grep {
+        my $normalized = lc $_;
+        $normalized =~ s/[^\w\s]//g;
+
+        # Check if input matches the full name
+        if (index($normalized, $normalized_input) != -1) {
+            1;
+        } else {
+            # For split cards (containing //), also check each individual name
+            if ($_ =~ /\/\//) {
+                my @parts = split(/\s*\/\/\s*/, $_);
+                foreach my $part (@parts) {
+                    my $normalized_part = lc $part;
+                    $normalized_part =~ s/[^\w\s]//g;
+                    # Match if input matches a part exactly or is contained in a part
+                    if ($normalized_part eq $normalized_input || index($normalized_part, $normalized_input) != -1) {
+                        1;
+                    }
+                }
+            }
+        }
+
+
+    } keys %cards;
     if (@matches == 1) {
         return $matches[0];
     } elsif (@matches > 1) {
@@ -110,50 +141,66 @@ sub resolveCardName {
 
 
 sub generateCardInfo {
-    my ($cardName, $infoTemplate) = @_;
-
+    my ($cardName) = @_;
+    my $infoTemplate = $cardInfoTemplate;
     # attempt to resolve loosely if direct lookup fails
     if (!exists $cards{$cardName}) {
         my $resolved = resolveCardName($cardName);
         if (!defined $resolved) {
-            warn "Card name doesn't exist: $cardName (skipping)\n";
-            return "";
+            print "Card name doesn't exist: $cardName (skipping)\n\n";
+            return;
         }
         $cardName = $resolved;
     }
 
     my %vars;
-    $vars{'classNameLower'} = lcfirst(toCamelCase($cardName));
+    $vars{'cardOneClassNameLower'} = lcfirst(toCamelCase($cardName));
+    $vars{'cardOneClassName'} = toCamelCase($cardName);
+    $vars{'cardOneFirstLetter'} = lc(substr($cardName, 0, 1));
     my @card;
 
     foreach my $setName (keys %{$cards{$cardName}}) {
         @card = @{(values(%{$cards{$cardName}{$setName}}))[0]};
-        last; # Just get the first one for additional cards
+        last; # Just get the first one
     }
-
-    $vars{'cardName'} = $card[0];
-    $vars{'manaCost'} = $card[4];
-    $vars{'typeLine'} = $card[5];
-
-    # Check if this is a planeswalker
-    my $isPlaneswalker = $card[5] =~ /Planeswalker/i;
-
-    my $cardAbilities;
-    if ($isPlaneswalker) {
-        # For planeswalkers: field 6 is loyalty, field 7 is abilities
-        $vars{'loyalty'} = $card[6] if $card[6];  # loyalty
-        $cardAbilities = $card[7];
-    } else {
-        # For non-planeswalkers: field 6/7 is power/toughness, field 8 is abilities
-        if ($card[6]) {
-            $vars{'powerToughness'} = "$card[6]/$card[7]";
+    # clean up em dash
+    $card[10] =~ s/—/--/g;
+    $card[5] =~ s/—/--/g;
+    # clean up minus sign
+    $card[8] =~ s/−/-/g;
+    $card[13] =~ s/−/-/g;
+    if ($card[0] =~ /\/\//) {
+        # Split card: use first part of name for class name
+        my @parts = split(/\s*\/\/\s*/, $card[0]);
+        $vars{'cardOneClassNameLower'} = lcfirst(toCamelCase($parts[0]));
+        $vars{'cardOneClassName'} = toCamelCase($parts[0]);
+        $vars{'cardTwoClassNameLower'} = lcfirst(toCamelCase($parts[1]));
+        $vars{'cardTwoClassName'} = toCamelCase($parts[1]);
+        $vars{'cardTwoFirstLetter'} = lc(substr($parts[1], 0, 1));
+        $vars{'cardOneName'} = $parts[0];
+        $vars{'cardTwoName'} = $parts[1];
+        $vars{'cardTwoCost'} = $card[9]; # mana cost of second part
+        $vars{'cardTwoType'} = $card[10]; # type line of second part
+        if ($card[10] =~ /Planeswalker/i) {
+            $vars{'cardTwoLoyalty'} = $card[11];
+        } else {
+            $vars{'cardTwoPT'} = "$card[11]/$card[12]" if exists $card[11] && exists $card[12]; # power/toughness of second part
         }
-        $cardAbilities = $card[8];
+        $vars{'cardTwoAbilities'} = join("\n    * ", split(/\$/, $card[13])); # abilities of second part
+        $infoTemplate = $cardWithPartsInfoTemplate;
+    } else {
+        $vars{'cardOneName'} = $card[0];
     }
-
-    my @abilities = split(/\$/, $cardAbilities);
-    my $abilitiesFormatted = join("\n    ", @abilities);
-    $vars{'abilities'} = $abilitiesFormatted;
+    $vars{'cardOneCost'} = $card[4];
+    $vars{'cardOneType'} = $card[5];
+    if ($card[5] =~ /Planeswalker/i) {
+        $vars{'cardOneLoyalty'} = $card[6];
+    } else {
+        if (exists $card[6] && exists $card[7]) {
+            $vars{'cardOnePT'} = "$card[6]/$card[7]";
+        }
+    }
+    $vars{'cardOneAbilities'} = join("\n    * ", split(/\$/, $card[8]));
 
     return $infoTemplate->fill_in(HASH => \%vars);
 }
@@ -239,7 +286,6 @@ if (!exists $cards{$mainCardName}) {
 }
 
 my $cardTemplate = 'cardTest.tmpl';
-my $cardInfoTemplate = 'cardInfo.tmpl';
 my $originalName = $mainCardName;
 my $setCode;
 
@@ -282,7 +328,7 @@ $vars{'author'} = $author;
 $vars{'setCode'} = $setCode;
 
 # Generate main card info
-my $allCardInfo = generateCardInfo($mainCardName, $infoTemplate);
+my $allCardInfo = generateCardInfo($mainCardName);
 
 # Generate additional card info templates (resolve each loosely)
 foreach my $additionalCardInput (@additionalCardsInput) {
@@ -291,7 +337,7 @@ foreach my $additionalCardInput (@additionalCardsInput) {
         warn "Skipping additional card (not found or ambiguous): $additionalCardInput\n";
         next;
     }
-    my $additionalInfo = generateCardInfo($resolved, $infoTemplate);
+    my $additionalInfo = generateCardInfo($resolved);
     if (defined $additionalInfo && $additionalInfo ne '') {
         $allCardInfo .= "\n\n" . $additionalInfo;
     }
