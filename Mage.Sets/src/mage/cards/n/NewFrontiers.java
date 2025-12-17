@@ -11,6 +11,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.util.CardUtil;
@@ -66,7 +67,9 @@ class NewFrontiersEffect extends OneShotEffect {
                 if (player != null && player.chooseUse(outcome, "Search your library for up to " + amount + " basic lands?", source, game)) {
                     TargetCardInLibrary target = new TargetCardInLibrary(0, amount, StaticFilters.FILTER_CARD_BASIC_LAND);
                     if (player.searchLibrary(target, source, game)) {
-                        player.moveCards(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source, game, true, false, false, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                                .setTapped(true);
+                        player.moveCards(parameters, source, game);
                         player.shuffleLibrary(source, game);
                     }
 

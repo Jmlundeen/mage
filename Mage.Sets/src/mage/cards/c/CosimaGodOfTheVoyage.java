@@ -4,21 +4,23 @@ import mage.MageInt;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.DealsDamageToAPlayerAllTriggeredAbility;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.CrewAbility;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+import mage.util.CardUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -107,7 +109,11 @@ class CosimaGodOfTheVoyageEffect extends OneShotEffect {
         }
 
         String exileName = "Exiled to the voyage";
-        player.moveCardsToExile(permanent, source, game, true, source.getSourceId(), exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(exileName);
+        player.moveCards(parameters, source, game);
+
         if (game.getState().getZone(card.getId()) != Zone.EXILED) {
             return true;
         }

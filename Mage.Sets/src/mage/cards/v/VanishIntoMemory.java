@@ -1,34 +1,27 @@
 
 package mage.cards.v;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.delayed.AtTheBeginOfYourNextUpkeepDelayedTriggeredAbility;
-import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
 import mage.cards.CardsImpl;
 import mage.constants.CardType;
-import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetpointer.FixedTargets;
+
+import java.util.UUID;
 
 /**
  * @author escplan9 (Derek Monturo - dmontur1 at gmail dot com)
@@ -71,18 +64,23 @@ class VanishIntoMemoryEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         MageObject sourceObject = game.getObject(source);
         if (controller != null && permanent != null && sourceObject != null) {
-            if (controller.moveCardsToExile(permanent, source, game, true, source.getSourceId(), sourceObject.getIdName())) {
-                controller.drawCards(permanent.getPower().getValue(), source, game);
-                ExileZone exile = game.getExile().getExileZone(source.getSourceId());
-                // only if permanent is in exile (tokens would be stop to exist)
-                if (exile != null && !exile.isEmpty()) {
-                    //create delayed triggered ability
-                    Effect effect = new VanishIntoMemoryReturnFromExileEffect();
-                    effect.setTargetPointer(new FixedTargets(exile, game));
-                    game.addDelayedTriggeredAbility(new AtTheBeginOfYourNextUpkeepDelayedTriggeredAbility(effect), source);
-                }
-                return true;
-            }
+            MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                    .setExileId(source.getSourceId())
+                    .setExileName(sourceObject.getIdName());
+            controller.moveCardsWithResult(parameters, source, game)
+                    .stream()
+                    .findFirst()
+                    .ifPresent(card -> {
+                        controller.drawCards(permanent.getPower().getValue(), source, game);
+                        ExileZone exileZone = game.getExile().getExileZone(source.getSourceId());
+                        if (exileZone == null) {
+                            return;
+                        }
+                        Effect effect = new VanishIntoMemoryReturnFromExileEffect();
+                        effect.setTargetPointer(new FixedTargets(exileZone, game));
+                        game.addDelayedTriggeredAbility(new AtTheBeginOfYourNextUpkeepDelayedTriggeredAbility(effect), source);
+                    });
+            return true;
         }
         return false;
     }
@@ -97,7 +95,7 @@ class VanishIntoMemoryReturnFromExileEffect extends OneShotEffect {
 
     VanishIntoMemoryReturnFromExileEffect() {
         super(Outcome.PutCardInPlay);
-        staticText = "return that card to the battlefield under its owner's control";
+        staticText = "return that card to the battlefield under its owner's control. If you do, discard cards equal to that creature's toughness";
     }
 
     private VanishIntoMemoryReturnFromExileEffect(final VanishIntoMemoryReturnFromExileEffect effect) {
@@ -114,53 +112,16 @@ class VanishIntoMemoryReturnFromExileEffect extends OneShotEffect {
         Cards cards = new CardsImpl(getTargetPointer().getTargets(game, source));
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            Set<Card> cardsToBattlefield = new HashSet<>();
-            cardsToBattlefield.addAll(cards.getCards(game));
-            ContinuousEffect effect = new VanishIntoMemoryEntersBattlefieldEffect();
-            effect.setTargetPointer(new FixedTargets(cards, game));
-            game.addEffect(effect, source);
-            controller.moveCards(cardsToBattlefield, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCardsWithResult(parameters, source, game)
+                    .stream()
+                    .filter(c -> c instanceof Permanent)
+                    .map(c -> (Permanent) c)
+                    .findFirst()
+                    .ifPresent(permanent -> controller.discard(permanent.getToughness().getValue(), false, false, source, game));
         }
 
         return true;
-    }
-}
-
-class VanishIntoMemoryEntersBattlefieldEffect extends ReplacementEffectImpl {
-
-    VanishIntoMemoryEntersBattlefieldEffect() {
-        super(Duration.EndOfTurn, Outcome.Discard);
-        staticText = "discard cards equal to that creature's toughness.";
-    }
-
-    private VanishIntoMemoryEntersBattlefieldEffect(final VanishIntoMemoryEntersBattlefieldEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return getTargetPointer().getTargets(game, source).contains(event.getTargetId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent permanent = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (permanent != null) {
-            Player you = game.getPlayer(source.getControllerId());
-            if (you != null) {
-                you.discard(permanent.getToughness().getValue(), false, false, source, game);
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public VanishIntoMemoryEntersBattlefieldEffect copy() {
-        return new VanishIntoMemoryEntersBattlefieldEffect(this);
     }
 }

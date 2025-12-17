@@ -12,6 +12,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
 
@@ -91,6 +92,8 @@ class ShowAndTellEffect extends OneShotEffect {
                 }
             }
         }
-        return controller.moveCards(cardsToPutIntoPlay, Zone.BATTLEFIELD, source, game, false, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(cardsToPutIntoPlay, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return controller.moveCards(parameters, source, game);
     }
 }

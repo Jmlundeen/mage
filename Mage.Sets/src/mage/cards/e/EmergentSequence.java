@@ -11,6 +11,7 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -79,7 +80,9 @@ class EmergentSequenceEffect extends OneShotEffect {
         player.searchLibrary(target, source, game);
         Card card = player.getLibrary().getCard(target.getFirstTarget(), game);
         if (card != null) {
-            player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
         player.shuffleLibrary(source, game);
         Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);

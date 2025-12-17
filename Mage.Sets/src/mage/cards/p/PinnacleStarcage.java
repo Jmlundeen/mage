@@ -19,6 +19,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.RobotToken;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -89,11 +90,10 @@ class PinnacleStarcageExileEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         return true;
     }

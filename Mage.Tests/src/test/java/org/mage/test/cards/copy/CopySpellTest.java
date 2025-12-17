@@ -979,4 +979,40 @@ public class CopySpellTest extends CardTestPlayerBase {
         assertTapped(engine, true);
         assertLife(playerA, 20 + 1);
     }
+
+    @Test
+    public void testCopySpellMove() {
+        int libraryCount = playerA.getLibrary().size();
+        setStrictChooseMode(true);
+
+        addCard(Zone.HAND, playerA, "Double Major");
+        addCard(Zone.HAND, playerA, "Bear Cub");
+        addCard(Zone.HAND, playerB, "Subtlety");
+        addCard(Zone.BATTLEFIELD, playerA, "Tropical Island", 4);
+        addCard(Zone.BATTLEFIELD, playerB, "Island", 4);
+
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Bear Cub");
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Double Major", "Bear Cub");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN, 1);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerB, "Subtlety");
+        addTarget(playerB, "Bear Cub[only copy]");
+        setChoice(playerA, true);
+
+        setStopAt(1, PhaseStep.END_TURN);
+        execute();
+
+        assertPermanentCount(playerA, "Bear Cub", 1);
+        assertPermanentCount(playerB, "Subtlety", 1);
+        assertLibraryCount(playerA, libraryCount); // bear shouldn't move to library
+    }
+
+    @Test
+    public void testing() {
+        addCard(Zone.HAND, playerA, "Demon of Catastrophes");
+        addCard(Zone.BATTLEFIELD, playerA, "Bear Cub");
+        addCard(Zone.BATTLEFIELD, playerA, "Swamp", 5);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Demon of Catastrophes");
+        setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
+        execute();
+    }
 }

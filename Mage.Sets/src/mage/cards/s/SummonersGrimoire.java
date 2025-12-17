@@ -14,6 +14,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
@@ -87,7 +88,9 @@ class SummonersGrimoireEffect extends OneShotEffect {
             return false;
         }
         boolean flag = card.isEnchantment(game);
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, flag, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(flag);
+        player.moveCards(parameters, source, game);
         if (flag) {
             game.getCombat().addAttackingCreature(card.getId(), game);
         }

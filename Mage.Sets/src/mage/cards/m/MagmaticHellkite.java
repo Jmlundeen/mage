@@ -16,6 +16,7 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandPermanent;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -98,10 +99,9 @@ class MagmaticHellkiteEffect extends OneShotEffect {
             return true;
         }
         game.setEnterWithCounters(card.getId(), new Counters().addCounter(CounterType.STUN.createInstance()));
-        player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         player.shuffleLibrary(source, game);
         return true;
     }

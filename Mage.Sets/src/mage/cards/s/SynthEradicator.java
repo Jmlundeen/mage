@@ -85,7 +85,7 @@ class SynthEradicatorEffect extends OneShotEffect {
         String messageToPlay = "do nothing";
         boolean exiled = false;
         if (card != null) {
-            controller.moveCardsToExile(card, source, game, true, null, "");
+            controller.moveCards(card, Zone.EXILED, source, game);
             if (game.getState().getZone(card.getId()) == Zone.EXILED) {
                 mainMessage += ". If you don't, you may play " + card.getLogName() + " until end of turn.";
                 messageToPlay = "you may play " + card.getName() + " until end of turn";

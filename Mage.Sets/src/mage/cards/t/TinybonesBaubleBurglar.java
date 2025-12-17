@@ -94,10 +94,7 @@ class TinybonesBaubleBurglarExileEffect extends OneShotEffect {
         if (player == null || card == null || !Zone.GRAVEYARD.match(game.getState().getZone(card.getId()))) {
             return false;
         }
-        player.moveCardsToExile(
-                card, source, game, true,
-                null, ""
-        );
+        player.moveCards(card, Zone.EXILED, source, game );
         card.addCounters(CounterType.STASH.createInstance(), source, game);
         return true;
     }

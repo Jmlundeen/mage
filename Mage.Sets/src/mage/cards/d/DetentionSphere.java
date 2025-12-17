@@ -6,6 +6,7 @@ import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ReturnFromExileForSourceEffect;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -17,12 +18,15 @@ import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.util.CardUtil;
 import org.apache.log4j.Logger;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -74,21 +78,25 @@ class DetentionSphereEntersEffect extends OneShotEffect {
 
     @Override
     public boolean apply(Game game, Ability source) {
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
         Permanent targetPermanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         Player controller = game.getPlayer(source.getControllerId());
         MageObject sourceObject = game.getObject(source);
-        if (sourceObject != null && exileId != null && targetPermanent != null && controller != null) {
-
+        if (sourceObject != null && targetPermanent != null && controller != null) {
+            MoveCardsParameters parameters = new MoveCardsParameters(targetPermanent, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
             if (CardUtil.haveEmptyName(targetPermanent)) { // face down creature
-                controller.moveCardToExileWithInfo(targetPermanent, exileId, sourceObject.getIdName(), source, game, Zone.BATTLEFIELD, true);
+                controller.moveCards(parameters, source, game);
             } else {
                 String name = targetPermanent.getName();
+                Set<Card> toExile = new HashSet<>();
                 for (Permanent permanent : game.getBattlefield().getActivePermanents(source.getControllerId(), game)) {
                     if (permanent != null && CardUtil.haveSameNames(permanent, name, game)) {
-                        controller.moveCardToExileWithInfo(permanent, exileId, sourceObject.getIdName(), source, game, Zone.BATTLEFIELD, true);
+                        toExile.add(permanent);
                     }
                 }
+                parameters.setCards(toExile);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }
@@ -124,7 +132,9 @@ class DetentionSphereLeavesEffect extends OneShotEffect {
             }
             ExileZone exile = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), permanentLeftBattlefield.getZoneChangeCounter(game)));
             if (exile != null) {
-                controller.moveCards(exile.getCards(game), Zone.BATTLEFIELD, source, game, false, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(exile.getCards(game), Zone.BATTLEFIELD)
+                        .setByOwner(true);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

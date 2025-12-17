@@ -17,6 +17,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.players.Player;
@@ -88,7 +89,7 @@ class MirrorOfLifeTrappingEffect extends OneShotEffect {
             return false;
         }
 
-        UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
+        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
         ExileZone exileZone = game.getExile().getExileZone(exileZoneId);
 
         Cards toBattlefield = null;
@@ -98,13 +99,17 @@ class MirrorOfLifeTrappingEffect extends OneShotEffect {
 
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent != null) {
-            controller.moveCardsToExile(permanent, source, game, true, exileZoneId, sourceObject.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                    .setExileId(exileZoneId)
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
         }
 
         if (toBattlefield != null) {
             game.processAction();
-            controller.moveCards(toBattlefield.getCards(StaticFilters.FILTER_CARD_PERMANENT, game),
-                    Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield.getCards(StaticFilters.FILTER_CARD_PERMANENT, game), Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
         }
 
         return true;

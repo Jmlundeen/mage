@@ -14,6 +14,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
@@ -115,8 +116,10 @@ class EyeOfTheStormEffect1 extends OneShotEffect {
                 return false;
             }
             if (!noLongerOnStack) {// the spell is still on the stack, so exile it
-                UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), eyeOfTheStorm.getZoneChangeCounter(game));
-                spellController.moveCardsToExile(spell, source, game, true, exileZoneId, eyeOfTheStorm.getIdName());
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                spellController.moveCards(parameters, source, game);
             }
 
             eyeOfTheStorm.imprint(card.getId(), game);// technically, using the imprint functionality here is not correct.

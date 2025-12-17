@@ -12,22 +12,21 @@ import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.ReturnToBattlefieldUnderOwnerControlTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SuperType;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.combat.CombatGroup;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.DoublestrikeSamuraiToken;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -100,8 +99,10 @@ class TheEternalWandererExileEffect extends OneShotEffect {
         if (controller != null && sourceObject != null) {
             Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
             if (permanent != null) {
-                UUID exileId = UUID.randomUUID();
-                if (controller.moveCardsToExile(permanent, source, game, true, exileId, sourceObject.getIdName())) {
+                MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                if (controller.moveCards(parameters, source, game)) {
                     //create delayed triggered ability
                     Effect effect = new ReturnToBattlefieldUnderOwnerControlTargetEffect(false, false);
                     effect.setTargetPointer(new FixedTarget(permanent.getId(), game));

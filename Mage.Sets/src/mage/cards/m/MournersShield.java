@@ -13,14 +13,12 @@ import mage.abilities.effects.PreventionEffectImpl;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AbilityWord;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
+import mage.constants.*;
 import mage.filter.FilterSource;
 import mage.filter.predicate.mageobject.SharesColorPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -83,7 +81,10 @@ class MournersShieldImprintEffect extends OneShotEffect {
         if (controller != null) {
             Card card = game.getCard(this.getTargetPointer().getFirst(game, source));
             if (card != null) {
-                controller.moveCardsToExile(card, source, game, true, CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC()), source.getSourceObject(game).getIdName());
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 Permanent sourcePermanent = game.getPermanent(source.getSourceId());
                 if (sourcePermanent != null) {
                     sourcePermanent.imprint(this.getTargetPointer().getFirst(game, source), game);

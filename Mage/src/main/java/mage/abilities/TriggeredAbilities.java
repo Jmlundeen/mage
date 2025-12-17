@@ -243,7 +243,7 @@ public class TriggeredAbilities extends LinkedHashMap<String, TriggeredAbility> 
                         // need to check if object was face down for dies and destroy events because the ability triggers in the new zone, zone counter -1 is used
                         Permanent permanent = (Permanent) game.getLastKnownInformation(ability.getSourceId(), Zone.BATTLEFIELD, ability.getStackMomentSourceZCC() - 1);
                         if (permanent != null) {
-                            if (permanent.isFaceDown(game)
+                            if (permanent.isFaceDown()
                                     && !isGainedAbility(ability, permanent) // the face down creature got the ability from an effect => so it should work
                                     && !ability.getWorksFaceDown()) { // the ability is declared to work also face down
                                 // Not all triggered abilities of face down creatures work if they are faced down

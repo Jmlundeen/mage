@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -13,7 +12,10 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -63,7 +65,9 @@ class SoldeviDiggerEffect extends OneShotEffect {
                 topCard = card;
             }
             if (topCard != null) {
-                return controller.moveCardToLibraryWithInfo(topCard, source, game, Zone.GRAVEYARD, false, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(topCard, Zone.LIBRARY)
+                        .setToTopOfLibrary(false);
+                return controller.moveCards(parameters, source, game);
             }
             return true;
         }

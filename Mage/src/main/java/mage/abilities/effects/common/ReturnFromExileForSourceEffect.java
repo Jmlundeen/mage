@@ -6,6 +6,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -72,7 +73,9 @@ public class ReturnFromExileForSourceEffect extends OneShotEffect {
         ExileZone exile = game.getExile().getExileZone(exileId);
         if (exile != null) { // null is valid if source left battlefield before enters the battlefield effect resolved
             if (Zone.BATTLEFIELD.equals(returnToZone)) {
-                controller.moveCards(exile.getCards(game), returnToZone, source, game, false, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(exile.getCards(game), Zone.BATTLEFIELD)
+                        .setByOwner(true);
+                controller.moveCards(parameters, source, game);
             } else {
                 controller.moveCards(exile, returnToZone, source, game);
             }

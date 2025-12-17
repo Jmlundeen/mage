@@ -18,6 +18,7 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandCard;
 import mage.filter.predicate.Predicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -109,7 +110,9 @@ class CanoptekWraithEffect extends OneShotEffect {
                 .map(uuid -> player.getLibrary().getCard(uuid, game))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        player.moveCards(cards, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         player.shuffleLibrary(source, game);
         return true;
     }

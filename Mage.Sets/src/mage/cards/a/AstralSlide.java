@@ -11,7 +11,9 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
@@ -62,7 +64,10 @@ class AstralSlideEffect extends OneShotEffect {
             Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
             if (permanent != null) {
                 UUID exileId = UUID.randomUUID();
-                if (controller.moveCardsToExile(permanent, source, game, true, exileId, sourceObject.getIdName())) {
+                MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                        .setExileId(exileId)
+                        .setExileName(sourceObject.getIdName());
+                if (controller.moveCards(parameters, source, game)) {
                     //create delayed triggered ability
                     Effect effect = new ReturnToBattlefieldUnderOwnerControlTargetEffect(false, false);
                     effect.setTargetPointer(new FixedTarget(permanent.getId(), game));

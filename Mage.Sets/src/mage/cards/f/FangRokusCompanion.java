@@ -122,9 +122,6 @@ class FangRokusCompanionReturnEffect extends OneShotEffect {
         }
         game.addEffect(new AddCardSubTypeTargetEffect(SubType.SPIRIT, Duration.Custom)
                 .setTargetPointer(new FixedTarget(new MageObjectReference(card, game, 1))), source);
-        return player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, true, null
-        );
+        return player.moveCards(card, Zone.BATTLEFIELD, source, game);
     }
 }

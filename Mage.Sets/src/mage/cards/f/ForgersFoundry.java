@@ -1,7 +1,5 @@
 package mage.cards.f;
 
-import java.util.UUID;
-
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -21,11 +19,14 @@ import mage.filter.common.FilterInstantOrSorcerySpell;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -134,11 +135,11 @@ class ForgersFoundryExileEffect extends ReplacementEffectImpl {
         if (player == null) {
             return false;
         }
-        player.moveCardsToExile(
-                sourceSpell, source, game, false,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        //TODO: allow replacement effects to change exile zone id/name
+        MoveCardsParameters parameters = new MoveCardsParameters(sourceSpell, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         return true;
     }
 

@@ -1,6 +1,5 @@
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.BlocksCreatureTriggeredAbility;
@@ -20,6 +19,8 @@ import mage.game.combat.CombatGroup;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.UUID;
 
 /**
  *
@@ -74,7 +75,7 @@ class AetherplasmEffect extends OneShotEffect {
                 Card card = game.getCard(target.getFirstTarget());
                 if (card != null) {
                     Permanent blockedCreature = game.getPermanent(getTargetPointer().getFirst(game, source));
-                    if (player.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null)
+                    if (player.moveCards(card, Zone.BATTLEFIELD, source, game)
                             && game.getCombat() != null && blockedCreature != null) {
                         CombatGroup attacker = game.getCombat().findGroup(blockedCreature.getId());
                         Permanent putIntoPlay = game.getPermanent(target.getFirstTarget());

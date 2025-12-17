@@ -15,10 +15,10 @@ import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.permanent.AttackingPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -102,8 +102,15 @@ class FirefluxSquadEffect extends OneShotEffect {
         if (toBattlefield == null) {
             return player.putCardsOnBottomOfLibrary(cards, game, source, false);
         }
-        player.moveCards(toBattlefield, Zone.BATTLEFIELD, source, game, true, false, true, null);
-        permanent = CardUtil.getPermanentFromCardPutToBattlefield(toBattlefield, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        permanent = player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(card -> card instanceof Permanent)
+                .map(card -> (Permanent) card)
+                .findFirst()
+                .orElse(null);;
         if (permanent != null) {
             cards.remove(toBattlefield);
             game.getCombat().addAttackingCreature(permanent.getId(), game);

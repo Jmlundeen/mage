@@ -18,6 +18,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -96,11 +97,10 @@ class LagrellaTheMagpieEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         game.addDelayedTriggeredAbility(new LagrellaTheMagpieTriggeredAbility(cards, game), source);
         return true;

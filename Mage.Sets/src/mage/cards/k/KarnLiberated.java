@@ -11,6 +11,7 @@ import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.GameImpl;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentImpl;
@@ -244,7 +245,10 @@ class KarnPlayerExileEffect extends OneShotEffect {
         if (target.canChoose(player.getId(), source, game)
                 && target.chooseTarget(Outcome.Exile, player.getId(), source, game)) {
             UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-            return player.moveCardsToExile(new CardsImpl(target.getTargets()).getCards(game), source, game, true, exileId, sourceObject.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.EXILED)
+                    .setExileId(exileId)
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            return player.moveCards(parameters, source, game);
         }
         return false;
     }

@@ -17,12 +17,12 @@ import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -89,8 +89,15 @@ class OliviaCrimsonBrideEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+
+        Permanent permanent = controller.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(cardRes -> cardRes instanceof Permanent)
+                .map(cardRes -> (Permanent) cardRes)
+                .findFirst()
+                .orElse(null);
         if (permanent == null) {
             return false;
         }

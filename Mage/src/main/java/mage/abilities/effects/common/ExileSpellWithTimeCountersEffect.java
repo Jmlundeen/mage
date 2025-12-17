@@ -7,8 +7,10 @@ import mage.abilities.effects.common.continuous.GainSuspendEffect;
 import mage.abilities.keyword.SuspendAbility;
 import mage.cards.Card;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -53,7 +55,10 @@ public class ExileSpellWithTimeCountersEffect extends OneShotEffect {
             return false;
         }
         UUID exileId = SuspendAbility.getSuspendExileId(controller.getId(), game);
-        if (!card.isCopy() && controller.moveCardsToExile(card, source, game, true, exileId, "Suspended cards of " + controller.getName())) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName("Suspended cards of " + controller.getName());
+        if (!card.isCopy() && controller.moveCards(parameters, source, game)) {
             card.addCounters(CounterType.TIME.createInstance(3), source.getControllerId(), source, game);
             game.informPlayers(controller.getLogName() + " exiles " + card.getLogName() + " with " + counters + " time counters on it");
             if (gainsSuspend) {

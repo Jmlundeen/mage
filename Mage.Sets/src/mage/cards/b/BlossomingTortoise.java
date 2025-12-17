@@ -15,6 +15,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -91,7 +92,12 @@ class BlossomingTortoiseEffect extends OneShotEffect {
         target.withNotTarget(true);
         player.choose(outcome, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
-        return card != null && player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        if (card == null) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 }
 

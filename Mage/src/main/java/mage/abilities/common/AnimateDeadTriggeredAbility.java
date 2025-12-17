@@ -12,6 +12,7 @@ import mage.constants.*;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -185,7 +186,9 @@ class AnimateDeadPutOntoBattlefieldEffect extends OneShotEffect {
             return true;
         }
         // Put card onto the battlefield under your control...
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, tapped, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(tapped);
+        player.moveCards(parameters, source, game);
         game.processAction();
 
         Permanent creature = CardUtil.getPermanentFromCardPutToBattlefield(card, game);

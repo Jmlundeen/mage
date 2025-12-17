@@ -17,6 +17,7 @@ import mage.cards.CardsImpl;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.watchers.common.PlayerLostGameWatcher;
@@ -87,11 +88,9 @@ class RampantFrogantuaEffect extends OneShotEffect {
         TargetCard target = new TargetCard(0, Integer.MAX_VALUE, Zone.ALL, StaticFilters.FILTER_CARD_LANDS);
         target.withNotTarget(true);
         player.choose(Outcome.DrawCard, cards, target, source, game);
-        player.moveCards(
-                new CardsImpl(target.getTargets()).getCards(game),
-                Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

@@ -1,7 +1,6 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.SacrificeSourceCost;
@@ -20,6 +19,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.target.common.TargetCardInGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -79,7 +80,7 @@ class PhyrexianFurnaceEffect extends OneShotEffect {
                 break;
             }
             if (bottomCard != null) {
-                return player.moveCardToExileWithInfo(bottomCard, null, "", source, game, Zone.GRAVEYARD, true);
+                return player.moveCards(bottomCard, Zone.EXILED, source, game);
             }
             return true;
         }

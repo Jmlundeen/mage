@@ -7,8 +7,10 @@ import mage.abilities.effects.common.CreateTokenCopyTargetEffect;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInExile;
 import mage.target.targetpointer.FixedTarget;
@@ -68,11 +70,10 @@ class EspersToMagiciteExileEffect extends OneShotEffect {
                 cards.addAll(opponent.getGraveyard());
             }
         }
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         ReflexiveTriggeredAbility ability = new ReflexiveTriggeredAbility(new EspersToMagiciteTokenEffect(), false);
         ability.addTarget(new TargetCardInExile(
                 0, 1,

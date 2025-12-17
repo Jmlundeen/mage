@@ -8,6 +8,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -50,9 +51,12 @@ public class ExileAllEffect extends OneShotEffect {
         Cards cards = new CardsImpl();
         game.getBattlefield().getActivePermanents(
                 filter, source.getControllerId(), source, game
-        ).stream().forEach(cards::add);
+        ).forEach(cards::add);
         if (forSource) {
-            return controller.moveCardsToExile(cards.getCards(game), source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            return controller.moveCards(parameters, source, game);
         }
         return controller.moveCards(cards, Zone.EXILED, source, game);
 

@@ -1,24 +1,21 @@
-
 package mage.cards.g;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  *
@@ -70,7 +67,10 @@ class GerrymanderingEffect extends OneShotEffect {
                 exiledCards.add(permanent);
                 playerLandCount.putIfAbsent(permanent.getControllerId(), 0);
                 playerLandCount.put(permanent.getControllerId(), playerLandCount.get(permanent.getControllerId()) + 1);
-                controller.moveCardsToExile(permanent, source, game, true, CardUtil.getCardExileZoneId(game, source.getSourceId()), "Gerrymandering");
+                MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
 
             // Give each player a number of those cards chosen at random equal to the number of those cards the player controlled.
@@ -84,7 +84,7 @@ class GerrymanderingEffect extends OneShotEffect {
                     for (int i = 1; i <= playerLandCount.get(playerId); i++) {
                         Card card = exiledCards.getRandom(game);
                         exiledCards.remove(card);
-                        player.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+                        player.moveCards(card, Zone.BATTLEFIELD, source, game);
                         if (exiledCards.isEmpty()) {
                             break;
                         }

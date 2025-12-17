@@ -18,6 +18,7 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeBatchEvent;
 import mage.game.events.ZoneChangeEvent;
@@ -219,10 +220,10 @@ class KayaSpiritsJusticeExileEffect extends OneShotEffect {
             controller.choose(outcome, target, source, game);
             Card card = game.getCard(target.getFirstTarget());
             if (card != null) {
-                UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                MageObject sourceObject = source.getSourceObject(game);
-                String exileName = sourceObject == null ? null : sourceObject.getIdName();
-                return controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;

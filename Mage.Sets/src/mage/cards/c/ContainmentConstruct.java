@@ -1,25 +1,22 @@
 package mage.cards.c;
 
 import mage.MageInt;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.cards.Card;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.cards.CardImpl;
+import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  * @author jeffwadsworth
@@ -104,8 +101,10 @@ class ContainmentConstructEffect extends OneShotEffect {
                 && containmentConstruct != null) {
             Player controller = game.getPlayer(source.getControllerId());
             if (controller.chooseUse(Outcome.Benefit, "Do you want to exile the discarded card?  You may play it this turn from exile.", source, game)) {
-                UUID exileId = CardUtil.getExileZoneId(game, source);
-                controller.moveCardsToExile(discardedCard, source, game, true, exileId, "Exiled by " + containmentConstruct.getIdName());
+                MoveCardsParameters parameters = new MoveCardsParameters(discardedCard, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, ""));
+                controller.moveCards(parameters, source, game);
                 PlayFromNotOwnHandZoneTargetEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Duration.EndOfTurn);
                 effect.setTargetPointer(new FixedTarget(discardedCard.getId(), game));
                 game.addEffect(effect, source);

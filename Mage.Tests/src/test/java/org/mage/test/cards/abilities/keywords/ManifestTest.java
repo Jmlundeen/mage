@@ -429,7 +429,7 @@ public class ManifestTest extends CardTestPlayerBase {
 
         for (Card card : currentGame.getExile().getAllCards(currentGame)) {
             if (card.getName().equals("Gore Swine")) {
-                Assert.assertTrue("Gore Swine may not be face down in exile", !card.isFaceDown(currentGame));
+                Assert.assertTrue("Gore Swine may not be face down in exile", !card.isFaceDown());
             }
         }
 
@@ -729,7 +729,7 @@ public class ManifestTest extends CardTestPlayerBase {
     private PermanentView findFaceDownPermanent(Game game, TestPlayer viewFromPlayer, TestPlayer searchInPlayer) {
         Permanent perm = game.getBattlefield().getAllPermanents()
                 .stream()
-                .filter(permanent -> permanent.isFaceDown(game))
+                .filter(MageObject::isFaceDown)
                 .filter(permanent -> {
                     Assert.assertEquals("face down permanent must have not name", "", permanent.getName());
                     // TODO: buggy, manifested card must have some rules

@@ -424,7 +424,15 @@ public class TestPlayer implements Player {
                 foundObject = true;
                 foundAbility = ability.toString().equals(nameOrAlias);
             } else {
-                foundObject = hasObjectTargetNameOrAlias(game.getObject(ability.getSourceId()), searchObject);
+                MageObject mageObject = game.getObject(ability.getSourceId());
+                if (mageObject == null) {
+                    foundObject = false;
+                } else if (mageObject.isFaceDown()) {
+                    // if checking a cast for a face down card, it should be properly approved, so just make sure the name matches the original
+                    foundObject = mageObject.getOriginalName().equals(searchObject);
+                } else {
+                    foundObject = hasObjectTargetNameOrAlias(game.getObject(ability.getSourceId()), searchObject);
+                }
                 foundAbility = searchObject.startsWith(ALIAS_PREFIX) || ability.toString().equals(nameOrAlias);
             }
         } else if (nameOrAlias.startsWith(ALIAS_PREFIX)) {
@@ -456,6 +464,16 @@ public class TestPlayer implements Player {
         // must search any names, even empty (face down cards)
         if (CardUtil.haveSameNames(nameOrAlias, object.getName(), true)) {
             return true;
+        }
+
+        // if card owner, check original name
+        if (object instanceof Card) {
+            Card card = (Card) object;
+            if (card.getOwnerId() != null && card.getOwnerId().equals(this.getId())) {
+                if (CardUtil.haveSameNames(nameOrAlias, card.getOriginalName(), true)) {
+                    return true;
+                }
+            }
         }
 
         // no more empty names needs
@@ -2578,16 +2596,30 @@ public class TestPlayer implements Player {
                     || target.getOriginalTarget() instanceof TargetSpellOrPermanent
                     || target.getOriginalTarget() instanceof TargetStackObject) {
                 for (String targetDefinition : targets.stream().limit(takeMaxTargetsPerChoose).collect(Collectors.toList())) {
-                    checkTargetDefinitionMarksSupport(target, targetDefinition, "^");
+                    checkTargetDefinitionMarksSupport(target, targetDefinition, "^[]");
                     String[] targetList = targetDefinition.split("\\^");
                     boolean targetFound = false;
                     for (String targetName : targetList) {
+                        boolean originOnly = false;
+                        boolean copyOnly = false;
+                        if (targetName.endsWith("]")) {
+                            if (targetName.endsWith("[no copy]")) {
+                                originOnly = true;
+                                targetName = targetName.substring(0, targetName.length() - 9);
+                            }
+                            if (targetName.endsWith("[only copy]")) {
+                                copyOnly = true;
+                                targetName = targetName.substring(0, targetName.length() - 11);
+                            }
+                        }
                         for (StackObject stackObject : game.getStack()) {
                             if (hasObjectTargetNameOrAlias(stackObject, targetName)) {
                                 if (target.canTarget(abilityControllerId, stackObject.getId(), source, game) && !target.contains(stackObject.getId())) {
-                                    target.addTarget(stackObject.getId(), source, game);
-                                    targetFound = true;
-                                    break; // return to next targetName
+                                    if ((stackObject.isCopy() && !originOnly) || (!stackObject.isCopy() && !copyOnly)) {
+                                        target.addTarget(stackObject.getId(), source, game);
+                                        targetFound = true;
+                                        break; // return to next targetName
+                                    }
                                 }
                             }
                         }
@@ -3052,11 +3084,6 @@ public class TestPlayer implements Player {
     @Override
     public boolean removeFromBattlefield(Permanent permanent, Ability source, Game game) {
         return computerPlayer.removeFromBattlefield(permanent, source, game);
-    }
-
-    @Override
-    public boolean putInGraveyard(Card card, Game game) {
-        return computerPlayer.putInGraveyard(card, game);
     }
 
     @Override
@@ -3925,51 +3952,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean moveCardToHandWithInfo(Card card, Ability source, Game game, boolean withName) {
-        return computerPlayer.moveCardToHandWithInfo(card, source, game, withName);
-    }
-
-    @Override
-    public boolean moveCardsToHandWithInfo(Cards cards, Ability source, Game game, boolean withName) {
-        return computerPlayer.moveCardsToHandWithInfo(cards, source, game, withName);
-    }
-
-    @Override
-    public boolean moveCardsToExile(Card card, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName) {
-        return computerPlayer.moveCardsToExile(card, source, game, withName, exileId, exileZoneName);
-    }
-
-    @Override
-    public boolean moveCardsToExile(Set<Card> cards, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName) {
-        return computerPlayer.moveCardsToExile(cards, source, game, withName, exileId, exileZoneName);
-    }
-
-    @Override
-    public Set<Card> moveCardsToGraveyardWithInfo(Set<? extends Card> allCards, Ability source, Game game, Zone fromZone) {
-        return computerPlayer.moveCardsToGraveyardWithInfo(allCards, source, game, fromZone);
-    }
-
-    @Override
-    public boolean moveCardToGraveyardWithInfo(Card card, Ability source, Game game, Zone fromZone) {
-        return computerPlayer.moveCardToGraveyardWithInfo(card, source, game, fromZone);
-    }
-
-    @Override
-    public boolean moveCardToLibraryWithInfo(Card card, Ability source, Game game, Zone fromZone, boolean toTop, boolean withName) {
-        return computerPlayer.moveCardToLibraryWithInfo(card, source, game, fromZone, toTop, withName);
-    }
-
-    @Override
-    public boolean moveCardToExileWithInfo(Card card, UUID exileId, String exileName, Ability source, Game game, Zone fromZone, boolean withName) {
-        return computerPlayer.moveCardToExileWithInfo(card, exileId, exileName, source, game, fromZone, withName);
-    }
-
-    @Override
-    public boolean moveCardToCommandWithInfo(Card card, Ability source, Game game, Zone fromZone) {
-        return computerPlayer.moveCardToCommandWithInfo(card, source, game, fromZone);
-    }
-
-    @Override
     public Cards millCards(int toMill, Ability source, Game game) {
         return computerPlayer.millCards(toMill, source, game);
     }
@@ -4449,14 +4431,6 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean moveCards(Card card, Zone toZone,
-                             Ability source, Game game,
-                             boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects
-    ) {
-        return computerPlayer.moveCards(card, toZone, source, game, tapped, faceDown, byOwner, appliedEffects);
-    }
-
-    @Override
     public boolean moveCards(Cards cards, Zone toZone,
                              Ability source, Game game
     ) {
@@ -4471,11 +4445,13 @@ public class TestPlayer implements Player {
     }
 
     @Override
-    public boolean moveCards(Set<? extends Card> cards, Zone toZone,
-                             Ability source, Game game,
-                             boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects
-    ) {
-        return computerPlayer.moveCards(cards, toZone, source, game, tapped, faceDown, byOwner, appliedEffects);
+    public boolean moveCards(MoveCardsParameters parameters, Ability source, Game game) {
+        return computerPlayer.moveCards(parameters, source, game);
+    }
+
+    @Override
+    public Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game) {
+        return computerPlayer.moveCardsWithResult(parameters, source, game);
     }
 
     @Override

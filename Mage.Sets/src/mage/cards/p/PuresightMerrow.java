@@ -1,7 +1,6 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -9,17 +8,17 @@ import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.UntapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -78,7 +77,10 @@ class PuresightMerrowEffect extends OneShotEffect {
                 Cards cards = new CardsImpl(card);
                 controller.lookAtCards("Puresight Merrow", cards, game);
                 if (controller.chooseUse(Outcome.Removal, "Exile the card from the top of your library?", source, game)) {
-                    controller.moveCardToExileWithInfo(card, source.getSourceId(), sourceObject.getIdName(), source, game, Zone.LIBRARY, true);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                 } else {
                     game.informPlayers(controller.getLogName() + " puts the card back on top of their library.");
                 }

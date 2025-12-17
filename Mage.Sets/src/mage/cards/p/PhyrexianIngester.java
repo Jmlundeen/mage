@@ -2,7 +2,6 @@
 package mage.cards.p;
 
 import mage.MageInt;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,6 +14,7 @@ import mage.constants.*;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -45,6 +45,7 @@ public final class PhyrexianIngester extends CardImpl {
         Ability ability = new EntersBattlefieldTriggeredAbility(new PhyrexianIngesterImprintEffect(), true);
         ability.addTarget(new TargetPermanent(filter));
         this.addAbility(ability.setAbilityWord(AbilityWord.IMPRINT));
+
         // Phyrexian Ingester gets +X/+Y, where X is the exiled creature card's power and Y is its toughness.
         this.addAbility(new SimpleStaticAbility(new PhyrexianIngesterBoostEffect()));
     }
@@ -78,8 +79,7 @@ class PhyrexianIngesterImprintEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
-        MageObject sourceObject = source.getSourceObject(game);
-        if (controller == null && sourceObject == null) {
+        if (controller == null) {
             return false;
         }
         Permanent targetPermanent = game.getPermanent(source.getFirstTarget());
@@ -87,15 +87,16 @@ class PhyrexianIngesterImprintEffect extends OneShotEffect {
             return false;
         }
         Permanent sourcePermanent = source.getSourcePermanentIfItStillExists(game);
+        MoveCardsParameters parameters = new MoveCardsParameters(targetPermanent, Zone.EXILED);
         if (sourcePermanent != null) {
-            UUID exileZoneId = CardUtil.getCardExileZoneId(game, source);
-            String exileZoneName = sourceObject.getIdName() + " (Imprint)";
-            controller.moveCardsToExile(targetPermanent, source, game, true, exileZoneId, exileZoneName);
+            parameters.setExileId(CardUtil.getCardExileZoneId(game, source));
+            parameters.setExileName(sourcePermanent.getIdName() + " (Imprint)");
+            controller.moveCards(parameters, source, game);
             sourcePermanent.imprint(targetPermanent.getId(), game);
         } else {
             // Ingester is no longer on the battlefield, but the target still needs to be exiled.
             // no need for specific exile zone
-            controller.moveCardsToExile(targetPermanent, source, game, true, null, "");
+            controller.moveCards(targetPermanent, Zone.EXILED, source, game);
         }
         return true;
     }

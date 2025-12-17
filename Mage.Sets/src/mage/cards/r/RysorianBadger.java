@@ -83,14 +83,9 @@ class RysorianBadgerEffect extends OneShotEffect {
                 cardsToExile.add(card);
             }
         }
-        int cardsExiled = 0;
-        player.moveCardsToExile(cardsToExile.getCards(game), source, game, false, null, null);
-        for (Card card : cardsToExile.getCards(game)) {
-            if (game.getState().getZone(card.getId()) == Zone.EXILED) {
-                cardsExiled++;
-            }
-        }
-        player.gainLife(cardsExiled, game, source);
+        player.moveCards(cardsToExile.getCards(game), Zone.EXILED, source, game);
+        cardsToExile.retainZone(Zone.EXILED, game);
+        player.gainLife(cardsToExile.size(), game, source);
         game.addEffect(new AssignNoCombatDamageSourceEffect(Duration.EndOfTurn), source);
         return true;
     }

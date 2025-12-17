@@ -196,7 +196,7 @@ public class TargetSpellOrPermanent extends TargetImpl {
             } else {
                 Spell spell = game.getStack().getSpell(targetId);
                 if (spell != null) {
-                    if (spell.isFaceDown(game)) {
+                    if (spell.isFaceDown()) {
                         sb.append(GameLog.getNeutralColoredText("face down spell"));
                     } else {
                         sb.append(spell.getLogName()).append(' ');

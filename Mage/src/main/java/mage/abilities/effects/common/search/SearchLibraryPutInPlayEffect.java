@@ -6,6 +6,7 @@ import mage.cards.CardsImpl;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 
@@ -69,8 +70,9 @@ public class SearchLibraryPutInPlayEffect extends SearchEffect {
         }
         if (player.searchLibrary(target, source, game)) {
             if (!target.getTargets().isEmpty()) {
-                player.moveCards(new CardsImpl(target.getTargets()).getCards(game),
-                        Zone.BATTLEFIELD, source, game, tapped, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                        .setTapped(tapped);
+                player.moveCards(parameters, source, game);
             }
             player.shuffleLibrary(source, game);
             return true;

@@ -4,7 +4,6 @@ import mage.MageIdentifier;
 import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.condition.common.MonarchIsSourceControllerCondition;
 import mage.abilities.decorator.ConditionalOneShotEffect;
@@ -12,12 +11,14 @@ import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.BecomesMonarchSourceEffect;
 import mage.abilities.hint.common.MonarchHint;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -102,7 +103,10 @@ class CourtOfLocthwainFirstEffect extends OneShotEffect {
 
         UUID exileId = CourtOfLocthwain.getExileZoneId(new MageObjectReference(sourceObject, game), game);
         String exileName = sourceObject.getIdName();
-        controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        controller.moveCards(parameters, source, game);
 
         if (game.getState().getZone(card.getId()) == Zone.EXILED) {
             CardUtil.makeCardPlayable(

@@ -1,9 +1,6 @@
 
 package mage.cards.w;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -12,21 +9,19 @@ import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.TrampleAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Outcome;
-import mage.constants.TargetController;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.PermanentToken;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -84,15 +79,12 @@ class WorldgorgerDragonEntersEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
-        MageObject sourceObject = source.getSourceObject(game);
         if (controller != null) {
-            UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-            if (exileId != null) {
-                Set<Card> cardsToExile = new LinkedHashSet<>();
-                cardsToExile.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
-                controller.moveCardsToExile(cardsToExile, source, game, true, exileId, sourceObject.getIdName());
-                return true;
-            }
+            MoveCardsParameters parameters = new MoveCardsParameters(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
+            return true;
         }
         return false;
     }
@@ -122,7 +114,9 @@ class WorldgorgerDragonLeavesEffect extends OneShotEffect {
             int zoneChangeCounter = (sourceObject instanceof PermanentToken) ? source.getStackMomentSourceZCC() : source.getStackMomentSourceZCC() - 1;
             ExileZone exile = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), zoneChangeCounter));
             if (exile != null) {
-                return controller.moveCards(exile.getCards(game), Zone.BATTLEFIELD, source, game, false, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(exile.getCards(game), Zone.BATTLEFIELD)
+                        .setByOwner(true);
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;

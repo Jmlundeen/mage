@@ -14,6 +14,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
@@ -78,7 +79,9 @@ class FabledPassageSearchForLandEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        if (!player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        if (!player.moveCards(parameters, source, game)) {
             return false;
         }
         for (Effect effect : source.getEffects()) {

@@ -5,6 +5,7 @@ import mage.MageObject;
 import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Abilities;
+import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.effects.ContinuousEffect;
@@ -17,16 +18,15 @@ import mage.abilities.hint.HintUtils;
 import mage.abilities.keyword.*;
 import mage.cards.Card;
 import mage.cards.CardImpl;
+import mage.cards.CardsImpl;
+import mage.cards.CopiableValues;
 import mage.abilities.common.RoomAbility;
 import mage.constants.*;
 import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.FilterOpponent;
-import mage.game.Game;
-import mage.game.GameState;
-import mage.game.ZoneChangeInfo;
-import mage.game.ZonesHandler;
+import mage.game.*;
 import mage.game.combat.CombatGroup;
 import mage.game.command.CommandObject;
 import mage.game.events.*;
@@ -91,7 +91,6 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     protected int turnsOnBattlefield;
     protected boolean phasedIn = true;
     protected boolean indirectPhase = false;
-    protected boolean faceDown;
     protected boolean attacking;
     protected int blocking;
     // number of creatures the permanent can block
@@ -122,6 +121,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     protected int createOrder;
     protected boolean legendRuleApplies = true;
     protected boolean prototyped;
+    protected CopiableValues copiableValues = new CopiableValues(false);
 
     private static final List<UUID> emptyList = Collections.unmodifiableList(new ArrayList<>());
 
@@ -203,6 +203,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
         this.createOrder = permanent.createOrder;
         this.prototyped = permanent.prototyped;
         this.canBeSacrificed = permanent.canBeSacrificed;
+        this.copiableValues = permanent.copiableValues.copy();
     }
 
     @Override
@@ -425,6 +426,17 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
         return super.getAbilities(game);
     }
 
+    @Override
+    public Abilities<Ability> getDynamicAbilities() {
+        Abilities<Ability> result = new AbilitiesImpl<>();
+        for (Ability ability : abilities) {
+            if (!copiableValues.getAbilities().contains(ability)) {
+                result.add(ability);
+            }
+        }
+        return result;
+    }
+
     /**
      * Add an ability to the permanent. When copying from an existing source
      * you should use the fromExistingObject variant of this function to prevent double-copying subabilities
@@ -639,16 +651,6 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void setFaceDown(boolean value, Game game) {
-        this.faceDown = value;
-    }
-
-    @Override
-    public boolean isFaceDown(Game game) {
-        return faceDown;
     }
 
     @Override
@@ -1266,12 +1268,6 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     @Override
     public boolean entersBattlefield(Ability source, Game game, Zone fromZone, boolean fireEvent) {
         controlledFromStartOfControllerTurn = false;
-
-        BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.findFaceDownType(game, this);
-        if (faceDownType != null) {
-            // remove some attributes here, because first apply effects comes later otherwise abilities (e.g. color related) will unintended trigger
-            BecomesFaceDownCreatureEffect.makeFaceDownObject(game, null, this, faceDownType, null);
-        }
 
         // own etb event
         // 616.1a
@@ -2090,6 +2086,33 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
     }
 
     @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        Zone toZone = parameters.getToZone();
+        Zone fromZone = game.getState().getZone(objectId);
+        Player controller = game.getPlayer(controllerId);
+        if (controller == null) {
+            return false;
+        }
+        ZoneChangeEvent event = new ZoneChangeEvent(this, source, controllerId, fromZone, parameters.getToZone(), appliedEffects);
+        ZoneChangeInfo zoneChangeInfo;
+        if (toZone != null) {
+            switch (toZone) {
+                case LIBRARY:
+                    zoneChangeInfo = new ZoneChangeInfo.Library(event, parameters.isFaceDown(), parameters.isToTopOfLibrary());
+                    break;
+                case EXILED:
+                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName());
+                    break;
+                default:
+                    zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());
+                    break;
+            }
+            return ZonesHandler.moveCard(zoneChangeInfo, game, source);
+        }
+        return false;
+    }
+
+    @Override
     public boolean moveToExile(UUID exileId, String name, Ability source, Game game, List<UUID> appliedEffects) {
         Zone fromZone = game.getState().getZone(objectId);
         ZoneChangeEvent event = new ZoneChangeEvent(this, source, ownerId, fromZone, Zone.EXILED, appliedEffects);
@@ -2175,5 +2198,67 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
         }
 
         return true;
+    }
+
+    @Override
+    public void saveCopiableValues(Game game) {
+        this.copiableValues.copyFrom(this, game);
+    }
+
+    @Override
+    public CopiableValues getCopiableValues() {
+        return copiableValues;
+    }
+
+    @Override
+    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
+        if (!this.getBasicMageObject().isPermanent()){
+            // 701.34g. If a manifested permanent that's represented by an instant or sorcery card would turn face up,
+            //   its controller reveals it and leaves it face down. Abilities that trigger whenever a permanent
+            //   is turned face up won't trigger.
+            Player player = game.getPlayer(source.getControllerId());
+            if (player != null) {
+                player.revealCards(source, new CardsImpl(this), game);
+            }
+            return false;
+        }
+
+        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
+        if (!game.replaceEvent(event)) {
+            Abilities<Ability> dynamicAbilities = this.getDynamicAbilities();
+            if (this.isCopy()) {
+                CopiableValues restoreValues = this.copiableValues.copy();
+                this.setFaceDown(false);
+                this.reset(game);
+                restoreValues.applyTo(this);
+                if (copyFrom != null) {
+                    this.setName(copyFrom.getName());
+                }
+            } else {
+                setFaceDown(false);
+                this.reset(game);
+            }
+            this.getAbilities().addAll(dynamicAbilities);
+            setManifested(false);
+            setMorphed(false);
+            setDisguised(false);
+            setCloaked(false);
+            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_UP, getId(), source, playerId));
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
+        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_DOWN, getId(), source, playerId);
+        if (!game.replaceEvent(event)) {
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(this, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
+            setFaceDown(true);
+            this.reset(game);
+            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_DOWN, getId(), source, playerId));
+            return true;
+        }
+        return false;
     }
 }

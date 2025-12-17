@@ -3,7 +3,6 @@ package mage.cards.s;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.ContinuousEffect;
@@ -16,6 +15,7 @@ import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.IndestructibleAbility;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -24,16 +24,16 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.BloodToken;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 import mage.watchers.common.PlayerLostLifeWatcher;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * @author Alex-Vasile
@@ -120,9 +120,14 @@ class StrefanMaurerProgenitorPlayVampireEffect extends OneShotEffect {
             return false;
         }
 
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
-
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        Permanent permanent = player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(cardRes -> cardRes instanceof Permanent)
+                .map(cardRes -> (Permanent) cardRes)
+                .findFirst()
+                .orElse(null);
         if (permanent == null) {
             return false;
         }

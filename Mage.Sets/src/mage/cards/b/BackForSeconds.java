@@ -86,9 +86,7 @@ class BackForSecondsEffect extends OneShotEffect {
 
         Cards cards = new CardsImpl();
         for (Target target : source.getTargets()) {
-            for (UUID id : target.getTargets()) {
-                cards.add(id);
-            }
+            cards.addAll(target.getTargets());
         }
         cards.retainZone(Zone.GRAVEYARD, game);
 
@@ -104,7 +102,7 @@ class BackForSecondsEffect extends OneShotEffect {
             }
         }
 
-        controller.moveCardsToHandWithInfo(cards, source, game, true);
+        controller.moveCards(cards, Zone.HAND, source, game);
         return true;
     }
 

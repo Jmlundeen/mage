@@ -13,6 +13,7 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.util.CardUtil;
@@ -67,14 +68,12 @@ class SuppressEffect extends OneShotEffect {
             return false;
         }
         Cards cards = new CardsImpl(player.getHand());
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, false,
-                CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
-        );
-        cards.getCards(game)
-                .stream()
-                .filter(card -> game.getState().getZone(card.getId()) == Zone.EXILED)
-                .forEach(card -> card.setFaceDown(true, game));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
+        cards.retainZone(Zone.EXILED, game);
         DelayedTriggeredAbility ability = new AtTheBeginOfPlayersNextEndStepDelayedTriggeredAbility(
                 new ReturnFromExileEffect(Zone.HAND).setText("that player returns those cards to their hand"), player.getId()
         ).setTriggerPhrase("At the beginning of the end step of that player's next turn, ");

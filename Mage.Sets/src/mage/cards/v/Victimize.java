@@ -1,7 +1,6 @@
 
 package mage.cards.v;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.effects.OneShotEffect;
@@ -14,9 +13,11 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
-import mage.target.common.TargetControlledCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -65,8 +66,9 @@ class VictimizeEffect extends OneShotEffect {
             SacrificeTargetCost cost = new SacrificeTargetCost(StaticFilters.FILTER_PERMANENT_CREATURE);
             if (cost.pay(source, game, source, source.getControllerId(), false, null)) {
                 game.processAction(); // To end effects of the sacrificed creature
-                controller.moveCards(new CardsImpl(getTargetPointer().getTargets(game, source)).getCards(game),
-                        Zone.BATTLEFIELD, source, game, true, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(getTargetPointer().getTargets(game, source)).getCards(game), Zone.BATTLEFIELD)
+                        .setTapped(true);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

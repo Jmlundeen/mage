@@ -1,7 +1,6 @@
 
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.ExileSourceCost;
@@ -17,6 +16,8 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetPlayer;
+
+import java.util.UUID;
 
 /**
  *
@@ -66,7 +67,7 @@ class ThranFoundryEffect extends OneShotEffect {
         Player player = game.getPlayer(this.getTargetPointer().getFirst(game, source));
         if (player != null) {
             for (Card card: player.getGraveyard().getCards(game)) {
-                player.moveCardToLibraryWithInfo(card, source, game, Zone.GRAVEYARD, true, true);
+                player.moveCards(card, Zone.LIBRARY, source, game);
             }              
             player.shuffleLibrary(source, game);
             return true;

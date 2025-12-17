@@ -1,8 +1,6 @@
 
 package mage.cards.r;
 
-import java.util.List;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -11,14 +9,18 @@ import mage.abilities.effects.OneShotEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.common.FilterLandPermanent;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -98,7 +100,10 @@ class RealmRazerEffect extends OneShotEffect {
         if (controller != null) {
             ExileZone exZone = game.getExile().getExileZone(source.getSourceId());
             if (exZone != null) {
-                return controller.moveCards(exZone.getCards(game), Zone.BATTLEFIELD, source, game, true, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(exZone.getCards(game), Zone.BATTLEFIELD)
+                        .setTapped(true)
+                        .setByOwner(true);
+                return controller.moveCards(parameters, source, game);
             }
             return true;
         }

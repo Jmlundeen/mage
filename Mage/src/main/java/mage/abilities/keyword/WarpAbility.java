@@ -11,6 +11,7 @@ import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -166,11 +167,10 @@ class WarpExileEffect extends OneShotEffect {
         if (player == null) {
             return false;
         }
-        player.moveCardsToExile(
-                permanent, source, game, true,
-                CardUtil.getExileZoneId(WarpAbility.makeWarpString(player.getId()), game),
-                "Warped by " + player.getName()
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(WarpAbility.makeWarpString(player.getId()), game))
+                .setExileName("Warped by " + player.getName());
+        player.moveCards(parameters, source, game);
         CardUtil.makeCardPlayable(
                 game, source, permanent.getMainCard(), true,
                 Duration.Custom, false, player.getId(), new WarpCondition(game)

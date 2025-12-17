@@ -15,6 +15,7 @@ import mage.filter.FilterSpell;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.TargetPlayer;
@@ -91,10 +92,10 @@ class CircuDimirLobotomistEffect extends OneShotEffect {
         if (controller == null || playerTargetLibrary == null) {
             return false;
         }
-        controller.moveCardsToExile(
-                playerTargetLibrary.getLibrary().getFromTop(game), source, game, true,
-                CardUtil.getCardExileZoneId(game, source), CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(playerTargetLibrary.getLibrary().getFromTop(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceName(game, source));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

@@ -17,6 +17,7 @@ import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -94,7 +95,9 @@ class BiolumeEggEffect extends OneShotEffect {
         Card card = game.getCard(getTargetPointer().getFirst(game, source));
         if (card != null) {
             game.getState().setValue(TransformingDoubleFacedCard.VALUE_KEY_ENTER_TRANSFORMED + card.getId(), Boolean.TRUE);
-            controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
         }
         return true;
     }

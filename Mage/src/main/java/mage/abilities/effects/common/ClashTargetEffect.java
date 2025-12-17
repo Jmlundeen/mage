@@ -9,6 +9,7 @@ import mage.cards.CardsImpl;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 
@@ -132,11 +133,16 @@ public class ClashTargetEffect extends OneShotEffect {
             }
         }
         // put the cards back to library
+        MoveCardsParameters parameters = new MoveCardsParameters(Zone.LIBRARY);
         if (cardController != null) {
-            controller.moveCardToLibraryWithInfo(cardController, source, game, Zone.LIBRARY, topController, true);
+            parameters.setCards(cardController);
+            parameters.setToTopOfLibrary(topController);
+            controller.moveCards(parameters, source, game);
         }
         if (cardOpponent != null) {
-            opponent.moveCardToLibraryWithInfo(cardOpponent, source, game, Zone.LIBRARY, topOpponent, true);
+            parameters.setCards(cardOpponent);
+            parameters.setToTopOfLibrary(topOpponent);
+            opponent.moveCards(parameters, source, game);
         }
 
         // fire CLASHED events with info about winner (flag is true if playerId won; other player is targetId)

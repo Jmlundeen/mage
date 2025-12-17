@@ -1,17 +1,13 @@
 package mage.abilities.keyword;
 
-import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
-import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostAdjuster;
 import mage.abilities.costs.Costs;
 import mage.abilities.costs.CostsImpl;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.costs.mana.ManaCost;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.cards.Card;
-import mage.constants.Duration;
 import mage.constants.SpellAbilityCastMode;
 import mage.constants.SpellAbilityType;
 import mage.constants.TimingRule;
@@ -68,6 +64,7 @@ public class DisguiseAbility extends SpellAbility {
             + "ward {2}. Turn it face up any time for its disguise cost.";
 
     protected Costs<Cost> disguiseCosts;
+    protected CostAdjuster costAdjuster;
 
     public DisguiseAbility(Card card, Cost disguiseCost) {
         this(card, disguiseCost, null);
@@ -80,20 +77,13 @@ public class DisguiseAbility extends SpellAbility {
         this.disguiseCosts.add(disguiseCost);
         this.setSpellAbilityCastMode(SpellAbilityCastMode.DISGUISE);
         this.setSpellAbilityType(SpellAbilityType.BASE_ALTERNATE);
-
-        // face down effect (hidden by default, visible in face down objects)
-        Ability ability = new SimpleStaticAbility(new BecomesFaceDownCreatureEffect(
-                this.disguiseCosts, null, Duration.WhileOnBattlefield,
-                BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED, costAdjuster
-        ));
-        ability.setWorksFaceDown(true);
-        ability.setRuleVisible(false);
-        addSubAbility(ability);
+        this.costAdjuster = costAdjuster;
     }
 
     protected DisguiseAbility(final DisguiseAbility ability) {
         super(ability);
         this.disguiseCosts = ability.disguiseCosts; // can't be changed TODO: looks buggy, need research
+        this.costAdjuster = ability.costAdjuster;
     }
 
     @Override
@@ -103,6 +93,10 @@ public class DisguiseAbility extends SpellAbility {
 
     public Costs<Cost> getFaceUpCosts() {
         return this.disguiseCosts;
+    }
+
+    public CostAdjuster getFaceUpCostAdjuster() {
+        return this.costAdjuster;
     }
 
     @Override

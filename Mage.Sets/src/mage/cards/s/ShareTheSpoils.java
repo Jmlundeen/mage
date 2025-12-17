@@ -13,6 +13,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
@@ -125,14 +126,10 @@ class ShareTheSpoilsExileCardFromEveryoneEffect extends OneShotEffect {
                 continue;
             }
 
-            boolean moved = player.moveCardsToExile(
-                    topLibraryCard,
-                    source,
-                    game,
-                    true,
-                    CardUtil.getExileZoneId(game, source),
-                    CardUtil.getSourceName(game, source)
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(topLibraryCard, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            boolean moved = player.moveCards(parameters, source, game);
 
             if (moved) {
                 ShareTheSpoilsSpendAnyManaEffect effect = new ShareTheSpoilsSpendAnyManaEffect();
@@ -328,14 +325,10 @@ class ShareTheSpoilsExileSingleCardEffect extends OneShotEffect {
             return false;
         }
 
-        boolean moved = player.moveCardsToExile(
-                topLibraryCard,
-                source,
-                game,
-                true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(topLibraryCard, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        boolean moved = player.moveCards(parameters, source, game);
 
         if (moved) {
             ShareTheSpoilsSpendAnyManaEffect effect = new ShareTheSpoilsSpendAnyManaEffect();

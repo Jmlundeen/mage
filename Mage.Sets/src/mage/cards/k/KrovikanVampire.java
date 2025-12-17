@@ -3,11 +3,11 @@ package mage.cards.k;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.SacrificeTargetEffect;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -76,10 +76,8 @@ class KrovikanVampireEffect extends OneShotEffect {
         if (creaturesAffected != null
                 && controller != null
                 && krovikanVampire != null) {
-            creaturesAffected.stream().map((creatureId) -> {
-                controller.moveCards(game.getCard(creatureId), Zone.BATTLEFIELD, source, game, false, false, false, null);
-                return creatureId;
-            }).map((creatureId) -> {
+            creaturesAffected.stream().peek((creatureId) -> controller.moveCards(game.getCard(creatureId), Zone.BATTLEFIELD, source, game))
+                    .map((creatureId) -> {
                 OneShotEffect effect = new SacrificeTargetEffect();
                 effect.setText("Sacrifice this if Krovikan Vampire leaves the battlefield or its current controller loses control of it.");
                 effect.setTargetPointer(new FixedTarget(creatureId, game));

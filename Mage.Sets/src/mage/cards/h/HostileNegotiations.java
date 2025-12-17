@@ -1,8 +1,5 @@
 package mage.cards.h;
 
-import java.util.Set;
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.LoseLifeSourceControllerEffect;
@@ -11,8 +8,12 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -56,12 +57,13 @@ class HostileNegotiationsEffect extends OneShotEffect {
 
     private Cards exileTopThree(Player controller, Ability source, Game game) {
         Set<Card> toExile = controller.getLibrary().getTopCards(game, 3);
-        controller.moveCardsToExile(toExile, source, game, false, null, "");
+        MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                .setFaceDown(true);
+        controller.moveCards(parameters, source, game);
         Cards exiled = new CardsImpl();
         for (Card card : toExile) {
             UUID cardId = card.getId();
             if (game.getState().getZone(cardId) == Zone.EXILED) {
-                card.setFaceDown(true, game);
                 exiled.add(cardId);
             }
         }
@@ -72,7 +74,7 @@ class HostileNegotiationsEffect extends OneShotEffect {
         for (UUID cardId : cards) {
             Card card = game.getCard(cardId);
             if (card != null) {
-                card.setFaceDown(false, game);
+                card.setFaceDown(false);
             }
         }
     }

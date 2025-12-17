@@ -13,6 +13,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.common.FilterInstantOrSorceryCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
@@ -89,7 +90,10 @@ class PsychicTheftEffect extends OneShotEffect {
         if (chosenCard == null) {
             return false;
         }
-        controller.moveCardToExileWithInfo(chosenCard, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source), source, game, Zone.HAND, true);
+        MoveCardsParameters parameters = new MoveCardsParameters(chosenCard, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
 
         CardUtil.makeCardPlayable(game, source, chosenCard, true, Duration.Custom, false);
 

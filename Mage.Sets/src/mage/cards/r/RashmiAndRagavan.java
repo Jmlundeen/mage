@@ -18,6 +18,7 @@ import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.token.TreasureToken;
 import mage.game.stack.Spell;
@@ -143,7 +144,10 @@ class RashmiAndRagavanEffect extends OneShotEffect {
         game.getExile().createZone(exileId, exileName).setCleanupOnEndTurn(true);
         Set<Card> cards = new HashSet<>();
         cards.add(card);
-        if (card == null || !controller.moveCardsToExile(cards, source, game, true, exileId, exileName)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        if (card == null || !player.moveCards(parameters, source, game)) {
             return false;
         }
         int artifactCount = new PermanentsOnBattlefieldCount(

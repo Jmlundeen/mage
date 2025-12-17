@@ -9,6 +9,7 @@ import mage.cards.CardsImpl;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInASingleGraveyard;
 import mage.target.common.TargetCardInYourGraveyard;
@@ -99,14 +100,10 @@ public class ExileFromGraveCost extends CostImpl {
                     exileZoneId = CardUtil.getExileZoneId(game, source);
                     exileZoneName = CardUtil.getSourceName(game, source);
                 }
-                controller.moveCardsToExile(
-                        cardsToExile.getCards(game),
-                        source,
-                        game,
-                        true,
-                        exileZoneId,
-                        exileZoneName
-                );
+                MoveCardsParameters parameters = new MoveCardsParameters(cardsToExile.getCards(game), Zone.EXILED)
+                        .setExileId(exileZoneId)
+                        .setExileName(exileZoneName);
+                controller.moveCards(parameters, source, game);
 
                 if (setTargetPointer) {
                     source.getEffects().setTargetPointer(new FixedTargets(cardsToExile.getCards(game), game));

@@ -80,7 +80,7 @@ class TinStreetGossipManaCondition implements Condition {
     public boolean apply(Game game, Ability source) {
         MageObject object = game.getObject(source);
         if (object instanceof Spell) {
-            return ((Spell) object).isFaceDown(game);
+            return ((Spell) object).isFaceDown();
         }
         return source instanceof TurnFaceUpAbility;
     }

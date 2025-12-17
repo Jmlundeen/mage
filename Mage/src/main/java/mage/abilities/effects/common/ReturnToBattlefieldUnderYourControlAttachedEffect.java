@@ -45,7 +45,7 @@ public class ReturnToBattlefieldUnderYourControlAttachedEffect extends OneShotEf
             Card card = game.getCard(((Permanent) object).getId());
             // Move the card only, if it is still in the next zone after the battlefield
             if (card != null && card.getZoneChangeCounter(game) == ((Permanent) object).getZoneChangeCounter(game) + 1) {
-                controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+                controller.moveCards(card, Zone.BATTLEFIELD, source, game);
                 return true;
             }
         }

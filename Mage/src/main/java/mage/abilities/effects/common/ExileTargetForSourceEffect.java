@@ -7,7 +7,9 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.targetpointer.FirstTargetPointer;
@@ -93,7 +95,10 @@ public class ExileTargetForSourceEffect extends OneShotEffect {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        return controller.moveCardsToExile(cardsToMove, source, game, true, exileId, sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(cardsToMove, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return controller.moveCards(parameters, source, game);
     }
 
     @Override

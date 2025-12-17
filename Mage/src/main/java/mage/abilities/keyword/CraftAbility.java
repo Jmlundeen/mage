@@ -19,6 +19,7 @@ import mage.filter.common.FilterOwnedCard;
 import mage.filter.predicate.Predicate;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -141,11 +142,10 @@ class CraftCost extends CostImpl {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        player.moveCardsToExile(
-                cards, source, game, true,
-                CardUtil.getExileZoneId(game, sourceCard.getMainCard().getId(), sourceCard.getMainCard().getZoneChangeCounter(game)),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         paid = true;
         return paid;
     }

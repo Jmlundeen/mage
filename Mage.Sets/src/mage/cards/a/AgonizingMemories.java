@@ -1,7 +1,6 @@
 
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
@@ -15,6 +14,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.TargetPlayer;
+
+import java.util.UUID;
 
 /**
  *
@@ -75,7 +76,7 @@ class AgonizingMemoriesEffect extends OneShotEffect {
             if (you.choose(Outcome.Benefit, targetPlayer.getHand(), target, source, game)) {
                 Card card = targetPlayer.getHand().get(target.getFirstTarget(), game);
                 if (card != null) {
-                    targetPlayer.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                    targetPlayer.moveCards(card, Zone.LIBRARY, source, game);
                 }
             }
         }

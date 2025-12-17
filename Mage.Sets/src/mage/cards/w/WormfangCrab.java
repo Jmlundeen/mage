@@ -1,6 +1,5 @@
 package mage.cards.w;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -9,18 +8,23 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ReturnFromExileForSourceEffect;
 import mage.abilities.keyword.CantBeBlockedSourceAbility;
 import mage.cards.Card;
-import mage.constants.SubType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetOpponent;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  * @author xenohedron
@@ -95,8 +99,13 @@ class WormfangCrabExileEffect extends OneShotEffect {
             return false;
         }
         Card cardToMove = game.getPermanent(target.getFirstTarget());
-        UUID exileId = CardUtil.getExileZoneId(game, source);
-        return cardToMove != null && opponent.moveCardsToExile(cardToMove, source, game, true, exileId, CardUtil.getSourceName(game, source));
+        if (cardToMove == null) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(cardToMove, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return opponent.moveCards(parameters, source, game);
     }
 
 }

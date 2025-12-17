@@ -10,6 +10,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.common.TargetOpponent;
@@ -90,10 +91,9 @@ class VerdantMasteryEffect extends OneShotEffect {
                 target.withChooseHint("to give to " + opponent.getName());
                 player.choose(outcome, cards, target, source, game);
                 Card card = game.getCard(target.getFirstTarget());
-                opponent.moveCards(
-                        card, Zone.BATTLEFIELD, source, game, true,
-                        false, false, null
-                );
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setTapped(true);
+                opponent.moveCards(parameters, source, game);
             }
         }
         cards.removeIf(uuid -> game.getState().getZone(uuid) != Zone.LIBRARY);
@@ -104,10 +104,9 @@ class VerdantMasteryEffect extends OneShotEffect {
         target = new TargetCardInLibrary(Math.min(cards.size(), 2), StaticFilters.FILTER_CARD_BASIC_LAND);
         target.setRequired(true);
         player.choose(outcome, cards, target, source, game);
-        player.moveCards(
-                new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source,
-                game, true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         cards.removeIf(uuid -> game.getState().getZone(uuid) != Zone.LIBRARY);
         player.moveCards(cards, Zone.HAND, source, game);
         player.shuffleLibrary(source, game);

@@ -1,7 +1,6 @@
 package mage.cards.j;
 
 import mage.MageIdentifier;
-import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -19,11 +18,11 @@ import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
-import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 import mage.watchers.Watcher;
 
@@ -100,55 +99,15 @@ class JacobHaukenInspectorExileEffect extends OneShotEffect {
             controller.chooseTarget(outcome, controller.getHand(), target, source, game);
             Card card = game.getCard(target.getFirstTarget());
             if (card != null) {
-                UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                MageObject sourceObject = source.getSourceObject(game);
-                String exileName = sourceObject == null ? null : sourceObject.getIdName();
-                card.setFaceDown(true, game);
-                controller.moveCardsToExile(card, source, game, false, exileId, exileName);
-                if (game.getState().getZone(card.getId()) == Zone.EXILED) {
-                    card.setFaceDown(true, game);
-                    JacobHaukenInspectorLookEffect effect = new JacobHaukenInspectorLookEffect(controller.getId());
-                    effect.setTargetPointer(new FixedTarget(card, game));
-                    game.addEffect(effect, source);
-                }
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setCanLookFaceDownInExile(true)
+                        .setFaceDown(true)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
         }
         return true;
-    }
-}
-
-class JacobHaukenInspectorLookEffect extends AsThoughEffectImpl {
-
-    private final UUID authorizedPlayerId;
-
-    public JacobHaukenInspectorLookEffect(UUID authorizedPlayerId) {
-        super(AsThoughEffectType.LOOK_AT_FACE_DOWN, Duration.EndOfGame, Outcome.Benefit);
-        this.authorizedPlayerId = authorizedPlayerId;
-    }
-
-    private JacobHaukenInspectorLookEffect(final JacobHaukenInspectorLookEffect effect) {
-        super(effect);
-        this.authorizedPlayerId = effect.authorizedPlayerId;
-    }
-
-    @Override
-    public JacobHaukenInspectorLookEffect copy() {
-        return new JacobHaukenInspectorLookEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        UUID cardId = getTargetPointer().getFirst(game, source);
-        if (cardId == null) {
-            this.discard(); // card is no longer in the origin zone, effect can be discarded
-        }
-        return affectedControllerId.equals(authorizedPlayerId)
-                && objectId.equals(cardId);
     }
 }
 
@@ -174,56 +133,15 @@ class HaukensInsightExileEffect extends OneShotEffect {
         if (controller != null) {
             Card card = controller.getLibrary().getFromTop(game);
             if (card != null) {
-                UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                MageObject sourceObject = source.getSourceObject(game);
-                String exileName = sourceObject == null ? null : sourceObject.getIdName();
-                card.setFaceDown(true, game);
-                controller.moveCardsToExile(card, source, game, false, exileId, exileName);
-                if (game.getState().getZone(card.getId()) == Zone.EXILED) {
-                    card.setFaceDown(true, game);
-                    HaukensInsightLookEffect effect = new HaukensInsightLookEffect(controller.getId());
-                    effect.setTargetPointer(new FixedTarget(card, game));
-                    game.addEffect(effect, source);
-                    return true;
-                }
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setCanLookFaceDownInExile(true)
+                        .setFaceDown(true)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
             }
         }
         return false;
-    }
-}
-
-class HaukensInsightLookEffect extends AsThoughEffectImpl {
-
-    private final UUID authorizedPlayerId;
-
-    public HaukensInsightLookEffect(UUID authorizedPlayerId) {
-        super(AsThoughEffectType.LOOK_AT_FACE_DOWN, Duration.EndOfGame, Outcome.Benefit);
-        this.authorizedPlayerId = authorizedPlayerId;
-    }
-
-    private HaukensInsightLookEffect(final HaukensInsightLookEffect effect) {
-        super(effect);
-        this.authorizedPlayerId = effect.authorizedPlayerId;
-    }
-
-    @Override
-    public HaukensInsightLookEffect copy() {
-        return new HaukensInsightLookEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        UUID cardId = getTargetPointer().getFirst(game, source);
-        if (cardId == null) {
-            this.discard(); // card is no longer in the origin zone, effect can be discarded
-        }
-        return affectedControllerId.equals(authorizedPlayerId)
-                && objectId.equals(cardId);
     }
 }
 

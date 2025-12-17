@@ -15,6 +15,7 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.StackAbility;
@@ -117,7 +118,11 @@ class AstralDriftEffect extends OneShotEffect {
             return true;
         }
         UUID exileId = UUID.randomUUID();
-        if (!controller.moveCardsToExile(permanent, source, game, true, exileId, sourceObject.getIdName())) {
+        MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(exileId)
+                .setExileName(sourceObject.getIdName());
+        if (!controller.moveCards(parameters, source, game)) {
             return true;
         }
         //create delayed triggered ability

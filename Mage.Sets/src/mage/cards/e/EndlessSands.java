@@ -16,6 +16,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetControlledCreaturePermanent;
 import mage.util.CardUtil;
@@ -78,10 +79,11 @@ class EndlessSandsEffect extends OneShotEffect {
             return false;
         }
         ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
-        return player != null && exileZone != null
-                && player.moveCards(
-                exileZone.getCards(game), Zone.BATTLEFIELD, source, game,
-                false, false, true, null
-        );
+        if (exileZone == null || exileZone.getCards(game).isEmpty()) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(exileZone.getCards(game), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return player.moveCards(parameters, source, game);
     }
 }

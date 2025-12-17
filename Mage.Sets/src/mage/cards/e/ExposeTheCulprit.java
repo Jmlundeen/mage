@@ -22,7 +22,6 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.TargetPermanent;
-import mage.target.common.TargetCreaturePermanent;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -97,7 +96,7 @@ class ExposeTheCulpritEffect extends OneShotEffect {
                     x -> {
                         Card card = game.getCard(x);
                         if (card != null) {
-                            card.setFaceDown(true, game);
+                            card.setFaceDown(true);
                         }
                         return card;
                     }

@@ -1,7 +1,6 @@
 
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.CardImpl;
@@ -11,8 +10,11 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -59,7 +61,9 @@ class HallowedBurialEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
             for (Permanent creature : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, controller.getId(), source, game)) {
-                controller.moveCardToLibraryWithInfo(creature, source, game, Zone.BATTLEFIELD, false, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(creature, Zone.LIBRARY)
+                        .setToTopOfLibrary(false);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

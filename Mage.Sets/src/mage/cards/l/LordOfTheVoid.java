@@ -1,16 +1,11 @@
 package mage.cards.l;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.FlyingAbility;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
@@ -19,6 +14,8 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
+
+import java.util.UUID;
 
 /**
  *
@@ -81,7 +78,7 @@ class LordOfTheVoidEffect extends OneShotEffect {
             if (controller.chooseTarget(outcome, cards, target, source, game)) {
                 Card card = cards.get(target.getFirstTarget(), game);
                 if (card != null) {
-                    controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+                    controller.moveCards(card, Zone.BATTLEFIELD, source, game);
                 }
             }
         }

@@ -114,6 +114,7 @@ class PrototypeEffect extends ContinuousEffectImpl {
         permanent.getColor(game).setColor(color);
         permanent.getPower().setModifiedBaseValue(power);
         permanent.getToughness().setModifiedBaseValue(toughness);
+        permanent.saveCopiableValues(game);
         return true;
     }
 }

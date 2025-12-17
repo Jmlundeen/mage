@@ -7,7 +7,9 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
@@ -69,7 +71,10 @@ public class ExileReturnBattlefieldNextEndStepTargetEffect extends OneShotEffect
         if (toExile.isEmpty()) {
             return false;
         }
-        controller.moveCardsToExile(toExile, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         Effect effect = yourControl
                 ? new ReturnToBattlefieldUnderYourControlTargetEffect(exiledOnly)
                 : new ReturnToBattlefieldUnderOwnerControlTargetEffect(false, exiledOnly);

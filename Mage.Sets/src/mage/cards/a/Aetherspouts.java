@@ -9,15 +9,14 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterAttackingCreature;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
 import mage.players.Player;
 import mage.players.PlayerList;
 import mage.target.TargetCard;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author LevelX2
@@ -96,7 +95,7 @@ class AetherspoutsEffect extends OneShotEffect {
             }
             // cards to top
             Cards cards = new CardsImpl();
-            List<Permanent> toLibrary = new ArrayList<>();
+            Set<Permanent> toLibrary = new HashSet<>();
             for (Permanent permanent : permanentsToTop) {
                 if (permanent instanceof PermanentToken) {
                     toLibrary.add(permanent);
@@ -131,9 +130,7 @@ class AetherspoutsEffect extends OneShotEffect {
                 }
             }
             // move all permanents to lib at the same time
-            for (Permanent permanent : toLibrary) {
-                player.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, true, false);
-            }
+            player.moveCards(toLibrary, Zone.LIBRARY, source, game);
             // cards to bottom
             cards.clear();
             toLibrary.clear();
@@ -170,9 +167,9 @@ class AetherspoutsEffect extends OneShotEffect {
                 }
             }
             // move all permanents to lib at the same time
-            for (Permanent permanent : toLibrary) {
-                player.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, false, false);
-            }
+            MoveCardsParameters parameters = new MoveCardsParameters(toLibrary, Zone.LIBRARY)
+                    .setToTopOfLibrary(false);
+            player.moveCards(parameters, source, game);
             player = playerList.getNext(game, false);
         } while (player != null && !player.getId().equals(game.getActivePlayerId()) && activePlayer.canRespond());
 

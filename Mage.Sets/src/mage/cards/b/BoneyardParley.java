@@ -1,18 +1,9 @@
 
 package mage.cards.b;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
@@ -23,6 +14,8 @@ import mage.target.Target;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInGraveyard;
 import mage.target.common.TargetOpponent;
+
+import java.util.*;
 
 /**
  *
@@ -92,8 +85,7 @@ class BoneyardParleyEffect extends OneShotEffect {
                                 }
                             }
                         }
-                        List<Card> pile2 = new ArrayList<>();
-                        pile2.addAll(cards.getCards(game));
+                        List<Card> pile2 = new ArrayList<>(cards.getCards(game));
                         boolean choice = player.choosePile(outcome, "Choose a pile to put onto the battlefield.", pile1, pile2, game);
 
                         Zone pile1Zone = Zone.GRAVEYARD;
@@ -102,13 +94,11 @@ class BoneyardParleyEffect extends OneShotEffect {
                             pile1Zone = Zone.BATTLEFIELD;
                             pile2Zone = Zone.GRAVEYARD;
                         }
-                        Set<Card> pile1Set = new HashSet<>();
-                        Set<Card> pile2Set = new HashSet<>();
-                        pile1Set.addAll(pile1);
-                        pile2Set.addAll(pile2);
+                        Set<Card> pile1Set = new HashSet<>(pile1);
+                        Set<Card> pile2Set = new HashSet<>(pile2);
 
-                        player.moveCards(pile1Set, pile1Zone, source, game, false, false, false, null);
-                        player.moveCards(pile2Set, pile2Zone, source, game, false, false, false, null);
+                        player.moveCards(pile1Set, pile1Zone, source, game);
+                        player.moveCards(pile2Set, pile2Zone, source, game);
 
                     }
                     return true;

@@ -1,6 +1,6 @@
 package mage.game.command;
 
-import mage.game.permanent.token.TokenImpl;
+import mage.cards.CopiableValues;
 import mage.util.GameLog;
 
 import java.util.UUID;
@@ -100,8 +100,29 @@ public abstract class CommandObjectImpl implements CommandObject {
     }
 
     @Override
+    public String getOriginalName() {
+        return name;
+    }
+
+    @Override
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public boolean isFaceDown() {
+        return false;
+    }
+
+    @Override
+    public void setFaceDown(boolean value) {
+        throw new UnsupportedOperationException("Unsupported operation");
+    }
+
+
+    @Override
+    public CopiableValues getFaceDownValues() {
+        return null;
     }
 
     @Override

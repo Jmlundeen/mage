@@ -21,6 +21,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.token.BatToken;
 import mage.players.Player;
@@ -191,7 +192,10 @@ class AclazotzDeepestBetrayalTransformEffect extends OneShotEffect {
             return false;
         }
         game.getState().setValue(TransformingDoubleFacedCard.VALUE_KEY_ENTER_TRANSFORMED + source.getSourceId(), Boolean.TRUE);
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

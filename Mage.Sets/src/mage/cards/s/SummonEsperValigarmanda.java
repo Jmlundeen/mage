@@ -15,6 +15,7 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInExile;
@@ -104,12 +105,10 @@ class SummonEsperValigarmandaExileEffect extends OneShotEffect {
             controller.choose(outcome, player.getGraveyard(), target, source, game);
             cards.add(game.getCard(target.getFirstTarget()));
         }
-        return !cards.isEmpty()
-                && controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return controller.moveCards(parameters, source, game);
     }
 }
 

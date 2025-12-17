@@ -1,20 +1,17 @@
 package mage.cards.d;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.StaticAbility;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.EntersBattlefieldEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.discard.DiscardControllerEffect;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -23,9 +20,15 @@ import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.players.Player;
+import mage.util.CardUtil;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -78,11 +81,13 @@ class DuplicityEffect extends OneShotEffect {
         if (controller != null
                 && sourceObject != null) {
             if (controller.getLibrary().hasCards()) {
-                UUID exileId = source.getSourceId();
                 Set<Card> cardsToExile = controller.getLibrary().getTopCards(game, 5);
                 for (Card card : cardsToExile) {
-                    controller.moveCardsToExile(card, source, game, true, exileId, sourceObject.getName());
-                    card.setFaceDown(true, game);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
+                    card.setFaceDown(true);
                 }
             }
             return true;
@@ -112,15 +117,18 @@ class DuplicityExileHandEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         MageObject sourceObject = game.getObject(source);
         if (controller != null && sourceObject != null) {
-            UUID exileId = source.getSourceId();
+            UUID exileId = CardUtil.getExileZoneId(game, source);
             Set<Card> cardsInExile = game.getExile().getExileZone(exileId).getCards(game);
             if (controller.getHand().isEmpty()) {
                 controller.moveCards(cardsInExile, Zone.HAND, source, game);
             } else {
                 Set<Card> cardsFromHandToExile = controller.getHand().getCards(game);
                 for (Card card : cardsFromHandToExile) {
-                    controller.moveCardsToExile(card, source, game, true, exileId, sourceObject.getName());
-                    card.setFaceDown(true, game);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(exileId)
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
+                    card.setFaceDown(true);
                 }
                 Set<Card> cardsToReturnToHandFromExile = new HashSet<>();
                 for (Card card : cardsInExile) {
@@ -198,7 +206,7 @@ class PutExiledCardsInOwnersGraveyard extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            UUID exileId = source.getSourceId();
+            UUID exileId = CardUtil.getExileZoneId(game, source);
             Set<Card> cardsInExile = game.getExile().getExileZone(exileId).getCards(game);
             if (cardsInExile != null) {
                 controller.moveCards(cardsInExile, Zone.GRAVEYARD, source, game);

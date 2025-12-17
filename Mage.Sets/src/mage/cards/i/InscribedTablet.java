@@ -1,7 +1,5 @@
 package mage.cards.i;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.SacrificeSourceCost;
@@ -16,6 +14,8 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
+
+import java.util.UUID;
 
 /**
  *
@@ -78,7 +78,7 @@ class InscribedTabletEffect extends OneShotEffect {
             Card land = game.getCard(target.getFirstTarget());
             if (land != null) {
                 cards.remove(land);
-                landToHand = controller.moveCardToHandWithInfo(land, source, game, true);
+                landToHand = controller.moveCards(land, Zone.HAND, source, game);
             }
         }
         controller.putCardsOnBottomOfLibrary(cards, game, source, false);

@@ -15,6 +15,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
@@ -96,10 +97,9 @@ class ChocoSeekerOfParadiseEffect extends OneShotEffect {
         target = new TargetCardInLibrary(0, Integer.MAX_VALUE, StaticFilters.FILTER_CARD_LANDS);
         target.withChooseHint("to put onto the battlefield tapped");
         player.choose(outcome, cards, target, source, game);
-        player.moveCards(
-                new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source,
-                game, true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         cards.retainZone(Zone.LIBRARY, game);
         player.moveCards(cards, Zone.GRAVEYARD, source, game);
         return true;

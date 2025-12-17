@@ -6,19 +6,17 @@ import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.AsThoughManaEffect;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
+import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -73,17 +71,22 @@ class ShadowOfTheEnemyEffect extends OneShotEffect {
             return false;
         }
 
-        Set<Card> cards =
+        Cards cards = new CardsImpl(
                 targetPlayer
                         .getGraveyard()
-                        .getCards(StaticFilters.FILTER_CARD_CREATURE, game);
+                        .getCards(StaticFilters.FILTER_CARD_CREATURE, game)
+        );
 
         if (cards.isEmpty()) {
             return true;
         }
 
-        player.moveCardsToExile(cards, source, game, true, source.getSourceId(), sourceObject.getName());
-        for (Card card : cards) {
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
+        cards.retainZone(Zone.EXILED, game);
+        for (Card card : cards.getCards(game)) {
             // allow to cast the card
             ContinuousEffect effect = new ShadowOfTheEnemyCastFromExileEffect();
             effect.setTargetPointer(new FixedTarget(card.getId(), game));

@@ -11,6 +11,7 @@ import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -83,10 +84,10 @@ class MnemonicBetrayalExileEffect extends OneShotEffect {
                 .map(Player::getGraveyard)
                 .map(g -> g.getCards(game))
                 .forEach(cards::addAllCards);
-        controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                source.getSourceId(), CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(source.getSourceId())
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         for (Card card : cards.getCards(game)) {
             if (card.isLand(game)) {
                 continue;

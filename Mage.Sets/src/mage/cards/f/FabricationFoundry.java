@@ -17,16 +17,19 @@ import mage.abilities.mana.builder.ConditionalManaBuilder;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledArtifactPermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInYourGraveyard;
+import mage.util.CardUtil;
 
 import java.awt.*;
 import java.util.Objects;
@@ -153,7 +156,10 @@ class ExileTargetsTotalManaValueCost extends CostImpl {
         }
         paid = (sum >= minX);
         if (paid) {
-            player.moveCardsToExile(cards.getCards(game), source, game, false, null, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            player.moveCards(parameters, source, game);
         }
         return paid;
     }

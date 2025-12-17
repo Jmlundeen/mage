@@ -19,6 +19,7 @@ import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
+import mage.game.permanent.PermanentToken;
 import mage.util.CardUtil;
 
 import java.util.UUID;
@@ -179,6 +180,11 @@ public class RoomCharacteristicsEffect extends ContinuousEffectImpl {
             } else {
                 roomCardBlueprint = permanent.getMainCard();
             }
+        } else if (permanent instanceof PermanentToken) {
+          roomCardBlueprint = permanent.getMainCard();
+          if (!(roomCardBlueprint instanceof SplitCard)) {
+              roomCardBlueprint = roomCardBlueprint.getMainCard();
+          }
         } else {
             roomCardBlueprint = permanent.getMainCard();
         }
@@ -200,15 +206,14 @@ public class RoomCharacteristicsEffect extends ContinuousEffectImpl {
         // copies need abilities to be added back to game state for triggers
         RoomCard roomCard = (RoomCard) getCard(permanent);
         UUID sourceId = permanent.isCopy() ? permanent.getId() : null;
-        Game gameParam = permanent.isCopy() ? game : null;
         if (permanent.isLeftDoorUnlocked()) {
             for (Ability ability : roomCard.getLeftHalfCard().getAbilities()) {
-                permanent.addAbility(ability, sourceId, gameParam, true);
+                permanent.addAbility(ability, sourceId, null, true);
             }
         }
         if (permanent.isRightDoorUnlocked()) {
             for (Ability ability : roomCard.getRightHalfCard().getAbilities()) {
-                permanent.addAbility(ability, sourceId, gameParam, true);
+                permanent.addAbility(ability, sourceId, null, true);
             }
         }
     }

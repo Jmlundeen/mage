@@ -202,7 +202,7 @@ class RescueFromTheUnderworldReturnEffect extends OneShotEffect {
             if (source.getTargets().get(1) != null) {
                 for (UUID targetId : source.getTargets().get(1).getTargets()) {
                     Card card = game.getCard(targetId);
-                    if (card != null && !card.isFaceDown(game)) {
+                    if (card != null && !card.isFaceDown()) {
                         Player player = game.getPlayer(card.getOwnerId());
                         if (player != null) {
                             Zone currentZone = game.getState().getZone(card.getId());

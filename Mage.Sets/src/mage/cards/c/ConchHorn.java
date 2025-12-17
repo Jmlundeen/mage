@@ -1,7 +1,6 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.SacrificeSourceCost;
@@ -17,6 +16,8 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.UUID;
 
 /**
  *
@@ -77,7 +78,7 @@ class ConchHornEffect extends OneShotEffect {
             player.chooseTarget(Outcome.ReturnToHand, target, source, game);
             Card card = player.getHand().get(target.getFirstTarget(), game);
             if (card != null) {
-                return player.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                return player.moveCards(card, Zone.LIBRARY, source, game);
             }
         }
         return false;

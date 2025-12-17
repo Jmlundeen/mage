@@ -1,8 +1,5 @@
 package mage.abilities.common.delayed;
 
-import java.util.LinkedHashSet;
-import java.util.UUID;
-
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
@@ -12,10 +9,14 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.LinkedHashSet;
+import java.util.UUID;
 
 /**
  * Returns the exiled cards/permanents as source leaves battlefield
@@ -96,7 +97,9 @@ class ReturnExiledPermanentsEffect extends OneShotEffect {
         if (sourceObject != null && controller != null) {
             ExileZone exile = getExileIfPossible(game, source);
             if (exile != null) {
-                return controller.moveCards(new LinkedHashSet<>(exile.getCards(game)), zone, source, game, false, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(new LinkedHashSet<>(exile.getCards(game)), zone)
+                        .setByOwner(true);
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;

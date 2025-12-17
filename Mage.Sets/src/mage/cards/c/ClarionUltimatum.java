@@ -12,6 +12,7 @@ import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInLibrary;
@@ -84,7 +85,9 @@ class ClarionUltimatumEffect extends OneShotEffect {
         TargetCardInLibrary targetCardInLibrary = new ClarionUltimatumTarget(names);
         player.searchLibrary(targetCardInLibrary, source, game);
         Cards cards = new CardsImpl(targetCardInLibrary.getTargets());
-        player.moveCards(cards.getCards(game), Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         player.shuffleLibrary(source, game);
         return true;
     }

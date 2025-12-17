@@ -14,10 +14,10 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -77,12 +77,14 @@ class PreeminentCaptainEffect extends OneShotEffect {
                 UUID cardId = target.getFirstTarget();
                 Card card = controller.getHand().get(cardId, game);
                 if (card != null) {
-                    if (controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null)) {
-                        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-                        if (permanent != null) {
-                            game.getCombat().addAttackingCreature(permanent.getId(), game);
-                        }
-                    }
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                            .setTapped(true);
+                    controller.moveCardsWithResult(parameters, source, game)
+                            .stream()
+                            .filter(resCard -> resCard instanceof Permanent)
+                            .map(resCard -> (Permanent) resCard)
+                            .findFirst()
+                            .ifPresent(perm -> game.getCombat().addAttackingCreature(perm.getId(), game));
                 }
             }
             return true;

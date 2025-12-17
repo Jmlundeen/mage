@@ -10,6 +10,7 @@ import mage.filter.FilterCard;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
@@ -78,10 +79,10 @@ class AshiokNightmareWeaverExileEffect extends OneShotEffect {
         if (opponent == null || controller == null) {
             return false;
         }
-        controller.moveCardsToExile(
-                opponent.getLibrary().getTopCards(game, 3), source, game, true,
-                CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(opponent.getLibrary().getTopCards(game, 3), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }
@@ -166,11 +167,10 @@ class AshiokNightmareWeaverExileAllEffect extends OneShotEffect {
             cards.addAll(opponent.getHand());
             cards.addAll(opponent.getGraveyard());
         }
-        controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

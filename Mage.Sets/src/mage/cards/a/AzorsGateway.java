@@ -18,12 +18,14 @@ import mage.abilities.mana.DynamicManaAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
+import mage.constants.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
@@ -114,10 +116,9 @@ class AzorsGatewayEffect extends OneShotEffect {
         target.withChooseHint("to exile");
         player.choose(outcome, player.getHand(), target, source, game);
         Card card = game.getCard(target.getFirstTarget());
-        return card != null && player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceLogName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceLogName(game, source));
+        return card != null && player.moveCards(parameters, source, game);
     }
 }

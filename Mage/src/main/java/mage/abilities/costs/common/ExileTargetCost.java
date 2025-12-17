@@ -8,7 +8,9 @@ import mage.abilities.costs.CostImpl;
 import mage.cards.Cards;
 import mage.cards.CardsImpl;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetControlledPermanent;
@@ -57,11 +59,10 @@ public class ExileTargetCost extends CostImpl {
             // that are called for, the cost has still been paid.
             // so return state here is not important because the user indended to exile the target anyway
         }
-        player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         paid = true;
         return paid;
     }

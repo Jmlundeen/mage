@@ -124,8 +124,7 @@ class GlimpseTheCosmosReplacementEffect extends ReplacementEffectImpl {
         if (controller != null) {
             Card card = game.getCard(event.getTargetId());
             if (card != null) {
-                return controller.moveCards(
-                        card, Zone.EXILED, source, game, false, false, false, event.getAppliedEffects());
+                ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
             }
         }
         return false;

@@ -1,25 +1,28 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.SkipDrawStepEffect;
 import mage.abilities.effects.common.continuous.CantCastMoreThanOneSpellEffect;
+import mage.abilities.effects.common.continuous.LookAtCardsExiledWithThisEffect;
+import mage.abilities.effects.common.continuous.MayPlayCardsExiledWithThisEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
-import mage.constants.*;
-import mage.game.ExileZone;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.TargetController;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -34,8 +37,8 @@ public final class ColfenorsPlans extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new ColfenorsPlansExileEffect(), false));
 
         // You may look at and play cards exiled with Colfenor's Plans.
-        this.addAbility(new SimpleStaticAbility(new ColfenorsPlansPlayCardEffect()));
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ColfenorsPlansLookAtCardEffect()));
+        this.addAbility(new SimpleStaticAbility(new MayPlayCardsExiledWithThisEffect()));
+        this.addAbility(new SimpleStaticAbility(new LookAtCardsExiledWithThisEffect()));
 
         // Skip your draw step.
         this.addAbility(new SimpleStaticAbility(new SkipDrawStepEffect()));
@@ -70,18 +73,14 @@ class ColfenorsPlansExileEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            Cards toExile = new CardsImpl(controller.getLibrary().getTopCards(game, 7));
+            Set<Card> toExile = controller.getLibrary().getTopCards(game, 7);
             UUID exileId = CardUtil.getCardExileZoneId(game, source);
-            controller.moveCardsToExile(toExile.getCards(game), source, game, false,
-                    exileId, CardUtil.createObjectRelatedWindowTitle(source, game, null));
-            ExileZone exileZone = game.getExile().getExileZone(exileId);
-            if (exileZone != null) {
-                for (Card card : exileZone.getCards(game)) {
-                    if (card != null) {
-                        card.setFaceDown(true, game);
-                    }
-                }
-            }
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setCanLookFaceDownInExile(true)
+                    .setFaceDown(true)
+                    .setExileId(exileId)
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;
@@ -91,75 +90,4 @@ class ColfenorsPlansExileEffect extends OneShotEffect {
     public ColfenorsPlansExileEffect copy() {
         return new ColfenorsPlansExileEffect(this);
     }
-}
-
-class ColfenorsPlansPlayCardEffect extends AsThoughEffectImpl {
-
-    ColfenorsPlansPlayCardEffect() {
-        super(AsThoughEffectType.PLAY_FROM_NOT_OWN_HAND_ZONE, Duration.WhileOnBattlefield, Outcome.Benefit);
-        staticText = "You may play cards exiled with {this}";
-    }
-
-    private ColfenorsPlansPlayCardEffect(final ColfenorsPlansPlayCardEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public ColfenorsPlansPlayCardEffect copy() {
-        return new ColfenorsPlansPlayCardEffect(this);
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        if (affectedControllerId.equals(source.getControllerId()) && game.getState().getZone(objectId) == Zone.EXILED) {
-            ExileZone exileZone = game.getExile().getExileZone(CardUtil.getCardExileZoneId(game, source));
-            return exileZone != null && exileZone.contains(objectId);
-        }
-        return false;
-    }
-}
-
-class ColfenorsPlansLookAtCardEffect extends AsThoughEffectImpl {
-
-    ColfenorsPlansLookAtCardEffect() {
-        super(AsThoughEffectType.LOOK_AT_FACE_DOWN, Duration.EndOfGame, Outcome.Benefit);
-        staticText = "You may look at cards exiled with {this}";
-    }
-
-    private ColfenorsPlansLookAtCardEffect(final ColfenorsPlansLookAtCardEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public ColfenorsPlansLookAtCardEffect copy() {
-        return new ColfenorsPlansLookAtCardEffect(this);
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        if (affectedControllerId.equals(source.getControllerId())) {
-            Card card = game.getCard(objectId);
-            if (card != null) {
-                MageObject sourceObject = game.getObject(source);
-                if (sourceObject == null) {
-                    return false;
-                }
-                UUID exileId = CardUtil.getCardExileZoneId(game, source);
-                ExileZone exile = game.getExile().getExileZone(exileId);
-                return exile != null && exile.contains(objectId);
-            }
-        }
-        return false;
-    }
-
 }

@@ -1,7 +1,6 @@
 
 package mage.cards.t;
 
-import java.util.*;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ExileSpellEffect;
@@ -14,10 +13,13 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
+
+import java.util.*;
 
 /**
  *
@@ -83,7 +85,7 @@ class TheGreatAuroraEffect extends OneShotEffect {
                     permanentsCount.put(playerId, handCards + (list != null ? list.size() : 0));
                     if (list != null) {
                         for (Permanent permanent : list) {
-                            player.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, true, true);
+                            player.moveCards(permanent, Zone.LIBRARY, source, game);
                         }
                         player.shuffleLibrary(source, game);
                     }
@@ -113,7 +115,9 @@ class TheGreatAuroraEffect extends OneShotEffect {
                     toBattlefield.addAll(target.getTargets());
                 }
             }
-            return controller.moveCards(toBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield.getCards(game), Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            return controller.moveCards(parameters, source, game);
         }
         return false;
     }

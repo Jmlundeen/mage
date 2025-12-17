@@ -7,6 +7,7 @@ import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
@@ -61,7 +62,9 @@ class EnduringGlimmerReturnEffect extends OneShotEffect {
         }
         game.addEffect(new EnduringGlimmerTypeEffect()
                 .setTargetPointer(new FixedTarget(new MageObjectReference(card, game, 1))), source);
-        return player.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return player.moveCards(parameters, source, game);
     }
 }
 

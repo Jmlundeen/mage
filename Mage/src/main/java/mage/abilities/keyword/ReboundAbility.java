@@ -12,6 +12,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.stack.Spell;
@@ -112,7 +113,9 @@ class ReboundCastFromHandReplacementEffect extends ReplacementEffectImpl {
             return false;
         }
         // Add the delayed triggered effect
-        player.moveCardsToExile(sourceCard, source, game, true, null, "Rebound");
+        MoveCardsParameters parameters = new MoveCardsParameters(sourceCard, Zone.EXILED)
+                .setExileName("Rebound");
+        player.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new ReboundEffectCastFromExileDelayedTrigger(sourceCard, game), source);
         return true;
     }

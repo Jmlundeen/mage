@@ -1,23 +1,20 @@
 
 package mage.cards.m;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -75,7 +72,7 @@ class MassPolymorphEffect extends OneShotEffect {
                 }
             }
             controller.revealCards(source, revealed, game);
-            controller.moveCards(creatureCards, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            controller.moveCards(creatureCards, Zone.BATTLEFIELD, source, game);
             controller.shuffleLibrary(source, game);
             return true;
         }

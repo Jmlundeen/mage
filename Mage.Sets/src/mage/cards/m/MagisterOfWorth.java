@@ -16,6 +16,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.Collection;
@@ -108,9 +109,8 @@ class MagisterOfWorthEffect extends OneShotEffect {
                 .filter(Objects::nonNull)
                 .filter(card -> card.isCreature(game))
                 .forEach(cards::add);
-        return controller.moveCards(
-                cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                false, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return controller.moveCards(parameters, source, game);
     }
 }

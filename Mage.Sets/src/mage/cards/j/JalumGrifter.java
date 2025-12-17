@@ -84,7 +84,7 @@ class JalumGrifterEffect extends OneShotEffect {
             Card sourceCard = game.getCard(source.getSourceId());
             if (sourceCard != null) {
                 sourceCard = sourceCard.copy();
-                sourceCard.setFaceDown(true, game);
+                sourceCard.setFaceDown(true);
                 shellGamePile.add(sourceCard);
                 game.informPlayers(controller.getLogName() + " turns " + sourceCard.getLogName() + " face down");
             }
@@ -100,7 +100,7 @@ class JalumGrifterEffect extends OneShotEffect {
                 Card card = game.getCard(cardId);
                 if (card != null) {
                     card = card.copy();
-                    card.setFaceDown(true, game);
+                    card.setFaceDown(true);
                     shellGamePile.add(card);
                     game.informPlayers(controller.getLogName() + " turns " + card.getLogName() + " face down");
                 }
@@ -116,7 +116,7 @@ class JalumGrifterEffect extends OneShotEffect {
             if (opponent.choose(Outcome.Sacrifice, cards, targetCard, source, game)) {
                 Card card = game.getCard(targetCard.getFirstTarget());
                 if (card != null) {
-                    card.setFaceDown(false, game);
+                    card.setFaceDown(false);
                     game.informPlayers(opponent.getLogName() + " reveals " + card.getLogName());
                     if (card.getId().equals(sourceCard.getId())) {
                         Permanent sourcePermanent = game.getPermanent(source.getSourceId());

@@ -1,7 +1,6 @@
 
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
@@ -15,7 +14,10 @@ import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -69,7 +71,9 @@ class ArashinSovereignEffect extends OneShotEffect {
         if (controller != null && sourceCard != null) {
             if (game.getState().getZone(source.getSourceId()) == Zone.GRAVEYARD) {
                 boolean onTop = controller.chooseUse(outcome, "Put " + sourceCard.getName() + " on top of it's owners library (otherwise on bottom)?", source, game);
-                controller.moveCardToLibraryWithInfo(sourceCard, source, game, Zone.GRAVEYARD, onTop, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(sourceCard, Zone.LIBRARY)
+                        .setToTopOfLibrary(onTop);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

@@ -1,7 +1,5 @@
 package mage.cards.g;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.ContinuousEffect;
@@ -12,9 +10,12 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -65,7 +66,10 @@ class GalvanicRelayEffect extends OneShotEffect {
             Card topCard = controller.getLibrary().getFromTop(game);
             if (topCard != null) {
                 Card sourceCard = game.getCard(source.getSourceId());
-                controller.moveCardsToExile(topCard, source, game, true, CardUtil.getCardExileZoneId(game, source), sourceCard != null ? sourceCard.getIdName() : "");
+                MoveCardsParameters parameters = new MoveCardsParameters(sourceCard, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 ContinuousEffect effect = new GalvanicRelayMayPlayEffect();
                 effect.setTargetPointer(new FixedTarget(topCard.getId()));
                 game.addEffect(effect, source);

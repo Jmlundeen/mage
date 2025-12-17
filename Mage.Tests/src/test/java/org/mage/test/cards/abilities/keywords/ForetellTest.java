@@ -184,7 +184,7 @@ public class ForetellTest extends CardTestPlayerBase {
         setChoice(playerA, true); // yes to loot
         setChoice(playerA, "Wastes"); // discard
 
-        checkExileCount("Poison the Cup foretold", 1, PhaseStep.BEGIN_COMBAT, playerA, poisonCup, 1);
+        checkExileCount("Poison the Cup", 1, PhaseStep.BEGIN_COMBAT, playerA, poisonCup, 1);
         checkHandCardCount("scorn effigy drawn", 1, PhaseStep.POSTCOMBAT_MAIN, playerA, scornEffigy, 1);
         checkPlayableAbility("can't foretell another for free", 1, PhaseStep.POSTCOMBAT_MAIN, playerA, "Foretell", false);
 

@@ -12,6 +12,8 @@ import mage.abilities.effects.common.RemoveAllCountersSourceEffect;
 import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.effects.common.continuous.BoostControlledEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
@@ -20,6 +22,8 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
+import mage.game.permanent.token.EdgarMarkovsCoffinVampireToken;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.EdgarMarkovsCoffinVampireToken;
 import mage.players.Player;
 
@@ -97,7 +101,8 @@ class EdgarCharmedGroomEffect extends OneShotEffect {
             return false;
         }
         game.getState().setValue(TransformingDoubleFacedCard.VALUE_KEY_ENTER_TRANSFORMED + source.getSourceId(), Boolean.TRUE);
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
-        return true;
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return controller.moveCards(parameters, source, game);
     }
 }

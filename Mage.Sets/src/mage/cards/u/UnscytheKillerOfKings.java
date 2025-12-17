@@ -79,9 +79,9 @@ class UnscytheEffect extends OneShotEffect {
         if (controller == null || card == null) {
             return false;
         }
-        if (game.getState().getZone(card.getId()) == Zone.GRAVEYARD
-                && controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.GRAVEYARD, true)) {
-            return new ZombieToken().putOntoBattlefield(1, game, source, source.getControllerId());
+        if (controller.moveCards(card, Zone.EXILED, source, game)) {
+            new ZombieToken().putOntoBattlefield(1, game, source, source.getControllerId());
+            return true;
         }
         return false;
     }

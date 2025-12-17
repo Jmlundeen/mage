@@ -10,7 +10,6 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.Outcome;
-import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
@@ -81,7 +80,7 @@ class CorneredMarketReplacementEffect extends ContinuousRuleModifyingEffectImpl 
             Spell spell = game.getState().getStack().getSpell(event.getSourceId());
             // Face Down cast spell (Morph creature) has no name
             if (spell != null
-                    && spell.isFaceDown(game)) {
+                    && spell.isFaceDown()) {
                 return false;
             }
             // play land check

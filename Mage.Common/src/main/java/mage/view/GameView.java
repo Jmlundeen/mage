@@ -3,6 +3,7 @@ package mage.view;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import mage.MageObject;
+import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
 import mage.cards.Card;
 import mage.constants.PhaseStep;
@@ -92,11 +93,23 @@ public class GameView implements Serializable {
             if (stackObject instanceof Spell) {
                 // Spell
                 Spell spell = (Spell) stackObject;
+                // Don't show unpaid spells of other players
+                boolean paid = spell.getSpellAbility().getManaCostsToPay().isPaid();
+                if (paid) {
+                    paid = spell.getSpellAbility().getCosts().isPaid();
+                }
+                if (!paid && !spell.getControllerId().equals(createdForPlayerId)) {
+                    continue;
+                }
                 CardView spellView = new CardView(spell, game, CardUtil.canShowAsControlled(spell, createdForPlayerId));
                 spellView.paid = spell.getSpellAbility().getManaCostsToPay().isPaid();
                 stack.put(spell.getId(), spellView);
             } else if (stackObject instanceof StackAbility) {
                 // Stack Ability
+                boolean paid = checkPaid((StackAbility) stackObject);
+                if (!paid && !stackObject.getControllerId().equals(createdForPlayerId)) {
+                    continue;
+                }
                 MageObject object = game.getObject(stackObject.getSourceId());
                 Card card = game.getCard(stackObject.getSourceId());
                 if (card == null && (object instanceof PermanentCard)) {
@@ -116,12 +129,10 @@ public class GameView implements Serializable {
                     if (card.isTransformable()) {
                         updateLatestCardView(game, card, stackObject.getId());
                     }
-                    checkPaid(stackObject.getId(), (StackAbility) stackObject);
                 } else if (object != null) {
                     if (object instanceof PermanentToken) {
                         PermanentToken token = (PermanentToken) object;
                         stack.put(stackObject.getId(), new StackAbilityView(game, (StackAbility) stackObject, token.getName(), token, new CardView(token, game)));
-                        checkPaid(stackObject.getId(), (StackAbility) stackObject);
                     } else if (object instanceof Emblem) {
                         CardView cardView = new CardView(new EmblemView((Emblem) object, game));
                         // Card sourceCard = (Card) ((Emblem) object).getSourceObject();
@@ -129,19 +140,16 @@ public class GameView implements Serializable {
                         // ((StackAbility) stackObject).setExpansionSetCode(sourceCard.getExpansionSetCode());
                         stack.put(stackObject.getId(),
                                 new StackAbilityView(game, (StackAbility) stackObject, object.getName(), object, cardView));
-                        checkPaid(stackObject.getId(), ((StackAbility) stackObject));
                     } else if (object instanceof Dungeon) {
                         CardView cardView = new CardView(new DungeonView((Dungeon) object));
                         stackObject.setName(object.getName());
                         stack.put(stackObject.getId(),
                                 new StackAbilityView(game, (StackAbility) stackObject, object.getName(), object, cardView));
-                        checkPaid(stackObject.getId(), ((StackAbility) stackObject));
                     } else if (object instanceof Plane) {
                         CardView cardView = new CardView(new PlaneView((Plane) object, game));
                         stackObject.setName(object.getName());
                         stack.put(stackObject.getId(),
                                 new StackAbilityView(game, (StackAbility) stackObject, object.getName(), object, cardView));
-                        checkPaid(stackObject.getId(), ((StackAbility) stackObject));
                     } else if (object instanceof Designation) {
                         Designation designation = (Designation) game.getObject(object.getId());
                         if (designation != null) {
@@ -153,10 +161,11 @@ public class GameView implements Serializable {
                         StackAbility stackAbility = ((StackAbility) object);
                         stackAbility.newId();
                         stack.put(stackObject.getId(), new CardView(stackObject, game));
-                        checkPaid(stackObject.getId(), ((StackAbility) stackObject));
                     } else {
                         throw new IllegalArgumentException("Object can't be cast to StackAbility: " + object + " - " + object.getClass().toString());
                     }
+                    CardView cardView = stack.get(stackObject.getId());
+                    cardView.paid = true;
                 } else {
                     // can happen if a player times out while ability is on the stack
                     LOGGER.debug("Stack Object for stack ability not found: " + stackObject.getStackAbility().getRule());
@@ -218,14 +227,15 @@ public class GameView implements Serializable {
         this.gameCycle = game.getState().getApplyEffectsCounter();
     }
 
-    private void checkPaid(UUID uuid, StackAbility stackAbility) {
-        for (Cost cost : stackAbility.getManaCostsToPay()) {
-            if (!cost.isPaid()) {
-                return;
+    private boolean checkPaid(StackAbility stackAbility) {
+        for (Ability ability : stackAbility.getAbilities()) {
+            for (Cost cost : ability.getCosts()) {
+                if (!cost.isPaid()) {
+                    return false;
+                }
             }
         }
-        CardView cardView = stack.get(uuid);
-        cardView.paid = true;
+        return true;
     }
 
     private void updateLatestCardView(Game game, Card card, UUID stackId) {

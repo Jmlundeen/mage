@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -12,13 +11,15 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -86,7 +87,7 @@ class SaprazzanBailiffEffect extends OneShotEffect {
                 for (UUID cid : player.getGraveyard().copy()) {
                     Card card = game.getCard(cid);
                     if (card != null && (card.isArtifact(game) || card.isEnchantment(game))) {
-                        controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.GRAVEYARD, true);
+                        controller.moveCards(card, Zone.EXILED, source, game);
                     }
                 }
             }

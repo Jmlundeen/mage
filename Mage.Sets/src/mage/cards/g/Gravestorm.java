@@ -1,10 +1,9 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -17,6 +16,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 import mage.target.common.TargetOpponent;
+
+import java.util.UUID;
 
 /**
  *
@@ -71,8 +72,8 @@ class GravestormEffect extends OneShotEffect {
             boolean opponentExilesACard = false;
             if (opponentChoosesExile && targetPlayer.chooseTarget(Outcome.Exile, target, source, game)) {
                 Card card = game.getCard(target.getFirstTarget());
-                if (card != null) {                    
-                    opponentExilesACard = targetPlayer.moveCardToExileWithInfo(card, null, "", source, game, Zone.GRAVEYARD, true);
+                if (card != null) {
+                    opponentExilesACard = targetPlayer.moveCards(card, Zone.EXILED, source, game);
                 }
             }
             

@@ -1,10 +1,6 @@
 
 package mage.cards.m;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
@@ -24,12 +20,18 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author nantuko
@@ -147,7 +149,10 @@ class MimicVatEffect extends OneShotEffect {
             controller.moveCards(toGraveyard, Zone.GRAVEYARD, source, game);
             permanent.clearImprinted(game);
 
-            controller.moveCardsToExile(newCard, source, game, true, source.getSourceId(), permanent.getName() + " (Imprint)");
+            MoveCardsParameters parameters = new MoveCardsParameters(newCard, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
+            controller.moveCards(parameters, source, game);
             permanent.imprint(newCard.getId(), game);
         }
 

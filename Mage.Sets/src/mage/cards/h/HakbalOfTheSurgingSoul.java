@@ -120,7 +120,7 @@ class HakbalOfTheSurgingSoulEffect extends OneShotEffect {
                 if (player.choose(Outcome.PutCardInPlay, target, source, game)) {
                     Card card = game.getCard(target.getFirstTarget());
                     if (card != null) {
-                        return player.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+                        return player.moveCards(card, Zone.BATTLEFIELD, source, game);
                     }
                 }
             } else {

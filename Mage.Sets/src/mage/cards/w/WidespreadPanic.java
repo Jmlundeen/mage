@@ -1,7 +1,6 @@
 
 package mage.cards.w;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.effects.Effect;
@@ -17,6 +16,8 @@ import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.UUID;
 
 /**
  *
@@ -100,7 +101,7 @@ class WidespreadPanicEffect extends OneShotEffect {
                 shuffler.choose(Outcome.Detriment, target, source, game);
                 Card card = shuffler.getHand().get(target.getFirstTarget(), game);
                 if (card != null) {
-                    shuffler.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                    shuffler.moveCards(card, Zone.LIBRARY, source, game);
 
                 }
             }

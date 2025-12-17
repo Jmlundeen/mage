@@ -10,13 +10,14 @@ import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
-import mage.abilities.effects.common.asthought.MayLookAtTargetCardEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
@@ -80,17 +81,18 @@ class IntetTheDreamerExileEffect extends OneShotEffect {
         if (card == null || sourceObject == null) {
             return false;
         }
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), sourceObject.getZoneChangeCounter(game));
-        String exileName = sourceObject.getIdName() + " (" + sourceObject.getZoneChangeCounter(game) + ")";
-        card.setFaceDown(true, game);
-        if (controller.moveCardsToExile(card, source, game, false, exileId, exileName)) {
-            card.setFaceDown(true, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        if (controller.moveCards(parameters, source, game)) {
             ContinuousEffect effect = new IntetTheDreamerAsThoughEffect();
             effect.setTargetPointer(new FixedTarget(card.getId(), game.getState().getZoneChangeCounter(card.getId())));
             game.getState().addEffect(effect, source);
-            effect = new MayLookAtTargetCardEffect(controller.getId());
-            effect.setTargetPointer(new FixedTarget(card, game));
-            game.addEffect(effect, source);
+            ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
+            if (exileZone != null) {
+                exileZone.letPlayerSeeCards(controller.getId(), card);
+            }
         }
         return true;
     }

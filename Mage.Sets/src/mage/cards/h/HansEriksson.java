@@ -4,6 +4,7 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.FightTargetSourceEffect;
 import mage.cards.Card;
@@ -16,14 +17,13 @@ import mage.filter.common.FilterPlayerOrPlaneswalker;
 import mage.filter.predicate.other.PlayerIdPredicate;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetPlayerOrPlaneswalker;
+import mage.target.targetpointer.FixedTarget;
 
 import java.util.UUID;
-import mage.abilities.effects.Effect;
-import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 /**
  * @author TheElk801
@@ -88,8 +88,14 @@ class HansErikssonEffect extends OneShotEffect {
         if (!card.isCreature(game)) {
             return player.moveCards(card, Zone.HAND, source, game);
         }
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        Permanent permanent = player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(cardRes -> cardRes instanceof Permanent)
+                .map(cardRes -> (Permanent) cardRes)
+                .findFirst()
+                .orElse(null);
         if (permanent == null) {
             return true;
         }

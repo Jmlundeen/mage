@@ -17,6 +17,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.ObjectSourcePlayerPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.DamagedEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -151,11 +152,10 @@ class CurseOfHospitalityEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        enchanted.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        enchanted.moveCards(parameters, source, game);
         Player player = game.getPlayer(getTargetPointer().getFirst(game, source));
         if (player == null) {
             return true;

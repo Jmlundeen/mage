@@ -1,6 +1,5 @@
 package mage.cards.t;
 
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.effects.OneShotEffect;
@@ -11,6 +10,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.util.CardUtil;
@@ -80,12 +80,11 @@ class TheCreationOfAvacynOneEffect extends OneShotEffect {
             Card card = controller.getLibrary().getCard(target.getFirstTarget(), game);
             if (card != null) {
                 // exile it face down
-                card.setFaceDown(true, game);
-                UUID exileId = CardUtil.getExileZoneId(game, source);
-                MageObject sourceObject = source.getSourceObject(game);
-                String exileName = sourceObject != null ? sourceObject.getName() : "";
-                controller.moveCardsToExile(card, source, game, false, exileId, exileName);
-                card.setFaceDown(true, game);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setFaceDown(true)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
 
                 // then shuffle
                 controller.shuffleLibrary(source, game);
@@ -127,7 +126,7 @@ class TheCreationOfAvacynTwoEffect extends OneShotEffect {
         boolean creatureCard = false;
         int mv = 0;
         for (Card card : exileZone.getCards(game)) {
-            card.setFaceDown(false, game);
+            card.setFaceDown(false);
             creatureCard |= card.isCreature(game);
             mv += card.getManaValue();
         }

@@ -19,6 +19,7 @@ import mage.cards.CardsImpl;
 import mage.constants.*;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -94,7 +95,9 @@ class MobileHomesteadEffect extends OneShotEffect {
         }
         String message = "Put " + card.getLogName() + " onto the battlefield tapped?";
         if (controller.chooseUse(Outcome.PutLandInPlay, message, source, game)) {
-            controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
         }
         return true;
     }

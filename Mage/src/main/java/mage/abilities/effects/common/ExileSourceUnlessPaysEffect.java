@@ -1,17 +1,19 @@
 
 package mage.abilities.effects.common;
 
-import java.util.Locale;
-
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.costs.Cost;
 import mage.abilities.effects.OneShotEffect;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.Locale;
 
 /**
  * @author fireshoes
@@ -47,7 +49,8 @@ public class ExileSourceUnlessPaysEffect extends OneShotEffect {
                     return true;
                 }
             }
-            controller.moveCardsToExile(sourcePermanent, source, game, true, null, "");
+            MoveCardsParameters parameters = new MoveCardsParameters(sourcePermanent, Zone.EXILED);
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

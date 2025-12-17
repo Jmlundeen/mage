@@ -16,6 +16,7 @@ import mage.filter.common.FilterCreatureCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -86,7 +87,10 @@ class IdolOfEnduranceExileEffect extends OneShotEffect {
             return false;
         }
         Cards cards = new CardsImpl(player.getGraveyard().getCards(filter, game));
-        player.moveCardsToExile(cards.getCards(game), source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new IdolOfEnduranceDelayedTrigger(), source);
         return true;
     }

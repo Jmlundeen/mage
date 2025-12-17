@@ -14,6 +14,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
@@ -82,10 +83,9 @@ class YunasDecisionEffect extends OneShotEffect {
         }
         TargetCard target = new YunasDecisionTarget();
         player.choose(outcome, player.getHand(), target, source, game);
-        return player.moveCards(
-                new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD, source,
-                game, true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 }
 

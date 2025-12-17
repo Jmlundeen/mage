@@ -107,7 +107,7 @@ class BurningRuneDemonEffect extends OneShotEffect {
                         opponent.chooseTarget(outcome, cards, targetCard, source, game);
                         Card cardToHand = game.getCard(targetCard.getFirstTarget());
                         if (cardToHand != null) {
-                            controller.moveCardToHandWithInfo(cardToHand, source, game, true);
+                            controller.moveCards(cardToHand, Zone.HAND, source, game);
                             cards.remove(cardToHand);
                         }
                         if (!cards.isEmpty()) {

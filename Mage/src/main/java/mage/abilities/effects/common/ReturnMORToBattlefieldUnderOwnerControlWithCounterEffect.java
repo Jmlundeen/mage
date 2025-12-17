@@ -10,6 +10,7 @@ import mage.counters.Counter;
 import mage.counters.Counters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 // TODO: refactor into ReturnToBattlefieldUnderOwnerControlWithCounterTargetEffect
@@ -66,7 +67,9 @@ public class ReturnMORToBattlefieldUnderOwnerControlWithCounterEffect extends On
                 } else {
                     game.setEnterWithCounters(objectToReturn.getSourceId(), counters);
                 }
-                owner.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setByOwner(true);
+                owner.moveCards(parameters, source, game);
             }
         }
         return true;

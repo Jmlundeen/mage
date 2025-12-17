@@ -36,7 +36,7 @@ public class IntetTheDreamerTest extends CardTestPlayerBase {
         runCode("after exile", 1, PhaseStep.COMBAT_DAMAGE, playerA, (info, player, game) -> {
             Assert.assertEquals("must have 1 card in exile", 1, game.getExile().getAllCards(game).size());
             Card card = game.getExile().getAllCards(game).get(0);
-            Assert.assertTrue("must be face down in exile", card.isFaceDown(game));
+            Assert.assertTrue("must be face down in exile", card.isFaceDown());
         });
 
         // free cast and boost intet

@@ -1,7 +1,5 @@
 package mage.cards.a;
 
-import java.util.HashSet;
-import java.util.Set;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -10,6 +8,7 @@ import mage.abilities.dynamicvalue.common.OpponentsCount;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.cost.SpellCostReductionForEachSourceEffect;
 import mage.abilities.keyword.TrampleAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.CardsImpl;
@@ -19,11 +18,13 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
-import mage.cards.Card;
 
 /**
  * @author JayDi85
@@ -92,7 +93,9 @@ class AvatarOfGrowthSearchEffect extends OneShotEffect {
                 }
             }
             // must happen simultaneously Rule 101.4
-            controller.moveCards(toBattlefield, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
 
             for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
                 Player player = game.getPlayer(playerId);

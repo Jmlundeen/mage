@@ -1,9 +1,7 @@
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -13,10 +11,12 @@ import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
-import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  * @author jeffwadsworth
@@ -61,20 +61,18 @@ class PlanarIncisionEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Permanent permanent = game.getPermanent(source.getFirstTarget());
         Player controller = game.getPlayer(source.getControllerId());
-        if (permanent != null
-                && controller != null) {
-            UUID exileId = CardUtil.getExileZoneId("planarIncisionExile" + source.toString(), game);
-            if (controller.moveCardsToExile(permanent, source, game, true, exileId, "")) {
-                if (game.getExile().getExileZone(exileId) != null) {
-                    Card exiledCard = game.getExile().getExileZone(exileId).get(permanent.getId(), game);
-                    if (exiledCard != null) {
+        if (permanent != null && controller != null) {
+            controller.moveCardsWithResult(new MoveCardsParameters(permanent, Zone.EXILED), source, game)
+                    .stream()
+                    .findFirst()
+                    .ifPresent(card -> {
                         Counters countersToAdd = new Counters();
                         countersToAdd.addCounter(CounterType.P1P1.createInstance());
-                        game.setEnterWithCounters(exiledCard.getId(), countersToAdd);
-                        return controller.moveCards(exiledCard, Zone.BATTLEFIELD, source, game, false, false, true, null);
-                    }
-                }
-            }
+                        game.setEnterWithCounters(card.getId(), countersToAdd);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                                .setByOwner(true);
+                        controller.moveCards(parameters, source, game);
+                    });
         }
         return false;
     }

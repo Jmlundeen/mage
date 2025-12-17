@@ -1,8 +1,5 @@
 package mage.cards.c;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -13,20 +10,20 @@ import mage.abilities.keyword.DoubleStrikeAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.ColoredManaSymbol;
-import mage.constants.ComparisonType;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterCreatureCard;
-import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.filter.predicate.card.OwnerIdPredicate;
+import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInGraveyard;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -100,7 +97,9 @@ class CryptChampionEffect extends OneShotEffect {
             }
 
             // must happen simultaneously Rule 101.4
-            controller.moveCards(toBattlefield, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
             return true;
             
         }

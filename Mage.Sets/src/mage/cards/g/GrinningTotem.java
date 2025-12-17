@@ -16,6 +16,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
@@ -82,7 +83,10 @@ class GrinningTotemSearchAndExileEffect extends OneShotEffect {
         Card card = targetOpponent.getLibrary().getCard(targetCard.getFirstTarget(), game);
         if (card != null) {
             UUID exileZoneId = CardUtil.getCardExileZoneId(game, source);
-            you.moveCardsToExile(card, source, game, true, exileZoneId, CardUtil.getSourceName(game, source));
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setExileId(exileZoneId)
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            you.moveCards(parameters, source, game);
             CardUtil.makeCardPlayable(game, source, card, false, Duration.UntilYourNextUpkeepStep, false);
             game.addDelayedTriggeredAbility(new GrinningTotemDelayedTriggeredAbility(exileZoneId), source);
         }

@@ -1,30 +1,28 @@
 package mage.cards.k;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.constants.Outcome;
-import mage.constants.SubType;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -122,8 +120,9 @@ class KrenkosBuzzcrusherEffect extends OneShotEffect {
                 continue;
             }
             if (player.searchLibrary(target, source, game)) {
-                player.moveCards(game.getCard(target.getFirstTarget()), Zone.BATTLEFIELD,
-                        source, game, true, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(game.getCard(target.getFirstTarget()), Zone.BATTLEFIELD)
+                        .setTapped(true);
+                player.moveCards(parameters, source, game);
                 player.shuffleLibrary(source, game);
             }
         }

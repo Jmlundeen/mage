@@ -1,13 +1,14 @@
 package mage.cards.e;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInExile;
@@ -78,7 +79,10 @@ class EndlessHorizonsEffect extends OneShotEffect {
                 .map(uuid -> player.getLibrary().getCard(uuid, game))
                 .filter(Objects::nonNull)
                 .forEach(cards::add);
-        player.moveCardsToExile(cards.getCards(game), source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         player.shuffleLibrary(source, game);
         return true;
     }

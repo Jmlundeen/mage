@@ -13,6 +13,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
 
@@ -69,7 +70,9 @@ class BattlefieldScroungerCost extends CostImpl {
                     if (card == null || game.getState().getZone(targetId) != Zone.GRAVEYARD) {
                         return false;
                     }
-                    paid |= controller.moveCardToLibraryWithInfo(card, source, game, Zone.GRAVEYARD, false, true);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                            .setToTopOfLibrary(false);
+                    paid |= controller.moveCards(parameters, source, game);
                 }
             }
 

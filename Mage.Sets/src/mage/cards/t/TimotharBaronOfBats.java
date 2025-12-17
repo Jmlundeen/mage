@@ -23,6 +23,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.BatToken;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
@@ -163,7 +164,10 @@ class TimotharBaronOfBatsReturnEffect extends OneShotEffect {
             return false;
         }
 
-        return player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        return player.moveCards(parameters, source, game);
     }
 
     @Override

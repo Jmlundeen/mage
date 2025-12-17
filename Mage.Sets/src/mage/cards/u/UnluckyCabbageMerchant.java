@@ -14,6 +14,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.FoodToken;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
@@ -81,10 +82,9 @@ class UnluckyCabbageMerchantEffect extends OneShotEffect {
         if (!player.searchLibrary(target, source, game)) {
             return false;
         }
-        player.moveCards(
-                player.getLibrary().getCard(target.getFirstTarget(), game), Zone.BATTLEFIELD,
-                source, game, true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(player.getLibrary().getCard(target.getFirstTarget(), game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         player.putCardsOnBottomOfLibrary(source.getSourcePermanentIfItStillExists(game), game, source);
         player.shuffleLibrary(source, game);
         return true;

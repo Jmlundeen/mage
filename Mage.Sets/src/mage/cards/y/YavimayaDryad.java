@@ -1,7 +1,6 @@
 
 package mage.cards.y;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -16,9 +15,12 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.UUID;
 
 /**
  *
@@ -81,8 +83,9 @@ class YavimayaDryadEffect extends SearchEffect {
         }
         if (controller.searchLibrary(target, source, game)) {
             if (!target.getTargets().isEmpty()) {
-                targetPlayer.moveCards(new CardsImpl(target.getTargets()).getCards(game),
-                        Zone.BATTLEFIELD, source, game, true, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                        .setTapped(true);
+                targetPlayer.moveCards(parameters, source, game);
             }
             controller.shuffleLibrary(source, game);
             return true;

@@ -1,7 +1,6 @@
 
 package mage.cards.n;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
@@ -11,10 +10,13 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.SpiritWhiteToken;
 import mage.game.permanent.token.Token;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -64,7 +66,9 @@ class NotForgottenEffect extends OneShotEffect {
         
         if (controller != null && targetCard != null) {
             boolean onTop = controller.chooseUse(outcome, "Put " + targetCard.getName() + " on top of it's owners library (otherwise on bottom)?", source, game);
-            boolean moved = controller.moveCardToLibraryWithInfo(targetCard, source, game, Zone.GRAVEYARD, onTop, true);
+            MoveCardsParameters parameters = new MoveCardsParameters(targetCard, Zone.LIBRARY)
+                    .setToTopOfLibrary(onTop);
+            boolean moved = controller.moveCards(parameters, source, game);
             if (moved) {
                 Token token = new SpiritWhiteToken();
                 token.putOntoBattlefield(1, game, source, source.getControllerId(), false, false);

@@ -1,19 +1,20 @@
 package mage.cards.g;
 
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -74,13 +75,12 @@ class GusthasScepterExileEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        controller.moveCardsToExile(
-                card, source, game, false,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
-        card.setFaceDown(true, game);
-        game.addEffect(new GusthasScepterLookAtCardEffect(card, game), source);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 
@@ -122,46 +122,6 @@ class GusthasScepterReturnEffect extends OneShotEffect {
         player.choose(outcome, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
         return card != null && player.moveCards(card, Zone.HAND, source, game);
-    }
-}
-
-class GusthasScepterLookAtCardEffect extends AsThoughEffectImpl {
-
-    private final MageObjectReference mor;
-
-    public GusthasScepterLookAtCardEffect(Card card, Game game) {
-        super(AsThoughEffectType.LOOK_AT_FACE_DOWN, Duration.EndOfGame, Outcome.Benefit);
-        this.mor = new MageObjectReference(card, game);
-        staticText = "You may look at it for as long as it remains exiled";
-    }
-
-    private GusthasScepterLookAtCardEffect(final GusthasScepterLookAtCardEffect effect) {
-        super(effect);
-        this.mor = effect.mor;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public GusthasScepterLookAtCardEffect copy() {
-        return new GusthasScepterLookAtCardEffect(this);
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        if (!mor.zoneCounterIsCurrent(game)) {
-            discard();
-            return false;
-        }
-        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
-        if (exileZone == null || !exileZone.contains(mor.getSourceId())) {
-            discard();
-            return false;
-        }
-        return mor.refersTo(objectId, game) && source.isControlledBy(affectedControllerId);
     }
 }
 

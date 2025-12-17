@@ -1,20 +1,18 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
-import mage.constants.Zone;
-import mage.filter.FilterCard;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
 import mage.players.Player;
-import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.UUID;
 
 /**
  *
@@ -73,25 +71,7 @@ class CongregationAtDawnEffect extends OneShotEffect {
                     }
                     controller.revealCards(sourceObject.getName(), revealed, game);
                     controller.shuffleLibrary(source, game);
-
-                    TargetCard targetToLib = new TargetCard(Zone.LIBRARY, new FilterCard(textTop));
-
-                    while (revealed.size() > 1 && controller.canRespond()) {
-                        controller.choose(Outcome.Neutral, revealed, targetToLib, source, game);
-                        Card card = revealed.get(targetToLib.getFirstTarget(), game);
-                        if (card != null) {
-                            revealed.remove(card);
-                            controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, true, false);
-
-                        }
-                        targetToLib.clearChosen();
-                    }
-
-                    if (revealed.size() == 1) {
-                        Card card = revealed.get(revealed.iterator().next(), game);
-                        controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, true, false);
-                    }
-
+                    controller.putCardsOnTopOfLibrary(revealed, game, source, true);
                 }
 
                 return true;

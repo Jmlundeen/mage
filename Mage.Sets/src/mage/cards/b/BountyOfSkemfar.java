@@ -10,6 +10,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
@@ -74,19 +75,18 @@ class BountyOfSkemfarEffect extends OneShotEffect {
         player.choose(outcome, cards, target, source, game);
         Card land = cards.get(target.getFirstTarget(), game);
         if (land != null) {
-            player.moveCards(
-                    land, Zone.BATTLEFIELD, source, game, true,
-                    false, false, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(land, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
-        cards.removeIf(uuid -> game.getState().getZone(uuid) != Zone.LIBRARY);
+        cards.retainZone(Zone.LIBRARY, game);
         target = new TargetCardInLibrary(0, 1, filter);
         player.choose(outcome, cards, target, source, game);
         Card elf = cards.get(target.getFirstTarget(), game);
         if (elf != null) {
-            player.moveCardToHandWithInfo(elf, source, game, true);
+            player.moveCards(elf, Zone.HAND, source, game);
         }
-        cards.removeIf(uuid -> game.getState().getZone(uuid) != Zone.LIBRARY);
+        cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);
         return true;
     }

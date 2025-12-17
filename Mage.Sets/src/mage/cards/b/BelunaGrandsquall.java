@@ -93,7 +93,7 @@ class SeekThrillsEffect extends OneShotEffect {
             }
         }
         
-        player.moveCardsToHandWithInfo(cards, source, game, true);
+        player.moveCards(cards, Zone.HAND, source, game);
         return true;
     }
 

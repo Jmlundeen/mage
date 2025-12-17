@@ -9,6 +9,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
@@ -67,7 +68,9 @@ class LostInTheWoodsEffect extends OneShotEffect {
                         permanent.removeFromCombat(game);
                     }
                 }
-                controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, false, true);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                        .setToTopOfLibrary(false);
+                controller.moveCards(parameters, source, game);
             }
         }
         return true;

@@ -11,6 +11,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInLibrary;
@@ -112,18 +113,16 @@ class DruidOfTheEmeraldGroveEffect extends RollDieWithResultTableEffect {
                     card = cards.get(target.getFirstTarget(), game);
             }
             if (card != null) {
-                player.moveCards(
-                        card, Zone.BATTLEFIELD, source, game, true,
-                        false, false, null
-                );
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setTapped(true);
+                player.moveCards(parameters, source, game);
                 cards.remove(card);
             }
             player.moveCards(cards, Zone.HAND, source, game);
         } else {
-            player.moveCards(
-                    cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                    true, false, false, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
         player.shuffleLibrary(source, game);
         return true;

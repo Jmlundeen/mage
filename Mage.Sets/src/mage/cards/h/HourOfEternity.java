@@ -75,7 +75,7 @@ class HourOfEternityEffect extends OneShotEffect {
                     cardsToExile.add(card);
                 }
             }
-            controller.moveCardsToExile(cardsToExile, source, game, true, null, "");
+            controller.moveCards(cardsToExile, Zone.EXILED, source, game);
             for (Card card : cardsToExile) {
                 if (game.getState().getZone(card.getId()) == Zone.EXILED) {
                     // create token and modify all attributes permanently (without game usage)

@@ -383,8 +383,9 @@ public class MorphTest extends CardTestPlayerBase {
         addCard(Zone.BATTLEFIELD, playerB, "Island", 2);
 
         castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Akroma, Angel of Fury using Morph");
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerB, "Counterspell", "Akroma, Angel of Fury");
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerB, "Counterspell", EmptyNames.FACE_DOWN_CREATURE.getTestCommand());
 
+        setStrictChooseMode(true);
         setStopAt(1, PhaseStep.BEGIN_COMBAT);
         execute();
 
@@ -423,7 +424,7 @@ public class MorphTest extends CardTestPlayerBase {
 
         for (Card card : currentGame.getExile().getAllCards(currentGame)) {
             if (card.getName().equals("Birchlore Rangers")) {
-                Assert.assertFalse("Birchlore Rangers has to be face up in exile", card.isFaceDown(currentGame));
+                Assert.assertFalse("Birchlore Rangers has to be face up in exile", card.isFaceDown());
                 break;
             }
         }
@@ -462,7 +463,7 @@ public class MorphTest extends CardTestPlayerBase {
 
         for (Card card : playerA.getGraveyard().getCards(currentGame)) {
             if (card.getName().equals("Ashcloud Phoenix")) {
-                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown(currentGame));
+                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown());
                 break;
             }
         }
@@ -498,7 +499,7 @@ public class MorphTest extends CardTestPlayerBase {
 
         for (Card card : playerA.getGraveyard().getCards(currentGame)) {
             if (card.getName().equals("Ashcloud Phoenix")) {
-                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown(currentGame));
+                Assert.assertFalse("Ashcloud Phoenix has to be face up in graveyard", card.isFaceDown());
                 break;
             }
         }
@@ -761,7 +762,7 @@ public class MorphTest extends CardTestPlayerBase {
         // 1. Cast Vesuvan as face-down
         castSpell(2, PhaseStep.PRECOMBAT_MAIN, playerB, "Vesuvan Shapeshifter using Morph");
 
-        // 2. Moth Vesuvan and copy brine
+        // 2. Morph Vesuvan and copy brine
         activateAbility(2, PhaseStep.POSTCOMBAT_MAIN, playerB, "{1}{U}: Turn this face-down permanent");
         addTarget(playerB, "Brine Elemental");
 
@@ -774,6 +775,65 @@ public class MorphTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Brine Elemental", 1);
         assertPermanentCount(playerB, "Brine Elemental", 1);
         Assert.assertEquals("Skip next turn has to be added to TurnMods", 1, currentGame.getState().getTurnMods().size());
+    }
+
+    @Test
+    public void testVesuvanHoodedHydra() {
+
+        /*
+        Vesuvan Shapeshifter
+        {3}{U}{U}
+        Creature - Shapeshifter
+        As Vesuvan Shapeshifter enters the battlefield or is turned face up, you may choose another creature on the battlefield. If you do, until Vesuvan Shapeshifter is turned face down, it becomes a copy of that creature and gains "At the beginning of your upkeep, you may turn this creature face down."
+        Morph {1}{U} <i>You may cast this card face downn as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)</i>
+        0/0
+        */
+        final String vesuvanShapeshifter = "Vesuvan Shapeshifter";
+
+        /*
+        Hooded Hydra
+        {X}{G}{G}
+        Creature - Snake Hydra
+        Hooded Hydra enters the battlefield with X +1/+1 counters on it.
+        When Hooded Hydra dies, put a 1/1 green Snake creature token onto the battlefield for each +1/+1 counter on it.
+        Morph {3}{G}{G}
+        As Hooded Hydra is turned face up, put five +1/+1 counters on it.
+        0/0
+        */
+        final String hoodedHydra = "Hooded Hydra";
+
+
+        addCard(Zone.HAND, playerA, vesuvanShapeshifter);
+        addCard(Zone.BATTLEFIELD, playerA, "Tropical Island", 15);
+        addCard(Zone.HAND, playerA, hoodedHydra);
+
+        // 1. Cast Vesuvan as face-down
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, vesuvanShapeshifter + " using Morph", true);
+
+        // 2. Cast Hooded Hydra as face-down
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, hoodedHydra + " using Morph", true);
+
+        // 3. Morph Hooded Hydra
+        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{3}{G}{G}: Turn this face-down permanent");
+
+        // 4. Morph Vesuvan and copy Hooded Hydra
+        activateAbility(1, PhaseStep.POSTCOMBAT_MAIN, playerA, "{1}{U}: Turn this face-down permanent");
+        addTarget(playerA, hoodedHydra);
+
+        // 5. Flip Vesuvan face-down at next upkeep
+        setChoice(playerA, true);
+
+        // 6. Morph Vesuvan again and copy Hooded Hydra
+        activateAbility(3, PhaseStep.PRECOMBAT_MAIN, playerA, "{1}{U}: Turn this face-down permanent");
+        addTarget(playerA, hoodedHydra);
+
+        setStrictChooseMode(true);
+        setStopAt(3, PhaseStep.POSTCOMBAT_MAIN);
+        execute();
+
+        assertPermanentCount(playerA, hoodedHydra, 2);
+        assertPowerToughness(playerA, hoodedHydra, 5, 5, Filter.ComparisonScope.Any);
+        assertPowerToughness(playerA, hoodedHydra, 10, 10, Filter.ComparisonScope.Any);
     }
 
     /**

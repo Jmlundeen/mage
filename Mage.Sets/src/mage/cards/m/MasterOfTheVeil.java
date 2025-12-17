@@ -6,19 +6,19 @@ import mage.abilities.Ability;
 import mage.abilities.common.TurnedFaceUpSourceTriggeredAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureAllEffect;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.MorphAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.ModalDoubleFacedCardHalf;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.filter.common.FilterCreaturePermanent;
-import mage.filter.predicate.Predicate;
-import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AbilityPredicate;
-import mage.filter.predicate.permanent.PermanentIdPredicate;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
+import mage.game.permanent.PermanentCard;
 import mage.target.Target;
 import mage.target.TargetPermanent;
 
@@ -80,15 +80,16 @@ class MasterOfTheVeilEffect extends OneShotEffect {
 
     @Override
     public boolean apply(Game game, Ability source) {
-        Predicate pred = new PermanentIdPredicate(UUID.randomUUID());
         for (Target target : source.getTargets()) {
             for (UUID targetId : target.getTargets()) {
-                pred = Predicates.or(pred, new PermanentIdPredicate(targetId));
+                Permanent permanent = game.getPermanent(targetId);
+                if (!permanent.isFaceDown() && !permanent.isTransformable() && !(((PermanentCard) permanent).getCard() instanceof ModalDoubleFacedCardHalf)) {
+                    BecomesFaceDownCreatureEffect.FaceDownType type = BecomesFaceDownCreatureEffect.findFaceDownType(game, permanent);
+                    BecomesFaceDownCreatureEffect.makeFaceDownObject(permanent, type, null);
+                    permanent.setFaceDown(true);
+                }
             }
         }
-        FilterCreaturePermanent filter = new FilterCreaturePermanent();
-        filter.add(pred);
-        game.addEffect(new BecomesFaceDownCreatureAllEffect(filter), source);
         return true;
     }
 }

@@ -12,7 +12,7 @@ public enum FaceDownPredicate implements Predicate<Card> {
 
     @Override
     public boolean apply(Card input, Game game) {
-        return input.isFaceDown(game);
+        return input.isFaceDown();
     }
 
     @Override

@@ -10,8 +10,10 @@ import mage.cards.Card;
 import mage.constants.AsThoughEffectType;
 import mage.constants.Duration;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
@@ -54,7 +56,12 @@ public class ExileAdventureSpellEffect extends OneShotEffect implements MageSing
                 if (spellCard instanceof AdventureCardHalf) {
                     UUID exileId = adventureExileId(controller.getId(), game);
                     game.getExile().createZone(exileId, "On an Adventure from " + controller.getName());
-                    if (controller.moveCardsToExile(spellCard, source, game, true, exileId, "On an Adventure from " + controller.getName())) {
+                    AdventureSpellCard adventureSpellCard = (AdventureSpellCard) spellCard;
+                    Card parentCard = adventureSpellCard.getParentCard();
+                    MoveCardsParameters parameters = new MoveCardsParameters(parentCard, Zone.EXILED)
+                            .setExileId(exileId)
+                            .setExileName("On an Adventure from " + controller.getName());
+                    if (controller.moveCards(parameters, source, game)) {
                         ContinuousEffect effect = new AdventureCastFromExileEffect();
                         effect.setTargetPointer(new FixedTarget(((AdventureCardHalf) spellCard).getOtherSide(), game));
                         game.addEffect(effect, source);

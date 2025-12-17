@@ -2,10 +2,10 @@ package mage.cards.h;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.assignment.common.CardTypeAssignment;
+import mage.abilities.condition.Condition;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
@@ -94,7 +94,7 @@ class HurkylMasterWizardEffect extends OneShotEffect {
         TargetCard target = new HurkylMasterWizardTarget(source, game);
         player.choose(outcome, cards, target, source, game);
         Cards toHand = new CardsImpl(target.getTargets());
-        player.moveCardsToHandWithInfo(toHand, source, game, true);
+        player.moveCards(toHand, Zone.HAND, source, game);
         cards.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(cards, game, source, false);
         return true;

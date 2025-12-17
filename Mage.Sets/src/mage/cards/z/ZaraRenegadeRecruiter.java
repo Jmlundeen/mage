@@ -16,13 +16,12 @@ import mage.filter.common.FilterPlayerOrPlaneswalker;
 import mage.filter.predicate.other.PlayerIdPredicate;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
-import mage.target.common.TargetCardInHand;
 import mage.target.common.TargetPlayerOrPlaneswalker;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -90,19 +89,23 @@ class ZaraRenegadeRecruiterEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        controller.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        );
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        Permanent permanent = controller.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(p -> p instanceof Permanent)
+                .map(p -> (Permanent) p)
+                .findFirst()
+                .orElse(null);
         if (permanent == null) {
             return false;
         }
         UUID defenderId;
-        if (game.getBattlefield().count(
+        int battlefieldPlaneswalkers = game.getBattlefield().count(
                 StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER,
                 player.getId(), source, game
-        ) < 1) {
+        );
+        if (battlefieldPlaneswalkers < 1) {
             defenderId = player.getId();
         } else {
             FilterPlayerOrPlaneswalker filter = new FilterPlayerOrPlaneswalker(

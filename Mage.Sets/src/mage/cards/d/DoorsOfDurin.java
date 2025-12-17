@@ -14,10 +14,9 @@ import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -81,22 +80,25 @@ class DoorsOfDurinEffect extends OneShotEffect {
         if (!card.isCreature(game)) {
             return true;
         }
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-        if (permanent == null) {
-            return true;
-        }
-        game.getCombat().addAttackingCreature(permanent.getId(), game);
-        if (game.getBattlefield().contains(filter1, source, game, 1)) {
-            game.addEffect(new GainAbilityTargetEffect(
-                    TrampleAbility.getInstance(), Duration.UntilYourNextTurn
-            ).setTargetPointer(new FixedTarget(permanent, game)), source);
-        }
-        if (game.getBattlefield().contains(filter2, source, game, 1)) {
-            game.addEffect(new GainAbilityTargetEffect(
-                    HexproofAbility.getInstance(), Duration.UntilYourNextTurn
-            ).setTargetPointer(new FixedTarget(permanent, game)), source);
-        }
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .findFirst()
+                .ifPresent(permanent -> {
+                    game.getCombat().addAttackingCreature(permanent.getId(), game);
+                    if (game.getBattlefield().contains(filter1, source, game, 1)) {
+                        game.addEffect(new GainAbilityTargetEffect(
+                                TrampleAbility.getInstance(), Duration.UntilYourNextTurn
+                        ).setTargetPointer(new FixedTarget(permanent, game)), source);
+                    }
+                    if (game.getBattlefield().contains(filter2, source, game, 1)) {
+                        game.addEffect(new GainAbilityTargetEffect(
+                                HexproofAbility.getInstance(), Duration.UntilYourNextTurn
+                        ).setTargetPointer(new FixedTarget(permanent, game)), source);
+                    }
+                });
+
         return true;
     }
 }

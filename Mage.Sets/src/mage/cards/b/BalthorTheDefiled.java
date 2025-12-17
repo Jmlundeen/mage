@@ -1,7 +1,6 @@
 
 package mage.cards.b;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -21,7 +20,10 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -92,7 +94,9 @@ class BalthorTheDefiledEffect extends OneShotEffect {
                     cardsToReturn.addAllCards(player.getGraveyard().getCards(filter, source.getControllerId(), source, game));
                 }
             }
-            controller.moveCards(cardsToReturn.getCards(game), Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cardsToReturn.getCards(game), Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

@@ -1,7 +1,5 @@
 package mage.cards.y;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -13,16 +11,18 @@ import mage.abilities.effects.common.ExileCardsFromTopOfLibraryControllerEffect;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.*;
-import mage.cards.Card;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInExile;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -85,13 +85,11 @@ class YggdrasilRebirthEngineExileAllCreaturesGraveyardEffect extends OneShotEffe
         if(controller == null){
             return false;
         }
-        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
-        String exileZoneName = CardUtil.createObjectRelatedWindowTitle(source, game, null);
         Cards cards = new CardsImpl(controller.getGraveyard().getCards(StaticFilters.FILTER_CARD_CREATURE, game));
-        if (cards.isEmpty()){
-            return true;
-        }
-        controller.moveCardsToExile(cards.getCards(game), source, game, false, exileZoneId, exileZoneName);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

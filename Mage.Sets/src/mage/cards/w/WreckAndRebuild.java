@@ -15,6 +15,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.TargetPermanent;
@@ -79,9 +80,11 @@ class WreckAndRebuildEffect extends OneShotEffect {
         );
         player.choose(outcome, targetCard, source, game);
         Card card = game.getCard(targetCard.getFirstTarget());
-        return card != null && player.moveCards(
-                card, Zone.BATTLEFIELD, source, game, true,
-                false, false, null
-        );
+        if (card == null) {
+            return false;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 }

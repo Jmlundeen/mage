@@ -1,24 +1,21 @@
 
 package mage.cards.n;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -85,7 +82,9 @@ class NissasChosenEffect extends ReplacementEffectImpl {
         Permanent permanent = ((ZoneChangeEvent) event).getTarget();
         Player controller = game.getPlayer(source.getControllerId());
         if (permanent != null && controller != null) {
-            controller.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, false, true);
+            MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.LIBRARY)
+                    .setToTopOfLibrary(false);
+            controller.moveCards(parameters, source, game);
             return true;            
         }
         return false;

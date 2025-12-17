@@ -1,8 +1,5 @@
 package mage.cards.c;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -17,8 +14,13 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.common.FilterArtifactOrEnchantmentCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -87,7 +89,9 @@ class CharmedGriffinEffect extends OneShotEffect {
                     }
                 }
             }
-            return controller.moveCards(toBattlefield, Zone.BATTLEFIELD, source, game, false, false, true, null); // 101.4
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            return controller.moveCards(parameters, source, game); // 101.4
         }
         return false;
     }

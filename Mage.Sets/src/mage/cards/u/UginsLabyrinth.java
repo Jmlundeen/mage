@@ -18,6 +18,7 @@ import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.ColorlessPredicate;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
@@ -108,11 +109,14 @@ class UginsLabyrinthExileEffect extends OneShotEffect {
         TargetCard target = new TargetCardInHand(0, 1, filter);
         player.choose(outcome, player.getHand(), target, source, game);
         Card card = game.getCard(target.getFirstTarget());
-        return card != null && player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        if (card == null) {
+            return false;
+        }
+
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return player.moveCards(parameters, source, game);
     }
 }
 

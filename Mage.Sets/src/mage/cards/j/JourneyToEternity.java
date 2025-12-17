@@ -10,6 +10,7 @@ import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.ReturnFromGraveyardToBattlefieldTargetEffect;
 import mage.abilities.effects.common.ReturnToBattlefieldUnderYourControlAttachedEffect;
 import mage.abilities.keyword.EnchantAbility;
+import mage.abilities.keyword.TransformAbility;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
@@ -94,7 +95,7 @@ class JourneyToEternityReturnTransformedSourceEffect extends OneShotEffect {
                 return true;
             }
             game.getState().setValue(TransformingDoubleFacedCard.VALUE_KEY_ENTER_TRANSFORMED + source.getSourceId(), Boolean.TRUE);
-            controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, false, null);
+            controller.moveCards(card, Zone.BATTLEFIELD, source, game);
         }
         return true;
     }

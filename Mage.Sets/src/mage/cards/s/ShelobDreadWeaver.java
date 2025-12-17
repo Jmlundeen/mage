@@ -23,6 +23,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInExile;
@@ -107,11 +108,10 @@ class ShelobDreadWeaverExileEffect extends OneShotEffect {
         if (player == null || permanent == null || card == null) {
             return false;
         }
-        player.moveCardsToExile(
-                card, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         return true;
     }
 }
@@ -138,7 +138,7 @@ class ShelobDreadWeaverCost extends CostImpl {
                     && controller.choose(Outcome.Benefit, cards, target, source, game)) {
                 Card card = game.getCard(target.getFirstTarget());
                 if (card != null) {
-                    if (controller.moveCardToGraveyardWithInfo(card, source, game, Zone.EXILED)) {
+                    if (controller.moveCards(card, Zone.GRAVEYARD, source, game)) {
                         paid = true;
                     }
                 }

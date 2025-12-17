@@ -4,7 +4,9 @@ import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -61,6 +63,9 @@ public class ExileSourceEffect extends OneShotEffect {
             exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
             exileZoneName = card.getName();
         }
-        return controller.moveCardsToExile(card, source, game, true, exileZoneId, exileZoneName);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileZoneId)
+                .setExileName(exileZoneName);
+        return controller.moveCards(parameters, source, game);
     }
 }

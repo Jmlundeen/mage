@@ -14,6 +14,8 @@ import java.util.UUID;
 public class ZoneChangeInfo {
 
     public boolean faceDown;
+    private BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
+    private CopiableValues faceDownValues; // to store characteristics to apply for face down cards
     public ZoneChangeEvent event;
     List<ZoneChangeInfo> additionalMoves = new ArrayList<>(); // additions objects move (example: meld parts), TODO: must research, can be un-used by real code
 
@@ -35,6 +37,22 @@ public class ZoneChangeInfo {
 
     public ZoneChangeInfo copy() {
         return new ZoneChangeInfo(this);
+    }
+
+    public CopiableValues getFaceDownValues() {
+        return faceDownValues;
+    }
+
+    public void setFaceDownValues(CopiableValues faceDownValues) {
+        this.faceDownValues = faceDownValues;
+    }
+
+    public BecomesFaceDownCreatureEffect.FaceDownType getFaceDownType() {
+        return faceDownType;
+    }
+
+    public void setFaceDownType(BecomesFaceDownCreatureEffect.FaceDownType faceDownType) {
+        this.faceDownType = faceDownType;
     }
 
     public static class Library extends ZoneChangeInfo {

@@ -1,7 +1,6 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
@@ -14,6 +13,8 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.permanent.token.RedWarriorToken;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -81,7 +82,7 @@ class RallyTheHordeEffect extends OneShotEffect {
     private int checkIfNextLibCardIsNonLandAndExile(Player controller, Ability source, Game game) {
         Card card = controller.getLibrary().getFromTop(game);
         if (card != null) {
-            controller.moveCardToExileWithInfo(card, null, "", source, game, Zone.LIBRARY, true);
+            controller.moveCards(card, Zone.EXILED, source, game);
             return card.isLand(game) ? 0 : 1;
         }
         return 0;

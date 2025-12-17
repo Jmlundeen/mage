@@ -1565,6 +1565,9 @@ public abstract class CardTestPlayerAPIImpl extends MageTestPlayerBase implement
                 if (CardUtil.haveSameNames(card.getName(), cardName, true)) {
                     actualCount++;
                 }
+                else if (card.isFaceDown() && CardUtil.haveSameNames(card.getOriginalName(), cardName, true)) {
+                    actualCount++;
+                }
             }
         }
 
@@ -1606,6 +1609,8 @@ public abstract class CardTestPlayerAPIImpl extends MageTestPlayerBase implement
         for (ExileZone exile : currentGame.getExile().getExileZones()) {
             for (Card card : exile.getCards(currentGame)) {
                 if (card.isOwnedBy(owner.getId()) && CardUtil.haveSameNames(card.getName(), cardName, true)) {
+                    actualCount++;
+                } else if (card.isOwnedBy(owner.getId()) && card.isFaceDown() && CardUtil.haveSameNames(card.getOriginalName(), cardName, true)) {
                     actualCount++;
                 }
             }

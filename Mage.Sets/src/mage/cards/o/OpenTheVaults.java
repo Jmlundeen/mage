@@ -1,8 +1,6 @@
 
 package mage.cards.o;
 
-import java.util.LinkedHashSet;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
@@ -13,7 +11,11 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.LinkedHashSet;
+import java.util.UUID;
 
 /**
  *
@@ -70,7 +72,9 @@ class OpenTheVaultsEffect extends OneShotEffect {
                     }
                 }
             }
-            controller.moveCards(cardsToReturn, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cardsToReturn, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

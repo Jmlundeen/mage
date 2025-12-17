@@ -1,6 +1,5 @@
 package mage.cards.d;
 
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.PayLifeCost;
@@ -16,9 +15,13 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.common.FilterNonlandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -73,7 +76,10 @@ class DarkDecisionEffect extends OneShotEffect {
                 UUID targetId = target.getFirstTarget();
                 Card card = game.getCard(targetId);
                 if (card != null) {
-                    controller.moveCardsToExile(card, source, game, true, source.getSourceId(), sourceObject.getIdName());
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                     ContinuousEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Zone.EXILED, Duration.EndOfTurn);
                     effect.setTargetPointer(new FixedTarget(card.getId(), game));
                     game.addEffect(effect, source);

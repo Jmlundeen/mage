@@ -453,8 +453,6 @@ public interface Player extends MageItem, Copyable<Player> {
 
     boolean removeFromBattlefield(Permanent permanent, Ability source, Game game);
 
-    boolean putInGraveyard(Card card, Game game);
-
     boolean removeFromGraveyard(Card card, Game game);
 
     boolean removeFromLibrary(Card card, Game game);
@@ -968,7 +966,8 @@ public interface Player extends MageItem, Copyable<Player> {
     Set<UUID> getCommandersIds();
 
     /**
-     * Moves cards from one zone to another
+     * Moves cards from one zone to another. If you need to modify movement, like being tapped/face down use {@link MoveCardsParameters}
+     * method instead.
      *
      * @param cards
      * @param toZone
@@ -978,124 +977,49 @@ public interface Player extends MageItem, Copyable<Player> {
      */
     boolean moveCards(Cards cards, Zone toZone, Ability source, Game game);
 
+    /**
+     * Moves a card from one zone to another. If you need to modify movement, like being tapped/face down use {@link MoveCardsParameters}
+     * method instead.
+     *
+     * @param card
+     * @param toZone
+     * @param source
+     * @param game
+     * @return
+     */
     boolean moveCards(Card card, Zone toZone, Ability source, Game game);
 
-    boolean moveCards(Card card, Zone toZone, Ability source, Game game, boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects);
-
-    boolean moveCards(Set<? extends Card> cards, Zone toZone, Ability source, Game game);
-
     /**
-     * Universal method to move cards from one zone to another. Do not mix
-     * objects from different zones to move.
+     * Moves cards from one zone to another. If you need to modify movement, like being tapped/face down use {@link MoveCardsParameters}
+     * method instead.
      *
      * @param cards
      * @param toZone
      * @param source
      * @param game
-     * @param tapped         the cards are tapped on the battlefield
-     * @param faceDown       the cards are face down in the to zone
-     * @param byOwner        the card is moved (or put onto battlefield) by the
-     *                       owner of the card and if target zone is battlefield
-     *                       controls the permanent (instead of the controller
-     *                       of the source)
-     * @param appliedEffects
      * @return
      */
-    boolean moveCards(Set<? extends Card> cards, Zone toZone, Ability source, Game game, boolean tapped, boolean faceDown, boolean byOwner, List<UUID> appliedEffects);
-
-    boolean moveCardsToExile(Card card, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName);
-
-    boolean moveCardsToExile(Set<Card> cards, Ability source, Game game, boolean withName, UUID exileId, String exileZoneName);
+    boolean moveCards(Set<? extends Card> cards, Zone toZone, Ability source, Game game);
 
     /**
-     * Uses card.moveToZone and posts a inform message about moving the card
-     * into the game log
+     * Universal method to move cards from one zone to another.
      *
-     * @param card
-     * @param source
-     * @param game
-     * @param withName show the card name in the log
-     * @return
+     * @param parameters {@link MoveCardsParameters} object holding all move parameters
+     * @param source source ability causing the move
+     * @param game current game
+     * @return true if any cards were moved
      */
-    boolean moveCardToHandWithInfo(Card card, Ability source, Game game, boolean withName);
+    boolean moveCards(MoveCardsParameters parameters, Ability source, Game game);
 
     /**
-     * Iterates through a set of cards and runs moveCardToHandWithInfo on each item
+     * Universal method to move cards to another zone and returns the resulting card after the move.
      *
-     * @param cards
-     * @param source
-     * @param game
-     * @param withName show the card names in the log
-     * @return
+     * @param parameters {@link MoveCardsParameters} object holding all move parameters
+     * @param source source ability causing the move
+     * @param game current game
+     * @return set of cards that were successfully moved
      */
-    boolean moveCardsToHandWithInfo(Cards cards, Ability source, Game game, boolean withName);
-
-    /**
-     * Uses card.moveToExile and posts a inform message about moving the card to
-     * exile into the game log. Don't use this in replacement effects, because
-     * list of applied effects is not saved
-     *
-     * @param card
-     * @param exileId   exile zone id (optional)
-     * @param exileName name of exile zone (optional)
-     * @param source
-     * @param game
-     * @param fromZone
-     * @param withName  for face down: used to hide card name in game logs before real face down status apply
-     * @return
-     */
-    @Deprecated
-    // if you want to use it in replaceEvent, then use ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
-    boolean moveCardToExileWithInfo(Card card, UUID exileId, String exileName, Ability source, Game game, Zone fromZone, boolean withName);
-
-    /**
-     * Uses card.moveToZone and posts a inform message about moving the card to
-     * graveyard into the game log
-     *
-     * @param card
-     * @param source
-     * @param game
-     * @param fromZone if null, this info isn't postet
-     * @return
-     */
-    boolean moveCardToGraveyardWithInfo(Card card, Ability source, Game game, Zone fromZone);
-
-    /**
-     * Internal used to move cards Use commonly player.moveCards()
-     *
-     * @param cards
-     * @param source
-     * @param game
-     * @param fromZone if null, this info isn't postet
-     * @return Set<Cards> that were successful moved to graveyard
-     */
-    Set<Card> moveCardsToGraveyardWithInfo(Set<? extends Card> cards, Ability source, Game game, Zone fromZone);
-
-    /**
-     * Uses card.moveToZone and posts a inform message about moving the card to
-     * library into the game log
-     *
-     * @param card
-     * @param source
-     * @param game
-     * @param fromZone if null, this info isn't postet
-     * @param toTop    to the top of the library else to the bottom
-     * @param withName show the card name in the log
-     * @return
-     */
-    boolean moveCardToLibraryWithInfo(Card card, Ability source, Game game, Zone fromZone, boolean toTop, boolean withName);
-
-    /**
-     * Uses card.moveToZone and posts a inform message about moving the card to
-     * library into the game log
-     *
-     * @param card
-     * @param source
-     * @param game
-     * @param fromZone if null, this info isn't postet
-     * @return
-     */
-    boolean moveCardToCommandWithInfo(Card card, Ability source, Game game, Zone fromZone);
+    Set<Card> moveCardsWithResult(MoveCardsParameters parameters, Ability source, Game game);
 
     Cards millCards(int toMill, Ability source, Game game);
 

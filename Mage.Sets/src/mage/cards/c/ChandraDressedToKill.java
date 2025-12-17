@@ -1,9 +1,5 @@
 package mage.cards.c;
 
-import java.util.Set;
-import java.util.UUID;
-
-import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
@@ -14,17 +10,21 @@ import mage.abilities.effects.common.GetEmblemEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.abilities.effects.mana.AddManaToManaPoolSourceControllerEffect;
 import mage.cards.Card;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.common.FilterPlayerOrPlaneswalker;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.command.emblems.ChandraDressedToKillEmblem;
 import mage.players.Player;
 import mage.target.common.TargetPlayerOrPlaneswalker;
 import mage.target.targetpointer.FixedTarget;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -97,10 +97,10 @@ class ChandraDressedToKillExile1Effect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-        MageObject sourceObject = source.getSourceObject(game);
-        String exileName = sourceObject == null ? null : sourceObject.getIdName();
-        controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceName(game, source));
+        controller.moveCards(parameters, source, game);
         if (game.getState().getZone(card.getId()) == Zone.EXILED && card.getColor(game).isRed()) {
             game.addEffect(new PlayFromNotOwnHandZoneTargetEffect(Zone.EXILED, TargetController.YOU, Duration.EndOfTurn, false, true)
                     .setTargetPointer(new FixedTarget(card, game)), source);
@@ -135,10 +135,10 @@ class ChandraDressedToKillExile5Effect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-        MageObject sourceObject = source.getSourceObject(game);
-        String exileName = sourceObject == null ? null : sourceObject.getIdName();
-        controller.moveCardsToExile(cards, source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         cards.removeIf(card -> !Zone.EXILED.equals(game.getState().getZone(card.getId())));
         if (!cards.isEmpty()) {
             game.addEffect(new ChandraDressedToKillPlayEffect()

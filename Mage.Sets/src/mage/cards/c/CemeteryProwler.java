@@ -1,25 +1,26 @@
 package mage.cards.c;
 
-import java.util.HashSet;
-import java.util.UUID;
 import mage.MageInt;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.common.EntersBattlefieldOrAttacksSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.cost.CostModificationEffectImpl;
-import mage.cards.Card;
-import mage.constants.*;
 import mage.abilities.keyword.VigilanceAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 import mage.util.CardUtil;
+
+import java.util.HashSet;
+import java.util.UUID;
 
 /**
  *
@@ -79,10 +80,10 @@ class CemeteryProwlerExileEffect extends OneShotEffect {
             controller.choose(outcome, target, source, game);
             Card card = game.getCard(target.getFirstTarget());
             if (card != null) {
-                UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                MageObject sourceObject = source.getSourceObject(game);
-                String exileName = sourceObject == null ? null : sourceObject.getIdName();
-                return controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.getSourceName(game, source));
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;

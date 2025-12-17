@@ -78,16 +78,15 @@ public enum SpellAbilityCastMode {
             case MORPH:
             case DISGUISE:
                 if (cardCopy instanceof Spell) {
-                    //Spell doesn't support setName, so make a copy of the card (we're blowing it away anyway)
-                    // TODO: research - is it possible to apply face down code to spell instead workaround with card
-                    cardCopy = ((Spell) cardCopy).getCard().copy();
+                    cardCopy = ((Spell) cardCopy).getCard();
+                    ((Spell) card).getCard().getFaceDownValues().applyTo(cardCopy);
+                    return cardCopy;
                 }
-                BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
-                if (this == DISGUISE) {
-                    faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
-                }
-                // no needs in additional abilities for spell
-                BecomesFaceDownCreatureEffect.makeFaceDownObject(game, null, cardCopy, faceDownType, null);
+                BecomesFaceDownCreatureEffect.FaceDownType faceDownType = this == MORPH
+                        ? BecomesFaceDownCreatureEffect.FaceDownType.MORPHED
+                        : BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(cardCopy, faceDownType, null);
+                cardCopy.getFaceDownValues().applyTo(cardCopy);
                 break;
             case NORMAL:
             case MADNESS:

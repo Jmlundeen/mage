@@ -10,6 +10,7 @@ import mage.cards.CardsImpl;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.Target;
@@ -97,12 +98,13 @@ public class CollectEvidenceCost extends CostImpl {
                 .filter(Objects::nonNull)
                 .mapToInt(MageObject::getManaValue)
                 .sum() >= amount;
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED);
         if (paid) {
             if (withSource) {
-                player.moveCardsToExile(cards.getCards(game), source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
-            } else {
-                player.moveCards(cards, Zone.EXILED, source, game);
+                parameters.setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
             }
+            player.moveCards(parameters, source, game);
             game.fireEvent(GameEvent.getEvent(
                     GameEvent.EventType.EVIDENCE_COLLECTED,
                     source.getSourceId(), source, source.getControllerId(), amount

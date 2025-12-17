@@ -17,6 +17,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -76,7 +77,6 @@ class SoulFoundryImprintEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
-        Permanent sourcePermanent = game.getPermanentOrLKIBattlefield(source.getSourceId());
         if (controller != null) {
             if (!controller.getHand().isEmpty()) {
                 TargetCard target = new TargetCard(Zone.HAND, filter);
@@ -84,7 +84,10 @@ class SoulFoundryImprintEffect extends OneShotEffect {
                         && controller.choose(Outcome.Benefit, controller.getHand(), target, source, game)) {
                     Card card = controller.getHand().get(target.getFirstTarget(), game);
                     if (card != null) {
-                        controller.moveCardToExileWithInfo(card, source.getSourceId(), sourcePermanent.getIdName() + " (Imprint)", source, game, Zone.HAND, true);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setExileId(source.getSourceId())
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
+                        controller.moveCards(parameters, source, game);
                         Permanent permanent = game.getPermanent(source.getSourceId());
                         if (permanent != null) {
                             permanent.imprint(card.getId(), game);

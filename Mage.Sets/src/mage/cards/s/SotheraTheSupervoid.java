@@ -18,6 +18,7 @@ import mage.counters.Counters;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -115,11 +116,10 @@ class SotheraTheSupervoidExileEffect extends OneShotEffect {
             if (permanent == null) {
                 continue;
             }
-            player.moveCardsToExile(
-                    permanent, source, game, true,
-                    CardUtil.getExileZoneId(game, source),
-                    CardUtil.getSourceName(game, source)
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            player.moveCards(parameters, source, game);
         }
         return true;
     }

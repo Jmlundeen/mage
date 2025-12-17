@@ -23,10 +23,12 @@ import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
@@ -114,12 +116,13 @@ class CreepingInnEffect extends OneShotEffect {
                     Card cardChosen = game.getCard(target.getFirstTarget());
                     if (cardChosen != null) {
                         int lifeAmount = 0;
-                        player.moveCardsToExile(cardChosen, source, game, true, exileId, permanent.getName());
+                        MoveCardsParameters parameters = new MoveCardsParameters(cardChosen, Zone.EXILED)
+                                .setExileId(exileId)
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                        player.moveCards(parameters, source, game);
                         ExileZone exile = game.getExile().getExileZone(exileId);
                         if (exile != null) {
-                            for (UUID cardId : exile) {
-                                lifeAmount++;
-                            }
+                            lifeAmount += exile.size();
                         }
                         for (UUID playerId : game.getOpponents(source.getControllerId())) {
                             game.getPlayer(playerId).loseLife(lifeAmount, game, source, false);

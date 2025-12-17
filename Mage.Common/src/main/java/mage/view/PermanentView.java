@@ -73,6 +73,15 @@ public class PermanentView extends CardView {
                 : new CardView((Card) permanent.getOtherFace().copy(), (Game) null);
         } else if (isFaceDown() && showFaceDownInfo) {
             // face down card must be hidden from opponent, but shown on game end for all
+            if (isToken) {
+                PermanentToken token = ((PermanentToken) permanent).getToken().copy();
+                token.setFaceDown(false);
+                original = new CardView(token, null);
+            } else {
+                Card cardCopy = card.copy();
+                cardCopy.setFaceDown(false);
+                original = new CardView(cardCopy, (Game) null);
+            }
             original = isToken
                 ? new CardView(((PermanentToken) permanent).getToken().copy(), null)
                 : new CardView(card.copy(), (Game) null);
@@ -84,6 +93,7 @@ public class PermanentView extends CardView {
         if (!copy && card instanceof RoomCard || card instanceof FlipCardHalf) {
             this.imageFileName = card.getName();
         }
+
         if (permanent.getOwnerId() != null && !permanent.getOwnerId().equals(permanent.getControllerId())) {
             Player owner = game.getPlayer(permanent.getOwnerId());
             if (owner != null) {

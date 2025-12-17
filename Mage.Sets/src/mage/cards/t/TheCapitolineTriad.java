@@ -1,8 +1,5 @@
 package mage.cards.t;
 
-import java.awt.*;
-import java.util.*;
-
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -17,17 +14,21 @@ import mage.abilities.effects.common.GetEmblemEffect;
 import mage.abilities.effects.common.cost.SpellCostReductionForEachSourceEffect;
 import mage.abilities.hint.HintUtils;
 import mage.abilities.hint.ValueHint;
-import mage.constants.*;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.HistoricPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.command.emblems.TheCapitolineTriadEmblem;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.util.CardUtil;
+
+import java.awt.*;
+import java.util.*;
 
 /**
  * @author grimreap124, Grath
@@ -94,7 +95,13 @@ class TheCapitolineTriadCost extends CostImpl {
         if (this.getTargets().choose(Outcome.Exile, controllerId, source.getSourceId(), source, game)) {
             for (UUID targetId : this.getTargets().get(0).getTargets()) {
                 Card card = game.getCard(targetId);
-                if (card != null && player.moveCardsToExile(card, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source))) {
+                if (card == null) {
+                    continue;
+                }
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                if (player.moveCards(parameters, source, game)) {
                     sumManaValue += card.getManaValue();
                 }
             }

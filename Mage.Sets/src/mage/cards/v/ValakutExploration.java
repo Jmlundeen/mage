@@ -3,23 +3,18 @@ package mage.cards.v;
 import mage.abilities.Ability;
 import mage.abilities.common.LandfallAbility;
 import mage.abilities.condition.Condition;
-import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Library;
 import mage.players.Player;
-import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
 import java.util.UUID;
@@ -95,14 +90,7 @@ class ValakutExplorationExileEffect extends OneShotEffect {
         if (card == null) {
             return true;
         }
-        controller.moveCardsToExile(
-                card, source, game, true, CardUtil.getExileZoneId(
-                        game, source.getSourceId(), source.getStackMomentSourceZCC()
-                ), sourcePermanent.getIdName()
-        );
-        ContinuousEffect effect = new PlayFromNotOwnHandZoneTargetEffect(Duration.EndOfGame);
-        effect.setTargetPointer(new FixedTarget(card, game));
-        game.addEffect(effect, source);
+        PlayFromNotOwnHandZoneTargetEffect.exileAndPlayFromExile(game, source, card, TargetController.YOU, Duration.EndOfGame, false, false, false);
         return true;
     }
 }

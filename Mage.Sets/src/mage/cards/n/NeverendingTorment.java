@@ -1,7 +1,6 @@
     
 package mage.cards.n;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.EpicEffect;
@@ -16,6 +15,8 @@ import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.target.common.TargetCardInLibrary;
+
+import java.util.UUID;
 
 /**
  *
@@ -69,7 +70,7 @@ class NeverendingTormentEffect extends OneShotEffect {
             for (UUID cardId : target.getTargets()) {
                 final Card targetCard = game.getCard(cardId);
                 if (targetCard != null) {
-                    applied |= you.moveCardToExileWithInfo(targetCard, null, null, source, game, Zone.LIBRARY, true);
+                    applied |= you.moveCards(targetCard, Zone.EXILED, source, game);
                 }
             }
             targetPlayer.shuffleLibrary(source, game);

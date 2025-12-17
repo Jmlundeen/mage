@@ -60,6 +60,7 @@ public class CopyEffect extends ContinuousEffectImpl {
         Permanent permanent = game.getPermanent(copyToObjectId);
         if (permanent != null) {
             affectedObjectList.add(new MageObjectReference(permanent, game));
+            copyToPermanent(permanent, game, source);
         } else if (source.getAbilityType() == AbilityType.STATIC) {
             // for replacement effects that let a permanent enter the battlefield as a copy of another permanent we need to apply that copy
             // before the permanent is added to the battlefield
@@ -109,13 +110,8 @@ public class CopyEffect extends ContinuousEffectImpl {
     }
 
     protected boolean copyToPermanent(Permanent permanent, Game game, Ability source) {
-        if (copyFromObject.getCopyFrom() != null) {
-            // copy from temp blueprints (they are already copies)
-            permanent.setCopy(true, copyFromObject.getCopyFrom());
-        } else {
-            // copy object to object
-            permanent.setCopy(true, copyFromObject);
-        }
+        // copy object to object
+        permanent.setCopy(true, copyFromObject);
         MageObject copyFrom = copyFromObject;
         if (permanent.isFlipped() && copyFrom instanceof Card && ((Card) copyFrom).getMainCard() instanceof FlipCard) {
             copyFrom = ((FlipCard) ((Card) copyFrom).getMainCard()).getRightHalfCard().copy();
@@ -139,14 +135,8 @@ public class CopyEffect extends ContinuousEffectImpl {
         }
 
         permanent.removeAllAbilities(source.getSourceId(), game);
-        if (copyFrom instanceof Permanent) {
-            for (Ability ability : ((Permanent) copyFrom).getAbilities(game)) {
-                permanent.addAbility(ability, getSourceId(), game, true);
-            }
-        } else {
-            for (Ability ability : copyFrom.getAbilities()) {
-                permanent.addAbility(ability, getSourceId(), game, true);
-            }
+        for (Ability ability : copyFrom.getAbilities()) {
+            permanent.addAbility(ability, getSourceId(), game, true);
         }
 
         // Primal Clay example:
@@ -171,6 +161,7 @@ public class CopyEffect extends ContinuousEffectImpl {
 
         CardUtil.copySetAndCardNumber(permanent, copyFrom);
 
+        permanent.saveCopiableValues(game);
         return true;
     }
 

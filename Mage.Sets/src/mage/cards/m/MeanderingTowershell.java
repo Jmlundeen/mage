@@ -15,6 +15,7 @@ import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -90,7 +91,7 @@ class MeanderingTowershellEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         Permanent sourcePermanent = game.getPermanent(source.getSourceId());
         if (controller != null && sourcePermanent != null) {
-            controller.moveCardToExileWithInfo(sourcePermanent, null, "", source, game, Zone.BATTLEFIELD, true);
+            controller.moveCards(sourcePermanent, Zone.EXILED, source, game);
             game.addDelayedTriggeredAbility(new AtTheBeginOfStepOfYourNextTurnDelayedTriggeredAbility(new MeanderingTowershellReturnEffect(), GameEvent.EventType.DECLARE_ATTACKERS_STEP_PRE), source);
             return true;
         }
@@ -119,7 +120,9 @@ class MeanderingTowershellReturnEffect extends OneShotEffect {
         if (controller != null) {
             Card card = game.getCard(source.getSourceId());
             if (card != null && game.getState().getZone(source.getSourceId()) == Zone.EXILED) {
-                controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                        .setTapped(true);
+                controller.moveCards(parameters, source, game);
                 game.getCombat().addAttackingCreature(card.getId(), game);
                 return true;
             }

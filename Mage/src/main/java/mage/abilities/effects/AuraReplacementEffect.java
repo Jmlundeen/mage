@@ -57,7 +57,7 @@ public class AuraReplacementEffect extends ReplacementEffectImpl {
         }
 
         // Aura cards that go to battlefield face down (Manifest) don't have to select targets
-        if (card.isFaceDown(game)) {
+        if (card.isFaceDown()) {
             return false;
         }
         // Aura enters the battlefield attached

@@ -13,6 +13,7 @@ import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandPermanent;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 
@@ -78,7 +79,9 @@ class RuinInTheirWakeEffect extends OneShotEffect {
                     controller.revealCards(sourceObject.getIdName(), cardsToReveal, game);
                     boolean controlWastes = game.getBattlefield().countAll(filterWastes, controller.getId(), game) > 0;
                     if (controlWastes && controller.chooseUse(outcome, "Put " + card.getLogName() + " onto battlefield tapped?", source, game)) {
-                        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                                .setTapped(true);
+                        controller.moveCards(parameters, source, game);
                     } else {
                         controller.moveCards(card, Zone.HAND, source, game);
                     }

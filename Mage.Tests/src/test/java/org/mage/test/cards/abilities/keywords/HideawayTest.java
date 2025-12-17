@@ -49,7 +49,7 @@ public class HideawayTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Shelldock Isle", 1);
         assertExileCount(playerA, "Silvercoat Lion", 1);
         for (Card card : currentGame.getExile().getAllCards(currentGame)) {
-            Assert.assertTrue("Exiled card is not face down", card.isFaceDown(currentGame));
+            Assert.assertTrue("Exiled card is not face down", card.isFaceDown());
         }
     }
 
@@ -98,7 +98,7 @@ public class HideawayTest extends CardTestPlayerBase {
 
         Permanent permanent = getPermanent("Ulamog, the Ceaseless Hunger", playerA);
         Card card = currentGame.getCard(permanent.getId());
-        Assert.assertFalse("Previous exiled card may be no longer face down", card.isFaceDown(currentGame));
+        Assert.assertFalse("Previous exiled card may be no longer face down", card.isFaceDown());
     }
 
     @Test

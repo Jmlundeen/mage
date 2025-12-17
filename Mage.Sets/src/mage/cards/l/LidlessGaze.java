@@ -1,6 +1,5 @@
 package mage.cards.l;
 
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
@@ -11,6 +10,7 @@ import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -65,17 +65,16 @@ class LidlessGazeEffect extends OneShotEffect {
             return false;
         }
 
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-        MageObject sourceObject = source.getSourceObject(game);
-        String exileName = sourceObject == null ? null : sourceObject.getIdName();
-
         Cards cards = new CardsImpl();
         for (UUID playerId : game.getState().getPlayersInRange(source.getControllerId(), game)) {
             Player player = game.getPlayer(playerId);
             if (player != null) {
-                Card card = player.getLibrary().removeFromTop(game);
+                Card card = player.getLibrary().getFromTop(game);
                 if (card != null) {
-                    controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                     cards.add(card);
                 }
             }

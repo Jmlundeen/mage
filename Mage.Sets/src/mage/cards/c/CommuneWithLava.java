@@ -9,6 +9,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
@@ -62,8 +63,10 @@ class CommuneWithLavaEffect extends OneShotEffect {
         if (controller != null && sourceCard != null) {
             int amount = CardUtil.getSourceCostsTag(game, source, "X", 0);
             Set<Card> cards = controller.getLibrary().getTopCards(game, amount);
-            controller.moveCardsToExile(cards, source, game, true, CardUtil.getCardExileZoneId(game, source), sourceCard.getIdName());
-
+            MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             for (Card card : cards) {
                 ContinuousEffect effect = new CommuneWithLavaMayPlayEffect();
                 effect.setTargetPointer(new FixedTarget(card.getId(), game));

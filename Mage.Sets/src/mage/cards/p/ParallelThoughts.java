@@ -13,8 +13,8 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
@@ -95,10 +95,14 @@ class ParallelThoughtsSearchEffect extends OneShotEffect {
                 cardsInExilePile.addAll(Arrays.asList(shuffled));
 
                 // move to exile zone and turn face down
-                String exileName = permanent.getIdName() + " (" + game.getState().getZoneChangeCounter(source.getSourceId()) + ")";
+                UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+                String exileZoneName = CardUtil.createObjectRelatedWindowTitle(source, game, null);
                 for (Card card : cardsInExilePile.getCards(game)) {
-                    controller.moveCardsToExile(card, source, game, false, CardUtil.getCardExileZoneId(game, source), exileName);
-                    card.setFaceDown(true, game);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                            .setFaceDown(true)
+                            .setExileId(exileZoneId)
+                            .setExileName(exileZoneName);
+                    controller.moveCards(parameters, source, game);
                 }
 
                 // shuffle controller library

@@ -1,7 +1,6 @@
 
 package mage.cards.n;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -21,10 +20,13 @@ import mage.constants.Outcome;
 import mage.constants.TargetController;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -108,10 +110,14 @@ class NecropotenceEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
             Card card = controller.getLibrary().getFromTop(game);
-            if (card != null && controller.moveCardsToExile(card, source, game, false,
-                    CardUtil.getCardExileZoneId(game, source),
-                    CardUtil.createObjectRelatedWindowTitle(source, game, null))) {
-                card.setFaceDown(true, game);
+            if (card == null) {
+                return false;
+            }
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setFaceDown(true)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            if (controller.moveCards(parameters, source, game)) {
                 Effect returnToHandEffect = new ReturnToHandTargetEffect();
                 returnToHandEffect.setText("put that face down card into your hand");
                 returnToHandEffect.setTargetPointer(new FixedTarget(card, game));

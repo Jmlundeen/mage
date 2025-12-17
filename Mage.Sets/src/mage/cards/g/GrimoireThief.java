@@ -14,6 +14,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
 import mage.players.Player;
@@ -86,14 +87,16 @@ class GrimoireThiefExileEffect extends OneShotEffect {
             MageObject sourceObject = source.getSourceObject(game);
             if (!cards.isEmpty() && sourceObject != null) {
                 for (Card card : cards) {
-                    card.setFaceDown(true, game);
+                    card.setFaceDown(true);
                 }
-                UUID exileZoneId = CardUtil.getExileZoneId(game,
-                        source.getSourceId(), source.getStackMomentSourceZCC());
-                targetOpponent.moveCardsToExile(cards, source, game, false,
-                        exileZoneId, sourceObject.getIdName());
+                UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+                MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                        .setFaceDown(true)
+                        .setExileId(exileZoneId)
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                targetOpponent.moveCards(parameters, source, game);
                 for (Card card : cards) {
-                    card.setFaceDown(true, game);
+                    card.setFaceDown(true);
                 }
                 Set<UUID> exileZones = (Set<UUID>) game.getState().getValue(
                         GrimoireThief.VALUE_PREFIX + source.getSourceId().toString());
@@ -146,7 +149,7 @@ class GrimoireThiefLookEffect extends AsThoughEffectImpl {
                     && sourceObject != null) {
                 Card card = game.getCard(objectId);
                 if (card != null
-                        && card.isFaceDown(game)) {
+                        && card.isFaceDown()) {
                     Set<UUID> exileZones = (Set<UUID>) game.getState().
                             getValue(GrimoireThief.VALUE_PREFIX + source.getSourceId().toString());
                     if (exileZones != null) {
@@ -155,6 +158,7 @@ class GrimoireThiefLookEffect extends AsThoughEffectImpl {
                                 if (!exileZones.contains(exileZone.getId())) {
                                     return false;
                                 }
+                                exileZone.letPlayerSeeCards(controller.getId(), card);
                             }
                         }
                         return true;
@@ -192,7 +196,7 @@ class GrimoireThiefCounterspellEffect extends OneShotEffect {
             }
             // set face up first
             for (Card card : cards.getCards(game)) {
-                card.setFaceDown(false, game);
+                card.setFaceDown(false);
             }
             // then counter any with the same name as the card exiled with Grimoire Thief
             for (Card card : cards.getCards(game)) {

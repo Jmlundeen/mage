@@ -15,6 +15,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
@@ -74,27 +75,26 @@ class JeskaiInfiltratorEffect extends OneShotEffect {
         if (controller == null) {
             return false;
         }
-        UUID exileId = UUID.randomUUID();
+        List<Card> cardsToExile = new ArrayList<>();
         Permanent sourcePermanent = source.getSourcePermanentIfItStillExists(game);
         if (sourcePermanent != null) {
-            controller.moveCardsToExile(sourcePermanent, source, game, false, exileId, "");
+            cardsToExile.add(sourcePermanent);
         }
         Card topCard = controller.getLibrary().getFromTop(game);
         if (topCard != null) {
-            controller.moveCardsToExile(topCard, source, game, false, exileId, "");
+            cardsToExile.add(topCard);
         }
-        // need to get source permanent as card rather than permanent for next steps, hence this convoluted code
-        List<Card> cardsToManifest = new ArrayList<>(game.getExile().getExileZone(exileId).getCards(game));
-        if (cardsToManifest.isEmpty()) {
-            return false;
-        }
-        for (Card card : cardsToManifest) {
-            card.setFaceDown(true, game);
-        }
-        Collections.shuffle(cardsToManifest);
+        UUID exileId = UUID.randomUUID();
+        MoveCardsParameters parameters = new MoveCardsParameters(cardsToExile, Zone.EXILED);
+        parameters.setFaceDown(true);
+        parameters.setExileId(exileId);
+        controller.moveCards(parameters, source, game);
+        cardsToExile.clear();
+        cardsToExile.addAll(game.getExile().getExileZone(exileId).getCards(game));
+        Collections.shuffle(cardsToExile);
         game.informPlayers(controller.getLogName() + " shuffles the face-down pile");
         game.processAction();
-        ManifestEffect.doManifestCards(game, source, controller, new LinkedHashSet<>(cardsToManifest));
+        ManifestEffect.doManifestCards(game, source, controller, new LinkedHashSet<>(cardsToExile));
         return true;
     }
 }

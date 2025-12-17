@@ -4,7 +4,6 @@ import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.constants.Outcome;
-import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
@@ -58,7 +57,7 @@ public class BrainstormEffect extends OneShotEffect {
             player.chooseTarget(Outcome.ReturnToHand, target, source, game);
             Card card = player.getHand().get(target.getFirstTarget(), game);
             if (card != null) {
-                return player.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                return player.putCardsOnTopOfLibrary(card, game, source, true);
             }
         }
         return false;

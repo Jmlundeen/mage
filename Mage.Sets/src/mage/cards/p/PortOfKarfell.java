@@ -16,6 +16,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInYourGraveyard;
@@ -84,7 +85,9 @@ class PortOfKarfellEffect extends OneShotEffect {
         player.choose(outcome, target, source, game);
         Card card = game.getCard(target.getFirstTarget());
         if (card != null) {
-            player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         }
         return true;
     }

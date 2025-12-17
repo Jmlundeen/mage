@@ -12,6 +12,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -88,8 +89,10 @@ class HostageTakerExileEffect extends OneShotEffect {
             return false;
         }
         // move card to exile
-        UUID exileId = CardUtil.getCardExileZoneId(game, source);
-        controller.moveCardToExileWithInfo(card, exileId, permanent.getIdName(), source, game, Zone.BATTLEFIELD, true);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         // allow to cast the card and you may spend mana as though it were mana of any color to cast it
         CardUtil.makeCardPlayable(game, source, card, true, Duration.Custom, true);
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);

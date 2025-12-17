@@ -18,6 +18,7 @@ import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.util.CardUtil;
@@ -89,8 +90,10 @@ class KahoMinamoHistorianEffect extends SearchEffect {
             if (controller.searchLibrary(target, source, game)) {
                 UUID exileZone = CardUtil.getCardExileZoneId(game, source);
                 if (!target.getTargets().isEmpty()) {
-                    controller.moveCardsToExile(new CardsImpl(target.getTargets()).getCards(game),
-                            source, game, true, exileZone, sourceObject.getIdName());
+                    MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.EXILED)
+                            .setExileId(exileZone)
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                    controller.moveCards(parameters, source, game);
                 }
             }
             controller.shuffleLibrary(source, game);

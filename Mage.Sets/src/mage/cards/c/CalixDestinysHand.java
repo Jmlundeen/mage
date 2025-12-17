@@ -18,6 +18,7 @@ import mage.filter.common.FilterControlledEnchantmentPermanent;
 import mage.filter.common.FilterEnchantmentCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -119,7 +120,10 @@ class CalixDestinysHandExileEffect extends OneShotEffect {
         );
         MageObjectReference myMor = new MageObjectReference(myPerm, game);
         UUID exileId = CardUtil.getExileZoneId(myPerm.toString(), game);
-        controller.moveCardsToExile(theirPerm, source, game, true, exileId, myPerm.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(theirPerm, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(myPerm.getIdName());
+        controller.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new CalixDestinysHandDelayedTriggeredAbility(theirMor, myMor), source);
         return true;
     }

@@ -6,6 +6,7 @@ import mage.abilities.common.SpellTransformedAbility;
 import mage.abilities.costs.mana.ActivationManaAbilityStep;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.BestowAbility;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.cards.*;
@@ -17,6 +18,7 @@ import mage.filter.predicate.mageobject.MageObjectReferencePredicate;
 import mage.game.Game;
 import mage.game.GameState;
 import mage.game.MageObjectAttribute;
+import mage.game.MoveCardsParameters;
 import mage.game.events.CopiedStackObjectEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -58,7 +60,6 @@ public class Spell extends StackObjectImpl implements Card {
     private UUID controllerId;
     private boolean copy;
     private MageObject copyFrom; // copied card INFO (used to call original adjusters)
-    private boolean faceDown;
     private boolean countered;
     private boolean resolving = false;
     private UUID commandedByPlayerId = null; // controller of the spell resolve, example: Word of Command
@@ -85,9 +86,15 @@ public class Spell extends StackObjectImpl implements Card {
             this.prototyped = true;
         }
 
+        if (ability.getSpellAbilityCastMode().isFaceDown()) {
+            BecomesFaceDownCreatureEffect.FaceDownType faceDownType = getFaceDownType(ability);
+            BecomesFaceDownCreatureEffect.makeFaceDownObject(card, faceDownType, null);
+        } else if (affectedCard.isFaceDown()) {
+            affectedCard.setFaceDown(false);
+        }
         this.card = affectedCard;
         this.manaCost = affectedCard.getManaCost().copy();
-        this.color = affectedCard.getColor(null).copy();
+        this.color = ability.getSpellAbilityCastMode().isFaceDown() ? new ObjectColor() : affectedCard.getColor(null).copy();
         this.frameColor = affectedCard.getFrameColor(null).copy();
         this.frameStyle = affectedCard.getFrameStyle();
         this.startingLoyalty = affectedCard.getStartingLoyalty();
@@ -101,14 +108,6 @@ public class Spell extends StackObjectImpl implements Card {
         if(ability instanceof SpellTransformedAbility && manaCost.isEmpty()) {
             this.manaCost = card.getMainCard().getManaCost().copy();
             this.ability.setSourceId(affectedCard.getId()); // Maybe wrong? Permanent has incorrect id otherwise
-        }
-        if (ability.getSpellAbilityCastMode().isFaceDown()) {
-            // TODO: need research:
-            //  - why it use game param for color and subtype (possible bug?)
-            //  - is it possible to use BecomesFaceDownCreatureEffect.makeFaceDownObject or like that?
-            this.faceDown = true;
-            this.getColor(game).setColor(null);
-            game.getState().getCreateMageObjectAttribute(this.getCard(), game).getSubtype().clear();
         }
         if (ability.getSpellAbilityType() == SpellAbilityType.SPLIT_FUSED) {
             // if this spell is going to be a copy, these abilities will be copied in copySpell
@@ -127,6 +126,18 @@ public class Spell extends StackObjectImpl implements Card {
         this.controllerId = controllerId;
         this.fromZone = fromZone;
         this.countered = false;
+    }
+
+    private static BecomesFaceDownCreatureEffect.FaceDownType getFaceDownType(SpellAbility ability) {
+        BecomesFaceDownCreatureEffect.FaceDownType faceDownType;
+        if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.MORPH) {
+            faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MORPHED;
+        } else if (ability.getSpellAbilityCastMode() == SpellAbilityCastMode.DISGUISE){
+            faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.DISGUISED;
+        } else {
+            faceDownType = BecomesFaceDownCreatureEffect.FaceDownType.MANUAL;
+        }
+        return faceDownType;
     }
 
     protected Spell(final Spell spell) {
@@ -151,7 +162,6 @@ public class Spell extends StackObjectImpl implements Card {
         this.controllerId = spell.controllerId;
         this.copy = spell.copy;
         this.copyFrom = (spell.copyFrom != null ? spell.copyFrom.copy() : null);
-        this.faceDown = spell.faceDown;
         this.countered = spell.countered;
         this.resolving = spell.resolving;
         this.commandedByPlayerId = spell.commandedByPlayerId;
@@ -205,10 +215,10 @@ public class Spell extends StackObjectImpl implements Card {
         return sb.toString();
     }
 
-    public String getSpellCastText(Game game) {
+    public String getSpellCastText() {
         if (this.getSpellAbility().getSpellAbilityCastMode().isFaceDown()) {
             // add face down name with object link, so user can look at it from logs
-            return "a " + GameLog.getColoredObjectIdName(this.getSpellAbility().getCharacteristics(game))
+            return "a " + GameLog.getColoredObjectIdName(card)
                     + " using " + this.getSpellAbility().getSpellAbilityCastMode();
         }
 
@@ -358,7 +368,9 @@ public class Spell extends StackObjectImpl implements Card {
                     permId = card.getId();
                     MageObjectReference mor = new MageObjectReference(getSpellAbility());
                     game.storePermanentCostsTags(mor, getSpellAbility());
-                    permanentCreated = controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, faceDown, false, null);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                            .setFaceDown(isFaceDown());
+                    permanentCreated = controller.moveCards(parameters, ability, game);
                 }
                 if (permanentCreated) {
                     if (bestow) {
@@ -391,7 +403,8 @@ public class Spell extends StackObjectImpl implements Card {
             if (bestow) {
                 MageObjectReference mor = new MageObjectReference(getSpellAbility());
                 game.storePermanentCostsTags(mor, getSpellAbility());
-                return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, faceDown, false, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD);
+                return controller.moveCards(parameters, ability, game);
             } else {
                 //20091005 - 608.2b
                 if (!game.isSimulation()) {
@@ -408,7 +421,10 @@ public class Spell extends StackObjectImpl implements Card {
         } else {
             MageObjectReference mor = new MageObjectReference(getSpellAbility());
             game.storePermanentCostsTags(mor, getSpellAbility());
-            return controller.moveCards(card, Zone.BATTLEFIELD, ability, game, false, faceDown, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setFaceDownType(getFaceDownType(ability))
+                    .setFaceDown(isFaceDown());
+            return controller.moveCards(parameters, ability, game);
         }
     }
 
@@ -524,6 +540,11 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
+    public String getOriginalName() {
+        return card.getOriginalName();
+    }
+
+    @Override
     public String getIdName() {
         String idName;
         if (card != null) {
@@ -536,8 +557,8 @@ public class Spell extends StackObjectImpl implements Card {
 
     @Override
     public String getLogName() {
-        if (faceDown) {
-            return "face down spell";
+        if (isFaceDown()) {
+            return GameLog.getNeutralObjectIdName("face down spell", getId());
         }
         return GameLog.getColoredObjectIdName(card);
     }
@@ -558,10 +579,8 @@ public class Spell extends StackObjectImpl implements Card {
 
     @Override
     public List<CardType> getCardType(Game game) {
-        if (faceDown) {
-            List<CardType> cardTypes = new ArrayList<>();
-            cardTypes.add(CardType.CREATURE);
-            return cardTypes;
+        if (isFaceDown()) {
+            return card.getCardType(game);
         }
         if (SpellAbilityCastMode.BESTOW.equals(this.getSpellAbility().getSpellAbilityCastMode())) {
             Card modifiedCard = this.getSpellAbility().getSpellAbilityCastMode().getTypeModifiedCardObjectCopy(card, this.getSpellAbility(), game);
@@ -670,7 +689,7 @@ public class Spell extends StackObjectImpl implements Card {
     @Override
     public int getManaValue() {
         int cmc = 0;
-        if (faceDown) {
+        if (isFaceDown()) {
             return 0;
         }
         for (SpellAbility spellAbility : spellAbilities) {
@@ -739,6 +758,11 @@ public class Spell extends StackObjectImpl implements Card {
         return ability;
     }
 
+    @Override
+    public PlayLandAbility getPlayLandAbility() {
+        return null;
+    }
+
     public void setControllerId(UUID controllerId) {
         this.ability.setControllerId(controllerId);
         for (SpellAbility spellAbility : spellAbilities) {
@@ -762,23 +786,13 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
-    public void setFaceDown(boolean value, Game game) {
-        faceDown = value;
+    public void setFaceDown(boolean value) {
+        card.setFaceDown(value);
     }
 
     @Override
-    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
-        throw new IllegalStateException("Spells un-support turn face up commands");
-    }
-
-    @Override
-    public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
-        throw new IllegalStateException("Spells un-support turn face up commands");
-    }
-
-    @Override
-    public boolean isFaceDown(Game game) {
-        return faceDown;
+    public boolean isFaceDown() {
+        return card.isFaceDown();
     }
 
     @Override
@@ -880,6 +894,16 @@ public class Spell extends StackObjectImpl implements Card {
     }
 
     @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game) {
+        return moveToZone(parameters, source, game, null);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        return card.moveToZone(parameters, source, game, appliedEffects);
+    }
+
+    @Override
     public boolean moveToExile(UUID exileId, String name, Ability source, Game game) {
         return moveToExile(exileId, name, source, game, null);
     }
@@ -892,26 +916,6 @@ public class Spell extends StackObjectImpl implements Card {
             return true;
         }
         return this.card.moveToExile(exileId, name, source, game, appliedEffects);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId) {
-        throw new UnsupportedOperationException("Unsupported operation");
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean facedown) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean facedown, List<UUID> appliedEffects) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -1161,6 +1165,11 @@ public class Spell extends StackObjectImpl implements Card {
     @Override
     public void setIsAllNonbasicLandTypes(Game game, boolean value) {
         card.setIsAllNonbasicLandTypes(game, value);
+    }
+
+    @Override
+    public CopiableValues getFaceDownValues() {
+        return card.getFaceDownValues();
     }
 
     @Override

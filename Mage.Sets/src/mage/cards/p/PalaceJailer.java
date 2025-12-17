@@ -1,8 +1,6 @@
 
 package mage.cards.p;
 
-import java.util.LinkedHashSet;
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -15,17 +13,17 @@ import mage.abilities.effects.common.ExileTargetEffect;
 import mage.abilities.hint.common.MonarchHint;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.util.CardUtil;
+
+import java.util.LinkedHashSet;
+import java.util.UUID;
 
 import static mage.filter.StaticFilters.FILTER_OPPONENTS_PERMANENT_CREATURE;
 
@@ -139,13 +137,13 @@ class PalaceJailerReturnExiledPermanentsEffect extends OneShotEffect {
         MageObject sourceObject = source.getSourceObject(game);
         if (sourceObject != null && controller != null) {
             UUID exileZone = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-            if (exileZone != null) {
-                ExileZone exile = game.getExile().getExileZone(exileZone);
-                if (exile != null) {
-                    controller.moveCards(new LinkedHashSet<>(exile.getCards(game)), Zone.BATTLEFIELD, source, game, false, false, true, null);
-                }
-                return true;
+            ExileZone exile = game.getExile().getExileZone(exileZone);
+            if (exile != null) {
+                MoveCardsParameters parameters = new MoveCardsParameters(new LinkedHashSet<>(exile.getCards(game)), Zone.BATTLEFIELD)
+                        .setByOwner(true);
+                controller.moveCards(parameters, source, game);
             }
+            return true;
         }
         return false;
     }

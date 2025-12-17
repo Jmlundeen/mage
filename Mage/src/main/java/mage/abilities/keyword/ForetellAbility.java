@@ -1,7 +1,5 @@
 package mage.abilities.keyword;
 
-import mage.MageObject;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.SpecialAction;
 import mage.abilities.SpellAbility;
@@ -10,22 +8,25 @@ import mage.abilities.costs.Cost;
 import mage.abilities.costs.Costs;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ExileTargetEffect;
 import mage.cards.Card;
 import mage.cards.CardWithParts;
+import mage.abilities.effects.common.InfoEffect;
+import mage.cards.*;
+import mage.cards.repository.TokenInfo;
+import mage.cards.repository.TokenRepository;
 import mage.constants.*;
 import mage.filter.common.FilterNonlandCard;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AbilityPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
-import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 import mage.watchers.common.ForetoldWatcher;
 
@@ -53,10 +54,6 @@ public class ForetellAbility extends SpecialAction {
         this.addCost(new GenericManaCost(2));
         // exile the card and it can't be cast the turn it was foretold
         this.addEffect(new ForetellExileEffect(card, foretellCost, foretellSplitCost));
-        // look at face-down card anytime
-        Ability ability = new SimpleStaticAbility(Zone.ALL, new ForetellLookAtCardEffect());
-        ability.setControllerId(controllerId);  // if not set, anyone can look at the card in exile
-        addSubAbility(ability);
         this.setRuleVisible(true);
         this.addWatcher(new ForetoldWatcher());
     }
@@ -135,11 +132,40 @@ public class ForetellAbility extends SpecialAction {
             foretellAbility.setSourceId(card.getId());
             foretellAbility.setControllerId(card.getOwnerId());
             game.getState().addOtherAbility(card, foretellAbility);
+            // exile and add foretell cost ability
+            ForetellAbility.exileAndAddForetellCost(game, card, foretellAbility.foretellCost, foretellAbility.foretellSplitCost, copiedSource, controller);
+            // if any card has an existing foretell ability, that needs to be added too
+            for (Card modifiedCard : modifiedCards.getCards(game)) {
+                ForetellAbility existingForetellAbility = findExistingForetellAbility(modifiedCard);
+                if (existingForetellAbility != null) {
+                    ForetellCostAbility costAbility = new ForetellCostAbility(existingForetellAbility.foretellCost);
+                    costAbility.setSourceId(modifiedCard.getId());
+                    costAbility.setControllerId(source.getControllerId());
+                    costAbility.setSpellAbilityType(modifiedCard.getSpellAbility().getSpellAbilityType());
+                    costAbility.setAbilityName(modifiedCard.getName());
+                    modifiedCard.getFaceDownValues().getAbilities().add(costAbility);
+                }
+            }
             foretellAbility.activate(game, true);
-            game.addEffect(new ForetellAddCostEffect(new MageObjectReference(card, game)), copiedSource);
-            game.fireEvent(new GameEvent(GameEvent.EventType.CARD_FORETOLD, card.getId(), copiedSource, copiedSource.getControllerId(), 0, false));
+        } else {
+            // land cards still need to exile normally
+            UUID exileId = CardUtil.getExileZoneId(card.getMainCard().getId().toString() + "foretellAbility", game);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setFaceDown(true)
+                    .setExileId(exileId)
+                    .setExileName(" Foretell Turn Number: " + game.getTurnNum());
+            controller.moveCards(parameters, source, game);
         }
         return true;
+    }
+
+    private static ForetellAbility findExistingForetellAbility(Card card) {
+        for (Ability ability : card.getAbilities()) {
+            if (ability instanceof ForetellAbility) {
+                return (ForetellAbility) ability;
+            }
+        }
+        return null;
     }
 
     public static ForetellAbility getForetellAbility(Card card, Game game, int amountToReduceCost) {
@@ -195,6 +221,83 @@ class ForetellExileEffect extends OneShotEffect {
         this.foretellSplitCost = effect.foretellSplitCost;
     }
 
+    static void exileAndAddForetellCost(Game game, Card card, String foretellCost, String foretellSplitCost, Ability source, Player controller) {
+        // get main card id
+        UUID mainCardId = card.getMainCard().getId();
+
+        // retrieve the exileId of the foretold card
+        UUID exileId = CardUtil.getExileZoneId(mainCardId.toString() + "foretellAbility", game);
+
+        // foretell turn number shows up on exile window
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(exileId)
+                .setExileName(" Foretell Turn Number: " + game.getTurnNum());
+        controller.moveCards(parameters, source, game);
+
+        TokenInfo tokenInfo = TokenRepository.instance.findPreferredTokenInfoForXmage(TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_FORETELL, card.getId());
+        if (tokenInfo != null) {
+            CopiableValues faceDownValues = card.getFaceDownValues();
+            faceDownValues.setExpansionSetCode(tokenInfo.getSetCode());
+            faceDownValues.setCardNumber("0");
+            faceDownValues.setImageFileName(tokenInfo.getName());
+            faceDownValues.setImageNumber(tokenInfo.getImageNumber());
+            faceDownValues.setUsesVariousArt(false);
+        }
+        game.getExile().getExileZone(exileId)
+                .letPlayerSeeCards(controller.getId(), card);
+        Ability infoAbility = new SimpleStaticAbility(new InfoEffect("<i>(You may cast this card from exile for its foretell cost.)</i>"));
+        card.getFaceDownValues().getAbilities().add(infoAbility);
+        if (card instanceof CardWithParts) {
+            if (foretellCost != null) {
+                Card leftHalfCard = ((CardWithParts) card).getLeftHalfCard();
+                ForetellCostAbility ability = new ForetellCostAbility(foretellCost);
+                ability.setSourceId(leftHalfCard.getId());
+                ability.setControllerId(source.getControllerId());
+                ability.setSpellAbilityType(leftHalfCard.getSpellAbility().getSpellAbilityType());
+                ability.setAbilityName(leftHalfCard.getName());
+                leftHalfCard.getFaceDownValues().getAbilities().add(ability);
+            }
+            if (foretellSplitCost != null) {
+                Card rightHalfCard = ((CardWithParts) card).getRightHalfCard();
+                ForetellCostAbility ability = new ForetellCostAbility(foretellSplitCost);
+                ability.setSourceId(rightHalfCard.getId());
+                ability.setControllerId(source.getControllerId());
+                ability.setSpellAbilityType(rightHalfCard.getSpellAbility().getSpellAbilityType());
+                ability.setAbilityName(rightHalfCard.getName());
+                rightHalfCard.getFaceDownValues().getAbilities().add(ability);
+            }
+        } else if (foretellCost != null) {
+            ForetellCostAbility ability = new ForetellCostAbility(foretellCost);
+            ability.setSourceId(card.getId());
+            ability.setControllerId(source.getControllerId());
+            ability.setSpellAbilityType(card.getSpellAbility().getSpellAbilityType());
+            ability.setAbilityName(card.getName());
+            card.getFaceDownValues().getAbilities().add(ability);
+        }
+    }
+}
+
+class ForetellExileEffect extends OneShotEffect {
+
+    private final Card card;
+    String foretellCost;
+    String foretellSplitCost;
+
+    ForetellExileEffect(Card card, String foretellCost, String foretellSplitCost) {
+        super(Outcome.Neutral);
+        this.card = card;
+        this.foretellCost = foretellCost;
+        this.foretellSplitCost = foretellSplitCost;
+    }
+
+    private ForetellExileEffect(final ForetellExileEffect effect) {
+        super(effect);
+        this.card = effect.card;
+        this.foretellCost = effect.foretellCost;
+        this.foretellSplitCost = effect.foretellSplitCost;
+    }
+
     @Override
     public ForetellExileEffect copy() {
         return new ForetellExileEffect(this);
@@ -203,138 +306,17 @@ class ForetellExileEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null
-                && card != null) {
-
-            // get main card id
-            UUID mainCardId = card.getMainCard().getId();
-
-            // retrieve the exileId of the foretold card
-            UUID exileId = CardUtil.getExileZoneId(mainCardId.toString() + "foretellAbility", game);
-
-            // foretell turn number shows up on exile window
-            ExileTargetEffect effect = new ExileTargetEffect(exileId, " Foretell Turn Number: " + game.getTurnNum());
+        if (controller != null && card != null) {
 
             // remember turn number it was cast
-            game.getState().setValue(mainCardId.toString() + "Foretell Turn Number", game.getTurnNum());
-
-            // remember the foretell cost
-            game.getState().setValue(mainCardId.toString() + "Foretell Cost", foretellCost);
-            game.getState().setValue(mainCardId.toString() + "Foretell Split Cost", foretellSplitCost);
+            game.getState().setValue(card.getMainCard().getId() + "Foretell Turn Number", game.getTurnNum());
 
             // exile the card face-down
-            effect.setWithName(false);
-            effect.setTargetPointer(new FixedTarget(card.getId(), game));
-            effect.apply(game, source);
-            card.setFaceDown(true, game);
-            game.addEffect(new ForetellAddCostEffect(new MageObjectReference(card, game)), source);
+            ForetellAbility.exileAndAddForetellCost(game, card, foretellCost, foretellSplitCost, source, controller);
             game.fireEvent(new GameEvent(GameEvent.EventType.CARD_FORETOLD, card.getId(), source, source.getControllerId(), 0, true));
             return true;
         }
         return false;
-    }
-}
-
-class ForetellLookAtCardEffect extends AsThoughEffectImpl {
-
-    ForetellLookAtCardEffect() {
-        super(AsThoughEffectType.LOOK_AT_FACE_DOWN, Duration.EndOfGame, Outcome.AIDontUseIt);
-    }
-
-    private ForetellLookAtCardEffect(final ForetellLookAtCardEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public ForetellLookAtCardEffect copy() {
-        return new ForetellLookAtCardEffect(this);
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        if (affectedControllerId.equals(source.getControllerId())) {
-            Card card = game.getCard(objectId);
-            if (card != null) {
-                MageObject sourceObject = game.getObject(source);
-                if (sourceObject == null) {
-                    return false;
-                }
-                UUID mainCardId = card.getMainCard().getId();
-                UUID exileId = CardUtil.getExileZoneId(mainCardId.toString() + "foretellAbility", game);
-                ExileZone exile = game.getExile().getExileZone(exileId);
-                return exile != null
-                        && exile.contains(mainCardId);
-            }
-        }
-        return false;
-    }
-}
-
-class ForetellAddCostEffect extends ContinuousEffectImpl {
-
-    private final MageObjectReference mor;
-
-    ForetellAddCostEffect(MageObjectReference mor) {
-        super(Duration.EndOfGame, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.mor = mor;
-        staticText = "Foretold card";
-    }
-
-    private ForetellAddCostEffect(final ForetellAddCostEffect effect) {
-        super(effect);
-        this.mor = effect.mor;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = mor.getCard(game);
-        if (card != null) {
-            UUID mainCardId = card.getMainCard().getId();
-            if (game.getState().getZone(mainCardId) == Zone.EXILED) {
-                String foretellCost = (String) game.getState().getValue(mainCardId.toString() + "Foretell Cost");
-                String foretellSplitCost = (String) game.getState().getValue(mainCardId + "Foretell Split Cost");
-                if (card instanceof CardWithParts) {
-                    if (foretellCost != null) {
-                        Card leftHalfCard = ((CardWithParts) card).getLeftHalfCard();
-                        ForetellCostAbility ability = new ForetellCostAbility(foretellCost);
-                        ability.setSourceId(leftHalfCard.getId());
-                        ability.setControllerId(source.getControllerId());
-                        ability.setSpellAbilityType(leftHalfCard.getSpellAbility().getSpellAbilityType());
-                        ability.setAbilityName(leftHalfCard.getName());
-                        game.getState().addOtherAbility(leftHalfCard, ability);
-                    }
-                    if (foretellSplitCost != null) {
-                        Card rightHalfCard = ((CardWithParts) card).getRightHalfCard();
-                        ForetellCostAbility ability = new ForetellCostAbility(foretellSplitCost);
-                        ability.setSourceId(rightHalfCard.getId());
-                        ability.setControllerId(source.getControllerId());
-                        ability.setSpellAbilityType(rightHalfCard.getSpellAbility().getSpellAbilityType());
-                        ability.setAbilityName(rightHalfCard.getName());
-                        game.getState().addOtherAbility(rightHalfCard, ability);
-                    }
-                } else if (foretellCost != null) {
-                    ForetellCostAbility ability = new ForetellCostAbility(foretellCost);
-                    ability.setSourceId(card.getId());
-                    ability.setControllerId(source.getControllerId());
-                    ability.setSpellAbilityType(card.getSpellAbility().getSpellAbilityType());
-                    ability.setAbilityName(card.getName());
-                    game.getState().addOtherAbility(card, ability);
-                }
-                return true;
-            }
-        }
-        discard();
-        return true;
-    }
-
-    @Override
-    public ForetellAddCostEffect copy() {
-        return new ForetellAddCostEffect(this);
     }
 }
 
@@ -352,6 +334,8 @@ class ForetellCostAbility extends SpellAbility {
             foretellCost = "{0}";
         }
         this.setAdditionalCostsRuleVisible(false);
+        this.setRuleVisible(false);
+        this.setWorksFaceDown(true);
         this.name = "Foretell " + foretellCost;
         this.addCost(new ManaCostsImpl<>(foretellCost));
     }
@@ -374,7 +358,7 @@ class ForetellCostAbility extends SpellAbility {
                     return ActivationStatus.getFalse();
                 }
                 Integer foretoldTurn = (Integer) game.getState().getValue(mainCardId.toString() + "Foretell Turn Number");
-                UUID exileId = (UUID) game.getState().getValue(mainCardId.toString() + "foretellAbility");
+                UUID exileId = (UUID) game.getState().getValue(mainCardId + "foretellAbility");
                 // Card must be Foretold
                 if (foretoldTurn == null || exileId == null) {
                     return ActivationStatus.getFalse();

@@ -15,6 +15,7 @@ import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
 import mage.util.CardUtil;
@@ -76,10 +77,10 @@ class HypnoxExileEffect extends OneShotEffect {
         if (controller == null || player == null) {
             return false;
         }
-        return controller.moveCardsToExile(
-                player.getHand().getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(player.getHand().getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return controller.moveCards(parameters, source, game);
     }
 
     @Override

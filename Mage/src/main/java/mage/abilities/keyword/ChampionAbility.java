@@ -17,6 +17,7 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -146,11 +147,10 @@ class ChampionExileCost extends CostImpl {
             if (permanent == null) {
                 return false;
             }
-            paid |= controller.moveCardsToExile(
-                    permanent, source, game, true,
-                    CardUtil.getExileZoneId(game, source),
-                    CardUtil.getSourceName(game, source)
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.getSourceName(game, source));
+            paid |= controller.moveCards(parameters, source, game);
             if (paid) {
                 game.fireEvent(GameEvent.getEvent(GameEvent.EventType.CREATURE_CHAMPIONED, permanent.getId(), source, controllerId));
             }

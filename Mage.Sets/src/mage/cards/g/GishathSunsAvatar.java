@@ -1,27 +1,24 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.abilities.keyword.VigilanceAbility;
-import mage.abilities.keyword.HasteAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
 import mage.cards.CardsImpl;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.TargetCard;
+
+import java.util.UUID;
 
 /**
  *
@@ -94,7 +91,7 @@ class GishathSunsAvatarEffect extends OneShotEffect {
             controller.choose(Outcome.PutCardInPlay, cards, target1, source, game);
             Cards toBattlefield = new CardsImpl(target1.getTargets());
             cards.removeAll(toBattlefield);
-            controller.moveCards(toBattlefield.getCards(game), Zone.BATTLEFIELD, source, game, false, false, false, null);
+            controller.moveCards(toBattlefield.getCards(game), Zone.BATTLEFIELD, source, game);
             controller.putCardsOnBottomOfLibrary(cards, game, source, false);
         }
         return true;

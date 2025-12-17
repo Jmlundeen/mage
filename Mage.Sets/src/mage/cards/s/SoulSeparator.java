@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.SacrificeSourceCost;
@@ -21,6 +20,8 @@ import mage.game.Game;
 import mage.game.permanent.token.ZombieToken2;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -84,7 +85,7 @@ class SoulSeparatorEffect extends OneShotEffect {
         if (creatureCard != null && controller != null) {
             boolean result = false;
             if (game.getState().getZone(creatureCard.getId()) == Zone.GRAVEYARD) {
-                result = controller.moveCardToExileWithInfo(creatureCard, null, "", source, game, Zone.GRAVEYARD, true);
+                result = controller.moveCards(creatureCard, Zone.EXILED, source, game);
                 ZombieToken2 token = new ZombieToken2(creatureCard.getPower().getValue(), creatureCard.getToughness().getValue());
                 token.putOntoBattlefield(1, game, source, source.getControllerId());
             }

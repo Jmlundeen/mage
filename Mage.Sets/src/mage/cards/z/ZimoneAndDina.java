@@ -9,11 +9,13 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.GainLifeEffect;
 import mage.abilities.effects.common.LoseLifeTargetEffect;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
@@ -94,9 +96,12 @@ class ZimoneAndDinaEffect extends OneShotEffect {
         player.drawCards(1, source, game);
         TargetCard target = new TargetCardInHand(0, 1, StaticFilters.FILTER_CARD_LAND_A);
         player.choose(Outcome.PutCardInPlay, target, source, game);
-        player.moveCards(
-                game.getCard(target.getFirstTarget()), Zone.BATTLEFIELD, source,
-                game, true, false, false, null
-        );
+        Card card = game.getCard(target.getFirstTarget());
+        if (card == null) {
+            return;
+        }
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
     }
 }

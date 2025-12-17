@@ -16,6 +16,7 @@ import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
@@ -93,10 +94,9 @@ class MagnanimousMagistrateEffect extends OneShotEffect {
             return false;
         }
         sourcePermanent.removeCounters(CounterType.REPRIEVE.createInstance(creature.getManaValue()), source, game);
-        player.moveCards(
-                game.getCard(creature.getId()), Zone.BATTLEFIELD, source, game,
-                false, false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(game.getCard(creature.getId()), Zone.BATTLEFIELD)
+                .setByOwner(true);
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

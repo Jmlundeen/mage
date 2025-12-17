@@ -6,18 +6,21 @@ import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbil
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ReturnToBattlefieldUnderOwnerControlTargetEffect;
-import mage.cards.*;
+import mage.cards.CardImpl;
+import mage.cards.CardSetInfo;
+import mage.cards.Cards;
+import mage.cards.CardsImpl;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.TargetController;
+import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -65,19 +68,15 @@ class GhostwayEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         MageObject sourceObject = source.getSourceObject(game);
         if (sourceObject != null && controller != null) {
-            Set<Card> toExile = new HashSet<>();
-            toExile.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
-            UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-            controller.moveCardsToExile(toExile, source, game, true, exileId, sourceObject.getIdName());
+            Cards toExile = new CardsImpl(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile.getCards(game), Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
 
-            Cards cardsToReturn = new CardsImpl();
-            for (Card exiled : toExile) {
-                if (exiled.getZoneChangeCounter(game) == game.getState().getZoneChangeCounter(exiled.getId()) - 1) {
-                    cardsToReturn.add(exiled);
-                }
-            }
+            toExile.retainZone(Zone.EXILED, game);
             Effect effect = new ReturnToBattlefieldUnderOwnerControlTargetEffect(false, false);
-            effect.setTargetPointer(new FixedTargets(cardsToReturn, game));
+            effect.setTargetPointer(new FixedTargets(toExile, game));
             AtTheBeginOfNextEndStepDelayedTriggeredAbility delayedAbility = new AtTheBeginOfNextEndStepDelayedTriggeredAbility(effect);
             game.addDelayedTriggeredAbility(delayedAbility, source);
             return true;

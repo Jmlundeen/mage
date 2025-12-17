@@ -17,6 +17,7 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 import mage.util.CardUtil;
@@ -102,7 +103,10 @@ class WizardsSpellbookEffect extends OneShotEffect {
             return false;
         }
         UUID exileId = CardUtil.getExileZoneId(game, source);
-        player.moveCardsToExile(card, source, game, true, exileId, CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(CardUtil.getSourceName(game, source));
+        player.moveCards(parameters, source, game);
         if (level < 3) {
             Card copiedCard = game.copyCard(card, source, source.getControllerId());
             if (!player.chooseUse(

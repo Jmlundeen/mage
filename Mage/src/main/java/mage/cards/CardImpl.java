@@ -45,6 +45,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     protected Card meldsToCard;
     protected Card secondSideCard;
     protected SpellAbility spellAbility;
+    protected PlayLandAbility playLandAbility;
     protected boolean flipCard;
     protected String flipCardName;
     protected List<UUID> attachments = new ArrayList<>();
@@ -90,7 +91,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
                 this.frameStyle = graphicInfo.getFrameStyle();
             }
         }
-
     }
 
     private void setDefaultColor() {
@@ -130,6 +130,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         }
 
         spellAbility = null; // will be set on first getSpellAbility call if card has one
+        playLandAbility = null; // will be set on first getPlayLandAbility call if card has one
         flipCard = card.flipCard;
         flipCardName = card.flipCardName;
         extraDeckCard = card.extraDeckCard;
@@ -260,7 +261,11 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
 
         // basic
         if (!cardState.hasLostAllAbilities()) {
-            all.addAll(abilities);
+            if (isFaceDown() && !(this instanceof Permanent)) {
+                all.addAll(faceDownValues.getAbilities());
+            } else {
+                all.addAll(abilities);
+            }
         }
 
         // dynamic
@@ -377,6 +382,18 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
+    public PlayLandAbility getPlayLandAbility() {
+        if (playLandAbility == null) {
+            for (Ability ability : abilities.getActivatedAbilities(Zone.HAND)) {
+                if (ability instanceof PlayLandAbility) {
+                    return playLandAbility = (PlayLandAbility) ability;
+                }
+            }
+        }
+        return playLandAbility;
+    }
+
+    @Override
     public void setOwnerId(UUID ownerId) {
         this.ownerId = ownerId;
         this.abilities.setControllerId(ownerId);
@@ -413,6 +430,37 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game) {
+        return this.moveToZone(parameters, source, game, null);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        Zone fromZone = game.getState().getZone(objectId);
+        Zone toZone = parameters.getToZone();
+        ZoneChangeEvent event = new ZoneChangeEvent(this.objectId, source, ownerId, fromZone, toZone, appliedEffects);
+        ZoneChangeInfo zoneChangeInfo;
+        if (toZone != null) {
+            switch (toZone) {
+                case LIBRARY:
+                    zoneChangeInfo = new ZoneChangeInfo.Library(event, parameters.isFaceDown(), parameters.isToTopOfLibrary());
+                    break;
+                case BATTLEFIELD:
+                    zoneChangeInfo = new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source);
+                    break;
+                case EXILED:
+                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName());
+                    break;
+                default:
+                    zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());
+                    break;
+            }
+            return ZonesHandler.moveCard(zoneChangeInfo, game, source);
+        }
+        return false;
+    }
+
+    @Override
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         Zone fromZone = game.getState().getZone(objectId);
         ZoneChangeEvent event = new ZoneChangeEvent(this.objectId, source, ownerId, fromZone, toZone, appliedEffects);
@@ -439,7 +487,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
         Card mainCard = getMainCard();
         ZoneChangeEvent event = new ZoneChangeEvent(mainCard.getId(), ability, controllerId, fromZone, Zone.STACK);
         Spell spell = new Spell(this, ability.getSpellAbilityToResolve(game), controllerId, event.getFromZone(), game);
-        ZoneChangeInfo.Stack info = new ZoneChangeInfo.Stack(event, spell);
+        ZoneChangeInfo.Stack info = new ZoneChangeInfo.Stack(event, spell.getSpellAbility().getSpellAbilityCastMode().isFaceDown(), spell);
         return ZonesHandler.cast(info, ability, game);
     }
 
@@ -457,56 +505,31 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
     }
 
     @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId) {
-        return this.putOntoBattlefield(game, fromZone, source, controllerId, false, false, null);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped) {
-        return this.putOntoBattlefield(game, fromZone, source, controllerId, tapped, false, null);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean faceDown) {
-        return this.putOntoBattlefield(game, fromZone, source, controllerId, tapped, faceDown, null);
-    }
-
-    @Override
-    public boolean putOntoBattlefield(Game game, Zone fromZone, Ability source, UUID controllerId, boolean tapped, boolean faceDown, List<UUID> appliedEffects) {
-        ZoneChangeEvent event = new ZoneChangeEvent(this.objectId, source, controllerId, fromZone, Zone.BATTLEFIELD, appliedEffects);
-        ZoneChangeInfo.Battlefield info = new ZoneChangeInfo.Battlefield(event, faceDown, tapped, source);
-        return ZonesHandler.moveCard(info, game, source);
-    }
-
-    @Override
     public boolean removeFromZone(Game game, Zone fromZone, Ability source) {
         boolean removed = false;
         MageObject lkiObject = null;
-        if (isCopy()) { // copied cards have no need to be removed from a previous zone
-            removed = true;
-        } else {
-            switch (fromZone) {
-                case GRAVEYARD:
-                    removed = game.getPlayer(ownerId).removeFromGraveyard(this, game);
-                    break;
-                case HAND:
-                    removed = game.getPlayer(ownerId).removeFromHand(this, game);
-                    break;
-                case LIBRARY:
-                    removed = game.getPlayer(ownerId).removeFromLibrary(this, game);
-                    break;
-                case EXILED:
-                    if (game.getExile().getCard(getId(), game) != null) {
-                        removed = game.getExile().removeCard(this);
-                    }
-                    break;
-                case STACK:
-                    StackObject stackObject;
-                    if (getSpellAbility() != null) {
-                        stackObject = game.getStack().getSpell(getSpellAbility().getId(), false);
-                    } else {
-                        stackObject = game.getStack().getSpell(this.getId(), false);
-                    }
+        switch (fromZone) {
+            case GRAVEYARD:
+                removed = game.getPlayer(ownerId).removeFromGraveyard(this, game);
+                break;
+            case HAND:
+                removed = game.getPlayer(ownerId).removeFromHand(this, game);
+                break;
+            case LIBRARY:
+                removed = game.getPlayer(ownerId).removeFromLibrary(this, game);
+                break;
+            case EXILED:
+                if (game.getExile().getCard(getId(), game) != null) {
+                    removed = game.getExile().removeCard(this);
+                }
+                break;
+            case STACK:
+                StackObject stackObject;
+                if (getSpellAbility() != null) {
+                    stackObject = game.getStack().getSpell(getSpellAbility().getId(), isCopy());
+                } else {
+                    stackObject = game.getStack().getSpell(this.getId(), isCopy());
+                }
 
                     // handle half of multi part cards on stack
                     if (stackObject == null && (this instanceof CardWithParts)) {
@@ -517,45 +540,51 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
                         }
                     }
 
-                    if (stackObject == null) {
-                        stackObject = game.getStack().getSpell(getId(), false);
+                if (stackObject == null) {
+                    stackObject = game.getStack().getSpell(getId(), isCopy());
+                }
+                if (stackObject != null) {
+                    removed = game.getStack().remove(stackObject, game);
+                    lkiObject = stackObject;
+                }
+                break;
+            case COMMAND:
+                for (CommandObject commandObject : game.getState().getCommand()) {
+                    if (commandObject.getId().equals(objectId)) {
+                        lkiObject = commandObject;
                     }
-                    if (stackObject != null) {
-                        removed = game.getStack().remove(stackObject, game);
-                        lkiObject = stackObject;
-                    }
-                    break;
-                case COMMAND:
-                    for (CommandObject commandObject : game.getState().getCommand()) {
-                        if (commandObject.getId().equals(objectId)) {
-                            lkiObject = commandObject;
-                        }
-                    }
-                    if (lkiObject != null) {
-                        removed = game.getState().getCommand().remove(lkiObject);
-                    }
-                    break;
-                case OUTSIDE:
-                    if (game.getPlayer(ownerId).getSideboard().contains(this.getId())) {
-                        game.getPlayer(ownerId).getSideboard().remove(this.getId());
-                        removed = true;
-                    } else if (game.getPhase() == null) {
-                        // E.g. Commander of commander game
-                        removed = true;
-                    } else {
-                        // Unstable - Summon the Pack
-                        removed = true;
-                    }
-                    break;
-                case BATTLEFIELD: // for sacrificing permanents or putting to library
+                }
+                if (lkiObject != null) {
+                    removed = game.getState().getCommand().remove(lkiObject);
+                }
+                break;
+            case OUTSIDE:
+                if (game.getPlayer(ownerId).getSideboard().contains(this.getId())) {
+                    game.getPlayer(ownerId).getSideboard().remove(this.getId());
                     removed = true;
-                    break;
-                default:
-                    MageObject sourceObject = game.getObject(source);
-                    logger.fatal("Invalid from zone [" + fromZone + "] for card [" + this.getIdName()
-                            + "] source [" + (sourceObject != null ? sourceObject.getName() : "null") + ']');
-                    break;
-            }
+                } else if (game.getPhase() == null) {
+                    // E.g. Commander of commander game
+                    removed = true;
+                } else {
+                    // Unstable - Summon the Pack
+                    removed = true;
+                }
+                break;
+            case BATTLEFIELD: // for sacrificing permanents or putting to library
+                Permanent permanent = game.getPermanent(this.getId());
+                removed = permanent != null && game.getPlayer(permanent.getControllerId()).removeFromBattlefield(permanent, source, game);
+                if (removed) {
+                    lkiObject = permanent;
+                }
+                break;
+            default:
+                MageObject sourceObject = game.getObject(source);
+                logger.fatal("Invalid from zone [" + fromZone + "] for card [" + this.getIdName()
+                        + "] source [" + (sourceObject != null ? sourceObject.getName() : "null") + ']');
+                break;
+        }
+        if (!removed && isCopy()) {
+            removed = true;
         }
         if (removed) {
             if (fromZone != Zone.OUTSIDE) {
@@ -578,51 +607,6 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
             }
             game.setEnterWithCounters(permanent.getId(), null);
         }
-    }
-
-    @Override
-    public void setFaceDown(boolean value, Game game) {
-        game.getState().getCardState(objectId).setFaceDown(value);
-    }
-
-    @Override
-    public boolean isFaceDown(Game game) {
-        return game.getState().getCardState(objectId).isFaceDown();
-    }
-
-    @Override
-    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
-        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_UP, getId(), source, playerId);
-        if (!game.replaceEvent(event)) {
-            setFaceDown(false, game);
-            for (Ability ability : abilities) { // abilities that were set to not visible face down must be set to visible again
-                if (ability.getWorksFaceDown() && !ability.getRuleVisible()) {
-                    ability.setRuleVisible(true);
-                }
-            }
-            // The current face down implementation is just setting a boolean, so any trigger checking for a
-            // permanent property once being turned face up is not seeing the right face up data.
-            // For instance triggers looking for specific subtypes being turned face up (Detectives in MKM set)
-            // are broken without that processAction call.
-            // This is somewhat a band-aid on the special action nature of turning a permanent face up.
-            // 708.8. As a face-down permanent is turned face up, its copiable values revert to its normal copiable values.
-            // Any effects that have been applied to the face-down permanent still apply to the face-up permanent.
-            game.processAction();
-            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_UP, getId(), source, playerId));
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean turnFaceDown(Ability source, Game game, UUID playerId) {
-        GameEvent event = GameEvent.getEvent(GameEvent.EventType.TURN_FACE_DOWN, getId(), source, playerId);
-        if (!game.replaceEvent(event)) {
-            setFaceDown(true, game);
-            game.fireEvent(GameEvent.getEvent(GameEvent.EventType.TURNED_FACE_DOWN, getId(), source, playerId));
-            return true;
-        }
-        return false;
     }
 
     @Override

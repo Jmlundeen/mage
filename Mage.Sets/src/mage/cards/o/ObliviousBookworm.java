@@ -91,7 +91,7 @@ class ObliviousBookwormWatcher extends Watcher {
         switch (event.getType()) {
             case ENTERS_THE_BATTLEFIELD:
                 Permanent permanent = ((EntersTheBattlefieldEvent) event).getTarget();
-                if (permanent != null && permanent.isFaceDown(game)) {
+                if (permanent != null && permanent.isFaceDown()) {
                     set.add(permanent.getControllerId());
                 }
                 return;

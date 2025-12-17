@@ -80,7 +80,7 @@ class WorldBottlingKitEffect extends OneShotEffect {
                 List<Permanent> permanents = game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game);
                 for (Permanent permanent : permanents) {
                     if (permanent.getExpansionSetCode().equals(setChosen)) {
-                        controller.moveCardToExileWithInfo(permanent, null, "", source, game, Zone.BATTLEFIELD, true);
+                        controller.moveCards(permanent, Zone.EXILED, source, game);
                     }
                 }
             }

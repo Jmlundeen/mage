@@ -85,7 +85,7 @@ class UnableToScreamPreventingEffect extends ContinuousRuleModifyingEffectImpl {
             return false;
         }
 
-        return creature.isFaceDown(game) && event.getTargetId().equals(creature.getId());
+        return creature.isFaceDown() && event.getTargetId().equals(creature.getId());
     }
 
     @Override

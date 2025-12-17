@@ -15,6 +15,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.PlantWarriorToken;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
@@ -85,8 +86,9 @@ class VengefulRegrowthEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-
-        controller.moveCards(cards.getCards(game), Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCards(parameters, source, game);
 
         // Release note:
         //

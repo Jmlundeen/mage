@@ -13,6 +13,7 @@ import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
@@ -111,14 +112,14 @@ class CascadeEffect extends OneShotEffect {
         if (controller == null) {
             return false;
         }
-        Card sourceCard = game.getCard(source.getSourceId());
-        if (sourceCard == null) {
+        Spell sourceSpell = game.getSpell(source.getSourceId());
+        if (sourceSpell == null) {
             return false;
         }
 
         // exile cards from the top of your library until you exile a nonland card whose converted mana cost is less than this spell's converted mana cost
         Cards cardsToExile = new CardsImpl();
-        int sourceCost = sourceCard.getManaValue();
+        int sourceCost = sourceSpell.getManaValue();
         Card cardToCast = null;
         for (Card card : controller.getLibrary().getCards(game)) {
             cardsToExile.add(card);
@@ -140,10 +141,9 @@ class CascadeEffect extends OneShotEffect {
             TargetCardInExile target = new TargetCardInExile(0, event.getAmount(), StaticFilters.FILTER_CARD_LAND);
             target.withChooseHint("land to put onto battlefield tapped");
             controller.choose(Outcome.PutCardInPlay, cardsToExile, target, source, game);
-            controller.moveCards(
-                    new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD,
-                    source, game, true, false, false, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(new CardsImpl(target.getTargets()).getCards(game), Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
         }
 
         // You may cast that spell without paying its mana cost if its converted mana cost is less than this spell's converted mana cost.

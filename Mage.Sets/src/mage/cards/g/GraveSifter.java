@@ -1,8 +1,5 @@
 package mage.cards.g;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -20,9 +17,14 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.common.FilterCreatureCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -92,7 +94,9 @@ class GraveSifterEffect extends OneShotEffect {
             }
 
             // must happen simultaneously Rule 101.4
-            controller.moveCards(toHand, Zone.HAND, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toHand, Zone.HAND)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

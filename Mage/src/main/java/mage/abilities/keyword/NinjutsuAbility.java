@@ -15,6 +15,7 @@ import mage.constants.Zone;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.permanent.UnblockedPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.command.CommandObject;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -112,7 +113,9 @@ class NinjutsuEffect extends OneShotEffect {
         }
         Zone cardZone = game.getState().getZone(card.getId());
         if (cardZone == Zone.HAND || (commander && cardZone == Zone.COMMAND)) {
-            controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
             Permanent permanent = game.getPermanent(source.getSourceId());
             if (permanent != null) {
                 UUID defendingPlayerId = null;
@@ -163,7 +166,7 @@ class ReturnAttackerToHandTargetCost extends CostImpl {
                     return false;
                 }
                 defendingPlayerId = game.getCombat().getDefenderId(permanent.getId());
-                paid |= controller.moveCardToHandWithInfo(permanent, source, game, true);
+                paid |= controller.moveCards(permanent, Zone.HAND, source, game);
             }
         }
         return paid;

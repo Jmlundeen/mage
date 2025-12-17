@@ -13,6 +13,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -99,11 +100,10 @@ class AzulaCunningUsurperExileEffect extends OneShotEffect {
             player.choose(Outcome.Exile, target, source, game);
             cards.add(target.getFirstTarget());
         }
-        return player.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceLogName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceLogName(game, source));
+        return player.moveCards(parameters, source, game);
     }
 }
 

@@ -26,7 +26,6 @@ import mage.client.plugins.adapters.MageActionCallback;
 import mage.client.plugins.impl.Plugins;
 import mage.client.preference.MagePreferences;
 import mage.client.remote.CallbackClientImpl;
-import mage.client.remote.XmageURLConnection;
 import mage.client.table.TablesPane;
 import mage.client.table.TablesPanel;
 import mage.client.tournament.TournamentPane;
@@ -55,7 +54,6 @@ import net.java.truevfs.access.TArchiveDetector;
 import net.java.truevfs.access.TConfig;
 import net.java.truevfs.kernel.spec.FsAccessOption;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 import org.mage.card.arcane.ManaSymbols;
 import org.mage.card.arcane.SvgUtils;
 import org.mage.plugins.card.images.DownloadPicturesService;
@@ -75,8 +73,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -109,7 +107,6 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
     private static CallbackClient callbackClient;
     private static Preferences PREFS = null;
     private final JPanel fakeTopPanel;
-    private WhatsNewDialog whatsNewDialog; // can be null
     private JLabel title;
     private Rectangle titleRectangle;
     private static final MageVersion VERSION = new MageVersion(MageFrame.class);
@@ -297,15 +294,6 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
         errorDialog.setLocation(100, 100);
         desktopPane.add(errorDialog, errorDialog.isModal() ? JLayeredPane.MODAL_LAYER : JLayeredPane.PALETTE_LAYER);
 
-        try {
-            this.whatsNewDialog = new WhatsNewDialog();
-        } catch (Throwable e) {
-            // example: JavaFX is not supported on old MacOS with OpenJDK
-            // https://bugs.openjdk.java.net/browse/JDK-8202132
-            LOGGER.error("JavaFX is not supported by your system. What's new page will be disabled.", e);
-            this.whatsNewDialog = null;
-        }
-
         PING_SENDER_EXECUTOR.scheduleAtFixedRate(SessionHandler::ping, TablesPanel.PING_SERVER_SECS, TablesPanel.PING_SERVER_SECS, TimeUnit.SECONDS);
 
         updateMemUsageTask = new UpdateMemUsageTask(jMemUsageLabel);
@@ -384,11 +372,6 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
             }
 
             setWindowTitle(); // make sure title is actual on startup
-        });
-
-        // run what's new checks (loading in background)
-        SwingUtilities.invokeLater(() -> {
-            showWhatsNewDialog(false);
         });
     }
 
@@ -1969,14 +1952,8 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
         updateTooltipContainerSizes();
     }
 
-    public void showWhatsNewDialog(boolean forceToShowPage) {
-        if (whatsNewDialog != null) {
-            // build-in browser
-            whatsNewDialog.checkUpdatesAndShow(forceToShowPage);
-        } else {
-            // system browser
-            AppUtil.openUrlInSystemBrowser(WhatsNewDialog.WHATS_NEW_PAGE);
-        }
+    public static void showWhatsNewDialog() {
+        // AppUtil.openUrlInBrowser("https://jaydi85.github.io/xmage-web-news/news.html");
     }
 
     public boolean isGameFrameActive(UUID gameId) {

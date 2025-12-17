@@ -9,8 +9,8 @@ import mage.choices.Choice;
 import mage.choices.ChoiceImpl;
 import mage.constants.*;
 import mage.filter.StaticFilters;
-import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.targetpointer.FixedTarget;
@@ -78,14 +78,15 @@ class AminatousAuguryEffect extends OneShotEffect {
         }
 
         // move cards from library to exile
-        controller.moveCardsToExile(controller.getLibrary().getTopCards(game, 8), source, game, true, source.getSourceId(), CardUtil.createObjectRelatedWindowTitle(source, game, null));
-        ExileZone auguryExileZone = game.getExile().getExileZone(source.getSourceId());
-        if (auguryExileZone == null) {
+        Cards cardsToCast = new CardsImpl(controller.getLibrary().getTopCards(game, 8));
+        MoveCardsParameters parameters = new MoveCardsParameters(cardsToCast.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
+        cardsToCast.retainZone(Zone.EXILED, game);
+        if (cardsToCast.isEmpty()) {
             return true;
         }
-
-        Cards cardsToCast = new CardsImpl();
-        cardsToCast.addAllCards(auguryExileZone.getCards(game));
 
         // put a land card from among them onto the battlefield
         TargetCard target = new TargetCard(Zone.EXILED, StaticFilters.FILTER_CARD_LAND_A);
@@ -96,7 +97,9 @@ class AminatousAuguryEffect extends OneShotEffect {
                     Card card = cardsToCast.get(target.getFirstTarget(), game);
                     if (card != null) {
                         cardsToCast.remove(card);
-                        controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                        parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                                .setByOwner(true);
+                        controller.moveCards(parameters, source, game);
                     }
                 }
             }

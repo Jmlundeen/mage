@@ -5,6 +5,8 @@ import mage.abilities.Mode;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
+import mage.cards.Card;
+import mage.cards.DoubleFacedCardHalf;
 import mage.constants.Outcome;
 import mage.constants.Pronoun;
 import mage.constants.PutCards;

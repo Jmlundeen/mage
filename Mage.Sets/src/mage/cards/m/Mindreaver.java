@@ -10,14 +10,14 @@ import mage.abilities.effects.common.CounterTargetEffect;
 import mage.abilities.keyword.HeroicAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.filter.FilterSpell;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.TargetPlayer;
@@ -114,10 +114,9 @@ class MindreaverExileEffect extends OneShotEffect {
         if (controller == null || player == null) {
             return false;
         }
-        Cards cards = new CardsImpl(player.getLibrary().getTopCards(game, 3));
-        return controller.moveCardsToExile(
-                cards.getCards(game), source, game, true,
-                CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(player.getLibrary().getTopCards(game, 3), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        return player.moveCards(parameters, source, game);
     }
 }

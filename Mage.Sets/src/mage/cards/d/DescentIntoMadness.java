@@ -1,8 +1,8 @@
 package mage.cards.d;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -111,7 +111,7 @@ class DescentIntoMadnessEffect extends OneShotEffect {
                         if (permanent != null) {
                             Player player = game.getPlayer(permanent.getControllerId());
                             if (player != null) {
-                                player.moveCardToExileWithInfo(permanent, null, "", source, game, Zone.BATTLEFIELD, true);
+                                player.moveCards(permanent, Zone.EXILED, source, game);
                             }
                         }
                     } else if (game.getState().getZone(objectId) == Zone.HAND) {
@@ -119,7 +119,7 @@ class DescentIntoMadnessEffect extends OneShotEffect {
                         if (card != null) {
                             Player player = game.getPlayer(card.getOwnerId());
                             if (player != null) {
-                                player.moveCardToExileWithInfo(card, null, "", source, game, Zone.HAND, true);
+                                player.moveCards(card, Zone.EXILED, source, game);
                             }
                         }
                     }

@@ -8,6 +8,7 @@ import mage.abilities.effects.OneShotEffect;
 import mage.cards.*;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -64,7 +65,9 @@ class CoralFightersEffect extends OneShotEffect {
                 Cards cards = new CardsImpl(card);
                 controller.lookAtCards("Coral Fighters", cards, game);
                 if (controller.chooseUse(outcome, "Put that card on the bottom of its owner's library?", source, game)) {
-                    controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, false, false);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                            .setToTopOfLibrary(false);
+                    controller.moveCards(parameters, source, game);
                 } else {
                     game.informPlayers(controller.getLogName() + " puts the card back on top of the library.");
                 }

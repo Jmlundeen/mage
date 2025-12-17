@@ -22,6 +22,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -95,21 +96,15 @@ class ValgavothTerrorEaterReplacementEffect extends GraveyardFromAnywhereExileRe
         }
 
         // TODO: part of #13594 refactor to replaceEvent (add exile zone info in ZoneChangeEvent?)
-        Permanent permanent = game.getPermanent(event.getTargetId());
-        if (permanent != null) {
-            return controller.moveCardsToExile(
-                    permanent, source, game, true,
-                    CardUtil.getCardExileZoneId(game, source),
-                    CardUtil.createObjectRelatedWindowTitle(source, game, "(may be played using life)")
-            );
+        Card card = game.getPermanent(event.getTargetId());
+        if (card == null) {
+            card = game.getCard(event.getTargetId());
         }
-
-        Card card = game.getCard(event.getTargetId());
         if (card != null) {
-            return controller.moveCardsToExile(
-                    card, source, game, true,
-                    CardUtil.getCardExileZoneId(game, source),
-                    CardUtil.createObjectRelatedWindowTitle(source, game, "(may be played using life)"));
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setExileId(CardUtil.getCardExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            return controller.moveCards(parameters, source, game);
         }
 
         return false;

@@ -5,7 +5,6 @@ import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.cards.Card;
 import mage.constants.Outcome;
-import mage.constants.Zone;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
@@ -34,7 +33,7 @@ public class PutCardFromHandOnTopOfLibraryCost extends CostImpl {
         Card card;
         if (controller.choose(Outcome.PreventDamage, targetCardInHand, source, game)) {
             card = game.getCard(targetCardInHand.getFirstTarget());
-            paid = card != null && controller.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, true);
+            paid = card != null && controller.putCardsOnTopOfLibrary(card, game, source, true);
         }
         return paid;
     }

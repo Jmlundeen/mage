@@ -562,7 +562,7 @@ class UrzaAcademyHeadmasterBrainstormEffect extends OneShotEffect {
             player.chooseTarget(Outcome.ReturnToHand, target, source, game);
             Card card = player.getHand().get(target.getFirstTarget(), game);
             if (card != null) {
-                return player.moveCardToLibraryWithInfo(card, source, game, Zone.HAND, true, false);
+                return player.moveCards(card, Zone.LIBRARY, source, game);
             }
         }
         return false;

@@ -11,10 +11,12 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.TargetController;
+import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterNonlandPermanent;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -92,7 +94,10 @@ class BanishmentEffect extends OneShotEffect {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (!toExile.isEmpty()) {
-            controller.moveCardsToExile(toExile, source, game, true, CardUtil.getCardExileZoneId(game, source), permanent.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         }
         return true;

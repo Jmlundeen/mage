@@ -43,9 +43,9 @@ public class SummonersEggTest extends CardTestPlayerBase {
         assertHandCount(playerA, "Goblin Roughrider", 0);
 
         assertExileCount("Goblin Roughrider", 1);
-        for (Card card : currentGame.getExile().getAllCards(currentGame)) {
+        for (Card card : currentGame.getExile().getCardsOwned(currentGame, playerA.getId())) {
             if (card.getName().equals("Goblin Roughrider")) {
-                Assert.assertTrue("Exiled card is not face down", card.isFaceDown(currentGame));
+                Assert.assertTrue("Exiled card is not face down", card.isFaceDown());
             }
         }
 
@@ -81,7 +81,7 @@ public class SummonersEggTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Goblin Roughrider", 1);
         for (Permanent p : currentGame.getBattlefield().getAllActivePermanents()) {
             if (p.getName().equals("Goblin Roughrider")) {
-                Assert.assertTrue("Permanent is not face up", !p.isFaceDown(currentGame));
+                Assert.assertTrue("Permanent is not face up", !p.isFaceDown());
             }
         }
 
@@ -114,7 +114,7 @@ public class SummonersEggTest extends CardTestPlayerBase {
         assertExileCount("Forest", 1);
         for (Card card : currentGame.getExile().getAllCards(currentGame)) {
             if (card.getName().equals("Forest")) {
-                Assert.assertTrue("Exiled card is not face up", !card.isFaceDown(currentGame));
+                Assert.assertTrue("Exiled card is not face up", !card.isFaceDown());
             }
         }
 

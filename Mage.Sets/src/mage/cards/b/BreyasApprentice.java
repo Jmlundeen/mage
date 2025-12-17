@@ -18,11 +18,12 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.ThopterColorlessToken;
 import mage.players.Player;
-import mage.target.common.TargetControlledPermanent;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -91,7 +92,10 @@ class BreyasApprenticeEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        controller.moveCardsToExile(card, source, game, true, source.getSourceId(), sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.getSourceName(game, source));
+        controller.moveCards(parameters, source, game);
         game.addEffect(new PlayFromNotOwnHandZoneTargetEffect(
                 Zone.EXILED, Duration.UntilEndOfYourNextTurn
         ).setTargetPointer(new FixedTarget(card, game)), source);

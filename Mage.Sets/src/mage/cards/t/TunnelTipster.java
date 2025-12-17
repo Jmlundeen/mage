@@ -72,7 +72,7 @@ class TunnelTipsterWatcher extends Watcher {
             ZoneChangeEvent zEvent = (ZoneChangeEvent) event;
             if (zEvent.getToZone() == Zone.BATTLEFIELD &&
                     zEvent.getTarget().isCreature(game) &&
-                    zEvent.getTarget().isFaceDown(game)) {
+                    zEvent.getTarget().isFaceDown()) {
                 players.add(zEvent.getTarget().getControllerId());
             }
         }

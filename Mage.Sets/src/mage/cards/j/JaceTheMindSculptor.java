@@ -1,26 +1,20 @@
 
 package mage.cards.j;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.BrainstormEffect;
 import mage.abilities.effects.common.ReturnToHandTargetEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.cards.*;
+import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetPlayer;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -92,7 +86,9 @@ class JaceTheMindSculptorEffect1 extends OneShotEffect {
                 Cards cards = new CardsImpl(card);
                 controller.lookAtCards("Jace, the Mind Sculptor", cards, game);
                 if (controller.chooseUse(outcome, "Put that card on the bottom of its owner's library?", source, game)) {
-                    controller.moveCardToLibraryWithInfo(card, source, game, Zone.LIBRARY, false, false);
+                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.LIBRARY)
+                            .setToTopOfLibrary(false);
+                    controller.moveCards(parameters, source, game);
                 } else {
                     game.informPlayers(controller.getLogName() + " puts the card back on top of the library.");
                 }

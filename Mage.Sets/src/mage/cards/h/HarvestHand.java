@@ -11,6 +11,7 @@ import mage.abilities.effects.common.continuous.BoostEquippedEffect;
 import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
 import mage.abilities.keyword.EquipAbility;
 import mage.abilities.keyword.MenaceAbility;
+import mage.abilities.keyword.TransformAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;

@@ -15,6 +15,7 @@ import mage.abilities.keyword.NinjutsuAbility;
 import mage.cards.*;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
@@ -89,11 +90,10 @@ class NashiMoonSagesScionEffect extends OneShotEffect {
             }
         }
         Set<Card> cardSet = cards.getCards(game);
-        controller.moveCardsToExile(
-                cardSet, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cardSet, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         NashiMoonSagesScionWatcher.addCards(source, cardSet, game);
         for (Card card : cardSet) {
             game.addEffect(new NashiMoonSagesScionPlayEffect(game, card), source);

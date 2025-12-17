@@ -1,10 +1,10 @@
 package mage.cards.i;
 
 import mage.abilities.Ability;
+import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.mana.ColorlessManaAbility;
 import mage.cards.Card;
@@ -16,6 +16,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -82,10 +83,10 @@ class IsolatedWatchtowerEffect extends OneShotEffect {
         Card card = player.getLibrary().getFromTop(game);
         player.revealCards(source, new CardsImpl(card), game);
         if (card.isBasic(game) && card.isLand(game)) {
-            player.moveCards(
-                    card, Zone.BATTLEFIELD, source,
-                    game, true, false, true, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true)
+                    .setByOwner(true);
+            player.moveCards(parameters, source,game);
         }
         return true;
     }

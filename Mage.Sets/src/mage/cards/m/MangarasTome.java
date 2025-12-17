@@ -15,6 +15,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -75,8 +76,11 @@ class MangarasTomeSearchEffect extends OneShotEffect {
                 for (UUID targetId : target.getTargets()) {
                     Card card = controller.getLibrary().getCard(targetId, game);
                     if (card != null) {
-                        controller.moveCardsToExile(card, source, game, false, CardUtil.getCardExileZoneId(game, source), permanent.getName());
-                        card.setFaceDown(true, game);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setFaceDown(true)
+                                .setExileId(CardUtil.getCardExileZoneId(game, source))
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                        controller.moveCards(parameters, source, game);
                     }
                 }
             }

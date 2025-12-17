@@ -2,8 +2,10 @@ package mage.game.permanent;
 
 import mage.MageObject;
 import mage.MageObjectReference;
+import mage.abilities.Abilities;
 import mage.abilities.Ability;
 import mage.cards.Card;
+import mage.cards.CopiableValues;
 import mage.constants.Zone;
 import mage.game.Controllable;
 import mage.game.Game;
@@ -246,6 +248,12 @@ public interface Permanent extends Card, Controllable {
 
     Ability addAbility(Ability ability, UUID sourceId, Game game, boolean fromExistingObject);
 
+    /**
+     * Gathers abilities gained from other sources by comparing with copiable values
+     * @return copied list with abilities from continuous effects
+     */
+    Abilities<Ability> getDynamicAbilities();
+
     void removeAllAbilities(UUID sourceId, Game game);
 
     void removeAbility(Ability abilityToRemove, UUID sourceId, Game game);
@@ -355,12 +363,18 @@ public interface Permanent extends Card, Controllable {
      * Removes this permanent from combat
      *
      * @param game
-     * @param withEvent true if removed from combat by an effect (default)
-     *                  false if removed because it left the battlefield
      * @return true if permanent was attacking or blocking
      */
     boolean removeFromCombat(Game game);
 
+    /**
+     * Removes this permanent from combat
+     *
+     * @param game
+     * @param withEvent true if removed from combat by an effect (default)
+     *                  false if removed because it left the battlefield
+     * @return true if permanent was attacking or blocking
+     */
     boolean removeFromCombat(Game game, boolean withEvent);
 
     boolean isDeathtouched();
@@ -495,6 +509,22 @@ public interface Permanent extends Card, Controllable {
     boolean unlockRoomOnCast(Game game);
 
     boolean unlockDoor(Game game, Ability source, boolean isLeftDoor);
+
+    /**
+     * Save the copiable characteristics of this object
+     */
+    void saveCopiableValues(Game game);
+
+    /**
+     * Get the copiable characteristics of this object
+     * @return {@link CopiableValues}
+     */
+    CopiableValues getCopiableValues();
+
+    boolean turnFaceUp(Ability source, Game game, UUID playerId);
+
+    // TODO: need research, is it lost morph and other face down statuses?
+    boolean turnFaceDown(Ability source, Game game, UUID playerId);
 
     @Override
     Permanent copy();

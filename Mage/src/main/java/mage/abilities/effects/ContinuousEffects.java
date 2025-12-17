@@ -451,12 +451,12 @@ public class ContinuousEffects implements Serializable {
             }
         } else if (object instanceof PermanentCard) {
             PermanentCard permanent = (PermanentCard) object;
-            if (permanent.isFaceDown(game) && !ability.getWorksFaceDown()) {
+            if (permanent.isFaceDown() && !ability.getWorksFaceDown()) {
                 return false;
             }
         } else if (object instanceof Spell) {
             Spell spell = (Spell) object;
-            if (spell.isFaceDown(game) && !ability.getWorksFaceDown()) {
+            if (spell.isFaceDown() && !ability.getWorksFaceDown()) {
                 return false;
             }
         }
@@ -470,12 +470,23 @@ public class ContinuousEffects implements Serializable {
      * @return
      */
     private List<CostModificationEffect> getApplicableCostModificationEffects(Game game) {
+        return getApplicableCostModificationEffects(game, null);
+    }
+
+    /**
+     * Filters out cost modification effects that are not active.
+     *
+     * @param game
+     * @param sourceObject
+     * @return
+     */
+    private List<CostModificationEffect> getApplicableCostModificationEffects(Game game, MageObject sourceObject) {
         List<CostModificationEffect> costEffects = new ArrayList<>();
 
         for (CostModificationEffect effect : costModificationEffects) {
             Set<Ability> abilities = costModificationEffects.getAbility(effect.getId());
             for (Ability ability : abilities) {
-                if (!(ability instanceof StaticAbility) || ability.isInUseableZone(game, null, null)) {
+                if (!(ability instanceof StaticAbility) || ability.isInUseableZone(game, sourceObject, null)) {
                     if (effect.getDuration() != Duration.OneUse || !effect.isUsed()) {
                         costEffects.add(effect);
                         break;
@@ -656,6 +667,11 @@ public class ContinuousEffects implements Serializable {
         return asThoughEffectsMap.get(effect.getAsThoughEffectType()).getAbility(effect.getId());
     }
 
+
+    public void costModification(Ability abilityToModify, Game game) {
+        costModification(abilityToModify, game, null);
+    }
+
     /**
      * 601.2e The player determines the total cost of the spell. Usually this is
      * just the mana cost. Some spells have additional or alternative costs.
@@ -682,8 +698,8 @@ public class ContinuousEffects implements Serializable {
      * @param abilityToModify
      * @param game
      */
-    public void costModification(Ability abilityToModify, Game game) {
-        List<CostModificationEffect> costEffects = getApplicableCostModificationEffects(game);
+    public void costModification(Ability abilityToModify, Game game, MageObject sourceObject) {
+        List<CostModificationEffect> costEffects = getApplicableCostModificationEffects(game, sourceObject);
 
         // add dynamic costs from X and other places
         abilityToModify.adjustCostsPrepare(game);
@@ -962,6 +978,11 @@ public class ContinuousEffects implements Serializable {
             for (Ability ability : abilities) {
                 effect.apply(Layer.CopyEffects_1, SubLayer.CopyEffects_1a, ability, game);
             }
+        }
+        // copy effects can cause new face-down effects e.g. Clone a morph creature and turned face down
+        if (!layer.isEmpty()) {
+            activeLayerEffects = getLayeredEffects(game, "layer_1");
+            layer = filterLayeredEffects(activeLayerEffects, Layer.CopyEffects_1);
         }
         for (ContinuousEffect effect : layer) {
             Set<Ability> abilities = layeredEffects.getAbility(effect.getId());

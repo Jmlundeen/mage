@@ -8,16 +8,22 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.FlashAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SuperType;
+import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.card.PutIntoGraveFromBattlefieldThisTurnPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.watchers.common.CardsPutIntoGraveyardWatcher;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -82,9 +88,10 @@ class GerrardsHourglassPendantReanimateEffect extends OneShotEffect {
         if (player == null) {
             return false;
         }
-        return player.moveCards(player.getGraveyard().getCards(
-                filter, source.getControllerId(), source, game
-        ), Zone.BATTLEFIELD, source, game, true, false, false, null);
+        Set<Card> cards = player.getGraveyard().getCards(filter, source.getControllerId(), source, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 
     @Override

@@ -1,7 +1,5 @@
 package mage.cards.j;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
@@ -16,9 +14,12 @@ import mage.constants.Zone;
 import mage.filter.common.FilterPermanentCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInOpponentsGraveyard;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -74,7 +75,8 @@ class JailbreakEffect extends OneShotEffect {
         if (player == null) {
             return false;
         }
-        if (!player.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null)) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD).setByOwner(true);
+        if (!player.moveCards(parameters, source, game)) {
             return false;
         }
         FilterPermanentCard filter = new FilterPermanentCard("permanent card with equal or lesser mana value from your graveyard");

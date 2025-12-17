@@ -1,6 +1,7 @@
 package mage.game;
 
 import mage.abilities.Ability;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.cards.*;
 import mage.constants.Outcome;
 import mage.constants.Zone;
@@ -170,6 +171,11 @@ public final class ZonesHandler {
         }
         // update zone in main
         targetCard.setZone(toZone, game);
+
+        // set face down status
+        if (targetCard != null) {
+            targetCard.setFaceDown(info.faceDown);
+        }
     }
 
     public static Card getTargetCard(Game game, UUID targetId) {
@@ -199,6 +205,12 @@ public final class ZonesHandler {
         boolean isGoodToMove = false;
         if (info.faceDown) {
             // any card can be moved as face down (doubled faced cards also support face down)
+            if (event.getToZone().equals(Zone.BATTLEFIELD)) {
+                card = BecomesFaceDownCreatureEffect.findDefaultCardSideForFaceDown(game, card);
+                // set face down characteristics
+                BecomesFaceDownCreatureEffect.makeFaceDownObject(card, info.getFaceDownType(), info.getFaceDownValues());
+            }
+            card.setFaceDown(true);
             isGoodToMove = true;
         } else if (event.getToZone().equals(Zone.BATTLEFIELD)) {
             // non-permanents can't move to battlefield
@@ -221,10 +233,6 @@ public final class ZonesHandler {
         if (!isGoodToMove) {
             return false;
         }
-
-        // TODO: is it buggy? Card characteristics are global - if you change face down then it will be
-        //  changed in original card too, not in blueprint only
-        card.setFaceDown(info.faceDown, game);
 
         boolean success = false;
         if (!game.replaceEvent(event)) {
@@ -264,13 +272,6 @@ public final class ZonesHandler {
                     }
                 }
 
-                permanent.setFaceDown(info.faceDown, game);
-                if (info.faceDown) {
-                    // TODO: need research cards with "setFaceDown(false"
-                    // TODO: delete after new release and new face down bugs (old code remove face down status from a card for unknown reason), 2024-02-20
-                    //card.setFaceDown(false, game);
-                }
-
                 // make sure the controller of all continuous effects of this card are switched to the current controller
                 game.setScopeRelevant(true);
                 try {
@@ -293,8 +294,7 @@ public final class ZonesHandler {
             } else if (event.getTarget() != null) {
                 // PUT PERMANENT TO OTHER ZONE (e.g. remove only)
                 Permanent target = event.getTarget();
-                success = target.removeFromZone(game, fromZone, source)
-                        && game.getPlayer(target.getControllerId()).removeFromBattlefield(target, source, game);
+                success = target.removeFromZone(game, fromZone, source);
             } else {
                 // PUT CARD TO OTHER ZONE
                 success = card.removeFromZone(game, fromZone, source);
@@ -344,7 +344,7 @@ public final class ZonesHandler {
             Spell spell = game.getStack().getSpell(event.getTargetId());
 
             // old version
-            if (false && spell != null && !spell.isFaceDown(game)) {
+            if (false && spell != null && !spell.isFaceDown()) {
                 if (!card.getColor(game).equals(spell.getColor(game))) {
                     // the card that is referenced to in the permanent is copied and the spell attributes are set to this copied card
                     card.getColor(game).setColor(spell.getColor(game));
@@ -354,7 +354,7 @@ public final class ZonesHandler {
             // new version
             if (true && spell != null && spell.getSpellAbility() != null) {
                 Card characteristics = spell.getSpellAbility().getCharacteristics(game);
-                if (!characteristics.isFaceDown(game)) {
+                if (!characteristics.isFaceDown()) {
                     if (!card.getColor(game).equals(characteristics.getColor(game))) {
                         // TODO: don't work with prototyped spells (setColor can't set colorless color)
                         card.getColor(game).setColor(characteristics.getColor(game));

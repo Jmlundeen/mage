@@ -1,7 +1,6 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
@@ -13,10 +12,13 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -72,9 +74,13 @@ class SummonersEggImprintEffect extends OneShotEffect {
                         && controller.choose(Outcome.Benefit, controller.getHand(), target, source, game)) {
                     Card card = controller.getHand().get(target.getFirstTarget(), game);
                     if (card != null) {
-                        card.setFaceDown(true, game);
-                        controller.moveCardsToExile(card, source, game, false, source.getSourceId(), sourcePermanent.getIdName() + " (Imprint)");
-                        card.setFaceDown(true, game);
+                        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setCanLookFaceDownInExile(true)
+                                .setFaceDown(true)
+                                .setExileId(exileZoneId)
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
+                        controller.moveCards(parameters, source, game);
                         sourcePermanent.imprint(card.getId(), game);
                         sourcePermanent.addInfo("imprint", CardUtil.addToolTipMarkTags("[Imprinted card]"), game);
                     }
@@ -83,7 +89,6 @@ class SummonersEggImprintEffect extends OneShotEffect {
             return true;
         }
         return false;
-
     }
 
     @Override
@@ -118,7 +123,7 @@ class SummonersEggPutOntoBattlefieldEffect extends OneShotEffect {
                 Card imprintedCard = game.getCard(SummonersEgg.getImprinted().get(0));
                 if (imprintedCard != null && game.getState().getZone(imprintedCard.getId()) == Zone.EXILED) {
                     //turn the exiled card face up.
-                    imprintedCard.turnFaceUp(source, game, source.getControllerId());
+                    imprintedCard.setFaceDown(false);
                     //If it's a creature card,
                     if (imprintedCard.isCreature(game)) {
                         //put it onto the battlefield under your control

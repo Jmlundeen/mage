@@ -2,7 +2,6 @@ package mage.cards.c;
 
 import mage.MageIdentifier;
 import mage.MageInt;
-import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
@@ -18,6 +17,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
@@ -92,10 +92,10 @@ class CemeteryIlluminatorExileEffect extends OneShotEffect {
             controller.choose(outcome, target, source, game);
             Card card = game.getCard(target.getFirstTarget());
             if (card != null) {
-                UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                MageObject sourceObject = source.getSourceObject(game);
-                String exileName = sourceObject == null ? null : sourceObject.getIdName();
-                return controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(CardUtil.getExileZoneId(game, source))
+                        .setExileName(CardUtil.getSourceName(game, source));
+                return controller.moveCards(parameters, source, game);
             }
         }
         return false;
@@ -150,7 +150,7 @@ class CemeteryIlluminatorPlayTopEffect extends AsThoughEffectImpl {
         }
         // need to check characteristics of spell rather than card (e.g. adventure, morph, etc.)
         Card cardToCast = ((SpellAbility) affectedAbility).getCharacteristics(game);
-        if (cardToCast.getManaCost().isEmpty()) {
+        if (cardToCast.getManaCost().isEmpty() && !((SpellAbility) affectedAbility).getSpellAbilityCastMode().isFaceDown()) {
             return false;
         }
         Set<CardType> cardTypes = new HashSet<>(cardToCast.getCardType(game));

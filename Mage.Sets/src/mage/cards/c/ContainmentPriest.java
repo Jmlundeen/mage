@@ -70,9 +70,9 @@ class ContainmentPriestReplacementEffect extends ReplacementEffectImpl {
         if (controller != null) {
             Card card = game.getCard(event.getTargetId());
             if (card != null) {
-                controller.moveCardsToExile(card, source, game, true, null, null);
+                ((ZoneChangeEvent) event).setToZone(Zone.EXILED);
             }
-            return true;
+            return false;
 
         }
         return false;

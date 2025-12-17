@@ -9,13 +9,11 @@ import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.WatcherScope;
+import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -83,11 +81,10 @@ class MarchOfRecklessJoyEffect extends OneShotEffect {
             return false;
         }
         Set<Card> cards = player.getLibrary().getTopCards(game, xValue);
-        player.moveCardsToExile(
-                cards, source, game, true,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         for (Card card : cards) {
             CardUtil.makeCardPlayable(
                     game, source, card, false, Duration.UntilEndOfYourNextTurn,

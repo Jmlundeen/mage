@@ -1,6 +1,5 @@
 package mage.cards.e;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
@@ -15,6 +14,8 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -58,10 +59,10 @@ class ElixerOfImmortalityEffect extends OneShotEffect {
         if (player != null) {
             player.gainLife(5, game, source);
             if (permanent != null) {
-                player.moveCardToLibraryWithInfo(permanent, source, game, Zone.BATTLEFIELD, true, true);
+                player.moveCards(permanent, Zone.LIBRARY, source, game);
             }
             for (Card card: player.getGraveyard().getCards(game)) {
-                player.moveCardToLibraryWithInfo(card, source, game, Zone.GRAVEYARD, true, true);
+                player.moveCards(card, Zone.LIBRARY, source, game);
             }                 
             player.shuffleLibrary(source, game);
             return true;

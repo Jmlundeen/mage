@@ -4,6 +4,7 @@ import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.FlashbackAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -18,6 +19,8 @@ import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
 import mage.util.CardUtil;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -73,9 +76,10 @@ class SeverTheBloodlineEffect extends OneShotEffect {
             } else {
                 filter.add(new NamePredicate(targetPermanent.getName()));
             }
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                controller.moveCardToExileWithInfo(permanent, null, "", source, game, Zone.BATTLEFIELD, true);
-            }
+            Set<Card> exiledCards = new HashSet<>(game
+                    .getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)
+            );
+            controller.moveCards(exiledCards, Zone.EXILED, source, game);
             return true;
         }
         return false;

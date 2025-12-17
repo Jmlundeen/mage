@@ -1383,6 +1383,9 @@ public abstract class AbilityImpl implements Ability {
     @Override
     public final boolean hasSourceObjectAbility(Game game, MageObject sourceObject, GameEvent event) {
         MageObject object = sourceObject;
+        if (sourceObject != null && sourceObject.getId() != getSourceId()) {
+            object = null;
+        }
         if (object == null) {
             object = game.getPermanentEntering(getSourceId());
             if (object == null) {
@@ -1396,7 +1399,8 @@ public abstract class AbilityImpl implements Ability {
         }
 
         if (!object.hasAbility(this, game)) {
-            return false;
+            // check if ability works face down
+            return object.isFaceDown() && this.getWorksFaceDown();
         }
 
         // phase in/out support
@@ -1516,7 +1520,7 @@ public abstract class AbilityImpl implements Ability {
                 }
             } else if (object instanceof Spell) {
                 Spell spell = (Spell) object;
-                String castText = spell.getSpellCastText(game);
+                String castText = spell.getSpellCastText();
                 sb.append((castText.startsWith("Cast ") ? castText.substring(5) : castText));
                 if (spell.getFromZone() == Zone.GRAVEYARD) {
                     sb.append(" from graveyard");

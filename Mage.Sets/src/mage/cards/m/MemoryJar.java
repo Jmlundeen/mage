@@ -85,7 +85,7 @@ class MemoryJarEffect extends OneShotEffect {
             }
         }
         cards.removeIf(uuid -> game.getState().getZone(uuid) != Zone.EXILED);
-        cards.getCards(game).stream().filter(Objects::nonNull).forEach(card -> card.setFaceDown(true, game));
+        cards.getCards(game).stream().filter(Objects::nonNull).forEach(card -> card.setFaceDown(true));
         //Delayed ability
         game.addDelayedTriggeredAbility(new AtTheBeginOfNextEndStepDelayedTriggeredAbility(new MemoryJarDelayedEffect(cards)), source);
         return true;

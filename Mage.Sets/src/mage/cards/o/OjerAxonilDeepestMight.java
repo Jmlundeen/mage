@@ -14,6 +14,7 @@ import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.keyword.TrampleAbility;
+import mage.abilities.keyword.TransformAbility;
 import mage.abilities.mana.RedManaAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
@@ -21,6 +22,7 @@ import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
 import mage.game.Controllable;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.command.CommandObject;
 import mage.game.events.DamageEvent;
 import mage.game.events.DamagedEvent;
@@ -105,7 +107,10 @@ class OjerAxonilDeepestMightTransformEffect extends OneShotEffect {
             return false;
         }
         game.getState().setValue(TransformingDoubleFacedCard.VALUE_KEY_ENTER_TRANSFORMED + source.getSourceId(), Boolean.TRUE);
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

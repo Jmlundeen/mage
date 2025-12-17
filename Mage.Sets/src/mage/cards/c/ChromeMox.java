@@ -21,6 +21,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -87,7 +88,10 @@ class ChromeMoxEffect extends OneShotEffect {
             }
             if (sourcePermanent != null) {
                 if (cardToImprint != null) {
-                    controller.moveCardsToExile(cardToImprint, source, game, true, source.getSourceId(), sourceObject.getIdName() + " (Imprint)");
+                    MoveCardsParameters parameters = new MoveCardsParameters(cardToImprint, Zone.EXILED)
+                            .setExileId(CardUtil.getExileZoneId(game, source))
+                            .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, " (Imprint)"));
+                    controller.moveCards(parameters, source, game);
                     sourcePermanent.imprint(cardToImprint.getId(), game);
                     sourcePermanent.addInfo("imprint", CardUtil.addToolTipMarkTags("[Imprinted card - " + GameLog.getColoredObjectIdNameForTooltip(cardToImprint) + ']'), game);
                 } else {

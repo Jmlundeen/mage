@@ -18,6 +18,7 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
@@ -25,7 +26,6 @@ import mage.target.common.TargetCardInGraveyard;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.common.TargetOpponent;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -103,14 +103,17 @@ class RealmbreakerTheInvasionTreeEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-        if (permanent == null) {
-            return false;
-        }
-        game.addEffect(new GainAbilityTargetEffect(
-                new SimpleStaticAbility(new LeaveBattlefieldExileSourceReplacementEffect("this land")), Duration.Custom
-        ).setTargetPointer(new FixedTarget(permanent, game)), source);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(Permanent.class::isInstance)
+                .map(Permanent.class::cast)
+                .findFirst()
+                .ifPresent(permanent -> game.addEffect(new GainAbilityTargetEffect(
+                        new SimpleStaticAbility(new LeaveBattlefieldExileSourceReplacementEffect("this land")), Duration.Custom)
+                        .setTargetPointer(new FixedTarget(permanent, game)), source)
+                );
         return true;
     }
 }

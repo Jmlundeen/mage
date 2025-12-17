@@ -1,16 +1,15 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.costs.CompositeCost;
 import mage.abilities.costs.common.PayLifeCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -20,6 +19,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
@@ -28,6 +28,8 @@ import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  * 
@@ -129,9 +131,12 @@ class PurgatoryExileEffect extends OneShotEffect {
         UUID exileId = CardUtil.getCardExileZoneId(game, source);
         MageObject sourceObject = source.getSourceObject(game);
         Card card = game.getCard(this.getTargetPointer().getFirst(game, source));
-        if (sourceController != null && exileId != null && sourceObject != null && card != null) {
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        if (sourceController != null && sourceObject != null && card != null) {
             if (game.getState().getZone(card.getId()) == Zone.GRAVEYARD) {
-                sourceController.moveCardsToExile(card, source, game, true, exileId, sourceObject.getIdName());
+                sourceController.moveCards(parameters, source, game);
             }
             return true;
         }
@@ -166,7 +171,7 @@ class PurgatoryReturnEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         UUID exileId = CardUtil.getCardExileZoneId(game, source);
         MageObject sourceObject = source.getSourceObject(game);
-        if (controller != null && exileId != null && sourceObject != null) {
+        if (controller != null && sourceObject != null) {
             ExileZone exileZone = game.getExile().getExileZone(exileId);
             if (exileZone != null) {
                 TargetCard targetCard = new TargetCard(Zone.EXILED, new FilterCard());

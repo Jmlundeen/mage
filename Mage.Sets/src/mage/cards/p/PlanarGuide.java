@@ -1,9 +1,6 @@
 
 package mage.cards.p;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
@@ -22,7 +19,13 @@ import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+import mage.util.CardUtil;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -70,9 +73,13 @@ class PlanarGuideExileEffect extends OneShotEffect {
         MageObject sourceObject = game.getObject(source);
         Player controller = game.getPlayer(source.getControllerId());
         if (sourceObject != null && controller != null) {
-            Set<Card> toExile = new HashSet<>();
-            toExile.addAll(game.getBattlefield().getActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), source, game));
-            controller.moveCardsToExile(toExile, source, game, true, source.getSourceId(), sourceObject.getIdName());
+            Set<Card> toExile = new HashSet<>(game.getBattlefield()
+                    .getActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), source, game)
+            );
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             ExileZone exile = game.getExile().getExileZone(source.getSourceId());
             if (exile != null && !exile.isEmpty()) {
                 // Create delayed triggered ability
@@ -113,7 +120,9 @@ class PlanarGuideReturnFromExileEffect extends OneShotEffect {
         if (controller != null) {
             ExileZone exile = game.getExile().getExileZone(source.getSourceId());
             if (exile != null) {
-                controller.moveCards(exile.getCards(game), Zone.BATTLEFIELD, source, game, false, false, true, null);
+                MoveCardsParameters parameters = new MoveCardsParameters(exile.getCards(game), Zone.BATTLEFIELD)
+                        .setByOwner(true);
+                controller.moveCards(parameters, source, game);
             }
             return true;
         }

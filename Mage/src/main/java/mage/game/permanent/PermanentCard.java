@@ -8,10 +8,10 @@ import mage.abilities.common.RoomAbility;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
 import mage.cards.*;
+import mage.cards.repository.TokenRepository;
 import mage.constants.SpellAbilityType;
 import mage.game.Game;
 import mage.game.events.ZoneChangeEvent;
-import mage.players.Player;
 
 import java.util.UUID;
 
@@ -68,8 +68,12 @@ public class PermanentCard extends PermanentImpl {
         }
 
         // face down cards allows in any forms (only face up restricted for non-permanents)
-        if (card.isFaceDown(game)) {
+        if (card.isFaceDown()) {
             goodForBattlefield = true;
+            this.faceDown = true;
+            this.faceDownValues = card.getFaceDownValues();
+            // turn reference card face up to access original values
+            card.setFaceDown(false);
         }
 
         if (!goodForBattlefield) {
@@ -118,8 +122,12 @@ public class PermanentCard extends PermanentImpl {
         this.card = permanent.card.copy();
         this.maxLevelCounters = permanent.maxLevelCounters;
         this.zoneChangeCounter = permanent.zoneChangeCounter;
-        this.originalColor = permanent.originalColor.copy();
-        this.originalFrameColor = permanent.originalFrameColor.copy();
+        if (permanent.originalColor != null) {
+            this.originalColor = permanent.originalColor.copy();
+        }
+        if (permanent.originalFrameColor != null) {
+            this.originalFrameColor = permanent.originalFrameColor.copy();
+        }
         this.meldedWith = permanent.meldedWith;
     }
 
@@ -134,6 +142,7 @@ public class PermanentCard extends PermanentImpl {
         }
         power.resetToBaseValue();
         toughness.resetToBaseValue();
+        this.saveCopiableValues(game);
         super.reset(game);
     }
 
@@ -154,15 +163,42 @@ public class PermanentCard extends PermanentImpl {
         if (this.isFlipped() && card instanceof FlipCardHalf) {
             card = ((FlipCardHalf) card).getOtherSide();
         }
+        if (this.faceDown) {
+            this.name = faceDownValues.getName();
+            this.manaCost = faceDownValues.getManaCost().copy();
+            this.color = faceDownValues.getColor().copy();
+            this.cardType.clear();
+            this.cardType.addAll(faceDownValues.getCardType());
+            this.supertype.clear();
+            this.supertype.addAll(faceDownValues.getSuperType());
+            this.subtype.copyFrom(faceDownValues.getSubtype());
+            this.abilities.clear();
+            for (Ability ability : faceDownValues.getAbilities()) {
+                this.addAbility(ability, this.getId(), game, false);
+            }
+            this.power = faceDownValues.getPower();
+            this.toughness = faceDownValues.getToughness();
+            this.setExpansionSetCode(faceDownValues.getExpansionSetCode());
+            this.setUsesVariousArt(faceDownValues.getUsesVariousArt());
+            this.setCardNumber(faceDownValues.getCardNumber());
+            this.setImageFileName(faceDownValues.getImageFileName());
+            switch (getImageFileName()) {
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_MORPH:
+                    this.setMorphed(true);
+                    break;
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_DISGUISE:
+                    this.setDisguised(true);
+                    break;
+                case TokenRepository.XMAGE_IMAGE_NAME_FACE_DOWN_CLOAK:
+                    this.setCloaked(true);
+                    break;
+            }
+            this.setImageNumber(faceDownValues.getImageNumber());
+            return;
+        }
         this.name = card.getName();
         this.abilities.clear();
-        if (this.faceDown) {
-            for (Ability ability : card.getAbilities()) {
-                if (ability.getWorksFaceDown()) {
-                    this.abilities.add(ability.copy());
-                }
-            }
-        } else if (card.getId() != this.getId()) {
+        if (card.getId() != this.getId()) {
             // if different id, abilities need to be added to game state for continuous/triggers
             for (Ability ability : card.getAbilities()) {
                 this.addAbility(ability, card.getId(), game, true);
@@ -183,6 +219,11 @@ public class PermanentCard extends PermanentImpl {
             this.originalColor = card.getColor(game).copy();
             this.originalFrameColor = card.getFrameColor(game).copy();
         } else {
+            if (originalColor == null || originalFrameColor == null) {
+                // in case original colors are missing, set them now
+                originalColor = card.getColor().copy();
+                originalFrameColor = card.getFrameColor(game).copy();
+            }
             this.color = originalColor.copy();
             this.frameColor = originalFrameColor.copy();
         }
@@ -240,30 +281,7 @@ public class PermanentCard extends PermanentImpl {
         return this.maxLevelCounters;
     }
 
-    @Override
-    public boolean turnFaceUp(Ability source, Game game, UUID playerId) {
-        if (!this.getBasicMageObject().isPermanent()) {
-            // 701.34g. If a manifested permanent that's represented by an instant or sorcery card would turn face up,
-            //   its controller reveals it and leaves it face down. Abilities that trigger whenever a permanent
-            //   is turned face up won't trigger.
-            Player player = game.getPlayer(source.getControllerId());
-            if (player != null) {
-                player.revealCards(source, new CardsImpl(this), game);
-            }
-            return false;
-        }
-        if (super.turnFaceUp(source, game, playerId)) {
-            // TODO: miss types, abilities, color and other things for restore?!
-            power.setModifiedBaseValue(power.getBaseValue());
-            toughness.setModifiedBaseValue(toughness.getBaseValue());
-            setManifested(false);
-            setMorphed(false);
-            setDisguised(false);
-            setCloaked(false);
-            return true;
-        }
-        return false;
-    }
+
 
     @Override
     public ManaCosts<ManaCost> getManaCost() {

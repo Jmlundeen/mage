@@ -8,6 +8,7 @@ import mage.cards.Card;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
@@ -81,9 +82,14 @@ public class FuzzyTestsUtil {
             }
 
             if (canCreate) {
-                doppelgangerCardSide.putOntoBattlefield(game, Zone.BATTLEFIELD, source, originalPermanent.getControllerId());
-                Permanent doppelgangerPerm = CardUtil.getPermanentFromCardPutToBattlefield(doppelgangerCardSide, game);
-                doppelgangerPerm.phaseOut(game, true); // use indirect, so no phase in on untap
+                MoveCardsParameters parameters = new MoveCardsParameters(doppelgangerCardSide, Zone.BATTLEFIELD)
+                        .setByOwner(false);
+                Player player = game.getPlayer(originalPermanent.getControllerId());
+                if (player != null) {
+                    player.moveCards(parameters, source, game);
+                    Permanent doppelgangerPerm = CardUtil.getPermanentFromCardPutToBattlefield(doppelgangerCardSide, game);
+                    doppelgangerPerm.phaseOut(game, true); // use indirect, so no phase in on untap
+                }
             }
         }
     }

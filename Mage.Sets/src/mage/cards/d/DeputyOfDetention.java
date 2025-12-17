@@ -8,15 +8,13 @@ import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.TargetController;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterNonlandPermanent;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.filter.predicate.permanent.ControllerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -88,13 +86,13 @@ class DeputyOfDetentionExileEffect extends OneShotEffect {
         filter.add(new ControllerIdPredicate(targeted.getControllerId()));
         filter.add(new NamePredicate(targeted.getName()));
 
-        Set<Card> toExile = new LinkedHashSet<>();
-        for (Permanent creature : game.getBattlefield().getActivePermanents(filter, controller.getId(), game)) {
-            toExile.add(creature);
-        }
+        Set<Card> toExile = new LinkedHashSet<>(game.getBattlefield().getActivePermanents(filter, controller.getId(), game));
 
         if (!toExile.isEmpty()) {
-            controller.moveCardsToExile(toExile, source, game, true, CardUtil.getCardExileZoneId(game, source), permanent.getIdName());
+            MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                    .setExileId(CardUtil.getExileZoneId(game, source))
+                    .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+            controller.moveCards(parameters, source, game);
             game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         }
         return true;

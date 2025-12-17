@@ -8,6 +8,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
@@ -68,7 +69,9 @@ public class LivingDeathEffect extends OneShotEffect {
                     }
                 }
             }
-            controller.moveCards(cardsToReturnFromExile, Zone.BATTLEFIELD, source, game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(cardsToReturnFromExile, Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
             return true;
         }
         return false;

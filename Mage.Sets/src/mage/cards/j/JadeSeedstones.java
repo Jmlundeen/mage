@@ -8,7 +8,6 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.GainLifeEffect;
 import mage.abilities.effects.common.counter.DistributeCountersEffect;
 import mage.abilities.keyword.CraftAbility;
-import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.CardType;

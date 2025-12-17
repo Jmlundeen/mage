@@ -1,6 +1,5 @@
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.ApprovingObject;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -14,6 +13,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.DamagedPlayerEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -22,6 +22,8 @@ import mage.target.TargetCard;
 import mage.target.common.TargetControlledCreaturePermanent;
 import mage.util.CardUtil;
 import org.apache.log4j.Logger;
+
+import java.util.UUID;
 
 /**
  *
@@ -115,7 +117,6 @@ class SpellbinderImprintEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player controller = game.getPlayer(source.getControllerId());
-        Permanent sourcePermanent = game.getPermanentOrLKIBattlefield(source.getSourceId());
         if (controller != null) {
             if (!controller.getHand().isEmpty()) {
                 TargetCard target = new TargetCard(Zone.HAND, filter);
@@ -123,8 +124,10 @@ class SpellbinderImprintEffect extends OneShotEffect {
                         && controller.choose(Outcome.Benefit, controller.getHand(), target, source, game)) {
                     Card card = controller.getHand().get(target.getFirstTarget(), game);
                     if (card != null) {
-                        controller.moveCardToExileWithInfo(card, source.getSourceId(),
-                                sourcePermanent.getIdName() + " (Imprint)", source, game, Zone.HAND, true);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setExileId(source.getSourceId())
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, "(Imprint)"));
+                        controller.moveCards(parameters, source, game);
                         Permanent permanent = game.getPermanent(source.getSourceId());
                         if (permanent != null) {
                             permanent.imprint(card.getId(), game);

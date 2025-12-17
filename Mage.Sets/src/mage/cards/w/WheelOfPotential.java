@@ -87,7 +87,7 @@ class WheelOfPotentialEffect extends OneShotEffect {
                 continue;
             }
             cardsExiled.addAll(player.getHand());
-            player.moveCardsToExile(player.getHand().getCards(game), source, game, true, null, "");
+            player.moveCards(player.getHand().getCards(game), Zone.EXILED, source, game);
             player.drawCards(numberPaid, source, game);
         }
         if (numberPaid >= 7) {

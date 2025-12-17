@@ -1,13 +1,9 @@
 
 package mage.cards.i;
 
-import java.util.List;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
@@ -15,6 +11,9 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -62,13 +61,17 @@ class ImagesOfThePastEffect extends OneShotEffect {
         Player player = game.getPlayer(source.getControllerId());
         if (player != null) {
             List<UUID> targets = source.getTargets().get(0).getTargets();
+            Cards cards = new CardsImpl();
             for (UUID targetId : targets) {
                 Card card = game.getCard(targetId);
                 if (card != null) {
-                    player.moveCards(card, Zone.BATTLEFIELD, source, game);
-                    player.moveCards(card, Zone.EXILED, source, game);
+                    cards.add(card);
                 }
             }
+            player.moveCards(cards, Zone.BATTLEFIELD, source, game);
+            game.processAction();
+            cards.retainZone(Zone.BATTLEFIELD, game);
+            player.moveCards(cards, Zone.EXILED, source, game);
             return true;
         }
         return false;

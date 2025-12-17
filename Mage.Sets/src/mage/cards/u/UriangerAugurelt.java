@@ -18,6 +18,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
@@ -93,12 +94,11 @@ class UriangerAugureltExileEffect extends OneShotEffect {
         if (!player.chooseUse(Outcome.DrawCard, "Exile " + card.getLogName() + " face down?", source, game)) {
             return false;
         }
-        player.moveCardsToExile(
-                card, source, game, false,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
-        card.setFaceDown(true, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         game.addEffect(new MayLookAtTargetCardEffect(source.getControllerId())
                 .setTargetPointer(new FixedTarget(card, game)), source);
         return true;

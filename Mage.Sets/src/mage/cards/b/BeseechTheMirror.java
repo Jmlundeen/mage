@@ -14,6 +14,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 import mage.util.CardUtil;
@@ -83,9 +84,9 @@ class BeseechTheMirrorEffect extends OneShotEffect {
             Card card = controller.getLibrary().getCard(target.getFirstTarget(), game);
             if (card != null) {
                 // exile it face down
-                card.setFaceDown(true, game);
-                controller.moveCards(card, Zone.EXILED, source, game, false, true, false, null);
-                card.setFaceDown(true, game);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setFaceDown(true);
+                controller.moveCards(parameters, source, game);
 
                 // then shuffle
                 controller.shuffleLibrary(source, game);
@@ -99,8 +100,7 @@ class BeseechTheMirrorEffect extends OneShotEffect {
 
                 if (game.getState().getZone(card.getId()).equals(Zone.EXILED)) {
                     // Put the exiled card into your hand if it wasn't cast this way.
-                    controller.moveCards(card, Zone.HAND, source, game, false, true, false, null);
-                    card.setFaceDown(false, game);
+                    controller.moveCards(card, Zone.HAND, source, game);
                 }
 
                 return true;

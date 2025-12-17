@@ -3,15 +3,16 @@ package mage.cards.m;
 
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.DrawCardControllerTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -64,10 +65,12 @@ class MoonringMirrorExileEffect extends OneShotEffect {
             Card card = controller.getLibrary().getFromTop(game);
             MageObject sourceObject = source.getSourceObject(game);
             if (card != null && sourceObject != null) {
-                UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-                card.setFaceDown(true, game);
-                controller.moveCardsToExile(card, source, game, false, exileZoneId, sourceObject.getIdName());
-                card.setFaceDown(true, game);
+                UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setFaceDown(true)
+                        .setExileId(exileZoneId)
+                        .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                controller.moveCards(parameters, source, game);
                 Set<UUID> exileZones = (Set<UUID>) game.getState().getValue(MoonringMirror.VALUE_PREFIX + source.getSourceId().toString());
                 if (exileZones == null) {
                     exileZones = new HashSet<>();
@@ -119,19 +122,20 @@ class MoonringMirrorEffect extends OneShotEffect {
         }
 
         // hand
-        for (Card card : controller.getHand().getCards(game)) {
-            card.setFaceDown(true, game);
-        }
-        controller.moveCardsToExile(controller.getHand().getCards(game), source, game, false, exileZoneId, sourceObject.getIdName());
+        MoveCardsParameters handParameters = new MoveCardsParameters(controller.getHand().getCards(game), Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(exileZoneId)
+                .setExileName(sourceObject.getIdName());
+        controller.moveCards(handParameters, source, game);
 
         if (cardsToHand != null) {
-            controller.moveCards(cardsToHand.getCards(game), Zone.HAND, source, game, false, true, false, null);
+            controller.moveCards(cardsToHand.getCards(game), Zone.HAND, source, game);
         }
 
         exileZone = game.getExile().getExileZone(exileZoneId);
         if (exileZone != null && !exileZone.isEmpty()) {
             for (Card card : game.getExile().getExileZone(exileZoneId).getCards(game)) {
-                card.setFaceDown(true, game);
+                card.setFaceDown(true);
             }
         }
 

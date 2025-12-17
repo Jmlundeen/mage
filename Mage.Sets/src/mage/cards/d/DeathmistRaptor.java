@@ -1,9 +1,7 @@
 
 package mage.cards.d;
 
-import java.util.UUID;
 import mage.MageInt;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.TurnedFaceUpAllTriggeredAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -19,7 +17,10 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -75,9 +76,9 @@ class DeathmistRaptorEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         Card card = source.getSourceCardIfItStillExists(game);
         if (controller != null && card != null) {
-            return controller.moveCards(card, Zone.BATTLEFIELD, source, game, false,
-                    controller.chooseUse(Outcome.Detriment, "Return " + card.getLogName() + " face down to battlefield (otherwise face up)?", source, game),
-                    false, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setFaceDown(controller.chooseUse(Outcome.Detriment, "Return " + card.getLogName() + " face down to battlefield (otherwise face up)?", source, game));
+            return controller.moveCards(parameters, source, game);
         }
         return false;
     }

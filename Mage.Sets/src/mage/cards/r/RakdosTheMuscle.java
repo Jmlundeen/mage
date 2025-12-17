@@ -17,6 +17,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPlayer;
@@ -108,7 +109,10 @@ class RakdosTheMuscleEffect extends OneShotEffect {
         if (cards.isEmpty()) {
             return false;
         }
-        player.moveCardsToExile(cards, source, game, true, CardUtil.getExileZoneId(game, source), CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         // remove cards that could not be moved to exile
         cards.removeIf(card -> !Zone.EXILED.equals(game.getState().getZone(card.getId())));
         for (Card card : cards) {

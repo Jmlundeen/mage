@@ -1,6 +1,5 @@
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
@@ -13,14 +12,13 @@ import mage.abilities.keyword.FlyingAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SetTargetPointer;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -109,7 +107,9 @@ class ReturnSourceFromExileToBattlefieldEffect extends OneShotEffect {
             return false;
         }
 
-        return player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        return player.moveCards(parameters, source, game);
     }
 
     private void setText() {

@@ -5,7 +5,9 @@ import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -86,9 +88,11 @@ public class ExileCardsFromTopOfLibraryControllerEffect extends OneShotEffect {
 
         boolean exiledSuccessfully = false;
         for (Card card : cards) {
-            card.setFaceDown(faceDown, game);
-            exiledSuccessfully |= controller.moveCardsToExile(card, source, game, !faceDown, exileZoneId, exileZoneName);
-            card.setFaceDown(faceDown, game);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                    .setFaceDown(faceDown)
+                    .setExileId(exileZoneId)
+                    .setExileName(exileZoneName);
+            exiledSuccessfully |= controller.moveCards(parameters, source, game);
         }
         return exiledSuccessfully;
     }

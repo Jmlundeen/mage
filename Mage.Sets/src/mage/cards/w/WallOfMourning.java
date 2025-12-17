@@ -2,19 +2,20 @@ package mage.cards.w;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.condition.common.CovenCondition;
 import mage.abilities.dynamicvalue.common.OpponentsCount;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.hint.common.CovenHint;
 import mage.abilities.keyword.DefenderAbility;
+import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -82,14 +83,11 @@ class WallOfMourningExileEffect extends OneShotEffect {
         int opponents = OpponentsCount.instance.calculate(game, source, this);
         Set<Card> cards = player.getLibrary().getTopCards(game, opponents);
         cards.removeIf(Objects::isNull);
-        player.moveCardsToExile(
-                cards, source, game, false,
-                CardUtil.getExileZoneId(game, source),
-                CardUtil.getSourceName(game, source)
-        );
-        for (Card card : cards) {
-            card.setFaceDown(true, game);
-        }
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setFaceDown(true)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         return true;
     }
 }

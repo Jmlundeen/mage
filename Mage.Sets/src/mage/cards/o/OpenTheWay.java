@@ -10,6 +10,7 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -88,10 +89,9 @@ class OpenTheWayEffect extends OneShotEffect {
             }
         }
         player.revealCards(source, toReveal, game);
-        player.moveCards(
-                lands.getCards(game), Zone.BATTLEFIELD, source, game,
-                true, false, false, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(lands.getCards(game), Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         toReveal.retainZone(Zone.LIBRARY, game);
         player.putCardsOnBottomOfLibrary(toReveal, game, source, false);
         return true;

@@ -10,6 +10,7 @@ import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.players.PlayerList;
@@ -76,8 +77,11 @@ class ThievesAuctionEffect extends OneShotEffect {
         Cards exiledCards = new CardsImpl();
         for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
             exiledCards.add(permanent);
-            controller.moveCardsToExile(permanent, source, game, true, CardUtil.getCardExileZoneId(game, source.getSourceId()), "Thieves' Auction");
         }
+        MoveCardsParameters parameters = new MoveCardsParameters(exiledCards.getCards(game), Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
 
         // Starting with you, each player
         PlayerList playerList = game.getState().getPlayersInRange(controller.getId(), game);
@@ -91,7 +95,9 @@ class ThievesAuctionEffect extends OneShotEffect {
                 // and puts it onto the battlefield tapped under their control.
                 Card chosenCard = exiledCards.get(target.getFirstTarget(), game);
                 if (chosenCard != null) {
-                    player.moveCards(chosenCard, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                    parameters = new MoveCardsParameters(chosenCard, Zone.BATTLEFIELD)
+                            .setTapped(true);
+                    player.moveCards(parameters, source, game);
                 }
                 exiledCards.remove(chosenCard);
             } else {

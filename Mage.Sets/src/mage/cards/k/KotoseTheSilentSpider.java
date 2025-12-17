@@ -12,12 +12,12 @@ import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInGraveyard;
-import mage.target.common.TargetCardInHand;
 import mage.target.common.TargetCardInLibrary;
 import mage.target.common.TargetCardInOpponentsGraveyard;
 import mage.util.CardUtil;
@@ -98,7 +98,10 @@ class KotoseTheSilentSpiderEffect extends OneShotEffect {
         }
         UUID exileId = CardUtil.getExileZoneId(game, source);
         String exileName = CardUtil.getSourceName(game, source);
-        controller.moveCardsToExile(card, source, game, true, exileId, exileName);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(exileName);
+        controller.moveCards(parameters, source, game);
         Cards cards = new CardsImpl();
         FilterCard filter = new FilterCard("cards named " + card.getName() + " from " + opponent.getName() + "'s graveyard");
         filter.add(new NamePredicate(card.getName()));
@@ -121,10 +124,11 @@ class KotoseTheSilentSpiderEffect extends OneShotEffect {
                 .forEach(cards::add);
 
         Set<Card> cardSet = cards.getCards(game);
-        controller.moveCardsToExile(cardSet, source, game, true, exileId, exileName);
+        parameters.setCards(cardSet);
+        controller.moveCards(parameters, source, game);
         opponent.shuffleLibrary(source, game);
         cardSet.add(card);
-        if (cardSet.isEmpty() || source.getSourcePermanentIfItStillExists(game) == null) {
+        if (source.getSourcePermanentIfItStillExists(game) == null) {
             return true;
         }
         KotoseTheSilentSpiderWatcher.addCards(source, cardSet, game);

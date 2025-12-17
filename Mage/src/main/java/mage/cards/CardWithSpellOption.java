@@ -11,6 +11,7 @@ import mage.constants.*;
 import mage.counters.Counter;
 import mage.counters.Counters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.GameState;
 import mage.util.CardUtil;
 import mage.util.SubTypes;

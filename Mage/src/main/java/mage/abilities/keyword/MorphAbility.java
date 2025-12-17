@@ -1,15 +1,11 @@
 package mage.abilities.keyword;
 
-import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
-import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.Costs;
 import mage.abilities.costs.CostsImpl;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.costs.mana.ManaCost;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect.FaceDownType;
 import mage.cards.Card;
 import mage.constants.SpellAbilityCastMode;
 import mage.constants.SpellAbilityType;
@@ -83,13 +79,6 @@ public class MorphAbility extends SpellAbility {
         this.isMegamorph = useMegamorph;
         this.setSpellAbilityCastMode(SpellAbilityCastMode.MORPH);
         this.setSpellAbilityType(SpellAbilityType.BASE_ALTERNATE);
-
-        // face down effect (hidden by default, visible in face down objects)
-        Ability ability = new SimpleStaticAbility(new BecomesFaceDownCreatureEffect(
-                this.morphCosts, (useMegamorph ? FaceDownType.MEGAMORPHED : FaceDownType.MORPHED)));
-        ability.setWorksFaceDown(true);
-        ability.setRuleVisible(false);
-        addSubAbility(ability);
     }
 
     protected MorphAbility(final MorphAbility ability) {
@@ -105,6 +94,10 @@ public class MorphAbility extends SpellAbility {
 
     public Costs<Cost> getFaceUpCosts() {
         return this.morphCosts;
+    }
+
+    public boolean isMegamorph() {
+        return isMegamorph;
     }
 
     @Override

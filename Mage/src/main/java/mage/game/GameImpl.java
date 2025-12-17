@@ -15,7 +15,6 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.PreventionEffectData;
 import mage.abilities.effects.common.CopyEffect;
 import mage.abilities.effects.common.InfoEffect;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.effects.keyword.FinalityCounterEffect;
 import mage.abilities.effects.keyword.ShieldCounterEffect;
 import mage.abilities.effects.keyword.StunCounterEffect;
@@ -1560,7 +1559,7 @@ public abstract class GameImpl implements Game {
             // inform players about face down cards
             state.getBattlefield().getAllPermanents()
                     .stream()
-                    .filter(permanent -> permanent.isFaceDown(this))
+                    .filter(MageObject::isFaceDown)
                     .map(permanent -> {
                         Player player = this.getPlayer(permanent.getControllerId());
                         Card card = permanent.getMainCard();
@@ -2064,52 +2063,14 @@ public abstract class GameImpl implements Game {
 
     @Override
     public Permanent copyPermanent(Duration duration, Permanent copyFromPermanent, UUID copyToPermanentId, Ability source, CopyApplier applier) {
-        Permanent newBluePrint = null;
-        // handle copies of copies
-        for (Effect effect : getState().getContinuousEffects().getLayeredEffects(this)) {
-            if (effect instanceof CopyEffect) {
-                CopyEffect copyEffect = (CopyEffect) effect;
-                // there is another copy effect that our targetPermanent copies stats from
-                if (copyEffect.getSourceId().equals(copyFromPermanent.getId())) {
-                    MageObject oldBluePrint = ((CopyEffect) effect).getTarget();
-                    if (oldBluePrint instanceof Permanent) {
-                        // copy it and apply the applier if any
-                        newBluePrint = ((Permanent) oldBluePrint).copy();
-                    }
-                }
-            }
-        }
+        Permanent newBluePrint = copyFromPermanent.copy();
 
-        // if it was no copy of copy take the target itself
-        if (newBluePrint == null) {
-            newBluePrint = copyFromPermanent.copy();
-
-            // reset to original characteristics
-            newBluePrint.resetLockedStatus(); // reset locked status so room characteristics are correct
-            newBluePrint.reset(this);
-
-            // workaround to find real copyable characteristics of transformed/facedown/etc permanents
-
-            BecomesFaceDownCreatureEffect.FaceDownType faceDownType = BecomesFaceDownCreatureEffect.findFaceDownType(this, copyFromPermanent);
-            if (faceDownType != null) {
-                BecomesFaceDownCreatureEffect.makeFaceDownObject(this, null, newBluePrint, faceDownType, null);
-            }
-            newBluePrint.assignNewId();
-            if (copyFromPermanent.isPrototyped()) {
-                Abilities<Ability> abilities = copyFromPermanent.getAbilities();
-                for (Ability ability : abilities) {
-                    if (ability instanceof PrototypeAbility) {
-                        ((PrototypeAbility) ability).prototypePermanent(newBluePrint, this);
-                    }
-                }
-            }
-        }
+        // reset to original characteristics
+        newBluePrint.resetLockedStatus(); // reset locked status so room characteristics are correct
+        copyFromPermanent.getCopiableValues().applyTo(newBluePrint);
         if (applier != null) {
             applier.apply(this, newBluePrint, source, copyToPermanentId);
         }
-
-        // save original copy link (handle copy of copies too)
-        newBluePrint.setCopy(true, (copyFromPermanent.getCopyFrom() != null ? copyFromPermanent.getCopyFrom() : copyFromPermanent));
 
         CopyEffect newCopyEffect = new CopyEffect(duration, newBluePrint, copyToPermanentId);
         newCopyEffect.setApplier(applier);
@@ -2442,6 +2403,7 @@ public abstract class GameImpl implements Game {
                 .stream()
                 .map(object -> (Card) object)
                 .filter(Objects::nonNull)
+                .filter(card -> allCopiedCards.stream().noneMatch(currentCard -> currentCard.getId().equals(card.getId())))
                 .collect(Collectors.toList())
         );
         Set<Card> copiedCardsToRemove = new HashSet<>();

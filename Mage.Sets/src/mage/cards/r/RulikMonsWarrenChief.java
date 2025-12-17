@@ -1,18 +1,20 @@
 package mage.cards.r;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.constants.*;
 import mage.abilities.keyword.MenaceAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.token.GoblinToken;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -75,8 +77,10 @@ class RulikMonsWarrenChiefEffect extends OneShotEffect {
         Card card = controller.getLibrary().getFromTop(game);
         if (card != null) {
             controller.lookAtCards("Top card of your library", card, game);
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
             landToPlay = card.isLand(game) && controller.chooseUse(outcome, "Put " + card.getName() + " into play tapped?", source, game)
-                    && controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+                    && controller.moveCards(parameters, source, game);
         }
         if (!landToPlay) {
             new GoblinToken().putOntoBattlefield(1, game, source);

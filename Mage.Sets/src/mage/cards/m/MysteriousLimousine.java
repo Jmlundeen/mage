@@ -19,6 +19,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -94,12 +95,14 @@ class MysteriousLimousineEffect extends OneShotEffect {
         if (exileZone != null) {
             cards.addAll(exileZone);
         }
-        player.moveCardsToExile(permanent, source, game, true, exileId, CardUtil.getSourceName(game, source));
+        MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                .setExileId(exileId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         if (!cards.isEmpty()) {
-            player.moveCards(
-                    cards.getCards(game), Zone.BATTLEFIELD, source, game,
-                    false, false, true, null
-            );
+            parameters = new MoveCardsParameters(cards.getCards(game), Zone.BATTLEFIELD)
+                    .setByOwner(true);
+            player.moveCards(parameters, source, game);
         }
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
         return true;

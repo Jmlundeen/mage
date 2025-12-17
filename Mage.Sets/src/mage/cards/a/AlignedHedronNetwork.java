@@ -1,9 +1,6 @@
 
 package mage.cards.a;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.delayed.OnLeaveReturnExiledAbility;
@@ -14,12 +11,18 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ComparisonType;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.PowerPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -82,8 +85,11 @@ class AlignedHedronNetworkExileEffect extends OneShotEffect {
         if (toExile.isEmpty()) {
             return false;
         }
-        
-        controller.moveCardsToExile(toExile, source, game, true, CardUtil.getCardExileZoneId(game, source), permanent.getIdName());
+
+        MoveCardsParameters parameters = new MoveCardsParameters(toExile, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        controller.moveCards(parameters, source, game);
         game.addDelayedTriggeredAbility(new OnLeaveReturnExiledAbility(), source);
 
         return true;

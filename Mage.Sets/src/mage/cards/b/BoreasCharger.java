@@ -16,6 +16,7 @@ import mage.filter.StaticFilters;
 import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.ObjectSourcePlayerPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.TargetPlayer;
@@ -127,10 +128,10 @@ class BoreasChargerEffect extends OneShotEffect {
             cardsToHand.remove(cardToBattlefield);
         }
         if (cardToBattlefield != null) {
-            controller.moveCards(
-                    cardToBattlefield, Zone.BATTLEFIELD, source, game,
-                    true, false, true, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(cardToBattlefield, Zone.BATTLEFIELD)
+                    .setTapped(true)
+                    .setByOwner(true);
+            controller.moveCards(parameters, source, game);
         }
         controller.moveCards(cardsToHand, Zone.HAND, source, game);
         controller.shuffleLibrary(source, game);

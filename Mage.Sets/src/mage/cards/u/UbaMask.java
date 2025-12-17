@@ -12,6 +12,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -77,7 +78,10 @@ class UbaMaskReplacementEffect extends ReplacementEffectImpl {
                         + " for " + player.getName();
                 game.getExile().createZone(exileId, exileName).setCleanupOnEndTurn(true);
 
-                if (player.moveCardsToExile(card, source, game, true, exileId, exileName)) {
+                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                        .setExileId(exileId)
+                        .setExileName(exileName);
+                if (player.moveCards(parameters, source, game)) {
                     UbaMaskExiledCardsWatcher watcher = game.getState().getWatcher(UbaMaskExiledCardsWatcher.class);
                     if (watcher != null) {
                         watcher.addExiledCard(event.getPlayerId(), card, game);

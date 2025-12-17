@@ -78,7 +78,7 @@ class InverterOfTruthEffect extends OneShotEffect {
         cards.getCards(game)
                 .stream()
                 .filter(Objects::nonNull)
-                .forEach(card -> card.setFaceDown(true, game));
+                .forEach(card -> card.setFaceDown(true));
         player.moveCards(cards, Zone.EXILED, source, game);
         player.shuffleCardsToLibrary(player.getGraveyard(), game, source);
         return true;

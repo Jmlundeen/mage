@@ -16,6 +16,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.common.TargetCardInLibrary;
 
@@ -81,10 +82,9 @@ class EmbermouthSentinelEffect extends OneShotEffect {
         }
         player.revealCards(source, new CardsImpl(card), game);
         if (game.getBattlefield().contains(filter, source, game, 1)) {
-            player.moveCards(
-                    card, Zone.BATTLEFIELD, source, game, true,
-                    false, false, null
-            );
+            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            player.moveCards(parameters, source, game);
         } else {
             player.putCardsOnTopOfLibrary(card, game, source, false);
         }

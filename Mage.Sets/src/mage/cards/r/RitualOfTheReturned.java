@@ -1,6 +1,5 @@
 package mage.cards.r;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
@@ -15,6 +14,8 @@ import mage.game.Game;
 import mage.game.permanent.token.RitualOfTheReturnedZombieToken;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -62,7 +63,7 @@ class RitualOfTheReturnedExileEffect extends OneShotEffect {
         if (controller != null) {
             Card card = game.getCard(getTargetPointer().getFirst(game, source));
             if (card != null && game.getState().getZone(card.getId()) == Zone.GRAVEYARD) {
-                controller.moveCardToExileWithInfo(card, null, null, source, game, Zone.GRAVEYARD, true);
+                controller.moveCards(card, Zone.EXILED, source, game);
                 return new CreateTokenEffect(
                         new RitualOfTheReturnedZombieToken(card.getPower().getValue(), card.getToughness().getValue())).apply(game, source);
             }

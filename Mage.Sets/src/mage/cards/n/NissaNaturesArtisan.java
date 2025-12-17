@@ -13,6 +13,7 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 
 import java.util.LinkedHashSet;
@@ -86,8 +87,9 @@ class NissaNaturesArtisanEffect extends OneShotEffect {
                 cards.remove(card);
                 toBattlefield.add(card);
             }
-            controller.moveCards(toBattlefield, Zone.BATTLEFIELD, source,
-                    game, false, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
             controller.moveCards(cards, Zone.HAND, source, game);
         }
         return true;

@@ -17,6 +17,7 @@ import mage.filter.common.FilterCreatureCard;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.card.OwnerIdPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
@@ -112,7 +113,9 @@ class GlyphOfReincarnationEffect extends OneShotEffect {
                                 && controller.chooseTarget(outcome, targetCreature, source, game)) {
                             Card card = game.getCard(targetCreature.getFirstTarget());
                             if (card != null && game.getState().getZone(card.getId()) == Zone.GRAVEYARD) {
-                                controller.moveCards(card, Zone.BATTLEFIELD, source, game, false, false, true, null);
+                                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                                        .setByOwner(true);
+                                controller.moveCards(parameters, source, game);
                             }
                         }
                     }

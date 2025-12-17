@@ -1,7 +1,6 @@
 
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesAttachedTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -9,11 +8,7 @@ import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.BoostEquippedEffect;
 import mage.abilities.keyword.EquipAbility;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
@@ -21,6 +16,8 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -83,7 +80,7 @@ class HeirloomBladeEffect extends OneShotEffect {
                 for (Card card : controller.getLibrary().getCards(game)) {
                     revealed.add(card);
                     if (card != null && card.isCreature(game) && equipped.shareCreatureTypes(game, card)) {
-                        controller.moveCardToHandWithInfo(card, source, game, true);
+                        controller.moveCards(card, Zone.HAND, source, game);
                         break;
                     } else {
                         otherCards.add(card);

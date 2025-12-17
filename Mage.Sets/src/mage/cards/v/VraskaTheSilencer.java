@@ -18,6 +18,7 @@ import mage.constants.*;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
@@ -95,7 +96,9 @@ class VraskaTheSilencerEffect extends OneShotEffect {
         // Apply the continuous effect before moving the card to have the proper types on entering.
         ContinuousEffect continuousEffect = new VraskaTheSilencerContinuousEffect(new MageObjectReference(card, game, 1));
         game.addEffect(continuousEffect, source);
-        controller.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        controller.moveCards(parameters, source, game);
         return true;
     }
 }

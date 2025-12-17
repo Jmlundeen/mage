@@ -10,6 +10,7 @@ import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -131,7 +132,9 @@ class ArniMetalbrowEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, false, null);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true);
+        player.moveCards(parameters, source, game);
         Permanent creature = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
         if (creature != null) {
             game.getCombat().addAttackingCreature(creature.getId(), game);

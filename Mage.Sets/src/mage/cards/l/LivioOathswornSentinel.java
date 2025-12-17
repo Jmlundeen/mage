@@ -14,6 +14,7 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetPermanent;
@@ -130,9 +131,8 @@ class LivioOathswornSentinelReturnEffect extends OneShotEffect {
                 .filter(Objects::nonNull)
                 .filter(card -> card.getCounters(game).containsKey(CounterType.AEGIS))
                 .collect(Collectors.toSet());
-        return player.moveCards(
-                cards, Zone.BATTLEFIELD, source, game, false,
-                false, true, null
-        );
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.BATTLEFIELD)
+                .setByOwner(true);
+        return player.moveCards(parameters, source, game);
     }
 }

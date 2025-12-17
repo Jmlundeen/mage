@@ -3,6 +3,11 @@ package mage.cards;
 import mage.abilities.SpellAbility;
 import mage.constants.*;
 import mage.game.Game;
+import mage.game.GameState;
+import mage.game.MoveCardsParameters;
+import mage.game.events.ZoneChangeEvent;
+import mage.util.CardUtil;
+import mage.util.SubTypes;
 
 import java.util.UUID;
 

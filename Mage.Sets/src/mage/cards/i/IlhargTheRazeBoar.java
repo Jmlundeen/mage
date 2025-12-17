@@ -15,12 +15,12 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
 import mage.target.targetpointer.FixedTarget;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -89,8 +89,15 @@ class IlhargTheRazeBoarEffect extends OneShotEffect {
         if (card == null) {
             return false;
         }
-        player.moveCards(card, Zone.BATTLEFIELD, source, game, true, false, true, null);
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setTapped(true)
+                .setByOwner(true);
+        Permanent permanent = player.moveCardsWithResult(parameters, source, game)
+                .stream()
+                .filter(cardRes -> cardRes instanceof Permanent)
+                .map(cardRes -> (Permanent) cardRes)
+                .findFirst()
+                .orElse(null);
         if (permanent == null) {
             return false;
         }

@@ -1,7 +1,6 @@
 package mage.cards.t;
 
 import mage.MageInt;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
@@ -13,6 +12,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetOpponentsCreaturePermanent;
@@ -73,12 +73,13 @@ class TobiasBeckettEffect extends OneShotEffect {
             if (bountyTriggered != null) {
                 Player opponent = game.getPlayer(bountyTriggered.getControllerId());
                 if (opponent != null) {
-                    MageObject sourceObject = game.getObject(source);
-                    UUID exileId = CardUtil.getCardExileZoneId(game, source);
                     Card card = opponent.getLibrary().getFromTop(game);
-                    if (card != null && sourceObject != null) {
+                    if (card != null) {
                         // move card to exile
-                        controller.moveCardToExileWithInfo(card, exileId, sourceObject.getIdName(), source, game, Zone.LIBRARY, true);
+                        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                                .setExileId(CardUtil.getCardExileZoneId(game, source))
+                                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+                        controller.moveCards(parameters, source, game);
                         // Add effects only if the card has a spellAbility (e.g. not for lands).
                         if (card.getSpellAbility() != null) {
                             // allow to cast the card

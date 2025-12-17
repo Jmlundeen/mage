@@ -11,6 +11,7 @@ import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.common.FilterLandCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -72,7 +73,9 @@ class AnimistsAwakeningEffect extends OneShotEffect {
                 cards.remove(card);
                 toBattlefield.add(card);
             }
-            controller.moveCards(toBattlefield, Zone.BATTLEFIELD, source, game, true, false, true, null);
+            MoveCardsParameters parameters = new MoveCardsParameters(toBattlefield, Zone.BATTLEFIELD)
+                    .setTapped(true);
+            controller.moveCards(parameters, source, game);
             controller.putCardsOnBottomOfLibrary(cards, game, source, false);
 
             if (SpellMasteryCondition.instance.apply(game, source)) {

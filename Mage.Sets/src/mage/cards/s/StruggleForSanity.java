@@ -1,23 +1,21 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.cards.Card;
-import mage.cards.CardImpl;
-import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
+import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetOpponent;
+
+import java.util.UUID;
 
 /**
  *
@@ -76,6 +74,12 @@ class StruggleForSanityEffect extends OneShotEffect {
         UUID exileZoneOpponent = UUID.randomUUID();
         boolean opponentsChoice = true;
         TargetCard target = new TargetCard(Zone.HAND, new FilterCard("a card to exile"));
+        MoveCardsParameters opponentParameters = new MoveCardsParameters(Zone.EXILED)
+                .setExileId(exileZoneOpponent)
+                .setExileName(sourceObject.getIdName() + " exiled by " + targetPlayer.getName());
+        MoveCardsParameters controllerParameters = new MoveCardsParameters(Zone.EXILED)
+                .setExileId(exileZoneController)
+                .setExileName(sourceObject.getIdName() + " exiled by " + controller.getName());
         while (!cardsLeft.isEmpty()) {
             if (opponentsChoice) {
                 targetPlayer.choose(Outcome.ReturnToHand, cardsLeft, target, source, game);
@@ -83,7 +87,8 @@ class StruggleForSanityEffect extends OneShotEffect {
                 if (card != null) {
                     exiledByOpponent.add(card);
                     cardsLeft.remove(card);
-                    targetPlayer.moveCardsToExile(card, source, game, true, exileZoneOpponent, sourceObject.getIdName() + " exiled by " + targetPlayer.getName());
+                    opponentParameters.setCards(card);
+                    controller.moveCards(opponentParameters, source, game);
                 }
             } else {
                 controller.choose(Outcome.Discard, cardsLeft, target, source, game);
@@ -91,7 +96,8 @@ class StruggleForSanityEffect extends OneShotEffect {
                 if (card != null) {
                     exiledByController.add(card);
                     cardsLeft.remove(card);
-                    controller.moveCardsToExile(card, source, game, true, exileZoneController, sourceObject.getIdName() + " exiled by " + controller.getName());
+                    controllerParameters.setCards(card);
+                    controller.moveCards(controllerParameters, source, game);
                 }
             }
             target.clearChosen();

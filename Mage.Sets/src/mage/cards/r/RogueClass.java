@@ -1,5 +1,6 @@
 package mage.cards.r;
 
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.DealsDamageToAPlayerAllTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -18,13 +19,12 @@ import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.players.ManaPoolItem;
 import mage.players.Player;
-import mage.target.targetpointer.FixedTarget;
+import mage.util.CardUtil;
 
 import java.util.UUID;
-import mage.MageObject;
-import mage.util.CardUtil;
 
 /**
  * @author TheElk801
@@ -107,49 +107,17 @@ class RogueClassExileEffect extends OneShotEffect {
             return false;
         }
         // exileId must remain consistent among all checks
-        UUID exileZoneId = CardUtil.getExileZoneId(game, sourceObject.getId(), sourceObject.getZoneChangeCounter(game));
-        if (controller.moveCardsToExile(card, source, game, false, exileZoneId, sourceObject.getIdName())) {
-            card.setFaceDown(true, game);
-            game.addEffect(new RogueClassLookEffect().setTargetPointer(new FixedTarget(card, game)), source);
-            // store the exileId and the zcc of the card put into exile.  this is used to verify the "rogueclassmanaeffect" if the card is cast from exile
-            // note that the rogueclassmanaeffect will check its validity only when the card is out of the exile zone, so it can't be checked directly
+        UUID exileZoneId = CardUtil.getExileZoneId(game, source);
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.EXILED)
+                .setCanLookFaceDownInExile(true)
+                .setFaceDown(true)
+                .setExileId(exileZoneId)
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        if (controller.moveCards(parameters, source, game)) {
             game.getState().setValue(card.getId().toString() + game.getState().getZoneChangeCounter(card.getId()), exileZoneId);
             return true;
         }
         return false;
-    }
-}
-
-class RogueClassLookEffect extends AsThoughEffectImpl {
-
-    RogueClassLookEffect() {
-        super(AsThoughEffectType.LOOK_AT_FACE_DOWN, Duration.EndOfGame, Outcome.Benefit);
-    }
-
-    private RogueClassLookEffect(final RogueClassLookEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return true;
-    }
-
-    @Override
-    public RogueClassLookEffect copy() {
-        return new RogueClassLookEffect(this);
-    }
-
-    @Override
-    public boolean applies(UUID objectId, Ability source, UUID affectedControllerId, Game game) {
-        UUID cardId = getTargetPointer().getFirst(game, source);
-        if (cardId == null) {
-            discard();
-            return false;
-        }
-        return source.isControlledBy(affectedControllerId)
-                && cardId.equals(objectId)
-                && game.getState().getZone(cardId) == Zone.EXILED;
     }
 }
 
