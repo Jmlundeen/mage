@@ -642,8 +642,11 @@ public class ScryfallImageSource implements CardImageSource {
                 Set<String> usedNames = new HashSet<>();
                 card.card_faces.forEach(face -> {
                     // workaround to ignore fake data, see above about memorabilia
-                    if (usedNames.contains(face.name)) {
+                    String collectorNumber = card.collector_number;
+                    if (usedNames.contains(face.name) && !card.layout.equals("reversible_card")) {
                         return;
+                    } else if (usedNames.contains(face.name) && card.layout.equals("reversible_card")) {
+                        collectorNumber = card.collector_number + "b";
                     }
                     usedNames.add(face.name);
 
@@ -652,7 +655,7 @@ public class ScryfallImageSource implements CardImageSource {
                         String faceKey = String.format("%s/%s/%s/%s",
                                 face.name,
                                 card.set,
-                                card.collector_number,
+                                collectorNumber,
                                 useLocalization ? card.lang : ""
                         );
 

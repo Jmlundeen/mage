@@ -31,8 +31,8 @@ public class SecretLairDrop extends ExpansionSet {
     }
 
     private void addPart1() {
-        cards.add(new SetCardInfo("Counterspell", "99999SCTLR", Rarity.RARE, mage.cards.c.Counterspell.class, NON_FULL_USE_VARIOUS));
-        cards.add(new SetCardInfo("Viscera Seer", "99999VS", Rarity.COMMON, mage.cards.v.VisceraSeer.class)); // workaround until "VS" supported as card number
+        cards.add(new SetCardInfo("Counterspell", "SCTLR", Rarity.RARE, mage.cards.c.Counterspell.class, NON_FULL_USE_VARIOUS));
+        cards.add(new SetCardInfo("Viscera Seer", "VS", Rarity.COMMON, mage.cards.v.VisceraSeer.class)); // workaround until "VS" supported as card number
         cards.add(new SetCardInfo("Snow-Covered Plains", 1, Rarity.LAND, mage.cards.s.SnowCoveredPlains.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Snow-Covered Island", 2, Rarity.LAND, mage.cards.s.SnowCoveredIsland.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Snow-Covered Swamp", 3, Rarity.LAND, mage.cards.s.SnowCoveredSwamp.class, NON_FULL_USE_VARIOUS));

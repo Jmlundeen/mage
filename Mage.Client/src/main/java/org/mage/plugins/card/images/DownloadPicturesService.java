@@ -498,18 +498,7 @@ public class DownloadPicturesService extends DefaultBoundedRangeModel implements
 
                     // second side
                     if (card.isFlipCard()) {
-                        if (card.getFlipCardName() == null || card.getFlipCardName().trim().isEmpty()) {
-                            throw new IllegalStateException("Flipped card can't have empty name.");
-                        }
-                        CardDownloadData cardDownloadData = new CardDownloadData(
-                                card.getFlipCardName(),
-                                card.getSetCode(),
-                                card.getCardNumber(),
-                                card.usesVariousArt(),
-                                0
-                        );
-                        cardDownloadData.setFlippedSide(true);
-                        allCardsUrls.add(cardDownloadData);
+                        return; // flip cards use same image
                     }
                     if (card.getMeldsToCardName() != null) {
                         if (card.getMeldsToCardName().trim().isEmpty()) {
