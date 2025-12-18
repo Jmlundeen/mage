@@ -12,6 +12,7 @@ import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.Card;
 import mage.cards.RoomCard;
+import mage.cards.SplitCard;
 import mage.constants.Duration;
 import mage.constants.Layer;
 import mage.constants.Outcome;

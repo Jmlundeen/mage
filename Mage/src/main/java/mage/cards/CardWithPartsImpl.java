@@ -155,6 +155,13 @@ public abstract class CardWithPartsImpl<P extends SubCard<C>, C extends CardWith
     }
 
     @Override
+    public void setFaceDown(boolean faceDown) {
+        super.setFaceDown(faceDown);
+        leftHalfCard.setFaceDown(faceDown);
+        rightHalfCard.setFaceDown(faceDown);
+    }
+
+    @Override
     public void setOwnerId(UUID ownerId) {
         super.setOwnerId(ownerId);
         abilities.setControllerId(ownerId);

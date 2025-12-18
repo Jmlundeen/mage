@@ -12,7 +12,6 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.hint.common.PermanentsYouControlHint;
 import mage.abilities.keyword.TrampleAbility;
-import mage.abilities.keyword.TransformAbility;
 import mage.abilities.mana.GreenManaAbility;
 import mage.cards.*;
 import mage.cards.g.GishathSunsAvatar;

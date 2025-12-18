@@ -5,6 +5,7 @@ import mage.constants.CardType;
 import mage.constants.SpellAbilityType;
 import mage.constants.Zone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.ZoneChangeEvent;
 
 import java.util.List;
@@ -55,6 +56,11 @@ public abstract class CardPart<C extends CardWithPartsImpl<?, C>> extends CardIm
     @Override
     public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
         return getParentCard().moveToZone(toZone, source, game, flag, appliedEffects);
+    }
+
+    @Override
+    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
+        return getParentCard().moveToZone(parameters, source, game, appliedEffects);
     }
 
     @Override

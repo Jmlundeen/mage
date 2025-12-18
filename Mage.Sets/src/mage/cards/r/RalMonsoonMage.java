@@ -35,6 +35,7 @@ import mage.filter.common.FilterInstantOrSorceryCard;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.common.TargetAnyTargetAmount;
@@ -225,8 +226,10 @@ class RalLeylineProdigyMinusEightEffect extends OneShotEffect {
             return false;
         }
         Set<Card> cards = player.getLibrary().getTopCards(game, 8);
-        UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), source.getStackMomentSourceZCC());
-        player.moveCardsToExile(cards, source, game, true, exileId, sourceObject.getIdName());
+        MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        player.moveCards(parameters, source, game);
         for (Card card : cards) {
             if (game.getState().getZone(card.getId()) == Zone.EXILED) {
                 game.addEffect(new RalLeylineProdigyCastEffect(new MageObjectReference(card, game)), source);

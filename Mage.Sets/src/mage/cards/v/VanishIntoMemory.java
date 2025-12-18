@@ -118,8 +118,7 @@ class VanishIntoMemoryReturnFromExileEffect extends OneShotEffect {
                     .stream()
                     .filter(c -> c instanceof Permanent)
                     .map(c -> (Permanent) c)
-                    .findFirst()
-                    .ifPresent(permanent -> controller.discard(permanent.getToughness().getValue(), false, false, source, game));
+                    .forEach(permanent -> controller.discard(permanent.getToughness().getValue(), false, false, source, game));
         }
 
         return true;

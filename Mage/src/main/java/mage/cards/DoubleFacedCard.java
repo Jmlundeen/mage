@@ -105,13 +105,6 @@ public abstract class DoubleFacedCard<P extends DoubleFacedCardHalf<C>, C extend
     }
 
     @Override
-    public void setFaceDown(boolean faceDown) {
-        super.setFaceDown(faceDown);
-        leftHalfCard.setFaceDown(faceDown);
-        rightHalfCard.setFaceDown(faceDown);
-    }
-
-    @Override
     public Counters getCounters(Game game) {
         return getCounters(game.getState());
     }

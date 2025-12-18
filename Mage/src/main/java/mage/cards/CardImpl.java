@@ -449,7 +449,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
                     zoneChangeInfo = new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source);
                     break;
                 case EXILED:
-                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName());
+                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName(), parameters.canLookFaceDownInExile());
                     break;
                 default:
                     zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());
@@ -571,11 +571,7 @@ public abstract class CardImpl extends MageObjectImpl implements Card {
                 }
                 break;
             case BATTLEFIELD: // for sacrificing permanents or putting to library
-                Permanent permanent = game.getPermanent(this.getId());
-                removed = permanent != null && game.getPlayer(permanent.getControllerId()).removeFromBattlefield(permanent, source, game);
-                if (removed) {
-                    lkiObject = permanent;
-                }
+                removed = true;
                 break;
             default:
                 MageObject sourceObject = game.getObject(source);

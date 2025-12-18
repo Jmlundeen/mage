@@ -6,6 +6,7 @@ import mage.abilities.Ability;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.keyword.PrototypeAbility;
 import mage.cards.Card;
+import mage.cards.CopiableValues;
 import mage.cards.DoubleFacedCardHalf;
 import mage.constants.CardType;
 import mage.constants.SuperType;

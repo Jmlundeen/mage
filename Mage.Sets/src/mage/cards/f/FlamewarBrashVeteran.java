@@ -152,7 +152,7 @@ class FlamewarStreetwiseOperativeEffect extends OneShotEffect {
         player.moveCards(cards, Zone.EXILED, source, game);
         cards.retainZone(Zone.EXILED, game);
         cards.getCards(game).forEach(card -> {
-            card.setFaceDown(true, game);
+            card.setFaceDown(true);
             card.addCounters(CounterType.INTEL.createInstance(), source, game);
         });
         return true;

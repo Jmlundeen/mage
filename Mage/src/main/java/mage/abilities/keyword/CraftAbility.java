@@ -143,7 +143,7 @@ class CraftCost extends CostImpl {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         MoveCardsParameters parameters = new MoveCardsParameters(cards, Zone.EXILED)
-                .setExileId(CardUtil.getExileZoneId(game, source))
+                .setExileId(CardUtil.getExileZoneId(game, sourceCard.getMainCard().getId(), sourceCard.getMainCard().getZoneChangeCounter(game)))
                 .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
         player.moveCards(parameters, source, game);
         paid = true;

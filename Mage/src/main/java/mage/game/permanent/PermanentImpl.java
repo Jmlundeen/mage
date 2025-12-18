@@ -8,6 +8,7 @@ import mage.abilities.Abilities;
 import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
+import mage.abilities.common.RoomAbility;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.RequirementEffect;
@@ -20,7 +21,6 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardsImpl;
 import mage.cards.CopiableValues;
-import mage.abilities.common.RoomAbility;
 import mage.constants.*;
 import mage.counters.Counter;
 import mage.counters.CounterType;
@@ -2101,7 +2101,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
                     zoneChangeInfo = new ZoneChangeInfo.Library(event, parameters.isFaceDown(), parameters.isToTopOfLibrary());
                     break;
                 case EXILED:
-                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName());
+                    zoneChangeInfo = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName(), parameters.canLookFaceDownInExile());
                     break;
                 default:
                     zoneChangeInfo = new ZoneChangeInfo(event, parameters.isFaceDown());

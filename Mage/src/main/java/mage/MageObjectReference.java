@@ -155,6 +155,12 @@ public class MageObjectReference implements Comparable<MageObjectReference>, Ser
         if (mageObject instanceof Spell) {
             return Objects.equals(((Spell) mageObject).getSourceId(), this.sourceId) && this.zoneChangeCounter + offset == mageObject.getZoneChangeCounter(game);
         }
+        if (mageObject instanceof Card) {
+            Card card = (Card) mageObject;
+            if (card.getMainCard().getId().equals(sourceId) && this.zoneChangeCounter + offset == card.getMainCard().getZoneChangeCounter(game)) {
+                return true;
+            }
+        }
         return mageObject.getId().equals(sourceId) && this.zoneChangeCounter + offset == mageObject.getZoneChangeCounter(game);
     }
 

@@ -10,10 +10,9 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ReturnToBattlefieldUnderOwnerControlWithCounterTargetEffect;
 import mage.abilities.keyword.FlashAbility;
 import mage.abilities.keyword.FlyingAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.cards.Cards;
-import mage.cards.CardsImpl;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
@@ -24,13 +23,15 @@ import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AbilityPredicate;
-import mage.game.ExileZone;
 import mage.game.Game;
+import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
+import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -102,36 +103,25 @@ class SalvationSwanTargetEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Permanent permanent = game.getPermanent(source.getFirstTarget());
         MageObject sourceObject = source.getSourceObject(game);
-        if (permanent == null || sourceObject == null) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (permanent == null || sourceObject == null || controller == null) {
             return false;
         }
 
         // exile card
-        // use workaround with temp zone to get all moved objects like melded parts
-        ExileZone tempExileZone = game.getExile().createZone(UUID.randomUUID(), "temp");
-        permanent.moveToExile(tempExileZone.getId(), tempExileZone.getName(), source, game);
-        // TODO: delete temp zone somehow?
+        String exileKey = SalvationSwan.VALUE_PREFIX + "_" + source.getSourceId() + "_" + source.getStackMomentSourceZCC();
+        MoveCardsParameters parameters = new MoveCardsParameters(permanent, Zone.EXILED)
+                .setExileId(CardUtil.getExileZoneId(exileKey, game))
+                .setExileName(CardUtil.createObjectRelatedWindowTitle(source, game, null));
+        Set<Card> toReturn = controller.moveCardsWithResult(parameters, source, game);
 
         // return it on next end turn
-        Cards cardsToReturn = new CardsImpl(tempExileZone.getCards(game));
-        cardsToReturn.retainZone(Zone.EXILED, game);
         Effect effect = new ReturnToBattlefieldUnderOwnerControlWithCounterTargetEffect(
                 CounterType.FLYING.createInstance(), true
         );
-        effect.setTargetPointer(new FixedTargets(cardsToReturn.getCards(game), game));
+        effect.setTargetPointer(new FixedTargets(toReturn, game));
         // create delayed triggered ability, of note the trigger is created even if no card would be returned.
         game.addDelayedTriggeredAbility(new AtTheBeginOfNextEndStepDelayedTriggeredAbility(effect), source);
-
-        // move exiled cards to shared zone for better UX
-        String exileKey = SalvationSwan.VALUE_PREFIX + "_" + source.getSourceId() + "_" + source.getStackMomentSourceZCC();
-        ExileZone sharedExileZone = game.getExile().createZone(
-                CardUtil.getExileZoneId(exileKey, game),
-                sourceObject.getIdName()
-        );
-        sharedExileZone.setCleanupOnEndTurn(true);
-        tempExileZone.getCards(game).forEach(card -> {
-            game.getState().getExile().moveToAnotherZone(card, game, sharedExileZone);
-        });
 
         return true;
     }

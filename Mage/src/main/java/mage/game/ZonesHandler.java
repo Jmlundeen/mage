@@ -140,11 +140,20 @@ public final class ZonesHandler {
                 }
                 break;
             case EXILED:
+                ExileZone exileZone;
                 if (info instanceof ZoneChangeInfo.Exile && ((ZoneChangeInfo.Exile) info).id != null) {
                     ZoneChangeInfo.Exile exileInfo = (ZoneChangeInfo.Exile) info;
-                    game.getExile().createZone(exileInfo.id, exileInfo.name).add(targetCard);
+                    exileZone = game.getExile().createZone(exileInfo.id, exileInfo.name);
+                    exileZone.add(targetCard);
                 } else {
-                    game.getExile().getPermanentExile().add(targetCard);
+                    exileZone = game.getExile().getPermanentExile();
+                    exileZone.add(targetCard);
+                }
+                if (info instanceof ZoneChangeInfo.Exile) {
+                    ZoneChangeInfo.Exile exileInfo = (ZoneChangeInfo.Exile) info;
+                    if (exileInfo.canLookAtFaceDown) {
+                        exileZone.letPlayerSeeCards(info.event.getPlayerId(), targetCard);
+                    }
                 }
                 break;
             case COMMAND:
@@ -294,7 +303,8 @@ public final class ZonesHandler {
             } else if (event.getTarget() != null) {
                 // PUT PERMANENT TO OTHER ZONE (e.g. remove only)
                 Permanent target = event.getTarget();
-                success = target.removeFromZone(game, fromZone, source);
+                success = target.removeFromZone(game, fromZone, source)
+                    && game.getPlayer(target.getControllerId()).removeFromBattlefield(target, source, game);
             } else {
                 // PUT CARD TO OTHER ZONE
                 success = card.removeFromZone(game, fromZone, source);

@@ -3,8 +3,6 @@ package mage.cards;
 import mage.abilities.Ability;
 import mage.constants.*;
 import mage.game.Game;
-import mage.game.MoveCardsParameters;
-import mage.game.events.ZoneChangeEvent;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -32,36 +30,6 @@ public abstract class DoubleFacedCardHalf<C extends DoubleFacedCard<?, C>> exten
     @Override
     public boolean isTransformable() {
         return getOtherSide().isPermanent();
-    }
-
-    @Override
-    public boolean moveToZone(Zone toZone, Ability source, Game game, boolean flag, List<UUID> appliedEffects) {
-        return parentCard.moveToZone(toZone, source, game, flag, appliedEffects);
-    }
-
-    @Override
-    public boolean moveToZone(MoveCardsParameters parameters, Ability source, Game game, List<UUID> appliedEffects) {
-        return parentCard.moveToZone(parameters, source, game, appliedEffects);
-    }
-
-    @Override
-    public boolean moveToExile(UUID exileId, String name, Ability source, Game game, List<UUID> appliedEffects) {
-        return parentCard.moveToExile(exileId, name, source, game, appliedEffects);
-    }
-
-    @Override
-    public boolean removeFromZone(Game game, Zone fromZone, Ability source) {
-        return parentCard.removeFromZone(game, fromZone, source);
-    }
-
-    @Override
-    public Card getMainCard() {
-        return parentCard;
-    }
-
-    @Override
-    public void updateZoneChangeCounter(Game game, ZoneChangeEvent event) {
-        parentCard.updateZoneChangeCounter(game, event);
     }
 
     @Override

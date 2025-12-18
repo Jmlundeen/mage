@@ -10,7 +10,6 @@ import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.ReturnFromGraveyardToBattlefieldTargetEffect;
 import mage.abilities.effects.common.ReturnToBattlefieldUnderYourControlAttachedEffect;
 import mage.abilities.keyword.EnchantAbility;
-import mage.abilities.keyword.TransformAbility;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;

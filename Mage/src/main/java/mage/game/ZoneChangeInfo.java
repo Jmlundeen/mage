@@ -1,6 +1,8 @@
 package mage.game;
 
 import mage.abilities.Ability;
+import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
+import mage.cards.CopiableValues;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.stack.Spell;
 
@@ -33,6 +35,8 @@ public class ZoneChangeInfo {
         this.event = info.event;
         this.faceDown = info.faceDown;
         this.additionalMoves = new ArrayList<>(info.additionalMoves);
+        this.faceDownType = info.faceDownType;
+        this.faceDownValues = info.faceDownValues;
     }
 
     public ZoneChangeInfo copy() {
@@ -84,6 +88,7 @@ public class ZoneChangeInfo {
 
         public UUID id;
         public String name;
+        public boolean canLookAtFaceDown = false;
 
         public Exile(ZoneChangeEvent event, UUID id, String name) {
             super(event);
@@ -91,16 +96,18 @@ public class ZoneChangeInfo {
             this.name = name;
         }
 
-        public Exile(ZoneChangeEvent event, boolean faceDown, UUID id, String name) {
+        public Exile(ZoneChangeEvent event, boolean faceDown, UUID id, String name, boolean canLookAtFaceDown) {
             super(event, faceDown);
             this.id = id;
             this.name = name;
+            this.canLookAtFaceDown = canLookAtFaceDown;
         }
 
         protected Exile(final Exile info) {
             super(info);
             this.id = info.id;
             this.name = info.name;
+            this.canLookAtFaceDown = info.canLookAtFaceDown;
         }
 
         @Override

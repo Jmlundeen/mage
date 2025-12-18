@@ -4946,6 +4946,7 @@ public abstract class PlayerImpl implements Player, Serializable {
 
     private void moveCardsToGraveyardWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         String sourceLogName = CardUtil.getSourceLogName(game, source);
+        List<ZoneChangeInfo> infoList = new ArrayList<>();
         while (!parameters.getCards().isEmpty()) {
             // identify cards from one owner
             Cards cards = new CardsImpl();
@@ -4982,44 +4983,25 @@ public abstract class PlayerImpl implements Player, Serializable {
                         cards.remove(targetObjectId);
                         if (card != null) {
                             Zone fromZone = game.getState().getZone(card.getId());
-                            if (card.moveToZone(parameters, source, game)) {
-                                card = getMovedCard(card, game);
-                                successfulMovedCards.add(card);
-                                if (game.isSimulation()) {
-                                    continue;
-                                }
-                                logMoveInfo(owner, card, fromZone, false, parameters, game, sourceLogName);
-                            }
+                            infoList.add(getZoneChangeInfo(card, source, parameters, fromZone, game));
                         }
                         target.clearChosen();
                     }
                     if (cards.size() == 1) {
                         Card card = cards.getCards(game).iterator().next();
                         Zone fromZone = game.getState().getZone(card.getId());
-                        if (card.moveToZone(parameters, source, game)) {
-                            card = getMovedCard(card, game);
-                            successfulMovedCards.add(card);
-                            if (game.isSimulation()) {
-                                continue;
-                            }
-                            logMoveInfo(owner, card, fromZone, false, parameters, game, sourceLogName);
-                        }
+                        infoList.add(getZoneChangeInfo(card, source, parameters, fromZone, game));
                     }
                 } else {
                     for (Card card : cards.getCards(game)) {
                         Zone fromZone = game.getState().getZone(card.getId());
-                        if (card.moveToZone(parameters, source, game)) {
-                            card = getMovedCard(card, game);
-                            successfulMovedCards.add(card);
-                            if (game.isSimulation()) {
-                                continue;
-                            }
-                            logMoveInfo(owner, card, fromZone, false, parameters, game, sourceLogName);
-                        }
+                        infoList.add(getZoneChangeInfo(card, source, parameters, fromZone, game));
                     }
                 }
             }
         }
+        ZonesHandler.moveCards(infoList, source, game);
+        processInfoList(parameters, game, successfulMovedCards, infoList, sourceLogName);
     }
 
     private void moveCardsToBattlefieldWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
@@ -5057,61 +5039,32 @@ public abstract class PlayerImpl implements Player, Serializable {
                 }
             }
 
-            ZoneChangeEvent event = new ZoneChangeEvent(card.getId(), source,
-                    parameters.isByOwner() ? card.getOwnerId() : getId(), fromZone, Zone.BATTLEFIELD);
-            ZoneChangeInfo info = new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source);
-            if (parameters.getFaceDownValues() != null) {
-                info.setFaceDownValues(parameters.getFaceDownValues());
-            }
-            if (parameters.getFaceDownType() != null) {
-                info.setFaceDownType(parameters.getFaceDownType());
-            }
+            ZoneChangeInfo info = getZoneChangeInfo(card, source, parameters, fromZone, game);
             infoList.add(info);
         }
         ZonesHandler.moveCards(infoList, source, game);
-        for (ZoneChangeInfo info : infoList) {
-            Permanent permanent = game.getPermanent(info.event.getTargetId());
-            if (permanent == null) {
-                continue;
-            }
-            successfulMovedCards.add(permanent);
-            if (game.isSimulation()) {
-                continue;
-            }
-            Player eventPlayer = game.getPlayer(info.event.getPlayerId());
-            Zone fromZone = info.event.getFromZone();
-            if (eventPlayer == null || fromZone == null) {
-                continue;
-            }
-            logMoveInfo(eventPlayer, permanent, fromZone, false, parameters, game, sourceLogName);
-        }
+        processInfoList(parameters, game, successfulMovedCards, infoList, sourceLogName);
         game.applyEffects();
     }
 
     private void moveCardsToHandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         String sourceLogName = CardUtil.getSourceLogName(game, source);
+        List<ZoneChangeInfo> infoList = new ArrayList<>();
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
-            boolean hideName = fromZone == Zone.LIBRARY || card.isFaceDown();
             if (fromZone == Zone.STACK || fromZone == Zone.BATTLEFIELD) {
                 // Owner must reveal face down permanent or spell when moving zones
                 parameters.setFaceDown(false);
-                hideName = false;
             }
-            if (card.moveToZone(parameters, source, game)) {
-                card = getMovedCard(card, game);
-                successfulMovedCards.add(card);
-                if (game.isSimulation()) {
-                    return;
-                }
-                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
-                logMoveInfo(movingPlayer, card, fromZone, hideName, parameters, game, sourceLogName);
-            }
+            infoList.add(getZoneChangeInfo(card, source, parameters, fromZone, game));
         }
+        ZonesHandler.moveCards(infoList, source, game);
+        processInfoList(parameters, game, successfulMovedCards, infoList, sourceLogName);
     }
 
     private void moveCardsToExileWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         String sourceLogName = CardUtil.getSourceLogName(game, source);
+        List<ZoneChangeInfo> infoList = new ArrayList<>();
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
             // 708.9.
@@ -5126,37 +5079,15 @@ public abstract class PlayerImpl implements Player, Serializable {
             if (fromZone == Zone.STACK || (fromZone == Zone.BATTLEFIELD && card.isFaceDown())) {
                 parameters.setFaceDown(false);
             }
-            if (card.moveToZone(parameters, source, game)) {
-                if (parameters.canLookFaceDownInExile()) {
-                    ExileZone exileZone = parameters.getExileId() == null
-                            ? game.getExile().getPermanentExile()
-                            : game.getExile().getExileZone(parameters.getExileId());
-                    if (exileZone != null) {
-                        exileZone.letPlayerSeeCards(this.getId(), card);
-                    }
-                }
-                card = getMovedCard(card, game);
-                successfulMovedCards.add(card);
-                if (game.isSimulation()) {
-                    continue;
-                }
-                if (card instanceof PermanentCard && game.getCard(card.getId()) != null) {
-                    card = game.getCard(card.getId());
-                }
-                if (card instanceof Spell) {
-                    card = ((Spell) card).getCard();
-                }
-                if (!parameters.isFaceDown() && card.getName().isEmpty()) {
-                    throw new IllegalStateException("wrong code usage: method must find real card name, but found nothing");
-                }
-                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
-                logMoveInfo(movingPlayer, card, fromZone, card.isFaceDown(), parameters, game, sourceLogName);
-            }
+            infoList.add(getZoneChangeInfo(card, source, parameters, fromZone, game));
         }
+        ZonesHandler.moveCards(infoList, source, game);
+        processInfoList(parameters, game, successfulMovedCards, infoList, sourceLogName);
     }
 
     private void moveCardsToLibraryWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         String sourceLogName = CardUtil.getSourceLogName(game, source);
+        List<ZoneChangeInfo> infoList = new ArrayList<>();
         for (Card card : parameters.getCards()) {
             Zone fromZone;
             if (card instanceof Spell) {
@@ -5164,33 +5095,77 @@ public abstract class PlayerImpl implements Player, Serializable {
             } else {
                 fromZone = game.getState().getZone(card.getId());
             }
-            boolean hideName = fromZone == Zone.HAND || fromZone == Zone.LIBRARY
-                    || (fromZone != Zone.STACK && fromZone != Zone.BATTLEFIELD && card.isFaceDown());
-            if (card.moveToZone(parameters, source, game)) {
-                card = getMovedCard(card, game);
-                successfulMovedCards.add(card);
-                if (game.isSimulation()) {
-                    continue;
-                }
-                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
-                logMoveInfo(movingPlayer, card, fromZone, hideName, parameters, game, sourceLogName);
-            }
+            infoList.add(getZoneChangeInfo(card, source, parameters, fromZone, game));
         }
+        ZonesHandler.moveCards(infoList, source, game);
+        processInfoList(parameters, game, successfulMovedCards, infoList, sourceLogName);
     }
 
     private void moveCardsToCommandWithInfo(MoveCardsParameters parameters, Ability source, Game game, Set<Card> successfulMovedCards) {
         String sourceLogName = CardUtil.getSourceLogName(game, source);
+        List<ZoneChangeInfo> infoList = new ArrayList<>();
         for (Card card : parameters.getCards()) {
             Zone fromZone = game.getState().getZone(card.getId());
-            if (card.moveToZone(parameters, source, game)) {
-                card = getMovedCard(card, game);
-                successfulMovedCards.add(card);
-                if (game.isSimulation()) {
-                    continue;
-                }
-                Player movingPlayer = parameters.isByOwner() && !card.isOwnedBy(getId()) ? game.getPlayer(card.getOwnerId()) : this;
-                logMoveInfo(movingPlayer, card, fromZone, false, parameters, game, sourceLogName);
+            infoList.add(getZoneChangeInfo(card, source, parameters, fromZone, game));
+        }
+        ZonesHandler.moveCards(infoList, source, game);
+        processInfoList(parameters, game, successfulMovedCards, infoList, sourceLogName);
+    }
+
+    private void processInfoList(MoveCardsParameters parameters, Game game, Set<Card> successfulMovedCards, List<ZoneChangeInfo> infoList, String sourceLogName) {
+        for (ZoneChangeInfo info : infoList) {
+            Zone toZone = info.event.getToZone();
+            // For battlefield, get the permanent instead of the card
+            Card card;
+            if (toZone == Zone.BATTLEFIELD) {
+                card = game.getPermanent(info.event.getTargetId());
+            } else {
+                card = game.getCard(info.event.getTargetId());
             }
+            Player eventPlayer = game.getPlayer(info.event.getPlayerId());
+            Zone fromZone = info.event.getFromZone();
+            if (card == null || eventPlayer == null || fromZone == null) {
+                continue;
+            }
+            if (fromZone == Zone.BATTLEFIELD) {
+                card = card.getMainCard();
+            }
+            successfulMovedCards.add(card);
+            if (game.isSimulation()) {
+                continue;
+            }
+            boolean hideName = calculateHideName(card, fromZone, toZone);
+            logMoveInfo(eventPlayer, card, fromZone, hideName, parameters, game, sourceLogName);
+        }
+    }
+
+    /**
+     * Calculates whether the card name should be hidden in the move log message.
+     * The logic varies based on where the card is going:
+     * - Graveyard/Battlefield: always show name
+     * - Hand: hide if from library or face-down (unless from stack/battlefield)
+     * - Exile/Command: hide if face-down
+     * - Library: hide if from hand, library, or face-down (unless from stack/battlefield)
+     */
+    private boolean calculateHideName(Card card, Zone fromZone, Zone toZone) {
+        switch (toZone) {
+            case GRAVEYARD:
+            case BATTLEFIELD:
+                // Always show name when going to graveyard or battlefield
+                return false;
+            case HAND:
+                // Hide name if from library or face-down, unless from stack/battlefield
+                return !(fromZone == Zone.STACK || fromZone == Zone.BATTLEFIELD)
+                        && (fromZone == Zone.LIBRARY || card.isFaceDown());
+            case LIBRARY:
+                // Hide name if from hand, library, or face-down (unless from stack/battlefield)
+                return fromZone == Zone.HAND || fromZone == Zone.LIBRARY
+                        || (fromZone != Zone.STACK && fromZone != Zone.BATTLEFIELD && card.isFaceDown());
+            case EXILED:
+            case COMMAND:
+            default:
+                // Hide name if face-down
+                return card.isFaceDown();
         }
     }
 
@@ -5269,6 +5244,47 @@ public abstract class PlayerImpl implements Player, Serializable {
                 sb.append(sourceName);
                 game.informPlayers(sb.toString());
         }
+    }
+
+    private ZoneChangeInfo getZoneChangeInfo(Card card, Ability source, MoveCardsParameters parameters, Zone fromZone, Game game) {
+        Zone toZone = parameters.getToZone();
+        ZoneChangeEvent event;
+        Card movedCard = card;
+        if (fromZone == Zone.BATTLEFIELD && !(movedCard instanceof Permanent)) {
+            movedCard = game.getPermanent(card.getId());
+            if (movedCard == null) {
+                throw new IllegalArgumentException("Wrong code usage: Can't find permanent for card " + card.getIdName() + " moving from battlefield");
+            }
+        }
+        if (movedCard instanceof Permanent) {
+            event = new ZoneChangeEvent((Permanent) movedCard, source,
+                    parameters.isByOwner() ? movedCard.getOwnerId() : getId(), fromZone, toZone);
+        } else {
+            event = new ZoneChangeEvent(toZone != Zone.BATTLEFIELD ? movedCard.getMainCard().getId() : movedCard.getId(), source,
+                    parameters.isByOwner() ? movedCard.getOwnerId() : getId(), fromZone, toZone);
+        }
+        ZoneChangeInfo info;
+        switch (toZone) {
+            case LIBRARY:
+                info = new ZoneChangeInfo.Library(event, parameters.isFaceDown(), parameters.isToTopOfLibrary());
+                break;
+            case BATTLEFIELD:
+                info = new ZoneChangeInfo.Battlefield(event, parameters.isFaceDown(), parameters.isTapped(), source);
+                break;
+            case EXILED:
+                info = new ZoneChangeInfo.Exile(event, parameters.isFaceDown(), parameters.getExileId(), parameters.getExileName(), parameters.canLookFaceDownInExile());
+                break;
+            default:
+                info = new ZoneChangeInfo(event, parameters.isFaceDown());
+                break;
+        }
+        if (parameters.getFaceDownValues() != null) {
+            info.setFaceDownValues(parameters.getFaceDownValues());
+        }
+        if (parameters.getFaceDownType() != null) {
+            info.setFaceDownType(parameters.getFaceDownType());
+        }
+        return info;
     }
 
     @Override

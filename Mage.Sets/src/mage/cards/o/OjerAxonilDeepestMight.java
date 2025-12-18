@@ -14,7 +14,6 @@ import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.keyword.TrampleAbility;
-import mage.abilities.keyword.TransformAbility;
 import mage.abilities.mana.RedManaAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;

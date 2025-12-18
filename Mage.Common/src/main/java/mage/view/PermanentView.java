@@ -74,7 +74,7 @@ public class PermanentView extends CardView {
         } else if (isFaceDown() && showFaceDownInfo) {
             // face down card must be hidden from opponent, but shown on game end for all
             if (isToken) {
-                PermanentToken token = ((PermanentToken) permanent).getToken().copy();
+                Token token = ((PermanentToken) permanent).getToken().copy();
                 token.setFaceDown(false);
                 original = new CardView(token, null);
             } else {
@@ -82,9 +82,6 @@ public class PermanentView extends CardView {
                 cardCopy.setFaceDown(false);
                 original = new CardView(cardCopy, (Game) null);
             }
-            original = isToken
-                ? new CardView(((PermanentToken) permanent).getToken().copy(), null)
-                : new CardView(card.copy(), (Game) null);
         } else {
             // Default case where no original card is available
             original = null;

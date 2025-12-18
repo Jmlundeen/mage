@@ -115,6 +115,7 @@ public class PermanentCard extends PermanentImpl {
         if (card instanceof LevelerCard) {
             maxLevelCounters = ((LevelerCard) card).getMaxLevelCounters();
         }
+        this.saveCopiableValues(game);
     }
 
     protected PermanentCard(final PermanentCard permanent) {
