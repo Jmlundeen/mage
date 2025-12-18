@@ -1854,6 +1854,9 @@ public class VerifyCardDataTest {
             checkedNames.add(card.getName());
         } else if (ref == null && !CHECK_ONLY_ABILITIES_TEXT) {
             warn(card, "Can't find card in mtgjson to verify");
+        } else {
+            // check rarity for all versions
+            checkRarityAndBasicLands(card, ref);
         }
     }
 
@@ -3332,6 +3335,10 @@ public class VerifyCardDataTest {
 
     private void checkRarityAndBasicLands(Card card, MtgJsonCard ref) {
         if (skipListHaveName(SKIP_LIST_RARITY, card.getExpansionSetCode(), card.getName())) {
+            return;
+        }
+        if (card instanceof MeldCardHalf && ((MeldCardHalf) card).isBackSide()) {
+            // skip rarity check for meld cards
             return;
         }
 

@@ -33,8 +33,8 @@ public class ScryfallImagesDownloadTest {
         Assert.assertEquals("https://api.scryfall.com/cards/war/184★/en?format=image", urls.getBaseUrl());
 
         // direct api link
-        urls = imageSource.generateCardUrl(new CardDownloadData("Command Tower", "REX", "26b", false, 0));
-        Assert.assertEquals("https://api.scryfall.com/cards/rex/26/en?format=image&face=back", urls.getBaseUrl());
+        urls = imageSource.generateCardUrl(new CardDownloadData("Tamiyo's Journal", "SOI", "265+a", false, 0));
+        Assert.assertEquals("https://api.scryfall.com/cards/soi/265†a/en?format=image", urls.getBaseUrl());
 
         // the one ring
         Assert.assertTrue("LTR must use The One Ring with 001 number, not 0", TheLordOfTheRingsTalesOfMiddleEarth.getInstance().getSetCardInfo()
@@ -64,8 +64,8 @@ public class ScryfallImagesDownloadTest {
         Assert.assertEquals("https://api.scryfall.com/cards/war/184★/en?format=image&version=small", urls.getBaseUrl());
 
         // direct api link
-        urls = imageSourceSmall.generateCardUrl(new CardDownloadData("Command Tower", "REX", "26b", false, 0));
-        Assert.assertEquals("https://api.scryfall.com/cards/rex/26/en?format=image&version=small&face=back", urls.getBaseUrl());
+        urls = imageSourceSmall.generateCardUrl(new CardDownloadData("Tamiyo's Journal", "SOI", "265+a", false, 0));
+        Assert.assertEquals("https://api.scryfall.com/cards/soi/265†a/en?format=image&version=small", urls.getBaseUrl());
 
         // the one ring
         Assert.assertTrue("LTR must use The One Ring with 001 number, not 0", TheLordOfTheRingsTalesOfMiddleEarth.getInstance().getSetCardInfo()

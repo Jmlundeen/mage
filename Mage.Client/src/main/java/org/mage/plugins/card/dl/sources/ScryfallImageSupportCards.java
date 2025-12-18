@@ -663,8 +663,6 @@ public class ScryfallImageSupportCards {
             put("SOI/Tamiyo's Journal/265+e", "https://api.scryfall.com/cards/soi/265†e/");
 
             // normal cards
-//            put("SLD/Counterspell/99999SCTLR", "https://api.scryfall.com/cards/sld/SCTLR/"); // see issue 11157
-//            put("SLD/Viscera Seer/99999VS", "https://api.scryfall.com/cards/sld/VS/"); // see issue 11157
 
             // CALC - custom alchemy version of cards.
             put("CALC/C-Pillar of the Paruns", "https://api.scryfall.com/cards/dis/176/");
