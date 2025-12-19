@@ -1841,7 +1841,13 @@ public class VerifyCardDataTest {
     }
 
     private void check(Card card, int cardIndex, Set<String> checkedNames) {
-        String cardNumber = card.getMeldsToNumber().isEmpty() ? card.getCardNumber() : card.getMeldsToNumber();
+        String cardNumber = card.getCardNumber();
+        if (cardNumber.endsWith("b") || cardNumber.endsWith("Ph")) {
+            return; // skip "reversible card" back sides
+        }
+        if (card instanceof MeldCardHalf && ((MeldCardHalf) card).isBackSide()) {
+            cardNumber = card.getMeldsToNumber();
+        }
         MtgJsonCard ref = MtgJsonService.cardFromSet(card.getExpansionSetCode(), card.getName(), cardNumber);
         if (ref != null && !checkedNames.contains(card.getName())) {
             if ((card instanceof CardWithSpellOption || card instanceof CardWithSpellOptionHalf) && ref.layout.equals("reversible_card")) {
