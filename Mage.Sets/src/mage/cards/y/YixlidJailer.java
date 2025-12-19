@@ -70,7 +70,7 @@ class YixlidJailerEffect extends ContinuousEffectImpl {
         for (MageItem object : affectedObjects) {
             if (object instanceof Card) {
                 Card card = (Card) object;
-                card.looseAllAbilities(game);
+                card.loseAllAbilities(game);
             }
         }
     }

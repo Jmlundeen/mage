@@ -3,7 +3,7 @@ package mage.cards.s;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.effects.keyword.EarthbendTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -28,9 +28,12 @@ public final class SolidGround extends CardImpl {
         this.addAbility(ability);
 
         // If one or more +1/+1 counters would be put on a permanent you control, that many plus one +1/+1 counters are put on it instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT, CounterType.P1P1
-        )));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_PERMANENT)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setText("If one or more +1/+1 counters would be put on a permanent you control, " +
+                        "that many plus one +1/+1 counters are put on it instead.")
+        ));
     }
 
     private SolidGround(final SolidGround card) {

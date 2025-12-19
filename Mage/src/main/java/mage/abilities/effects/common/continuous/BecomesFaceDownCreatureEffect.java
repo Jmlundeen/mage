@@ -195,7 +195,7 @@ public class BecomesFaceDownCreatureEffect extends ContinuousEffectImpl {
         } else {
             permanent = game.getPermanent(source.getSourceId());
         }
-        if (permanent != null && permanent.isFaceDown(game)) {
+        if (permanent != null && permanent.isFaceDown()) {
             affectedObjects.add(permanent);
         }
         if (affectedObjects.isEmpty()) {

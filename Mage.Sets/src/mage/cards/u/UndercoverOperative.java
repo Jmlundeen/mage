@@ -56,7 +56,7 @@ class UndercoverOperativeApplier extends CopyApplier {
 
     @Override
     public boolean apply(Game game, MageObject blueprint, Ability source, UUID copyToObjectId) {
-        if (!isCopyOfCopy(source, blueprint, copyToObjectId)
+        if (!blueprint.isCopy()
                 && ((Permanent) blueprint).isControlledBy(source.getControllerId())) {
             blueprint.getAbilities().add(new EntersBattlefieldAbility(
                     new AddCountersSourceEffect(CounterType.SHIELD.createInstance(), false)

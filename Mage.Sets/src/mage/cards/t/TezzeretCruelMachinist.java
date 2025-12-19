@@ -1,27 +1,22 @@
 package mage.cards.t;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.continuous.AddCardTypeTargetEffect;
-import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.effects.common.continuous.SetBasePowerToughnessTargetEffect;
 import mage.cards.*;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.MoveCardsParameters;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInHand;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -91,60 +86,16 @@ class TezzeretCruelMachinistEffect extends OneShotEffect {
         if (cardsToMove.isEmpty()) {
             return false;
         }
-        for (Card card : cardsToMove.getCards(game)) {
-            BecomesFaceDownCreatureEffect.makeFaceDownObject(card, BecomesFaceDownCreatureEffect.FaceDownType.MANUAL, null);
-            card.getFaceDownValues().getCardType().add(CardType.ARTIFACT);
-            card.getFaceDownValues().setPower(new MageInt(5));
-            card.getFaceDownValues().setToughness(new MageInt(5));
-        }
+        CopiableValues faceDownValues = new CopiableValues(true);
+        faceDownValues.getCardType().add(CardType.ARTIFACT);
+        faceDownValues.getCardType().add(CardType.CREATURE);
+        faceDownValues.setPower(new MageInt(5));
+        faceDownValues.setToughness(new MageInt(5));
         MoveCardsParameters parameters = new MoveCardsParameters(cardsToMove.getCards(game), Zone.BATTLEFIELD)
+                .setFaceDownValues(faceDownValues)
                 .setFaceDown(true)
                 .setByOwner(true);
         player.moveCards(parameters, source, game);
         return true;
-    }
-}
-
-class TezzeretCruelMachinistCardTypeEffect extends ContinuousEffectImpl {
-
-    TezzeretCruelMachinistCardTypeEffect() {
-        super(Duration.Custom, Layer.CopyEffects_1, SubLayer.FaceDownEffects_1b, Outcome.Neutral);
-    }
-
-    private TezzeretCruelMachinistCardTypeEffect(final TezzeretCruelMachinistCardTypeEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public TezzeretCruelMachinistCardTypeEffect copy() {
-        return new TezzeretCruelMachinistCardTypeEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            permanent.removeAllSuperTypes(game);
-            permanent.removeAllCardTypes(game);
-            permanent.removeAllSubTypes(game);
-            permanent.addCardType(game, CardType.ARTIFACT, CardType.CREATURE);
-            permanent.getPower().setModifiedBaseValue(5);
-            permanent.getToughness().setModifiedBaseValue(5);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (UUID targetId : getTargetPointer().getTargets(game, source)) {
-            Permanent target = game.getPermanent(targetId);
-            if (target == null || !target.isFaceDown(game)) {
-                continue;
-            }
-            affectedObjects.add(target);
-        }
-        if (affectedObjects.isEmpty()) {
-            discard();
-        }
-        return !affectedObjects.isEmpty();
     }
 }

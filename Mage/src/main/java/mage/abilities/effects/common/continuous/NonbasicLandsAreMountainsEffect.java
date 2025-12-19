@@ -1,17 +1,27 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.mana.RedManaAbility;
 import mage.constants.*;
-import mage.filter.StaticFilters;
+import mage.filter.common.FilterLandPermanent;
+import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author LevelX2
  */
 public class NonbasicLandsAreMountainsEffect extends ContinuousEffectImpl {
+
+    private static final FilterLandPermanent filter = new FilterLandPermanent();
+
+    static {
+        filter.add(Predicates.not(SuperType.BASIC.getPredicate()));
+    }
 
     public NonbasicLandsAreMountainsEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
@@ -30,8 +40,9 @@ public class NonbasicLandsAreMountainsEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent land : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_LANDS_NONBASIC, source.getControllerId(), game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent land = (Permanent) object;
             // 305.7 Note that this doesn't remove any abilities that were granted to the land by other effects
             // So the ability removing has to be done before Layer 6
             // Lands have their mana ability intrinsically, so that is added in layer 4
@@ -40,6 +51,11 @@ public class NonbasicLandsAreMountainsEffect extends ContinuousEffectImpl {
             land.removeAllAbilities(source.getSourceId(), game);
             land.addAbility(new RedManaAbility(), source.getSourceId(), game);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 }
