@@ -1,5 +1,6 @@
 package mage.cards.a;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
@@ -27,6 +28,7 @@ import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanent;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -141,18 +143,25 @@ class UnboostCreaturesDefendingPlayerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            int unboostCount = -1 * new CountersSourceCount(CounterType.P1P1).calculate(game, source, this);
+            permanent.addPower(unboostCount);
+            permanent.addToughness(unboostCount);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
             Permanent permanent = it.next().getPermanent(game);
             if (permanent != null) {
-                int unboostCount = -1 * new CountersSourceCount(CounterType.P1P1).calculate(game, source, this);
-                permanent.addPower(unboostCount);
-                permanent.addToughness(unboostCount);
+                affectedObjects.add(permanent);
             } else {
                 it.remove();
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }
-

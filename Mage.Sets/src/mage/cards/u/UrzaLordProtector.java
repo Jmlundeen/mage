@@ -1,5 +1,6 @@
 package mage.cards.u;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
@@ -25,6 +26,7 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.SoldierArtifactToken;
 import mage.target.common.TargetNonlandPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -123,7 +125,7 @@ class UrzaPlaneswalkerEffect extends ContinuousEffectImpl {
 
     UrzaPlaneswalkerEffect() {
         super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
-        staticText = "you may activate the loyalty abilities of {this} twice each turn rather than only once";
+        staticText = "once during each of your turns, you may activate an additional loyalty ability of {this}";
     }
 
     private UrzaPlaneswalkerEffect(final UrzaPlaneswalkerEffect effect) {
@@ -136,13 +138,20 @@ class UrzaPlaneswalkerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).setLoyaltyActivationsAvailable(2);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        } else {
             return false;
         }
-
-        permanent.setLoyaltyActivationsAvailable(2);
-        return true;
     }
 }

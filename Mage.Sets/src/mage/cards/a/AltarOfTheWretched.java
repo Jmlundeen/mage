@@ -1,5 +1,6 @@
 package mage.cards.a;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -24,8 +25,8 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -146,9 +147,27 @@ enum WretchedBonemassDynamicValue implements DynamicValue {
 
 class WretchedBonemassGainAbilityEffect extends ContinuousEffectImpl {
 
+    private static final Set<Class<? extends Ability>> KEYWORD_ABILITIES = new HashSet<>(Arrays.asList(
+            FlyingAbility.class,
+            FirstStrikeAbility.class,
+            DoubleStrikeAbility.class,
+            DeathtouchAbility.class,
+            HasteAbility.class,
+            HexproofBaseAbility.class,
+            IndestructibleAbility.class,
+            LifelinkAbility.class,
+            MenaceAbility.class,
+            ProtectionAbility.class,
+            ReachAbility.class,
+            TrampleAbility.class,
+            VigilanceAbility.class
+    ));
+
     WretchedBonemassGainAbilityEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has flying as long as an exiled card used to craft it has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, and vigilance.";
+        staticText = "{this} has flying as long as an exiled card used to craft it has flying. " +
+                "The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, " +
+                "lifelink, menace, protection, reach, trample, and vigilance.";
     }
 
     private WretchedBonemassGainAbilityEffect(final WretchedBonemassGainAbilityEffect effect) {
@@ -161,65 +180,35 @@ class WretchedBonemassGainAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent wretchedBonemass = source.getSourcePermanentIfItStillExists(game);
-        if (wretchedBonemass != null) {
-            ExileZone exileZone = game
-                    .getExile()
-                    .getExileZone(CardUtil.getExileZoneId(
-                            game, wretchedBonemass.getMainCard().getId(), wretchedBonemass.getZoneChangeCounter(game) - 1
-                    ));
-            if (exileZone != null
-                    && !exileZone.isEmpty()) {
-                Set<Card> cardsInExile = exileZone.getCards(game);
-                for (Card card : cardsInExile) {
-                    for (Ability a : card.getAbilities()) {
-                        if (a instanceof FlyingAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof FirstStrikeAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof DoubleStrikeAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof DeathtouchAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof HasteAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof HexproofAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof IndestructibleAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof LifelinkAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof MenaceAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof ProtectionAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof IndestructibleAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof ReachAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof TrampleAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                        if (a instanceof VigilanceAbility) {
-                            wretchedBonemass.addAbility(a, source.getSourceId(), game);
-                        }
-                    }
-                }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Set<Ability> abilities = game.getExile()
+                .getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId()) - 2))
+                .getCards(game)
+                .stream()
+                .map(card -> card.getAbilities(game))
+                .flatMap(Collection::stream)
+                .filter(ability -> KEYWORD_ABILITIES.stream()
+                        .anyMatch(aClass -> aClass.isAssignableFrom(ability.getClass())))
+                .collect(Collectors.toSet());
+        for (MageItem object : affectedObjects) {
+            for (Ability ability : abilities) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game);
             }
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
+        if (sourcePermanent == null) {
+            return false;
+        }
+        ExileZone exileZone = game.getExile()
+                .getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), sourcePermanent.getZoneChangeCounter(game) - 1));
+        if (exileZone == null) {
+            return false;
+        }
+        affectedObjects.add(sourcePermanent);
         return true;
     }
 }

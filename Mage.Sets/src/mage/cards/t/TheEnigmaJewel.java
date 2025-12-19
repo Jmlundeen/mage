@@ -1,6 +1,9 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.MageObject;
+import mage.abilities.Abilities;
+import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbility;
 import mage.abilities.common.ActivateAbilityTriggeredAbility;
@@ -24,6 +27,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -85,7 +89,7 @@ enum TheEnigmaJewelPredicate implements Predicate<MageObject> {
                 && input instanceof Card
                 && ((Card) input).getAbilities(game)
                 .stream()
-                .anyMatch(a -> (a.isActivatedAbility()));
+                .anyMatch(Ability::isActivatedAbility);
     }
 }
 
@@ -107,27 +111,45 @@ class LocusOfEnlightenmentEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        ExileZone exileZone = game
+                .getExile()
+                .getExileZone(CardUtil.getExileZoneId(
+                        game, source.getSourceId(), source.getSourceObject(game).getZoneChangeCounter(game) - 2
+                ));
+        Abilities<Ability> abilities = new AbilitiesImpl<>();
+        for (Card card : exileZone.getCards(game)) {
+            for (Ability ability : card.getAbilities(game)) {
+                if (ability.isActivatedAbility()) {
+                    ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
+                    copyAbility.setMaxActivationsPerTurn(1);
+                    abilities.add(copyAbility);
+                }
+            }
+        }
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability ability : abilities) {
+                permanent.addAbility(ability, source.getSourceId(), game, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             return false;
         }
         ExileZone exileZone = game
                 .getExile()
-                .getExileZone(CardUtil.getExileZoneId(game, permanent.getMainCard().getId(),
-                        permanent.getMainCard().getZoneChangeCounter(game) - 1));
+                .getExileZone(CardUtil.getExileZoneId(
+                        game, permanent.getId(), permanent.getZoneChangeCounter(game) - 1
+                ));
         if (exileZone == null) {
             return false;
         }
-        for (Card card : exileZone.getCards(game)) {
-            for (Ability ability : card.getAbilities(game)) {
-                if (ability.isActivatedAbility()) {
-                    ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
-                    copyAbility.setMaxActivationsPerTurn(1);
-                    permanent.addAbility(copyAbility, source.getSourceId(), game, true);
-                }
-            }
-        }
+        affectedObjects.add(permanent);
         return true;
     }
 }

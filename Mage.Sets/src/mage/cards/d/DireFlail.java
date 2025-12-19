@@ -1,5 +1,6 @@
 package mage.cards.d;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -25,6 +26,7 @@ import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -98,13 +100,23 @@ class DireBlunderbussGainAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            Ability ability = makeAbility(game, source);
+            ability.getEffects().setValue("attachedPermanent", game.getPermanent(source.getSourceId()));
+            permanent.addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = null;
         if (getAffectedObjectsSet()) {
             permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
             if (permanent == null) {
                 discard();
-                return true;
+                return false;
             }
         } else {
             Permanent equipment = game.getPermanent(source.getSourceId());
@@ -113,20 +125,23 @@ class DireBlunderbussGainAbilityEffect extends ContinuousEffectImpl {
             }
         }
         if (permanent == null) {
-            return true;
+            return false;
         }
+        affectedObjects.add(permanent);
+        return true;
+    }
+
+    protected Ability makeAbility(Game game, Ability source) {
         ReflexiveTriggeredAbility reflexive = new ReflexiveTriggeredAbility(
                 new DamageWithPowerFromSourceToAnotherTargetEffect("this creature"), false
         );
         reflexive.addTarget(new TargetCreaturePermanent());
-        Ability grant = new AttacksTriggeredAbility(
+        return new AttacksTriggeredAbility(
                 new DoWhenCostPaid(
                         reflexive, new DireBlunderbussSacrificeCost(source, game),
                         "Sacrifice an artifact other than the equipment?"
                 ), false
         );
-        permanent.addAbility(grant, source.getSourceId(), game);
-        return true;
     }
 }
 

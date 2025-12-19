@@ -16,7 +16,8 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.TransformSourceEffect;
-import mage.abilities.effects.common.counter.AddCounterEnteringCreatureEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.mana.BlackManaAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
@@ -31,13 +32,12 @@ import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
 import mage.target.targetpointer.FixedTarget;
+import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
 import mage.util.SubTypes;
 import mage.watchers.Watcher;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  *
@@ -165,11 +165,14 @@ class TheTombOfAclazotzWatcher extends Watcher {
             Spell target = game.getSpell(event.getTargetId());
             Card card = target.getCard();
             if (card != null) {
-                game.getState().addEffect(new AddCounterEnteringCreatureEffect(new MageObjectReference(target.getCard(), game),
-                                CounterType.FINALITY.createInstance(), Outcome.Neutral),
+                game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.SOURCE, CounterType.FINALITY.createInstance()),
                         target.getSpellAbility());
-                game.getState().addEffect(new AddSubtypeEnteringCreatureEffect(new MageObjectReference(target.getCard(), game), SubType.VAMPIRE, Outcome.Benefit), card.getSpellAbility());
-                // Rule 728.2 we must insure the effect is used (creature is cast successfully) before discarding the play effect
+                List<MageObjectReference> mors = new ArrayList<>();
+                mors.add(new MageObjectReference(target.getCard(), game));
+                mors.add(new MageObjectReference(target.getCard(), game, 1)); // for the permanent on the battlefield
+                game.addEffect(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.Neutral)
+                        .withAddedSubTypes(false, SubType.VAMPIRE)
+                        .setTargetPointer(new FixedTargets(mors)), card.getSpellAbility());                // Rule 728.2 we must insure the effect is used (creature is cast successfully) before discarding the play effect
                 UUID playEffectId = this.getPlayFromAnywhereEffect();
                 if (playEffectId != null
                         && game.getContinuousEffects().getApplicableAsThoughEffects(AsThoughEffectType.CAST_FROM_NOT_OWN_HAND_ZONE, game).listIterator().next().getId().equals(playEffectId)) {

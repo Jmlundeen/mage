@@ -6,7 +6,6 @@ import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.condition.Condition;
@@ -19,8 +18,8 @@ import mage.abilities.effects.common.DamageControllerEffect;
 import mage.abilities.effects.common.DamageMultiEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.ExileAndReturnSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.hint.ConditionHint;
 import mage.abilities.hint.Hint;
 import mage.cards.Card;
@@ -80,9 +79,8 @@ public final class RalMonsoonMage extends TransformingDoubleFacedCard {
         this.getRightHalfCard().setStartingLoyalty(2);
 
         // Ral, Leyline Prodigy enters the battlefield with an additional loyalty counter on him for each instant and sorcery spell you've cast this turn.
-        this.getRightHalfCard().addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.LOYALTY.createInstance(), InstantAndSorceryCastThisTurn.YOU,
-                        false)
+        this.getRightHalfCard().addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.LOYALTY, InstantAndSorceryCastThisTurn.YOU)
                         .setText("with an additional loyalty counter on him for each instant and sorcery spell you've cast this turn"))
                 .addHint(InstantAndSorceryCastThisTurn.YOU.getHint())
         );
