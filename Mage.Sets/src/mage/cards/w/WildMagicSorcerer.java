@@ -1,12 +1,14 @@
 package mage.cards.w;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.keyword.CascadeAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -18,6 +20,7 @@ import mage.players.Player;
 import mage.watchers.Watcher;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -69,7 +72,15 @@ class WildMagicSorcererGainCascadeFirstSpellCastFromExileEffect extends Continuo
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, cascadeAbility);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         WildMagicSorcererWatcher watcher = game.getState().getWatcher(WildMagicSorcererWatcher.class);
         if (controller == null || watcher == null) {
@@ -84,11 +95,11 @@ class WildMagicSorcererGainCascadeFirstSpellCastFromExileEffect extends Continuo
                 Spell spell = (Spell) stackObject;
 
                 if (FirstSpellCastFromExileEachTurnCondition.instance.apply(game, source)) {
-                    game.getState().addOtherAbility(spell.getCard(), cascadeAbility);
+                    affectedObjects.add(spell.getCard());
                 }
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }
 

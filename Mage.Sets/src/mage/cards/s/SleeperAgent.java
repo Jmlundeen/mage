@@ -1,24 +1,22 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.DamageControllerEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetOpponent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -68,13 +66,21 @@ class SleeperAgentChangeControlEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).changeControllerId(source.getFirstTarget(), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent != null) {
-            return permanent.changeControllerId(source.getFirstTarget(), game, source);
+            affectedObjects.add(permanent);
+            return true;
         } else {
             discard();
+            return false;
         }
-        return false;
     }
 }

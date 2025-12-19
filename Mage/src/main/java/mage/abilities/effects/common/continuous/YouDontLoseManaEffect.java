@@ -1,10 +1,13 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
 
 /**
  * @author TheElk801
@@ -35,10 +38,19 @@ public class YouDontLoseManaEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
+            player.getManaPool().addDoNotEmptyManaType(manaType);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player != null) {
-            player.getManaPool().addDoNotEmptyManaType(manaType);
+            affectedObjects.add(player);
+            return true;
         }
         return false;
     }

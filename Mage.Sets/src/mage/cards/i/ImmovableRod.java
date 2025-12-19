@@ -1,5 +1,6 @@
 package mage.cards.i;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SkipUntapOptionalAbility;
@@ -18,6 +19,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -65,14 +67,22 @@ class ImmovableRodAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeAllAbilities(source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent sourcePermanent = source.getSourcePermanentIfItStillExists(game);
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (sourcePermanent == null || !sourcePermanent.isTapped() || permanent == null) {
             discard();
             return false;
         }
-        permanent.removeAllAbilities(source.getSourceId(), game);
+        affectedObjects.add(permanent);
         return true;
     }
 

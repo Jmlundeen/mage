@@ -1,7 +1,7 @@
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldThisOrAnotherTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -10,14 +10,9 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.continuous.BoostEquippedEffect;
 import mage.abilities.keyword.EquipAbility;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.SubType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterControlledPermanent;
@@ -25,6 +20,10 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.TreasureToken;
 import mage.target.TargetPermanent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Gemcutter Buccaneer {3}{R}
@@ -90,29 +89,45 @@ class GemcutterBuccaneerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                treasureFilter, source.getControllerId(), source, game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
             switch (layer) {
                 case TypeChangingEffects_4:
-                    permanent.addSubType(game, SubType.EQUIPMENT);
+                    ((Permanent) object).addSubType(game, SubType.EQUIPMENT);
                     break;
                 case AbilityAddingRemovingEffects_6:
-                    permanent.addAbility(new SimpleStaticAbility(
+                    ((Permanent) object).addAbility(new SimpleStaticAbility(
                             new BoostEquippedEffect(2, 0)
                     ), source.getSourceId(), game);
-                    permanent.addAbility(new EquipAbility(
+                    ((Permanent) object).addAbility(new EquipAbility(
                             Outcome.BoostCreature, new GenericManaCost(1), new TargetPermanent(pirateFilter), false
                     ), source.getSourceId(), game);
-                    permanent.addAbility(new EquipAbility(3), source.getSourceId(), game);
+                    ((Permanent) object).addAbility(new EquipAbility(3), source.getSourceId(), game);
                     break;
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(treasureFilter, source.getControllerId(), source, game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (this.queryAffectedObjects(layer, source, game, affectedObjects)) {
+            this.applyToObjects(layer, sublayer, source, game, affectedObjects);
+            return true;
+        }
         return false;
     }
 

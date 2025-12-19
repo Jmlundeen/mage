@@ -1,7 +1,6 @@
 package mage.cards.g;
 
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.GainLifeFirstTimeTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,14 +13,18 @@ import mage.abilities.effects.common.counter.AddCountersAllEffect;
 import mage.abilities.keyword.ClassLevelAbility;
 import mage.abilities.keyword.ClassReminderAbility;
 import mage.abilities.token.FoodAbility;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.RaccoonToken;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -87,11 +90,9 @@ class GourmandsTalentEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACT, source.getControllerId(), source, game)) {
-            if (permanent.getId().equals(source.getSourceId())) {
-                continue;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     permanent.addSubType(game, SubType.FOOD);
@@ -101,11 +102,26 @@ class GourmandsTalentEffect extends ContinuousEffectImpl {
                     break;
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Permanent permanent : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACT, source.getControllerId(), source, game)) {
+            if (permanent.getId().equals(source.getSourceId())) {
+                continue;
+            }
+            affectedObjects.add(permanent);
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (this.queryAffectedObjects(layer, source, game, affectedObjects)) {
+            this.applyToObjects(layer, sublayer, source, game, affectedObjects);
+            return true;
+        }
         return false;
     }
 

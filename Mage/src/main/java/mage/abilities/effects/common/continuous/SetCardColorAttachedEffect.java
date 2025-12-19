@@ -1,12 +1,15 @@
 
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author nantuko
@@ -30,16 +33,24 @@ public class SetCardColorAttachedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent equipment = game.getPermanent(source.getSourceId());
-        if (equipment != null && equipment.getAttachedTo() != null) {
-            Permanent target = game.getPermanent(equipment.getAttachedTo());
-            if (target != null) {
-                target.getColor(game).setColor(setColor);
-                return true;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).getColor(game).setColor(setColor);
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent equipment = game.getPermanent(source.getSourceId());
+        if (equipment == null || equipment.getAttachedTo() == null) {
+            return false;
+        }
+        Permanent target = game.getPermanent(equipment.getAttachedTo());
+        if (target == null) {
+            return false;
+        }
+        affectedObjects.add(target);
+        return true;
     }
 
     @Override

@@ -1,17 +1,14 @@
 package mage.cards.c;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.SubType;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
-import mage.util.CardUtil;
+import mage.filter.StaticFilters;
 
 import java.util.UUID;
 
@@ -37,7 +34,12 @@ public final class CorpsejackMenace extends CardImpl {
         this.toughness = new MageInt(4);
 
         // If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on it instead.
-        this.addAbility(new SimpleStaticAbility(new CorpsejackMenaceReplacementEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.MULTIPLY, 2)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_CREATURE)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setText("If one or more +1/+1 counters would be put on a creature you control, " +
+                        "twice that many +1/+1 counters are put on it instead")
+        ));
 
     }
 
@@ -48,46 +50,5 @@ public final class CorpsejackMenace extends CardImpl {
     @Override
     public CorpsejackMenace copy() {
         return new CorpsejackMenace(this);
-    }
-}
-
-class CorpsejackMenaceReplacementEffect extends ReplacementEffectImpl {
-
-    CorpsejackMenaceReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.BoostCreature, false);
-        staticText = "If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on it instead";
-    }
-
-    private CorpsejackMenaceReplacementEffect(final CorpsejackMenaceReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        event.setAmountForCounters(CardUtil.overflowMultiply(event.getAmount(), 2), true);
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        if (event.getData().equals(CounterType.P1P1.getName()) && event.getAmount() > 0) {
-            Permanent permanent = game.getPermanent(event.getTargetId());
-            if (permanent == null) {
-                permanent = game.getPermanentEntering(event.getTargetId());
-            }
-            return permanent != null && permanent.isControlledBy(source.getControllerId())
-                    && permanent.isCreature(game);
-        }
-        return false;
-    }
-
-    @Override
-    public CorpsejackMenaceReplacementEffect copy() {
-        return new CorpsejackMenaceReplacementEffect(this);
     }
 }

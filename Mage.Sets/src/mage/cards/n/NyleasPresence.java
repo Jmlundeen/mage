@@ -1,5 +1,6 @@
 package mage.cards.n;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -16,6 +17,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetLandPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,6 +55,14 @@ public final class NyleasPresence extends CardImpl {
 
 class NyleasPresenceLandTypeEffect extends ContinuousEffectImpl {
 
+    private static final Ability[] basicManaAbilities = {
+            new WhiteManaAbility(),
+            new BlueManaAbility(),
+            new BlackManaAbility(),
+            new RedManaAbility(),
+            new GreenManaAbility()
+    };
+
     NyleasPresenceLandTypeEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         this.staticText = "Enchanted land is every basic land type in addition to its other types";
@@ -73,21 +83,36 @@ class NyleasPresenceLandTypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            // Optimization: Remove basic mana abilities since they are redundant with AnyColorManaAbility
+            //               and keeping them will only produce too many combinations inside ManaOptions
+            for (Ability basicManaAbility : basicManaAbilities) {
+                if (permanent.getAbilities(game).containsRule(basicManaAbility)) {
+                    permanent.removeAbility(basicManaAbility, source.getSourceId(), game);
+                }
+            }
+            // Add the {T}: Add one mana of any color ability
+            // This is functionally equivalent to having five "{T}: Add {COLOR}" for each COLOR in {W}{U}{B}{R}{G}
+            AnyColorManaAbility ability = new AnyColorManaAbility();
+            if (!permanent.getAbilities(game).containsRule(ability)) {
+                permanent.addAbility(ability, source.getSourceId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent enchantment = game.getPermanent(source.getSourceId());
         if (enchantment == null || enchantment.getAttachedTo() == null) {
-            return true;
+            return false;
         }
         Permanent land = game.getPermanent(enchantment.getAttachedTo());
         if (land == null) {
-            return true;
+            return false;
         }
-        land.addSubType(game,SubType.getBasicLands());
-        land.addAbility(new WhiteManaAbility(), source.getSourceId(), game);
-        land.addAbility(new BlueManaAbility(), source.getSourceId(), game);
-        land.addAbility(new BlackManaAbility(), source.getSourceId(), game);
-        land.addAbility(new RedManaAbility(), source.getSourceId(), game);
-        land.addAbility(new GreenManaAbility(), source.getSourceId(), game);
+        affectedObjects.add(land);
         return true;
     }
 }

@@ -1,8 +1,8 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.TurnedFaceUpSourceTriggeredAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -10,16 +10,14 @@ import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.keyword.MorphAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -87,11 +85,18 @@ class ShaperParasiteEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addPower(power);
+            ((Permanent) object).addToughness(toughness);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent target = game.getPermanent(source.getFirstTarget());
         if (target != null) {
-            target.addPower(power);
-            target.addToughness(toughness);
+            affectedObjects.add(target);
             return true;
         }
         return false;

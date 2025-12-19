@@ -1,6 +1,6 @@
 package mage.cards.o;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -12,6 +12,9 @@ import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -69,9 +72,9 @@ public final class Opalescence extends CardImpl {
         }
 
         @Override
-        public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, 
-                    source.getControllerId(), source, game)) {
+        public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+            for (MageItem object : affectedObjects) {
+                Permanent permanent = (Permanent) object;
                 switch (layer) {
                     case TypeChangingEffects_4:
                         if (sublayer == SubLayer.NA) {
@@ -88,20 +91,31 @@ public final class Opalescence extends CardImpl {
                             permanent.getToughness().setModifiedBaseValue(manaCost);
                         }
                 }
-
             }
-            return true;
         }
 
         @Override
-        public boolean apply(Game game, Ability source) {
-            return false;
+        public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+            if (!source.getAffectedObjects().isEmpty()) {
+                affectedObjects.addAll(source.getAffectedObjects());
+            } else {
+                for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                    affectedObjects.add(permanent);
+                    source.getAffectedObjects().add(permanent);
+                }
+            }
+            return !affectedObjects.isEmpty();
         }
 
         @Override
         public boolean hasLayer(Layer layer) {
             return layer == Layer.PTChangingEffects_7
                     || layer == Layer.TypeChangingEffects_4;
+        }
+
+        @Override
+        public boolean hasSubLayer(SubLayer sublayer) {
+            return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
         }
     }
 }

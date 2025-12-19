@@ -1,27 +1,23 @@
 
 package mage.cards.h;
 
-import java.util.Iterator;
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.Mode;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.keyword.LandwalkAbility;
 import mage.abilities.mana.RedManaAbility;
-import mage.constants.SuperType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -70,16 +66,21 @@ class HammerheimEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            List<Ability> toRemove = permanent.getAbilities().stream()
+                    .filter(ab -> ab instanceof LandwalkAbility).collect(Collectors.toList());
+            toRemove.forEach(ability -> permanent.removeAbility(ability, source.getSourceId(), game));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent != null) {
-            for (Iterator<Ability> iter = permanent.getAbilities().iterator(); iter.hasNext();) {
-                Ability ab = iter.next();
-                if (ab instanceof LandwalkAbility) {
-                    iter.remove();
-                }
-            }
+            affectedObjects.add(permanent);
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

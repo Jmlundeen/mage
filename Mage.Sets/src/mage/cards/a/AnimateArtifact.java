@@ -1,7 +1,7 @@
 
 package mage.cards.a;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -17,6 +17,9 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetArtifactPermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -57,6 +60,8 @@ public final class AnimateArtifact extends CardImpl {
 
 class AnimateArtifactContinuousEffect extends ContinuousEffectImpl {
 
+    private boolean addedCreatureType = false;
+
     AnimateArtifactContinuousEffect(Duration duration) {
         super(duration, Outcome.Benefit);
         staticText = "As long as enchanted artifact isn't a creature, it's an artifact creature with power and toughness each equal to its mana value";
@@ -64,6 +69,7 @@ class AnimateArtifactContinuousEffect extends ContinuousEffectImpl {
 
     private AnimateArtifactContinuousEffect(final AnimateArtifactContinuousEffect effect) {
         super(effect);
+        this.addedCreatureType = effect.addedCreatureType;
     }
 
     @Override
@@ -72,34 +78,53 @@ class AnimateArtifactContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        // Not sure, if this is layerwise handled absolutely correctly
-        Permanent enchantment = game.getPermanent(source.getSourceId());
-        if (enchantment == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addCardType(game, CardType.CREATURE);
+                    this.addedCreatureType = true;
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer != SubLayer.SetPT_7b) {
+                        continue;
+                    }
+                    permanent.getPower().setModifiedBaseValue(permanent.getManaValue());
+                    permanent.getToughness().setModifiedBaseValue(permanent.getManaValue());
+                    this.addedCreatureType = false;
+            }
         }
-        Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
-        if (permanent == null || permanent.isCreature(game)) {
-            return false;
-        }
-        if (sublayer != SubLayer.NA) {
-            return false;
-        }
-
-        permanent.addCardType(game, CardType.CREATURE);
-        permanent.getPower().setModifiedBaseValue(permanent.getManaValue());
-        permanent.getToughness().setModifiedBaseValue(permanent.getManaValue());
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            Permanent enchantment = game.getPermanent(source.getSourceId());
+            if (enchantment == null) {
+                return false;
+            }
+            Permanent permanent = game.getPermanent(enchantment.getAttachedTo());
+            if (permanent == null || (permanent.isCreature(game) && !this.addedCreatureType)) {
+                return false;
+            }
+            affectedObjects.add(permanent);
+            source.getAffectedObjects().add(permanent);
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
     public boolean hasLayer(Layer layer) {
-        return layer == Layer.TypeChangingEffects_4;
+        return layer == Layer.TypeChangingEffects_4 ||
+                layer == Layer.PTChangingEffects_7;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA ||
+                sublayer == SubLayer.SetPT_7b;
+    }
 }

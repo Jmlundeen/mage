@@ -1,7 +1,7 @@
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SkipUntapOptionalAbility;
@@ -17,6 +17,9 @@ import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -89,13 +92,19 @@ class HisokasGuardGainAbilityTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent hisokasGuard = game.getPermanent(source.getSourceId());
         if (hisokasGuard != null && !hisokasGuard.getConnectedCards("HisokasGuard").isEmpty()) {
             Permanent guardedCreature = game.getPermanent(hisokasGuard.getConnectedCards("HisokasGuard").get(0));
             if (guardedCreature != null && hisokasGuard.isTapped()) {
-                guardedCreature.addAbility(ability, source.getSourceId(), game);
-                return true;
+                affectedObjects.add(guardedCreature);
             } else {
                 // if guard isn't tapped, the effect is no more valid
                 if (!hisokasGuard.isTapped()) {
@@ -103,7 +112,6 @@ class HisokasGuardGainAbilityTargetEffect extends ContinuousEffectImpl {
                 }
             }
         }
-        return false;
+        return !affectedObjects.isEmpty();
     }
-
 }

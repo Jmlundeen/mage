@@ -1,18 +1,23 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.keyword.ProtectionAbility;
 import mage.choices.ChoiceColor;
 import mage.constants.Duration;
+import mage.constants.Layer;
 import mage.constants.Outcome;
+import mage.constants.SubLayer;
 import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.List;
 
 /**
  * @author LoneFox
@@ -37,12 +42,8 @@ public class GainProtectionFromColorAllEffect extends GainAbilityAllEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        FilterCard protectionFilter = (FilterCard) ((ProtectionAbility) ability).getFilter();
-        protectionFilter.add(new ColorPredicate(choice.getColor()));
-        protectionFilter.setMessage(choice.getChoice());
-        ((ProtectionAbility) ability).setFilter(protectionFilter);
-        return super.apply(game, source);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        super.applyToObjects(layer, sublayer, source, game, affectedObjects);
     }
 
     @Override
@@ -55,6 +56,10 @@ public class GainProtectionFromColorAllEffect extends GainAbilityAllEffect {
                 discard();
                 return;
             }
+            FilterCard protectionFilter = (FilterCard) ((ProtectionAbility) ability).getFilter();
+            protectionFilter.add(new ColorPredicate(choice.getColor()));
+            protectionFilter.setMessage(choice.getChoice());
+            ((ProtectionAbility) ability).setFilter(protectionFilter);
             game.informPlayers(sourceObject.getLogName() + ": " + controller.getLogName() + " has chosen protection from " + choice.getChoice());
         }
     }

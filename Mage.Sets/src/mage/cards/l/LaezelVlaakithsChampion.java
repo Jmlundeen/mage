@@ -1,17 +1,18 @@
 package mage.cards.l;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.common.ChooseABackgroundAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
-import mage.util.CardUtil;
+import mage.constants.CardType;
+import mage.constants.SubType;
+import mage.constants.SuperType;
+import mage.constants.TargetController;
+import mage.filter.FilterPermanent;
+import mage.filter.common.FilterControlledPermanent;
+import mage.filter.predicate.Predicates;
 
 import java.util.UUID;
 
@@ -19,6 +20,15 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class LaezelVlaakithsChampion extends CardImpl {
+
+    private static final FilterPermanent filter = new FilterControlledPermanent("creature or planeswalker you control");
+
+    static {
+        filter.add(Predicates.or(
+                CardType.CREATURE.getPredicate(),
+                CardType.PLANESWALKER.getPredicate()
+        ));
+    }
 
     public LaezelVlaakithsChampion(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{2}{W}");
@@ -30,7 +40,13 @@ public final class LaezelVlaakithsChampion extends CardImpl {
         this.toughness = new MageInt(3);
 
         // If you would put one or more counters on a creature or planeswalker you control or on yourself, put that many plus one of each of those kinds of counters on that permanent or player instead.
-        this.addAbility(new SimpleStaticAbility(new LaezelVlaakithsChampionEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setEventController(TargetController.YOU)
+                .setValidPlayerTarget(TargetController.YOU)
+                .setPermanentFilter(filter)
+                .setText("if you would put one or more counters on a creature or planeswalker you control or on yourself, " +
+                        "put that many plus one of each of those kinds of counters on that permanent or player instead")
+        ));
 
         // Choose a Background
         this.addAbility(ChooseABackgroundAbility.getInstance());
@@ -43,51 +59,5 @@ public final class LaezelVlaakithsChampion extends CardImpl {
     @Override
     public LaezelVlaakithsChampion copy() {
         return new LaezelVlaakithsChampion(this);
-    }
-}
-
-class LaezelVlaakithsChampionEffect extends ReplacementEffectImpl {
-
-    LaezelVlaakithsChampionEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.BoostCreature, false);
-        staticText = "if you would put one or more counters on a creature or planeswalker you control or on yourself, " +
-                "put that many plus one of each of those kinds of counters on that permanent or player instead";
-    }
-
-    private LaezelVlaakithsChampionEffect(final LaezelVlaakithsChampionEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        event.setAmountForCounters(CardUtil.overflowInc(event.getAmount(), 1), true);
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        if (event.getAmount() <= 0 || !source.isControlledBy(event.getPlayerId())) {
-            return false;
-        }
-        if (source.isControlledBy(event.getTargetId())) {
-            return true;
-        }
-        Permanent permanent = game.getPermanentEntering(event.getTargetId());
-        if (permanent == null) {
-            permanent = game.getPermanent(event.getTargetId());
-        }
-        return permanent != null
-                && (permanent.isCreature(game) || permanent.isPlaneswalker(game))
-                && permanent.isControlledBy(source.getControllerId());
-    }
-
-    @Override
-    public LaezelVlaakithsChampionEffect copy() {
-        return new LaezelVlaakithsChampionEffect(this);
     }
 }

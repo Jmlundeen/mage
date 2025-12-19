@@ -2,9 +2,10 @@ package mage.cards.g;
 
 import mage.MageInt;
 import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.abilities.mana.ConditionalColoredManaAbility;
@@ -13,11 +14,10 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
+import mage.filter.FilterPermanent;
 import mage.filter.FilterSpell;
-import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
+import mage.filter.common.FilterControlledCreaturePermanent;
+import mage.filter.predicate.mageobject.AnotherPredicate;
 
 import java.util.UUID;
 
@@ -26,9 +26,12 @@ import java.util.UUID;
  */
 public final class GiadaFontOfHope extends CardImpl {
     private static final FilterSpell ANGEL_SPELL_FILTER = new FilterSpell("an Angel spell");
+    private static final FilterPermanent angelFilter = new FilterControlledCreaturePermanent(SubType.ANGEL, "other Angel you control");
+    private static final DynamicValue angelCount = new PermanentsOnBattlefieldCount(new FilterControlledCreaturePermanent(SubType.ANGEL));
 
     static {
         ANGEL_SPELL_FILTER.add(SubType.ANGEL.getPredicate());
+        angelFilter.add(AnotherPredicate.instance);
     }
 
     public GiadaFontOfHope(UUID ownerId, CardSetInfo setInfo) {
@@ -46,12 +49,10 @@ public final class GiadaFontOfHope extends CardImpl {
         this.addAbility(VigilanceAbility.getInstance());
 
         // Each other Angel you control enters the battlefield with an additional +1/+1 counter on it for each Angel you already control.
-        this.addAbility(
-                new SimpleStaticAbility(
-                        Zone.BATTLEFIELD,
-                        new GiadaFontOfHopeEntersBattlefieldEffect()
-                )
-        );
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1, angelCount)
+                .setFilter(angelFilter)
+                .setText("each other Angel you control enters with an additional +1/+1 counter on it for each Angel you already control")
+        ));
 
         // {T}: Add {W}. Spend this mana only to cast an Angel spell.
         this.addAbility(
@@ -70,55 +71,5 @@ public final class GiadaFontOfHope extends CardImpl {
     @Override
     public GiadaFontOfHope copy() {
         return new GiadaFontOfHope(this);
-    }
-}
-
-
-class GiadaFontOfHopeEntersBattlefieldEffect extends ReplacementEffectImpl {
-
-    GiadaFontOfHopeEntersBattlefieldEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.BoostCreature);
-        staticText = "Each other Angel you control enters with an additional +1/+1 counter on it for each Angel you already control.";
-    }
-
-    private GiadaFontOfHopeEntersBattlefieldEffect(GiadaFontOfHopeEntersBattlefieldEffect effect) {
-        super(effect);
-    }
-
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent permanent = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (permanent != null) {
-            int amount =
-                    (int) game.getBattlefield().getAllActivePermanents().stream().filter(perm -> {
-                        return perm.hasSubtype(SubType.ANGEL, game) // perm is Angel
-                                && perm.isControlledBy(source.getControllerId()); // perm is Controlled by player
-                    }).count();
-            if (amount > 0)
-                permanent.addCounters(CounterType.P1P1.createInstance(amount), source.getControllerId(), source, game);
-        }
-        return false;
-
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Permanent permanent = ((EntersTheBattlefieldEvent) event).getTarget();
-        return permanent != null
-                && permanent.isControlledBy(source.getControllerId())
-                && permanent.hasSubtype(SubType.ANGEL, game)
-                && !event.getTargetId().equals(source.getSourceId());
-
-    }
-
-    @Override
-    public GiadaFontOfHopeEntersBattlefieldEffect copy() {
-        return new GiadaFontOfHopeEntersBattlefieldEffect(this);
     }
 }

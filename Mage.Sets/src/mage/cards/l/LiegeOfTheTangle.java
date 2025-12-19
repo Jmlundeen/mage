@@ -1,6 +1,7 @@
 package mage.cards.l;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -19,6 +20,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,16 +72,9 @@ class LiegeOfTheTangleEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
-            Permanent perm = it.next().getPermanent(game);
-            if (perm == null) {
-                it.remove();
-                continue;
-            }
-            if (perm.getCounters(game).getCount(CounterType.AWAKENING) < 1) {
-                continue;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent perm = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     perm.addCardType(game, CardType.CREATURE);
@@ -96,12 +91,19 @@ class LiegeOfTheTangleEffect extends ContinuousEffectImpl {
                     break;
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+            Permanent perm = it.next().getPermanent(game);
+            if (perm == null || perm.getCounters(game).getCount(CounterType.AWAKENING) < 1) {
+                it.remove();
+                continue;
+            }
+            affectedObjects.add(perm);
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

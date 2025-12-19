@@ -3,12 +3,14 @@ package mage.cards.b;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.counters.CounterType;
+import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -24,8 +26,13 @@ public final class BranchingEvolution extends CardImpl {
     public BranchingEvolution(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{2}{G}");
 
-        // If one or more +1/+1 counters would be put a on a creature you control, twice that many +1/+1 counters are put on that creature instead.
-        this.addAbility(new SimpleStaticAbility(new BranchingEvolutionEffect()));
+        // If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on that creature instead.
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.MULTIPLY, 2)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setPermanentFilter(StaticFilters.FILTER_ANOTHER_CREATURE_YOU_CONTROL)
+                .setText("If one or more +1/+1 counters would be put on a creature you control, " +
+                        "twice that many +1/+1 counters are put on that creature instead")
+        ));
     }
 
     private BranchingEvolution(final BranchingEvolution card) {

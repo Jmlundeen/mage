@@ -1,10 +1,9 @@
 package mage.cards.g;
 
 import mage.MageInt;
-import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CardsInControllerGraveyardCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -33,16 +32,10 @@ public final class GolgariRaiders extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // Undergrowth — Golgari Raiders enters the battlefield with a +1/+1 counter on it for each creature card in your graveyard.
-        Ability ability = new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(
-                        CounterType.P1P1.createInstance(0),
-                        new CardsInControllerGraveyardCount(
-                                StaticFilters.FILTER_CARD_CREATURE
-                        ), true
-                ), null, AbilityWord.UNDERGROWTH.formatWord() + "{this} enters " +
-                "with a +1/+1 counter on it for each creature card in your graveyard.", null
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.P1P1, new CardsInControllerGraveyardCount(StaticFilters.FILTER_CARD_CREATURE)))
+                .setAbilityWord(AbilityWord.UNDERGROWTH)
         );
-        this.addAbility(ability);
     }
 
     private GolgariRaiders(final GolgariRaiders card) {

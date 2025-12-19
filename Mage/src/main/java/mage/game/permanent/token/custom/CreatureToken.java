@@ -5,6 +5,7 @@ import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.constants.CardType;
 import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.game.permanent.token.Token;
 import mage.game.permanent.token.TokenImpl;
 
@@ -56,6 +57,13 @@ public final class CreatureToken extends TokenImpl {
     public CreatureToken withColor(String extraColors) {
         ObjectColor extraColorsList = new ObjectColor(extraColors);
         this.getColor(null).addColor(extraColorsList);
+        return this;
+    }
+
+    public CreatureToken withSuperType(SuperType superType) {
+        if (!this.supertype.contains(superType)) {
+            this.supertype.add(superType);
+        }
         return this;
     }
 

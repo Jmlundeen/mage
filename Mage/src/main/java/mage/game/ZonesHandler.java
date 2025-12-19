@@ -266,9 +266,8 @@ public final class ZonesHandler {
                     permanent = new PermanentCard(card, event.getPlayerId(), game);
                 }
 
-                // put onto battlefield with possible counters
+                // add to entering zone
                 game.getPermanentsEntering().put(permanent.getId(), permanent);
-                card.applyEnterWithCounters(permanent, source, game);
 
                 permanent.setTapped(info instanceof ZoneChangeInfo.Battlefield
                         && ((ZoneChangeInfo.Battlefield) info).tapped);

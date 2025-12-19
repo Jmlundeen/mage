@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +16,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,18 +70,25 @@ class StasisFieldEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = Optional
-                .ofNullable(source.getSourcePermanentIfItStillExists(game))
-                .filter(Objects::nonNull)
-                .map(Permanent::getAttachedTo)
-                .map(game::getPermanent)
-                .orElse(null);
-        if (permanent == null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeAllAbilities(source.getSourceId(), game);
+            permanent.addAbility(DefenderAbility.getInstance(), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent == null || permanent.getAttachedTo() == null) {
             return false;
         }
-        permanent.removeAllAbilities(source.getSourceId(), game);
-        permanent.addAbility(DefenderAbility.getInstance(), source.getSourceId(), game);
-        return true;
+        Permanent attachedTo = game.getPermanent(permanent.getAttachedTo());
+        if (attachedTo != null) {
+            affectedObjects.add(attachedTo);
+            return true;
+        }
+        return false;
     }
 }

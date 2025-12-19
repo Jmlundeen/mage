@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -21,6 +22,7 @@ import mage.target.Targets;
 import mage.target.targetpointer.FixedTarget;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -79,7 +81,17 @@ public class GainAbilityWithAttachmentEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            Ability ability = makeAbility(game, source);
+            ability.getEffects().setValue("attachedPermanent", game.getPermanent(source.getSourceId()));
+            permanent.addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = null;
         if (getAffectedObjectsSet()) {
             permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
@@ -96,9 +108,7 @@ public class GainAbilityWithAttachmentEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return true;
         }
-        Ability ability = makeAbility(game, source);
-        ability.getEffects().setValue("attachedPermanent", game.getPermanent(source.getSourceId()));
-        permanent.addAbility(ability, source.getSourceId(), game);
+        affectedObjects.add(permanent);
         return true;
     }
 

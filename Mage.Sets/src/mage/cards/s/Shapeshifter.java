@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
@@ -19,6 +20,7 @@ import mage.players.Player;
 import mage.util.CardUtil;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -113,13 +115,21 @@ class ShapeshifterContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        int lastChosen = Integer.parseInt((String) game.getState().getValue(source.getSourceId().toString() + "_Shapeshifter"));
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.getPower().setModifiedBaseValue(lastChosen);
+            permanent.getToughness().setModifiedBaseValue(7 - lastChosen);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         String lastChosen = (String) game.getState().getValue(source.getSourceId().toString() + "_Shapeshifter");
         if (permanent != null && lastChosen != null) {
-            int lastChosenNumber = Integer.parseInt(lastChosen);
-            permanent.getPower().setModifiedBaseValue(lastChosenNumber);
-            permanent.getToughness().setModifiedBaseValue(7 - lastChosenNumber);
+            affectedObjects.add(permanent);
             return true;
         }
         return false;

@@ -1,13 +1,12 @@
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ExileTargetEffect;
+import mage.abilities.effects.common.continuous.GainControlTargetEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -16,6 +15,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.UUID;
 
 /**
  *
@@ -77,46 +78,9 @@ class ActOfAuthorityEffect extends OneShotEffect {
         Permanent sourcePermanent = source.getSourcePermanentIfItStillExists(game);
         if (sourcePermanent == null) { return true; }
 
-        ContinuousEffect effect = new ActOfAuthorityGainControlEffect(Duration.Custom, targetPermanent.getControllerId());
+        ContinuousEffect effect = new GainControlTargetEffect(Duration.Custom, targetPermanent.getControllerId());
         effect.setTargetPointer(new FixedTarget(sourcePermanent, game));
         game.addEffect(effect, source);
         return true;
-    }
-}
-
-// TODO: These and it's duplicates can probably be replaced by a gain control of effect
-class ActOfAuthorityGainControlEffect extends ContinuousEffectImpl {
-
-    private final UUID controller;
-
-    public ActOfAuthorityGainControlEffect(Duration duration, UUID controller) {
-        super(duration, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        this.controller = controller;
-        this.staticText = "Gain control of {this}";
-    }
-
-    private ActOfAuthorityGainControlEffect(final ActOfAuthorityGainControlEffect effect) {
-        super(effect);
-        this.controller = effect.controller;
-    }
-
-    @Override
-    public ActOfAuthorityGainControlEffect copy() {
-        return new ActOfAuthorityGainControlEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent;
-        permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent == null) {
-            permanent = game.getPermanent(source.getFirstTarget());
-        }
-
-        if (permanent == null) {
-            return false;
-        }
-
-        return permanent.changeControllerId(controller, game, source);
     }
 }

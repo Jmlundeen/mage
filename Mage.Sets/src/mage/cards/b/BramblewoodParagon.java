@@ -2,18 +2,17 @@ package mage.cards.b;
 
 import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
-import mage.abilities.effects.common.continuous.GainAbilityAllEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
+import mage.filter.predicate.mageobject.AnotherPredicate;
 
 import java.util.UUID;
 
@@ -22,7 +21,12 @@ import java.util.UUID;
  */
 public final class BramblewoodParagon extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterCreaturePermanent(SubType.WARRIOR, "Warrior creature");
+    private static final FilterPermanent filter = new FilterCreaturePermanent(SubType.WARRIOR, "other Warrior creature you control");
+
+    static {
+        filter.add(TargetController.YOU.getControllerPredicate());
+        filter.add(AnotherPredicate.instance);
+    }
 
     public BramblewoodParagon(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{G}");
@@ -31,15 +35,18 @@ public final class BramblewoodParagon extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Each other Warrior creature you control enters the battlefield with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                filter, CounterType.P1P1.createInstance(), true
-        )));
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                        .setFilter(filter)
+        ));
 
         // Each creature you control with a +1/+1 counter on it has trample.
-        this.addAbility(new SimpleStaticAbility(new GainAbilityAllEffect(
-                TrampleAbility.getInstance(), Duration.WhileOnBattlefield,
-                StaticFilters.FILTER_EACH_CONTROLLED_CREATURE_P1P1
-        )));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(
+                Outcome.AddAbility,
+                StaticFilters.FILTER_EACH_CONTROLLED_CREATURE_P1P1)
+                .withGainedAbilities(TrampleAbility.getInstance())
+                .setText("Each creature you control with a +1/+1 counter on it has trample")
+        ));
 
     }
 

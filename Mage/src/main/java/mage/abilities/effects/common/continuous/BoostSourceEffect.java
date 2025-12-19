@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -12,6 +13,8 @@ import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
+
+import java.util.List;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -54,7 +57,10 @@ public class BoostSourceEffect extends ContinuousEffectImpl {
     public void init(Ability source, Game game) {
         super.init(source, game);
         if (getAffectedObjectsSet()) {
-            affectedObjectList.add(new MageObjectReference(source.getSourceId(), game));
+            MageObjectReference mor = new MageObjectReference(source.getSourceId(), game);
+            if (!affectedObjectList.contains(mor)) {
+                affectedObjectList.add(mor);
+            }
             // Boost must be locked in (if it's a dynamic value) for non-static ability
             power = StaticValue.get(power.calculate(game, source, this));
             toughness = StaticValue.get(toughness.calculate(game, source, this));
@@ -62,18 +68,35 @@ public class BoostSourceEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent target;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
-            target = affectedObjectList.get(0).getPermanent(game);
+            for (MageObjectReference mor : affectedObjectList) {
+                Permanent permanent = mor.getPermanent(game);
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                }
+            }
         } else {
-            target = game.getPermanent(source.getSourceId());
+            Permanent permanent = game.getPermanent(source.getSourceId());
+            if (permanent != null) {
+                affectedObjects.add(permanent);
+            }
         }
-        if (target != null) {
-            target.addPower(power.calculate(game, source, this));
-            target.addToughness(toughness.calculate(game, source, this));
-            return true;
+        if (affectedObjects.isEmpty()) {
+            if (getAffectedObjectsSet()) {
+                this.discard();
+            }
+            return false;
         }
-        return false;
+        return true;
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addPower(power.calculate(game, source, this));
+            permanent.addToughness(toughness.calculate(game, source, this));
+        }
     }
 }

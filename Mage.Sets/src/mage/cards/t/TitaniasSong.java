@@ -1,9 +1,7 @@
 
 package mage.cards.t;
 
-import java.util.Iterator;
-import java.util.UUID;
-import mage.MageObjectReference;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,6 +13,9 @@ import mage.filter.common.FilterArtifactPermanent;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -64,45 +65,37 @@ class TitaniasSongEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        switch (layer) {
-            case TypeChangingEffects_4:
-                if (sublayer == SubLayer.NA) {
-                    affectedObjectList.clear();
-                    for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                        if (permanent != null) {
-                            affectedObjectList.add(new MageObjectReference(permanent, game));
-                            permanent.addCardType(game, CardType.CREATURE);
-                        }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addCardType(game, CardType.CREATURE);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        int manaCost = permanent.getManaValue();
+                        permanent.getPower().setModifiedBaseValue(manaCost);
+                        permanent.getToughness().setModifiedBaseValue(manaCost);
                     }
-                }
-                break;
-            case AbilityAddingRemovingEffects_6:
-                for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext();) {
-                    Permanent permanent = it.next().getPermanent(game);
-                    if (permanent != null) {
-                        permanent.removeAllAbilities(source.getSourceId(), game);
-                    }
-                }
-                break;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext();) {
-                        Permanent permanent = it.next().getPermanent(game);
-                        if (permanent != null) {
-                            int manaCost = permanent.getManaValue();
-                            permanent.getPower().setModifiedBaseValue(manaCost);
-                            permanent.getToughness().setModifiedBaseValue(manaCost);
-                        }
-                    }
-                }
+            }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -110,4 +103,8 @@ class TitaniasSongEffect extends ContinuousEffectImpl {
         return layer == Layer.PTChangingEffects_7 || layer == Layer.AbilityAddingRemovingEffects_6 || layer == Layer.TypeChangingEffects_4;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
+    }
 }

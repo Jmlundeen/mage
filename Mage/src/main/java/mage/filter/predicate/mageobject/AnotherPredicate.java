@@ -13,10 +13,7 @@ public enum AnotherPredicate implements ObjectSourcePlayerPredicate<MageObject> 
 
     @Override
     public boolean apply(ObjectSourcePlayer<MageObject> input, Game game) {
-        if (!input.getObject().getId().equals(input.getSourceId())) {
-            return true;
-        }
-        return false;
+        return !input.getObject().getId().equals(input.getSourceId());
     }
 
     @Override

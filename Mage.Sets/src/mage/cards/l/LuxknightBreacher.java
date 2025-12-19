@@ -1,10 +1,10 @@
 package mage.cards.l;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.cards.CardImpl;
@@ -34,9 +34,10 @@ public final class LuxknightBreacher extends CardImpl {
         this.toughness = new MageInt(2);
 
         // This creature enters with a +1/+1 counter on it for each other creature and/or artifact you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(0), xValue, true
-        ), "with a +1/+1 counter on it for each other creature and/or artifact you control").addHint(hint));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)
+                .setText("{this} enters with a +1/+1 counter on it for each other creature and/or artifact you control"))
+                .addHint(hint)
+        );
     }
 
     private LuxknightBreacher(final LuxknightBreacher card) {

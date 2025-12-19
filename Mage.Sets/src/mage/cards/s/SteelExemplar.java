@@ -2,10 +2,11 @@ package mage.cards.s;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.common.ColorsOfManaSpentToCastCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -32,10 +33,10 @@ public final class SteelExemplar extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Steel Exemplar enters the battlefield with two +1/+1 counters on it unless two or more colors of mana were spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                SteelExemplarCondition.instance, "{this} enters with " +
-                "two +1/+1 counters on it unless two or more colors of mana were spent to cast it.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                SteelExemplarCondition.instance)
+                .setText("{this} enters with two +1/+1 counters on it unless two or more colors of mana were spent to cast it")
         ));
     }
 

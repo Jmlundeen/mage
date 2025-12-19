@@ -2,7 +2,7 @@ package mage.cards.e;
 
 import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.CreateTwiceThatManyTokensEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.LifelinkAbility;
 import mage.abilities.keyword.WarpAbility;
@@ -33,7 +33,10 @@ public final class ExaltedSunborn extends CardImpl {
         this.addAbility(LifelinkAbility.getInstance());
 
         // If one or more tokens would be created under your control, twice that many of those tokens are created instead.
-        this.addAbility(new SimpleStaticAbility(new CreateTwiceThatManyTokensEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 2)
+                .setText("If one or more tokens would be created under your control, " +
+                        "twice that many of those tokens are created instead")
+        ));
 
         // Warp {1}{W}
         this.addAbility(new WarpAbility(this, "{1}{W}"));

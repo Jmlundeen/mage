@@ -1,15 +1,14 @@
 package mage.cards.h;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.combat.CantAttackBlockAttachedEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.EnchantAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -40,11 +39,17 @@ public final class HeliodsPunishment extends CardImpl {
         this.addAbility(ability);
 
         // Heliod's Punishment enters the battlefield with four task counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.TASK.createInstance(4)), "with four task counters on it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.TASK.createInstance(4))));
 
         // Enchanted creature can't attack or block. It loses all abilities and has "{T}: Remove a task counter from Heliod's Punishment. Then if it has no task counters on it, destroy Heliod's Punishment."
         ability = new SimpleStaticAbility(new CantAttackBlockAttachedEffect(AttachmentType.AURA));
-        ability.addEffect(new HeliodsPunishmentLoseAllAbilitiesEnchantedEffect());
+        ability.addEffect(new ContinuousEffectBuilder(Outcome.LoseAbility, ContinuousAffected.ATTACHED_TO)
+                .withRemoveOtherAbilities()
+                .withGainedAbility((object, source, game) -> {
+                    HeliodsPunishmentEffect effect = new HeliodsPunishmentEffect(source.getSourceObject(game).getName());
+                    effect.setSourceEnchantment(source.getSourceId());
+                    return new SimpleActivatedAbility(effect, new TapSourceCost());
+                }));
         this.addAbility(ability);
     }
 
@@ -56,40 +61,6 @@ public final class HeliodsPunishment extends CardImpl {
     public HeliodsPunishment copy() {
         return new HeliodsPunishment(this);
     }
-}
-
-class HeliodsPunishmentLoseAllAbilitiesEnchantedEffect extends ContinuousEffectImpl {
-
-    HeliodsPunishmentLoseAllAbilitiesEnchantedEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.LoseAbility);
-        staticText = "It loses all abilities and has \"{T}: Remove a task counter from {this}. Then if it has no task counters on it, destroy {this}.\"";
-    }
-
-    private HeliodsPunishmentLoseAllAbilitiesEnchantedEffect(final HeliodsPunishmentLoseAllAbilitiesEnchantedEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public HeliodsPunishmentLoseAllAbilitiesEnchantedEffect copy() {
-        return new HeliodsPunishmentLoseAllAbilitiesEnchantedEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent sourceEnchantment = game.getPermanentOrLKIBattlefield(source.getSourceId());
-        if (sourceEnchantment != null && sourceEnchantment.getAttachedTo() != null) {
-            Permanent attachedTo = game.getPermanent(sourceEnchantment.getAttachedTo());
-            if (attachedTo != null) {
-                attachedTo.removeAllAbilities(source.getSourceId(), game);
-                HeliodsPunishmentEffect effect = new HeliodsPunishmentEffect(sourceEnchantment.getName());
-                Ability ability = new SimpleActivatedAbility(effect, new TapSourceCost());
-                effect.setSourceEnchantment(sourceEnchantment.getId());
-                attachedTo.addAbility(ability, source.getSourceId(), game);
-            }
-        }
-        return true;
-    }
-
 }
 
 class HeliodsPunishmentEffect extends OneShotEffect {

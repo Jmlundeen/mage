@@ -1,6 +1,7 @@
 package mage.cards.e;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -14,6 +15,7 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -109,13 +111,13 @@ class ErietteTheBeguilerEffect extends GainControlTargetEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent aura = ((MageObjectReference) getValue("auraRef")).getPermanent(game);
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (aura == null || permanent == null || !permanent.getId().equals(aura.getAttachedTo())) {
             discard();
             return false;
         }
-        return super.apply(game, source);
+        return super.queryAffectedObjects(layer, source, game, affectedObjects);
     }
 }

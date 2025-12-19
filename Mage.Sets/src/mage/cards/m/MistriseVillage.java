@@ -1,5 +1,6 @@
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.CantBeCounteredSourceAbility;
 import mage.abilities.common.EntersBattlefieldTappedUnlessAbility;
@@ -94,7 +95,14 @@ class MistriseCantBeCounteredEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility(((Spell) object).getCard(), new CantBeCounteredSourceAbility());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         SpellsCastWatcher watcher = game.getState().getWatcher(SpellsCastWatcher.class);
         if (watcher == null) {
             return false;
@@ -112,7 +120,7 @@ class MistriseCantBeCounteredEffect extends ContinuousEffectImpl {
             List<Spell> spellsCast = watcher.getSpellsCastThisTurn(source.getControllerId());
             for (int i = 0; i < spellsCast.size(); i++) {
                 if (i == spellsCastThisTurn && spellsCast.get(i).getId().equals(spell.getId())) {
-                    game.getState().addOtherAbility(spell.getCard(), new CantBeCounteredSourceAbility());
+                    affectedObjects.add(spell);
                     return true;
                 }
             }

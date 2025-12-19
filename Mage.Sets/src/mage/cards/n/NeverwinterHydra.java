@@ -2,24 +2,23 @@ package mage.cards.n;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.AsEntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.abilities.keyword.WardAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
 import mage.constants.SubType;
+import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.game.Game;
+import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,7 +34,7 @@ public final class NeverwinterHydra extends CardImpl {
         this.toughness = new MageInt(0);
 
         // As Neverwinter Hydra enters the battlefield, roll X d6. It enters with a number of +1/+1 counters on it equal to the total of those results.
-        this.addAbility(new AsEntersBattlefieldAbility(new NeverwinterHydraEffect()));
+        this.addAbility(new SimpleStaticAbility(new NeverwinterHydraEffect()));
 
         // Trample
         this.addAbility(TrampleAbility.getInstance());
@@ -54,11 +53,12 @@ public final class NeverwinterHydra extends CardImpl {
     }
 }
 
-class NeverwinterHydraEffect extends OneShotEffect {
+// TODO: allow for roll dice effect -> remember result -> use dynamic value for result. So no custom effect needed.
+class NeverwinterHydraEffect extends EntersWithCountersEffect {
 
     NeverwinterHydraEffect() {
-        super(Outcome.Benefit);
-        staticText = "roll X d6. It enters with a number of +1/+1 counters on it equal to the total of those results";
+        super((Counter) null);
+        staticText = "as {this} enters, roll X d6. It enters with a number of +1/+1 counters on it equal to the total of those results";
     }
 
     private NeverwinterHydraEffect(final NeverwinterHydraEffect effect) {
@@ -71,17 +71,15 @@ class NeverwinterHydraEffect extends OneShotEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
         Permanent permanent = game.getPermanentEntering(source.getSourceId());
         Player player = game.getPlayer(source.getControllerId());
         if (permanent != null && player != null) {
             int xValue = CardUtil.getSourceCostsTag(game, source, "X", 0);
             if (xValue > 0) {
                 int amount = player.rollDice(outcome, source, game, 6, xValue, 0).stream().mapToInt(x -> x).sum();
-                List<UUID> appliedEffects = (ArrayList<UUID>) this.getValue("appliedEffects");
-                permanent.addCounters(CounterType.P1P1.createInstance(amount), source.getControllerId(), source, game, appliedEffects);
+                game.addEnterWithCounters(permanent.getId(), CounterType.P1P1.createInstance(amount));
             }
-            return true;
         }
         return false;
     }

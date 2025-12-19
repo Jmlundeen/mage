@@ -1,5 +1,6 @@
 package mage.game.command.emblems;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -12,6 +13,8 @@ import mage.game.Game;
 import mage.game.command.Emblem;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetAnyTarget;
+
+import java.util.List;
 
 /**
  * @author spjspj
@@ -44,7 +47,7 @@ class KothOfTheHammerThirdEffect extends ContinuousEffectImpl {
     }
 
     public KothOfTheHammerThirdEffect() {
-        super(Duration.EndOfGame, Outcome.AddAbility);
+        super(Duration.EndOfGame, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
         staticText = "Mountains you control have '{T}: This land deals 1 damage to any target.'";
     }
 
@@ -53,34 +56,23 @@ class KothOfTheHammerThirdEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        switch (layer) {
-            case AbilityAddingRemovingEffects_6:
-                if (sublayer == SubLayer.NA) {
-                    for (Permanent permanent : game.getBattlefield().getActivePermanents(mountains, source.getControllerId(), source, game)) {
-                        Ability ability = new SimpleActivatedAbility(new DamageTargetEffect(1), new TapSourceCost());
-                        ability.addTarget(new TargetAnyTarget());
-                        permanent.addAbility(ability, source.getSourceId(), game);
-                    }
-                }
-                break;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            Ability ability = new SimpleActivatedAbility(new DamageTargetEffect(1), new TapSourceCost());
+            ability.addTarget(new TargetAnyTarget());
+            permanent.addAbility(ability, source.getSourceId(), game);
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(mountains, source.getControllerId(), source, game));
+        return !affectedObjects.isEmpty();
     }
 
     @Override
     public KothOfTheHammerThirdEffect copy() {
         return new KothOfTheHammerThirdEffect(this);
     }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.AbilityAddingRemovingEffects_6;
-    }
-
 }

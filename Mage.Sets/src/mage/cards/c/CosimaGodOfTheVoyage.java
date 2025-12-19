@@ -1,6 +1,7 @@
 package mage.cards.c;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
@@ -23,6 +24,7 @@ import mage.players.Player;
 import mage.util.CardUtil;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -142,17 +144,25 @@ class CosimaGodOfTheVoyageGainAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = mor.getCard(game);
-        if (card != null && game.getState().getZone(card.getId()) == Zone.EXILED) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
             Ability ability = new CosimaGodOfTheVoyageTriggeredAbility();
             ability.setSourceId(card.getId());
             ability.setControllerId(source.getControllerId());
             game.getState().addOtherAbility(card, ability);
-        } else {
-            discard();
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = mor.getCard(game);
+        if (card != null && game.getState().getZone(card.getId()) == Zone.EXILED) {
+            affectedObjects.add(card);
+            return true;
+        }
+        discard();
+        return false;
     }
 }
 

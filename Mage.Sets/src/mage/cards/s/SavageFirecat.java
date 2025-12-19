@@ -2,8 +2,8 @@ package mage.cards.s;
 
 import mage.MageInt;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -36,10 +36,7 @@ public final class SavageFirecat extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Savage Firecat enters the battlefield with seven +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(7)),
-                "with seven +1/+1 counters on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(7))));
 
         // Whenever you tap a land for mana, remove a +1/+1 counter from Savage Firecat.
         this.addAbility(new SavageFirecatTriggeredAbility());

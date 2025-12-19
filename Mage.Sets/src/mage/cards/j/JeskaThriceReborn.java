@@ -3,13 +3,13 @@ package mage.cards.j;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.CanBeYourCommanderAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.PartnerAbility;
@@ -41,10 +41,9 @@ public final class JeskaThriceReborn extends CardImpl {
         this.setStartingLoyalty(0);
 
         // Jeska, Thrice Reborn enters the battlefield with a loyalty counter on it for each time you've cast a commander from the command zone this game.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.LOYALTY.createInstance(0), JeskaThriceRebornValue.instance, false
-        ), "with a loyalty counter on her for each time " +
-                "you've cast a commander from the command zone this game"
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(
+                CounterType.LOYALTY, JeskaThriceRebornValue.instance)
+                .setText("{this} enters with a loyalty counter on her for each time you've cast a commander from the command zone this game")
         ).addHint(JeskaThriceRebornValue.getHint()));
 
         // +0: Choose target creature. Until your next turn, if that creature would deal combat damage to one of your opponents, it deals triple that damage to that player instead.
@@ -102,7 +101,7 @@ enum JeskaThriceRebornValue implements DynamicValue {
 
     @Override
     public String getMessage() {
-        return "";
+        return "time you've cast a commander from the command zone this game";
     }
 
     public static Hint getHint() {

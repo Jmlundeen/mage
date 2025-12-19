@@ -5,7 +5,6 @@ import mage.MageObject;
 import mage.MageObjectReference;
 import mage.abilities.*;
 import mage.abilities.common.AttachableToRestrictedAbility;
-import mage.abilities.common.CantHaveMoreThanAmountCountersSourceAbility;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
@@ -15,6 +14,7 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.PreventionEffectData;
 import mage.abilities.effects.common.CopyEffect;
 import mage.abilities.effects.common.InfoEffect;
+import mage.abilities.effects.common.continuous.rulemodifying.PreventCountersEffect;
 import mage.abilities.effects.keyword.FinalityCounterEffect;
 import mage.abilities.effects.keyword.ShieldCounterEffect;
 import mage.abilities.effects.keyword.StunCounterEffect;
@@ -28,6 +28,7 @@ import mage.cards.decks.DeckCardInfo;
 import mage.choices.Choice;
 import mage.collectors.DataCollectorServices;
 import mage.constants.*;
+import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.counters.Counters;
 import mage.designations.Designation;
@@ -233,7 +234,7 @@ public abstract class GameImpl implements Game {
         this.mulligan = game.mulligan.copy();
 
         this.attackOption = game.attackOption;
-        this.gameOptions = game.gameOptions.copy();
+        this.gameOptions = game.gameOptions == null ? null : game.gameOptions.copy();
         this.startMessage = game.startMessage;
 
         this.scopeRelevant = game.scopeRelevant;
@@ -2816,12 +2817,22 @@ public abstract class GameImpl implements Game {
             // If a permanent with an ability that says it can't have more than N counters of a certain kind on it
             // has more than N counters of that kind on it, all but N of those counters are removed from it.
             for (Ability ability : perm.getAbilities(this)) {
-                if (ability instanceof CantHaveMoreThanAmountCountersSourceAbility) {
-                    CantHaveMoreThanAmountCountersSourceAbility counterAbility = (CantHaveMoreThanAmountCountersSourceAbility) ability;
-                    int count = perm.getCounters(this).getCount(counterAbility.getCounterType());
-                    if (count > counterAbility.getAmount()) {
-                        perm.removeCounters(counterAbility.getCounterType().getName(), count - counterAbility.getAmount(), counterAbility, this);
-                        somethingHappened = true;
+                if (ability instanceof StaticAbility) {
+                    for (Effect effect : ability.getEffects()) {
+                        if (!(effect instanceof PreventCountersEffect)) {
+                            continue;
+                        }
+                        PreventCountersEffect preventCountersEffect = (PreventCountersEffect) effect;
+                        if (preventCountersEffect.getMaxCounters() == 0) {
+                            continue;
+                        }
+                        for (CounterType counterType : preventCountersEffect.getValidCounterTypes()) {
+                            int count = perm.getCounters(this).getCount(counterType);
+                            if (count > preventCountersEffect.getMaxCounters()) {
+                                perm.removeCounters(counterType.getName(), count - preventCountersEffect.getMaxCounters(), ability, this);
+                                somethingHappened = true;
+                            }
+                        }
                     }
                 }
             }
@@ -4039,6 +4050,30 @@ public abstract class GameImpl implements Game {
     @Override
     public Counters getEnterWithCounters(UUID sourceId) {
         return enterWithCounters.get(sourceId);
+    }
+
+    @Override
+    public void addEnterWithCounters(UUID cardId, Counters counters) {
+        Counters existing = enterWithCounters.get(cardId);
+        if (existing != null) {
+            for (Counter counter : counters.values()) {
+                existing.addCounter(counter);
+            }
+        } else {
+            enterWithCounters.put(cardId, counters);
+        }
+    }
+
+    @Override
+    public void addEnterWithCounters(UUID cardId, Counter counter) {
+        Counters existing = enterWithCounters.get(cardId);
+        if (existing != null) {
+            existing.addCounter(counter);
+        } else {
+            Counters counters = new Counters();
+            counters.addCounter(counter);
+            enterWithCounters.put(cardId, counters);
+        }
     }
 
     private Map<String, Serializable> addMessageToOptions(MessageToClient message, Map<String, Serializable> options) {

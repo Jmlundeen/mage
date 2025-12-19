@@ -1,28 +1,25 @@
 
 package mage.cards.n;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
+import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.CastSourceTriggeredAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.CardsImpl;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -39,10 +36,14 @@ public final class NayaSoulbeast extends CardImpl {
 
         // Trample
         this.addAbility(TrampleAbility.getInstance());
+
         // When you cast Naya Soulbeast, each player reveals the top card of their library.
         Ability ability = new CastSourceTriggeredAbility(new NayaSoulbeastCastEffect(), false);
+
         // Naya Soulbeast enters the battlefield with X +1/+1 counters on it, where X is the total converted mana cost of all cards revealed this way.
-        ability.addEffect(new NayaSoulbeastReplacementEffect());
+        ability.addEffect(new EntersWithCountersEffect(Duration.OneUse, ContinuousAffected.SOURCE, CounterType.P1P1, NayaSoulbeastValue.instance)
+                        .withXText()
+        );
         this.addAbility(ability);
     }
 
@@ -89,7 +90,7 @@ class NayaSoulbeastCastEffect extends OneShotEffect {
                 }
             }
             for (Effect effect : source.getEffects()) {
-                if (effect instanceof NayaSoulbeastReplacementEffect) {
+                if (effect instanceof EntersWithCountersEffect) {
                     effect.setValue("NayaSoulbeastCounters", cmc);
                 }
             }
@@ -99,41 +100,30 @@ class NayaSoulbeastCastEffect extends OneShotEffect {
     }
 }
 
-class NayaSoulbeastReplacementEffect extends ReplacementEffectImpl {
-
-    NayaSoulbeastReplacementEffect() {
-        super(Duration.OneUse, Outcome.BoostCreature);
-        staticText = "{this} enters with X +1/+1 counters on it, where X is the total mana value of all cards revealed this way";
-    }
-
-    private NayaSoulbeastReplacementEffect(final NayaSoulbeastReplacementEffect effect) {
-        super(effect);
-    }
+enum NayaSoulbeastValue implements DynamicValue {
+    instance;
 
     @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return event.getTargetId().equals(source.getSourceId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Object object = this.getValue("NayaSoulbeastCounters");
-        Permanent permanent = game.getPermanentEntering(source.getSourceId());
-        if (permanent != null && object instanceof Integer) {
-            int amount = ((Integer) object);
-            permanent.addCounters(CounterType.P1P1.createInstance(amount), source.getControllerId(), source, game);
+    public int calculate(Game game, Ability sourceAbility, Effect effect) {
+        Object object = effect.getValue("NayaSoulbeastCounters");
+        if (object instanceof Integer) {
+            return (Integer) object;
         }
-        return false;
+        return 0;
     }
 
     @Override
-    public NayaSoulbeastReplacementEffect copy() {
-        return new NayaSoulbeastReplacementEffect(this);
+    public NayaSoulbeastValue copy() {
+        return instance;
     }
 
+    @Override
+    public String toString() {
+        return "X";
+    }
+
+    @Override
+    public String getMessage() {
+        return "the total mana value of all cards revealed this way";
+    }
 }

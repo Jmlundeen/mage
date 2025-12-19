@@ -1,8 +1,8 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -17,6 +17,9 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author noxx
@@ -76,7 +79,14 @@ class RidersOfGavonyGainAbilityControlledEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(new ProtectionAbility(protectionFilter), source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (protectionFilter == null) {
             Permanent permanent = game.getPermanent(source.getSourceId());
             if (permanent != null) {
@@ -90,12 +100,9 @@ class RidersOfGavonyGainAbilityControlledEffect extends ContinuousEffectImpl {
             }
         }
         if (protectionFilter != null) {
-            for (Permanent perm : game.getBattlefield().getAllActivePermanents(filter, source.getControllerId(), game)) {
-                perm.addAbility(new ProtectionAbility(protectionFilter), source.getSourceId(), game);
-            }
+            affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(filter, source.getControllerId(), game));
             return true;
         }
         return false;
     }
-
 }

@@ -1,5 +1,6 @@
 package mage.cards.v;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SpellCastOpponentTriggeredAbility;
 import mage.abilities.condition.common.SourceIsEnchantmentCondition;
@@ -11,6 +12,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -68,36 +70,46 @@ class VeiledSentryEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
-            discard();
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.removeAllSubTypes(game);
+                    permanent.addCardType(game, CardType.CREATURE);
+                    permanent.addSubType(game, SubType.ILLUSION);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(spellMV);
+                        permanent.getToughness().setModifiedBaseValue(spellMV);
+                    }
+            }
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.removeAllSubTypes(game);
-                permanent.addCardType(game, CardType.CREATURE);
-                permanent.addSubType(game, SubType.ILLUSION);
-                break;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(spellMV);
-                    permanent.getToughness().setModifiedBaseValue(spellMV);
-                }
-        }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        } else {
+            discard();
+            return false;
+        }
     }
 
     @Override
     public boolean hasLayer(Layer layer) {
         return layer == Layer.PTChangingEffects_7
                 || layer == Layer.TypeChangingEffects_4;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b
+                || sublayer == SubLayer.NA;
     }
 }

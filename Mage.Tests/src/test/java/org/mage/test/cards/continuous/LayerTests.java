@@ -58,7 +58,8 @@ public class LayerTests extends CardTestPlayerBase {
      *      This came up in a recent EDH game and we had no idea how to progress.
      *      Player A cast a Humility, then a March of the Machines, and finally a Mycosynth Lattice.
      *      Does the game get stuck in an endless loop of each card gaining and losing its respective creature-ness and abilities?
-     *      Answer: No, they all die
+     *      Answer: No, all lands die, permanents with mana value have will live with P/T equal to mana value.
+     *      If Humility is played after March of the Machines, lands will live and all permanents will have P/T 1/1.
      */
     @Test
     public void testMycosynthLatticeAndMarchOfTheMachinesAndHumility() {
@@ -78,10 +79,14 @@ public class LayerTests extends CardTestPlayerBase {
         execute();
 
         // everything dies
-        assertPermanentCount(playerA, "Humility", 0);
-        assertPermanentCount(playerA, "March of the Machines", 0);
-        assertPermanentCount(playerA, "Mycosynth Lattice", 0);
+        assertPermanentCount(playerA, "Humility", 1);
+        assertPowerToughness(playerA, "Humility", 4, 4);
+        assertPermanentCount(playerA, "March of the Machines", 1);
+        assertPowerToughness(playerA, "March of the Machines", 4, 4);
+        assertPermanentCount(playerA, "Mycosynth Lattice", 1);
+        assertPowerToughness(playerA, "Mycosynth Lattice", 6, 6);
         assertPermanentCount(playerA, "Island", 0);
+        assertPermanentCount(playerA, "Swamp", 0);
     }
 
     @Test
@@ -104,7 +109,6 @@ public class LayerTests extends CardTestPlayerBase {
     }
 
     @Test
-    @Ignore //Works fine in the game.  Test fails, though.
     public void complexExampleFromLayersArticle() {
         /*In play there is a Grizzly Bears which has already been Giant Growthed, 
         a Bog Wraith enchanted by a Lignify, and Figure of Destiny with its 3rd ability activated. 
@@ -121,20 +125,23 @@ public class LayerTests extends CardTestPlayerBase {
         addCard(Zone.BATTLEFIELD, playerA, "Island", 20);
         addCard(Zone.BATTLEFIELD, playerA, "Plains", 20);
 
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Giant Growth", "Grizzly Bears");
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Lignify", "Bog Wrath");
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Giant Growth", "Grizzly Bears", true);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Lignify", "Bog Wraith");
         activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{R/W}:");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
         activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{R/W}{R/W}{R/W}:");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
         activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{R/W}{R/W}{R/W}{R/W}{R/W}{R/W}:");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
         castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Mirrorweave", "Figure of Destiny");
 
         setStopAt(1, PhaseStep.POSTCOMBAT_MAIN);
         execute();
 
         assertPermanentCount(playerA, "Figure of Destiny", 3);
-        assertPowerToughness(playerA, "Figure of Destiny", 4, 4, Filter.ComparisonScope.All);
-        assertPowerToughness(playerA, "Figure of Destiny", 8, 8, Filter.ComparisonScope.All);
-        assertPowerToughness(playerA, "Figure of Destiny", 0, 4, Filter.ComparisonScope.All);
+        assertPowerToughness(playerA, "Figure of Destiny", 4, 4, Filter.ComparisonScope.Any); // bear
+        assertPowerToughness(playerA, "Figure of Destiny", 8, 8, Filter.ComparisonScope.Any); // original figure of destiny
+        assertPowerToughness(playerA, "Figure of Destiny", 0, 4, Filter.ComparisonScope.Any); // lignified bog wraith
 
     }
 

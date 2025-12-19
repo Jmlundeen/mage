@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,9 +16,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author LevelX2
@@ -50,23 +49,28 @@ public final class Soulflayer extends CardImpl {
 
 class SoulflayerEffect extends ContinuousEffectImpl {
 
-    private Set<Ability> abilitiesToAdd;
+    private static final Set<Class<? extends Ability>> KEYWORD_ABILITIES = new HashSet<>(Arrays.asList(
+            FlyingAbility.class,
+            FirstStrikeAbility.class,
+            DoubleStrikeAbility.class,
+            HasteAbility.class,
+            HexproofBaseAbility.class,
+            IndestructibleAbility.class,
+            LifelinkAbility.class,
+            ReachAbility.class,
+            TrampleAbility.class,
+            VigilanceAbility.class
+    ));
     private MageObjectReference objectReference = null;
 
     public SoulflayerEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "If a creature card with flying was exiled with {this}'s delve ability, {this} has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, reach, trample, and vigilance";
-        abilitiesToAdd = null;
+        staticText = "If a creature card with flying was exiled with {this}'s delve ability, {this} has flying. " +
+                "The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, reach, trample, and vigilance";
     }
 
     private SoulflayerEffect(final SoulflayerEffect effect) {
         super(effect);
-        if (effect.abilitiesToAdd != null) {
-            this.abilitiesToAdd = new HashSet<>();
-            for (Ability a : effect.abilitiesToAdd) {
-                this.abilitiesToAdd.add(a.copy());
-            }
-        }
         this.objectReference = effect.objectReference;
     }
 
@@ -76,67 +80,47 @@ class SoulflayerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent != null) {
-            // one time abilities collect
-            if (objectReference == null || !objectReference.refersTo(permanent, game)) {
-                abilitiesToAdd = new HashSet<>();
-                this.objectReference = new MageObjectReference(permanent, game);
-                String keyString = CardUtil.getCardZoneString("delvedCards", source.getSourceId(), game, true);
-                Cards delvedCards = (Cards) game.getState().getValue(keyString);
-                if (delvedCards != null) {
-                    for (Card card : delvedCards.getCards(game)) {
-                        if (!card.isCreature(game)) {
-                            continue;
-                        }
-                        for (Ability cardAbility : card.getAbilities(game)) {
-                            if (cardAbility instanceof FlyingAbility) {
-                                abilitiesToAdd.add(FlyingAbility.getInstance());
-                            }
-                            if (cardAbility instanceof FirstStrikeAbility) {
-                                abilitiesToAdd.add(FirstStrikeAbility.getInstance());
-                            }
-                            if (cardAbility instanceof DoubleStrikeAbility) {
-                                abilitiesToAdd.add(DoubleStrikeAbility.getInstance());
-                            }
-                            if (cardAbility instanceof DeathtouchAbility) {
-                                abilitiesToAdd.add(DeathtouchAbility.getInstance());
-                            }
-                            if (cardAbility instanceof HasteAbility) {
-                                abilitiesToAdd.add(HasteAbility.getInstance());
-                            }
-                            if (cardAbility instanceof HexproofBaseAbility) {
-                                abilitiesToAdd.add(HexproofAbility.getInstance());
-                            }
-                            if (cardAbility instanceof IndestructibleAbility) {
-                                abilitiesToAdd.add(IndestructibleAbility.getInstance());
-                            }
-                            if (cardAbility instanceof LifelinkAbility) {
-                                abilitiesToAdd.add(LifelinkAbility.getInstance());
-                            }
-                            if (cardAbility instanceof ReachAbility) {
-                                abilitiesToAdd.add(ReachAbility.getInstance());
-                            }
-                            if (cardAbility instanceof TrampleAbility) {
-                                abilitiesToAdd.add(TrampleAbility.getInstance());
-                            }
-                            if (cardAbility instanceof VigilanceAbility) {
-                                abilitiesToAdd.add(VigilanceAbility.getInstance());
-                            }
-                        }
-                    }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Set<Ability> exileAbilities = new HashSet<>();
+        getAbilitiesInExile(game, source, exileAbilities);
+
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability ability : exileAbilities) {
+                if (isValidKeywordAbility(ability.getClass())) {
+                    permanent.addAbility(ability, source.getSourceId(), game);
                 }
             }
-
-            // all time abilities apply
-            for (Ability ability : abilitiesToAdd) {
-                permanent.addAbility(ability, source.getSourceId(), game);
-            }
-            return true;
-        } else if (abilitiesToAdd != null) {
-            abilitiesToAdd = null;
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
+
+        if (sourcePermanent == null) {
+            return false;
+        }
+        affectedObjects.add(sourcePermanent);
+        return true;
+    }
+
+    private void getAbilitiesInExile(Game game, Ability source, Set<Ability> exileAbilities) {
+        String keyString = CardUtil.getCardZoneString("delvedCards", source.getSourceId(), game, true);
+        Cards delvedCards = (Cards) game.getState().getValue(keyString);
+        for (Card card : delvedCards.getCards(game)) {
+            for (Ability ability : card.getAbilities(game)) {
+                if (isValidKeywordAbility(ability.getClass())) {
+                    exileAbilities.add(ability);
+                }
+            }
+        }
+    }
+
+    private boolean isValidKeywordAbility(Class<? extends Ability> abilityClass) {
+        return KEYWORD_ABILITIES.stream()
+                .anyMatch(keywordClass ->
+                        keywordClass.isAssignableFrom(abilityClass)
+                );
     }
 }

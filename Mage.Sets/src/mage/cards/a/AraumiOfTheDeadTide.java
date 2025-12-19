@@ -6,7 +6,8 @@ import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.ContinuousEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.EncoreAbility;
 import mage.cards.*;
 import mage.constants.*;
@@ -33,7 +34,10 @@ public final class AraumiOfTheDeadTide extends CardImpl {
         this.toughness = new MageInt(4);
 
         // {T}, Exile cards from your graveyard equal to the number of opponents you have: Target creature card in your graveyard gains encore until end of turn. The encore cost is equal to its mana cost.
-        Ability ability = new SimpleActivatedAbility(new AraumiOfTheDeadTideEffect(), new TapSourceCost());
+        ContinuousEffect effect = new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new EncoreAbility(card.getManaCost()))
+                .setText("Target creature card in your graveyard gains encore until end of turn. The encore cost is equal to its mana cost.");
+        Ability ability = new SimpleActivatedAbility(effect, new TapSourceCost());
         ability.addCost(new AraumiOfTheDeadTideCost());
         ability.addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
         this.addAbility(ability);
@@ -46,34 +50,6 @@ public final class AraumiOfTheDeadTide extends CardImpl {
     @Override
     public AraumiOfTheDeadTide copy() {
         return new AraumiOfTheDeadTide(this);
-    }
-}
-
-class AraumiOfTheDeadTideEffect extends ContinuousEffectImpl {
-
-    AraumiOfTheDeadTideEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "Target creature card in your graveyard gains encore until end of turn. " +
-                "The encore cost is equal to its mana cost.";
-    }
-
-    private AraumiOfTheDeadTideEffect(final AraumiOfTheDeadTideEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public AraumiOfTheDeadTideEffect copy() {
-        return new AraumiOfTheDeadTideEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card == null) {
-            return false;
-        }
-        game.getState().addOtherAbility(card, new EncoreAbility(card.getManaCost()));
-        return true;
     }
 }
 

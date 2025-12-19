@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
@@ -17,6 +18,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,14 +72,19 @@ class MishraTamerOfMakFawaEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility((Card) object, new UnearthAbility(new ManaCostsImpl<>("{1}{B}{R}")));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return false;
         }
-        for (Card card : player.getGraveyard().getCards(StaticFilters.FILTER_CARD_ARTIFACT, game)) {
-            game.getState().addOtherAbility(card, new UnearthAbility(new ManaCostsImpl<>("{1}{B}{R}")));
-        }
-        return true;
+        affectedObjects.addAll(player.getGraveyard().getCards(StaticFilters.FILTER_CARD_ARTIFACT, game));
+        return !affectedObjects.isEmpty();
     }
 }

@@ -1,22 +1,19 @@
 package mage.cards.h;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.StaticFilters;
-import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -46,6 +43,7 @@ public final class Humility extends CardImpl {
 
         public HumilityEffect(Duration duration) {
             super(duration, Outcome.LoseAbility);
+            addDependedToType(DependencyType.BecomeCreature);
             staticText = "All creatures lose all abilities and have base power and toughness 1/1";
         }
 
@@ -59,13 +57,9 @@ public final class Humility extends CardImpl {
         }
 
         @Override
-        public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-            Player player = game.getPlayer(source.getControllerId());
-            if (player == null) {
-                return false;
-            }
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                    StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), source, game)) {
+        public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+            for (MageItem object : affectedObjects) {
+                Permanent permanent = (Permanent) object;
                 switch (layer) {
                     case AbilityAddingRemovingEffects_6:
                         permanent.removeAllAbilities(source.getSourceId(), game);
@@ -77,18 +71,35 @@ public final class Humility extends CardImpl {
                         }
                 }
             }
-            return true;
         }
 
         @Override
-        public boolean apply(Game game, Ability source) {
-            return false;
+        public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+            if (!source.getAffectedObjects().isEmpty()) {
+                affectedObjects.addAll(source.getAffectedObjects());
+            } else {
+                    Player player = game.getPlayer(source.getControllerId());
+                    if (player == null) {
+                        return false;
+                    }
+                    for (Permanent permanent : game.getBattlefield().getActivePermanents(
+                            StaticFilters.FILTER_PERMANENT_CREATURE, player.getId(), source, game)) {
+                        affectedObjects.add(permanent);
+                        source.getAffectedObjects().add(permanent);
+                    }
+            }
+            return !affectedObjects.isEmpty();
         }
 
         @Override
         public boolean hasLayer(Layer layer) {
             return layer == Layer.AbilityAddingRemovingEffects_6
                     || layer == Layer.PTChangingEffects_7;
+        }
+
+        @Override
+        public boolean hasSubLayer(SubLayer sublayer) {
+            return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
         }
     }
 }

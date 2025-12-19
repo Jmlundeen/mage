@@ -5,7 +5,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -16,12 +16,9 @@ import mage.filter.FilterPermanent;
 import mage.filter.FilterSpell;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.players.Player;
-import mage.target.TargetPermanent;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.target.common.TargetSacrifice;
 import mage.target.targetpointer.FixedTarget;
@@ -162,50 +159,12 @@ class DarkIntimationsGraveyardEffect extends OneShotEffect {
             }
             Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
             if (spell != null) {
-                ContinuousEffect effect = new DarkIntimationsReplacementEffect();
+                ContinuousEffect effect = new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.LOYALTY.createInstance());
                 effect.setTargetPointer(new FixedTarget(spell.getSourceId()));
                 game.addEffect(effect, source);
             }
             return true;
         }
         return false;
-    }
-}
-
-class DarkIntimationsReplacementEffect extends ReplacementEffectImpl {
-
-    DarkIntimationsReplacementEffect() {
-        super(Duration.OneUse, Outcome.Benefit);
-        staticText = "That planeswalker enters the battlefield with an additional loyalty counter on it";
-    }
-
-    private DarkIntimationsReplacementEffect(final DarkIntimationsReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        return creature != null
-                && event.getTargetId().equals(getTargetPointer().getFirst(game, source));
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (creature != null) {
-            creature.addCounters(CounterType.LOYALTY.createInstance(), source.getControllerId(), source, game);
-        }
-        return false;
-    }
-
-    @Override
-    public DarkIntimationsReplacementEffect copy() {
-        return new DarkIntimationsReplacementEffect(this);
     }
 }

@@ -1,6 +1,7 @@
 package mage.cards.h;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,6 +14,7 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -52,7 +54,7 @@ class HarbingerOfTheSeasEffect extends ContinuousEffectImpl {
     }
 
     HarbingerOfTheSeasEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Detriment);
+        super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         this.staticText = "Nonbasic lands are Islands";
         dependendToTypes.add(DependencyType.BecomeNonbasicLand);
         dependencyTypes.add(DependencyType.BecomeIsland);
@@ -63,35 +65,27 @@ class HarbingerOfTheSeasEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
     public HarbingerOfTheSeasEffect copy() {
         return new HarbingerOfTheSeasEffect(this);
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Permanent land : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game)) {
-            switch (layer) {
-                case TypeChangingEffects_4:
-                    // 305.7 Note that this doesn't remove any abilities that were granted to the land by other effects
-                    // So the ability removing has to be done before Layer 6
-                    land.removeAllAbilities(source.getSourceId(), game);
-                    land.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
-                    land.addSubType(game, SubType.ISLAND);
-                    // Islands have the blue mana ability intrinsically so the ability must be added in this layer
-                    land.addAbility(new BlueManaAbility(), source.getSourceId(), game);
-                    break;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            // 305.7 Note that this doesn't remove any abilities that were granted to the land by other effects
+            // So the ability removing has to be done before Layer 6
+            permanent.removeAllAbilities(source.getSourceId(), game);
+            permanent.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
+            permanent.addSubType(game, SubType.ISLAND);
+            // Islands have the blue mana ability intrinsically so the ability must be added in this layer
+            permanent.addAbility(new BlueManaAbility(), source.getSourceId(), game);
         }
-        return true;
     }
 
     @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.TypeChangingEffects_4;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 }

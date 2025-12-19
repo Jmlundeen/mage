@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -12,6 +13,7 @@ import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,6 +43,33 @@ public class SetBasePowerToughnessTargetEffect extends ContinuousEffectImpl {
     @Override
     public SetBasePowerToughnessTargetEffect copy() {
         return new SetBasePowerToughnessTargetEffect(this);
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        int newPower = power != null ? power.calculate(game, source, this) : Integer.MIN_VALUE;
+        int newToughness = toughness != null ? toughness.calculate(game, source, this) : Integer.MIN_VALUE;
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            if (newPower != Integer.MIN_VALUE) {
+                permanent.getPower().setModifiedBaseValue(newPower);
+            }
+            if (newToughness != Integer.MIN_VALUE) {
+                permanent.getToughness().setModifiedBaseValue(newToughness);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (UUID targetId : this.getTargetPointer().getTargets(game, source)) {
+            Permanent target = game.getPermanent(targetId);
+            if (target == null) {
+                continue;
+            }
+            affectedObjects.add(target);
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

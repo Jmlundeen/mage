@@ -1,6 +1,7 @@
 
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -31,7 +32,6 @@ public final class ShieldsOfVelisVel extends CardImpl {
 
         //Creatures target player controls get +0/+1 and gain all creature types until end of turn.
         this.getSpellAbility().addEffect(new ShieldsOfVelisVelBoostEffect());
-        this.getSpellAbility().addEffect(new ShieldsOfVelisVelGainEffect());
         this.getSpellAbility().addTarget(new TargetPlayer());
 
     }
@@ -46,52 +46,11 @@ public final class ShieldsOfVelisVel extends CardImpl {
     }
 }
 
-class ShieldsOfVelisVelGainEffect extends ContinuousEffectImpl {
-
-    ShieldsOfVelisVelGainEffect() {
-        super(Duration.EndOfTurn, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
-        staticText = "and gain all creature types until end of turn";
-    }
-
-    private ShieldsOfVelisVelGainEffect(final ShieldsOfVelisVelGainEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public ShieldsOfVelisVelGainEffect copy() {
-        return new ShieldsOfVelisVelGainEffect(this);
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        if (getAffectedObjectsSet()) {
-            List<Permanent> creatures = game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getFirstTarget(), game);
-            for (Permanent creature : creatures) {
-                affectedObjectList.add(new MageObjectReference(creature, game));
-            }
-        }
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
-            Permanent permanent = it.next().getPermanent(game);
-            if (permanent != null) {
-                permanent.setIsAllCreatureTypes(game, true);
-            } else {
-                it.remove();
-            }
-        }
-        return true;
-    }
-}
-
 class ShieldsOfVelisVelBoostEffect extends ContinuousEffectImpl {
 
     ShieldsOfVelisVelBoostEffect() {
         super(Duration.EndOfTurn, Layer.PTChangingEffects_7, SubLayer.ModifyPT_7c, Outcome.BoostCreature);
-        staticText = "Creatures target player controls get +0/+1";
+        staticText = "Creatures target player controls get +0/+1 and gain all creature types until end of turn";
     }
 
     private ShieldsOfVelisVelBoostEffect(final ShieldsOfVelisVelBoostEffect effect) {
@@ -115,15 +74,42 @@ class ShieldsOfVelisVelBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.ModifyPT_7c) {
+                        permanent.addToughness(1);
+                    }
+                    break;
+                case TypeChangingEffects_4:
+                    permanent.setIsAllCreatureTypes(game, true);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
             Permanent permanent = it.next().getPermanent(game);
             if (permanent != null) {
-                permanent.addToughness(1);
+                affectedObjects.add(permanent);
             } else {
                 it.remove();
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public boolean hasLayer(Layer layer) {
+        return layer == Layer.PTChangingEffects_7 || layer == Layer.TypeChangingEffects_4;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.ModifyPT_7c || sublayer == SubLayer.NA;
     }
 }

@@ -1,26 +1,28 @@
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.dynamicvalue.common.CardsInControllerGraveyardCount;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.RegenerateSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DredgeAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -37,11 +39,13 @@ public final class GolgariGraveTroll extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Golgari Grave-Troll enters the battlefield with a +1/+1 counter on it for each creature card in your graveyard.
-        this.addAbility(new EntersBattlefieldAbility(new GolgariGraveTrollEffect(), "with a +1/+1 counter on it for each creature card in your graveyard"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, new CardsInControllerGraveyardCount(StaticFilters.FILTER_CARD_CREATURE))));
+
         // {1}, Remove a +1/+1 counter from Golgari Grave-Troll: Regenerate Golgari Grave-Troll.
         Ability ability = new SimpleActivatedAbility(new RegenerateSourceEffect(), new ManaCostsImpl<>("{1}"));
         ability.addCost(new RemoveCountersSourceCost(CounterType.P1P1.createInstance()));
         this.addAbility(ability);
+
         // Dredge 6
         this.addAbility(new DredgeAbility(6));
     }

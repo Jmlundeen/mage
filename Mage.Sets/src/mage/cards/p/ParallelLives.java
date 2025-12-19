@@ -1,13 +1,13 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.CreateTwiceThatManyTokensEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
+
+import java.util.UUID;
 
 /**
  *
@@ -19,7 +19,9 @@ public final class ParallelLives extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{3}{G}");
 
         // If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.
-        this.addAbility(new SimpleStaticAbility(new CreateTwiceThatManyTokensEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 2)
+                .setText("If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead")
+        ));
     }
 
     private ParallelLives(final ParallelLives card) {

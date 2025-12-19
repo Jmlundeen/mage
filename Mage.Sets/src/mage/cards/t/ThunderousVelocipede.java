@@ -1,21 +1,24 @@
 package mage.cards.t;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
-import mage.constants.ComparisonType;
-import mage.constants.SubType;
-import mage.abilities.keyword.TrampleAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.CrewAbility;
+import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ComparisonType;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
+import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.Predicates;
+import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
+
+import java.util.UUID;
 
 /**
  *
@@ -23,15 +26,17 @@ import mage.filter.predicate.mageobject.ManaValuePredicate;
  */
 public final class ThunderousVelocipede extends CardImpl {
 
-    private static final FilterPermanent fourOrLessFilter = new FilterPermanent("other Vehicle and creature you control with mana value 4 or less");
-    private static final FilterPermanent greaterThanFourFilter = new FilterPermanent("other Vehicle and creature you control with mana value greater than 4");
+    private static final FilterPermanent fourOrLessFilter = new FilterControlledCreaturePermanent("other Vehicle and creature you control with mana value 4 or less");
+    private static final FilterPermanent greaterThanFourFilter = new FilterControlledCreaturePermanent("other Vehicle and creature you control with mana value greater than 4");
 
     static {
+        fourOrLessFilter.add(AnotherPredicate.instance);
         fourOrLessFilter.add(new ManaValuePredicate(ComparisonType.OR_LESS, 4));
         fourOrLessFilter.add(Predicates.or(
                 CardType.CREATURE.getPredicate(),
                 SubType.VEHICLE.getPredicate()
         ));
+        greaterThanFourFilter.add(AnotherPredicate.instance);
         greaterThanFourFilter.add(new ManaValuePredicate(ComparisonType.MORE_THAN, 4));
         greaterThanFourFilter.add(Predicates.or(
                 CardType.CREATURE.getPredicate(),
@@ -50,9 +55,11 @@ public final class ThunderousVelocipede extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Each other Vehicle and creature you control enters with an additional +1/+1 counter on it if its mana value is 4 or less. Otherwise, it enters with three additional +1/+1 counters on it.
-        Ability ability = new SimpleStaticAbility(new EntersWithCountersControlledEffect(fourOrLessFilter, CounterType.P1P1.createInstance(1), true)
+        Ability ability = new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(1))
+                .setFilter(fourOrLessFilter)
                 .setText("Each other Vehicle and creature you control enters with an additional +1/+1 counter on it if its mana value is 4 or less."));
-        ability.addEffect(new EntersWithCountersControlledEffect(greaterThanFourFilter, CounterType.P1P1.createInstance(3), true)
+        ability.addEffect(new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))
+                .setFilter(greaterThanFourFilter)
                 .setText("otherwise, it enters with three additional +1/+1 counters on it."));
         this.addAbility(ability);
         // Crew 3

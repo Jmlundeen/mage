@@ -1,6 +1,7 @@
 
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.costs.mana.GenericManaCost;
@@ -16,6 +17,7 @@ import mage.game.permanent.Permanent;
 import mage.target.common.TargetAnyTarget;
 import mage.target.common.TargetControlledCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,12 +55,19 @@ class MartyrdomGainAbilityTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
             ActivatedAbilityImpl ability = new MartyrdomActivatedAbility(source.getControllerId());
             ability.setMayActivate(TargetController.ANY);
-            permanent.addAbility(ability, source.getSourceId(), game);
+            ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
+        if (permanent != null) {
+            affectedObjects.add(permanent);
             return true;
         }
         return false;

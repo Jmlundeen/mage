@@ -1,8 +1,8 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -14,6 +14,9 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Loki
@@ -54,21 +57,30 @@ class SedrisTheTraitorKingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            UnearthAbility ability = new UnearthAbility(new ManaCostsImpl<>("{2}{B}"));
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
             for (UUID cardId : controller.getGraveyard()) {
                 Card card = game.getCard(cardId);
                 if (card != null && card.isCreature(game)) {
-                    UnearthAbility ability = new UnearthAbility(new ManaCostsImpl<>("{2}{B}"));
-                    ability.setSourceId(cardId);
-                    ability.setControllerId(card.getOwnerId());
-                    game.getState().addOtherAbility(card, ability);
+                    affectedObjects.add(card);
                 }
             }
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     @Override

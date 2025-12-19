@@ -1,7 +1,8 @@
 package mage.cards.k;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.BlocksOrBlockedSourceTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -16,6 +17,9 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -73,35 +77,37 @@ class KarnSilverGolemEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent artifact = game.getPermanent(this.getTargetPointer().getFirst(game, source));
-        if (artifact == null) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                if (sublayer == SubLayer.NA) {
-                    if (!artifact.isCreature(game)) {
-                        artifact.addCardType(game, CardType.CREATURE);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent artifact = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    if (sublayer == SubLayer.NA) {
+                        if (!artifact.isCreature(game)) {
+                            artifact.addCardType(game, CardType.CREATURE);
+                        }
                     }
-                }
-                break;
+                    break;
 
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    int cmc = artifact.getManaValue();
-                    artifact.getPower().setModifiedBaseValue(cmc);
-                    artifact.getToughness().setModifiedBaseValue(cmc);
-                }
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        int cmc = artifact.getManaValue();
+                        artifact.getPower().setModifiedBaseValue(cmc);
+                        artifact.getToughness().setModifiedBaseValue(cmc);
+                    }
+            }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent artifact = game.getPermanent(this.getTargetPointer().getFirst(game, source));
+        if (artifact != null) {
+            affectedObjects.add(artifact);
+            affectedObjectList.add(new MageObjectReference(artifact, game));
+        }
+        return !affectedObjects.isEmpty();
     }
-
 
     @Override
     public boolean hasLayer(Layer layer) {

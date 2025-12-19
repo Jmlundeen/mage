@@ -1,21 +1,23 @@
 
 package mage.cards.b;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalContinuousEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FirstStrikeAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -33,10 +35,17 @@ public final class BenalishLancer extends CardImpl {
         this.addAbility(new KickerAbility("{2}{W}"));
 
         // If Benalish Lancer was kicked, it enters with two +1/+1 counters on it and with first strike.
-        Ability ability = new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                KickedCondition.ONCE,
-                "If {this} was kicked, it enters with two +1/+1 counters on it and with first strike.", "");
-        ability.addEffect(new GainAbilitySourceEffect(FirstStrikeAbility.getInstance(), Duration.WhileOnBattlefield));
+        Ability ability = new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                KickedCondition.ONCE)
+                .setText("If {this} was kicked, it enters with two +1/+1 counters on it and with first strike.")
+        );
+        Effect gainFirstStrikeEffect = new ConditionalContinuousEffect(
+                new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                        .withGainedAbilities(FirstStrikeAbility.getInstance()),
+                KickedCondition.ONCE, ""
+        );
+        ability.addEffect(gainFirstStrikeEffect);
         this.addAbility(ability);
     }
 

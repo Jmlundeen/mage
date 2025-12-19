@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.Mode;
@@ -13,6 +14,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
+
+import java.util.List;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -89,7 +92,19 @@ public class GainAbilityAttachedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            if (doesntRemoveItself && ability instanceof ProtectionAbility) {
+                ((ProtectionAbility) ability).setAuraIdNotToBeRemoved(source.getSourceId());
+            }
+            permanent.addAbility(ability, source.getSourceId(), game);
+            afterGain(game, source, permanent, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent;
         if (getAffectedObjectsSet()) {
             permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
@@ -106,13 +121,10 @@ public class GainAbilityAttachedEffect extends ContinuousEffectImpl {
             }
         }
         if (permanent != null) {
-            if (doesntRemoveItself && ability instanceof ProtectionAbility) {
-                ((ProtectionAbility) ability).setAuraIdNotToBeRemoved(source.getSourceId());
-            }
-            permanent.addAbility(ability, source.getSourceId(), game);
-            afterGain(game, source, permanent, ability);
+            affectedObjects.add(permanent);
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**

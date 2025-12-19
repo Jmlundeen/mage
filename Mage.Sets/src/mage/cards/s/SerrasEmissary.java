@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -17,6 +18,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -63,28 +65,34 @@ class SerrasEmissaryEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Object savedType = game.getState().getValue(source.getSourceId() + "_type");
+        CardType cardType = CardType.fromString((String) savedType);
+        FilterCard filter = new FilterCard(cardType + "s");
+        filter.add(cardType.getPredicate());
+        Ability ability = new ProtectionAbility(filter);
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Player) {
+                ((Player) object).addAbility(ability);
+            } else {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         Object savedType = game.getState().getValue(source.getSourceId() + "_type");
-        if (controller == null
-                || savedType == null) {
+        if (controller == null || savedType == null) {
             return false;
         }
-        if (savedType instanceof String) {
-            CardType cardType = CardType.fromString((String) savedType);
-            FilterCard filter = new FilterCard(cardType + "s");
-            filter.add(cardType.getPredicate());
-            Ability ability = new ProtectionAbility(filter);
-            controller.addAbility(ability);
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                    StaticFilters.FILTER_CONTROLLED_CREATURE,
-                    source.getControllerId(), source, game
-            )) {
-                permanent.addAbility(ability, source.getSourceId(), game);
-            }
-            return true;
-        }
-        return false;
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_CONTROLLED_CREATURE,
+                source.getControllerId(), source, game
+        ));
+        affectedObjects.add(controller);
+        return true;
     }
 
     @Override

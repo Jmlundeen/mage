@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -11,6 +12,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -36,16 +38,21 @@ public class LoseAbilityTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        boolean result = false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeAbility(ability, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (UUID uuid : getTargetPointer().getTargets(game, source)) {
             Permanent permanent = game.getPermanent(uuid);
             if (permanent != null) {
-                permanent.removeAbility(ability, source.getSourceId(), game);
-                result = true;
+                affectedObjects.add(permanent);
             }
         }
-        return result;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

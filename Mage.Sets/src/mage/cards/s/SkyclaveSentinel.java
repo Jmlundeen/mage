@@ -1,14 +1,14 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.KickedCondition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.decorator.ConditionalAsThoughEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.combat.CanAttackAsThoughItDidntHaveDefenderSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DefenderAbility;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.KickerAbility;
@@ -45,9 +45,10 @@ public final class SkyclaveSentinel extends CardImpl {
         this.addAbility(DefenderAbility.getInstance());
 
         // If Skyclave Sentinel was kicked, it enters with two +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)), KickedCondition.ONCE,
-                "If {this} was kicked, it enters with two +1/+1 counters on it.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with two +1/+1 counters on it")
         ));
 
         // As long as Skyclave Sentinel has a +1/+1 counter on it, it can attack as though it didn't have defender.

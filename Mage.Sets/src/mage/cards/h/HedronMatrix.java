@@ -2,7 +2,10 @@
 
 package mage.cards.h;
 
+import java.util.List;
 import java.util.UUID;
+
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
@@ -16,7 +19,6 @@ import mage.constants.Duration;
 import mage.constants.Layer;
 import mage.constants.Outcome;
 import mage.constants.SubLayer;
-import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledCreaturePermanent;
@@ -66,16 +68,27 @@ class HedronMatrixEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent equipment = game.getPermanent(source.getSourceId());
-        if (equipment != null && equipment.getAttachedTo() != null) {
-            Permanent creature = game.getPermanent(equipment.getAttachedTo());
-            if (creature != null) {
-                creature.addPower(creature.getManaValue());
-                creature.addToughness(creature.getManaValue());
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
+            creature.addPower(creature.getManaValue());
+            creature.addToughness(creature.getManaValue());
         }
-        return true;
     }
 
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent equipment = game.getPermanent(source.getSourceId());
+        if (equipment == null || equipment.getAttachedTo() == null) {
+            return false;
+        }
+
+        Permanent creature = game.getPermanent(equipment.getAttachedTo());
+        if (creature == null) {
+            return false;
+        }
+
+        affectedObjects.add(creature);
+        return true;
+    }
 }

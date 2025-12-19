@@ -4,16 +4,14 @@ import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.condition.Condition;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.watchers.common.ManaPaidSourceWatcher;
 
@@ -34,8 +32,13 @@ public final class BorealOutrider extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Whenever you cast a creature spell, if {S} of any of that spell's color was spent to cast it, that creature enters the battlefield with an additional +1/+1 counter on it.
+        Effect entersWithCountersEffect = new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .withEventCondition((event, source, game, effect) -> {
+                    Spell spell = (Spell) source.getEffects().get(0).getValue("spellCast");
+                    return spell != null && event.getTargetId().equals(spell.getCard().getId());
+                });
         this.addAbility(new SpellCastControllerTriggeredAbility(
-                new BorealOutriderEffect(), StaticFilters.FILTER_SPELL_A_CREATURE,
+                entersWithCountersEffect, StaticFilters.FILTER_SPELL_A_CREATURE,
                 false, SetTargetPointer.SPELL
         ).withInterveningIf(BorealOutriderCondition.instance));
     }
@@ -62,43 +65,5 @@ enum BorealOutriderCondition implements Condition {
     @Override
     public String toString() {
         return "{S} of any of that spell's colors was spent to cast it";
-    }
-}
-
-class BorealOutriderEffect extends ReplacementEffectImpl {
-
-    BorealOutriderEffect() {
-        super(Duration.EndOfStep, Outcome.BoostCreature);
-        staticText = "that creature enters with an additional +1/+1 counter on it";
-    }
-
-    private BorealOutriderEffect(BorealOutriderEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Spell spell = (Spell) getValue("spellCast");
-        return spell != null && event.getTargetId().equals(spell.getCard().getId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (creature != null) {
-            creature.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game, event.getAppliedEffects());
-            discard();
-        }
-        return false;
-    }
-
-    @Override
-    public BorealOutriderEffect copy() {
-        return new BorealOutriderEffect(this);
     }
 }

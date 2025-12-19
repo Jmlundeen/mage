@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,6 +15,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
+import mage.constants.Layer;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterCreaturePermanent;
@@ -24,6 +26,7 @@ import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.util.GameLog;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -74,12 +77,11 @@ class TorrentOfLavaGainAbilityEffect extends GainAbilityAllEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Spell spell = game.getStack().getSpell(source.getSourceId());
         if (spell == null) {
             return false;
         }
-
         Effect effect = new TorrentOfLavaPreventionEffect(spell.getId(), spell.getZoneChangeCounter(game));
         // Display the id of the spell on the stack, not the card id
         String idName = spell.getName() + " [" + spell.getId().toString().substring(0, 3) + "]";
@@ -87,7 +89,7 @@ class TorrentOfLavaGainAbilityEffect extends GainAbilityAllEffect {
                 + GameLog.getColoredObjectIdNameForTooltip(spell.getColor(game), idName) + " this turn");
 
         ability = new SimpleActivatedAbility(effect, new TapSourceCost());
-        return super.apply(game, source);
+        return super.queryAffectedObjects(layer, source, game, affectedObjects);
     }
 
     @Override

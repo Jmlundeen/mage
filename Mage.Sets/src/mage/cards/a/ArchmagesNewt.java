@@ -5,15 +5,13 @@ import mage.abilities.Ability;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
 import mage.abilities.condition.common.SaddledCondition;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.abilities.keyword.SaddleAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
-import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
 import java.util.UUID;
@@ -32,7 +30,13 @@ public final class ArchmagesNewt extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Whenever Archmage's Newt deals combat damage to a player, target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost. That card gains flashback {0} until end of turn instead if Archmage's Newt is saddled.
-        Ability ability = new DealsCombatDamageToAPlayerTriggeredAbility(new ArchmagesNewtEffect(), false);
+        Ability ability = new DealsCombatDamageToAPlayerTriggeredAbility(
+                new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                        .withGainedAbility((card, source, game) -> SaddledCondition.instance.apply(game, source) ?
+                                new FlashbackAbility(card, new GenericManaCost(0)) : new FlashbackAbility(card, card.getManaCost()))
+                        .setText("target instant or sorcery card in your graveyard gains flashback until end of turn. " +
+                                "The flashback cost is equal to its mana cost. That card gains flashback {0} until end of turn instead if {this} is saddled")
+                , false);
         ability.addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY_FROM_YOUR_GRAVEYARD));
         this.addAbility(ability);
 
@@ -47,50 +51,5 @@ public final class ArchmagesNewt extends CardImpl {
     @Override
     public ArchmagesNewt copy() {
         return new ArchmagesNewt(this);
-    }
-}
-
-class ArchmagesNewtEffect extends ContinuousEffectImpl {
-
-    private boolean saddled = false;
-
-    ArchmagesNewtEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "target instant or sorcery card in your graveyard gains flashback until end of turn. " +
-                "The flashback cost is equal to its mana cost. That card gains flashback {0} until end of turn instead if {this} is saddled";
-    }
-
-    private ArchmagesNewtEffect(final ArchmagesNewtEffect effect) {
-        super(effect);
-        this.saddled = effect.saddled;
-    }
-
-    @Override
-    public ArchmagesNewtEffect copy() {
-        return new ArchmagesNewtEffect(this);
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        this.saddled = SaddledCondition.instance.apply(game, source);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card == null) {
-            return false;
-        }
-        FlashbackAbility ability;
-        if (saddled) {
-            ability = new FlashbackAbility(card, new GenericManaCost(0));
-        } else {
-            ability = new FlashbackAbility(card, card.getManaCost());
-        }
-        ability.setSourceId(card.getId());
-        ability.setControllerId(card.getOwnerId());
-        game.getState().addOtherAbility(card, ability);
-        return true;
     }
 }

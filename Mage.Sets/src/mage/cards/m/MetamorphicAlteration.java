@@ -1,5 +1,6 @@
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
@@ -19,6 +20,7 @@ import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -110,7 +112,38 @@ class MetamorphicAlterationEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent copied = (Permanent) game.getState().getValue(source.getSourceId().toString() + ChooseACreature.INFO_KEY);
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.setName(copied.getName());
+            permanent.getManaCost().clear();
+            permanent.getManaCost().addAll(copied.getManaCost());
+
+            CardUtil.copySetAndCardNumber(permanent, copied);
+
+            permanent.removeAllCardTypes(game);
+            for (SuperType t : copied.getSuperType(game)) {
+                permanent.addSuperType(game, t);
+            }
+            permanent.removeAllCardTypes(game);
+            for (CardType cardType : copied.getCardType(game)) {
+                permanent.addCardType(game, cardType);
+            }
+            permanent.removeAllSubTypes(game);
+            permanent.copySubTypesFrom(game, copied);
+            permanent.getColor(game).setColor(copied.getColor(game));
+            permanent.removeAllAbilities(source.getSourceId(), game);
+            for (Ability ability : copied.getAbilities()) {
+                permanent.addAbility(ability, source.getSourceId(), game, true);
+            }
+            permanent.getPower().setModifiedBaseValue(copied.getPower().getBaseValue());
+            permanent.getToughness().setModifiedBaseValue(copied.getToughness().getBaseValue());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent enchantment = game.getPermanent(source.getSourceId());
         Permanent copied = (Permanent) game.getState().getValue(source.getSourceId().toString() + ChooseACreature.INFO_KEY);
         if (enchantment == null
@@ -121,29 +154,7 @@ class MetamorphicAlterationEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        permanent.setName(copied.getName());
-        permanent.getManaCost().clear();
-        permanent.getManaCost().addAll(copied.getManaCost());
-
-        CardUtil.copySetAndCardNumber(permanent, copied);
-
-        permanent.removeAllCardTypes(game);
-        for (SuperType t : copied.getSuperType(game)) {
-            permanent.addSuperType(game, t);
-        }
-        permanent.removeAllCardTypes(game);
-        for (CardType cardType : copied.getCardType(game)) {
-            permanent.addCardType(game, cardType);
-        }
-        permanent.removeAllSubTypes(game);
-        permanent.copySubTypesFrom(game, copied);
-        permanent.getColor(game).setColor(copied.getColor(game));
-        permanent.removeAllAbilities(source.getSourceId(), game);
-        for (Ability ability : copied.getAbilities()) {
-            permanent.addAbility(ability, source.getSourceId(), game, true);
-        }
-        permanent.getPower().setModifiedBaseValue(copied.getPower().getBaseValue());
-        permanent.getToughness().setModifiedBaseValue(copied.getToughness().getBaseValue());
+        affectedObjects.add(permanent);
         return true;
     }
 

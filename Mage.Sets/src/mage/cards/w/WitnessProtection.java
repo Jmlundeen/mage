@@ -1,5 +1,6 @@
 package mage.cards.w;
 
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,6 +15,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -66,7 +68,37 @@ class WitnessProtectionEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TextChangingEffects_3:
+                    permanent.setName("Legitimate Businessperson");
+                    break;
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.addCardType(game, CardType.CREATURE);
+                    permanent.removeAllSubTypes(game);
+                    permanent.addSubType(game, SubType.CITIZEN);
+                    break;
+                case ColorChangingEffects_5:
+                    permanent.getColor(game).setColor(color);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(1);
+                        permanent.getToughness().setModifiedBaseValue(1);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent enchantment = source.getSourcePermanentIfItStillExists(game);
         if (enchantment == null) {
             return false;
@@ -75,35 +107,8 @@ class WitnessProtectionEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        switch (layer) {
-            case TextChangingEffects_3:
-                permanent.setName("Legitimate Businessperson");
-                break;
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.CREATURE);
-                permanent.removeAllSubTypes(game);
-                permanent.addSubType(game, SubType.CITIZEN);
-                break;
-            case ColorChangingEffects_5:
-                permanent.getColor(game).setColor(color);
-                break;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                break;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(1);
-                    permanent.getToughness().setModifiedBaseValue(1);
-                }
-                break;
-        }
+        affectedObjects.add(permanent);
         return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 
     @Override
@@ -117,5 +122,10 @@ class WitnessProtectionEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }

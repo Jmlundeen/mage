@@ -2,13 +2,14 @@ package mage.cards.i;
 
 import mage.MageInt;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.IsStepCondition;
 import mage.abilities.costs.common.SacrificeSourceCost;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.effects.common.DamageControllerEffect;
 import mage.abilities.effects.common.GainLifeEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
@@ -31,10 +32,7 @@ public final class IcatianMoneychanger extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Icatian Moneychanger enters the battlefield with three credit counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.CREDIT.createInstance(3))
-                        .setText("with three credit counters on it")
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CREDIT.createInstance(3))));
 
         // When Icatian Moneychanger enters the battlefield, it deals 3 damage to you.
         this.addAbility(new EntersBattlefieldTriggeredAbility(new DamageControllerEffect(3, "it")));

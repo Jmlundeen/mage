@@ -1,9 +1,10 @@
 package mage.cards.n;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.RevoltCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -33,10 +34,10 @@ public final class NightMarketAeronaut extends CardImpl {
 
         // <i>Revolt</i> &mdash; Night Market Aeronaut enters the battlefield with a +1/+1 counter on it if
         // a permanent you controlled left the battlefield this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance()), false,
-                RevoltCondition.instance, "{this} enters with a +1/+1 counter on it " +
-                "if a permanent you controlled left the battlefield this turn.", null
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                RevoltCondition.instance)
+                .setText("{this} enters with a +1/+1 counter on it if a permanent you controlled left the battlefield this turn.")
         ).setAbilityWord(AbilityWord.REVOLT).addHint(RevoltCondition.getHint()), new RevoltWatcher());
     }
 

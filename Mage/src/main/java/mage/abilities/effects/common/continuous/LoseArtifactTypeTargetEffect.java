@@ -1,11 +1,13 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,7 +42,16 @@ public class LoseArtifactTypeTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeCardType(game, CardType.ARTIFACT);
+            permanent.removeAllSubTypes(game, SubTypeSet.ArtifactType);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (UUID targetId : getTargetPointer().getTargets(game, source)) {
             if (targetId == null) {
                 continue;
@@ -49,8 +60,7 @@ public class LoseArtifactTypeTargetEffect extends ContinuousEffectImpl {
             if (permanent == null) {
                 continue;
             }
-            permanent.removeCardType(game, CardType.ARTIFACT);
-            permanent.removeAllSubTypes(game, SubTypeSet.ArtifactType);
+            affectedObjects.add(permanent);
             return true;
         }
         return false;

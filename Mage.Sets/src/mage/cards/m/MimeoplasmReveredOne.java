@@ -114,7 +114,7 @@ class MimeoplasmReveredOneEntersEffect extends OneShotEffect {
         controller.moveCards(parameters, source, game);
         cards.retainZone(Zone.EXILED, game);
         int counters = cards.count(StaticFilters.FILTER_CARD_CREATURE, game) * 3;
-        mimeoplasm.addCounters(CounterType.P1P1.createInstance(counters), controller.getId(), source, game);
+        game.addEnterWithCounters(mimeoplasm.getId(), CounterType.P1P1.createInstance(counters));
         return true;
     }
 }

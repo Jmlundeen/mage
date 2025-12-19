@@ -1,6 +1,7 @@
 package mage.cards.u;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
@@ -20,6 +21,7 @@ import mage.game.events.TappedForManaEvent;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetLandPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -76,24 +78,31 @@ class UltimaOriginOfOblivionEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllAbilities(source.getSourceId(), game);
+                    permanent.addAbility(new ColorlessManaAbility(), source.getSourceId(), game);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
+                    permanent.removeAllSubTypes(game, SubTypeSet.BasicLandType);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent == null || !permanent.getCounters(game).containsKey(CounterType.BLIGHT)) {
             discard();
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllAbilities(source.getSourceId(), game);
-                permanent.addAbility(new ColorlessManaAbility(), source.getSourceId(), game);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
-                permanent.removeAllSubTypes(game, SubTypeSet.BasicLandType);
-                return true;
-            default:
-                return false;
-        }
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override
@@ -105,11 +114,6 @@ class UltimaOriginOfOblivionEffect extends ContinuousEffectImpl {
             default:
                 return false;
         }
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 }
 

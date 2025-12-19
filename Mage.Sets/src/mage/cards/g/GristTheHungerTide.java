@@ -1,5 +1,6 @@
 package mage.cards.g;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
@@ -27,6 +28,7 @@ import mage.game.permanent.token.Token;
 import mage.players.Player;
 import mage.target.common.TargetCreatureOrPlaneswalker;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -104,12 +106,26 @@ class GristTheHungerTideTypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            MageObject mageObject = (MageObject) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    mageObject.addCardType(game, CardType.CREATURE);
+                    mageObject.addSubType(game, SubType.INSECT);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        mageObject.getPower().setModifiedBaseValue(1);
+                        mageObject.getToughness().setModifiedBaseValue(1);
+                    }
+                    break;
+            }
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (game.getState().getZone(source.getSourceId()) == Zone.BATTLEFIELD) {
             return false;
         }
@@ -117,19 +133,18 @@ class GristTheHungerTideTypeEffect extends ContinuousEffectImpl {
         if (sourceObject == null) {
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                sourceObject.addCardType(game, CardType.CREATURE);
-                sourceObject.addSubType(game, SubType.INSECT);
-                break;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    sourceObject.getPower().setModifiedBaseValue(1);
-                    sourceObject.getToughness().setModifiedBaseValue(1);
-                }
-                break;
-        }
+        affectedObjects.add(sourceObject);
         return true;
+    }
+
+    @Override
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (this.queryAffectedObjects(layer, source, game, affectedObjects)) {
+            this.applyToObjects(layer, sublayer, source, game, affectedObjects);
+            return true;
+        }
+        return false;
     }
 
     @Override

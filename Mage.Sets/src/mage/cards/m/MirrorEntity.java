@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -18,6 +19,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -81,15 +83,22 @@ class MirrorEntityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).setIsAllCreatureTypes(game, true);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
             Permanent permanent = it.next().getPermanent(game);
             if (permanent == null) {
                 it.remove(); // no longer on the battlefield, remove reference to object
                 continue;
             }
-            permanent.setIsAllCreatureTypes(game, true);
+            affectedObjects.add(permanent);
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

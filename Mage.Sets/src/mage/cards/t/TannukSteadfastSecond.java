@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -19,6 +20,7 @@ import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -84,14 +86,20 @@ class TannukSteadfastSecondEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, new WarpAbility(card, "{2}{R}"));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
-        for (Card card : controller.getHand().getCards(filter, game)) {
-            game.getState().addOtherAbility(card, new WarpAbility(card, "{2}{R}"));
-        }
-        return true;
+        affectedObjects.addAll(controller.getHand().getCards(filter, game));
+        return !affectedObjects.isEmpty();
     }
 }

@@ -2,19 +2,23 @@
 
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.constants.Duration;
 import mage.abilities.Ability;
 import mage.abilities.keyword.ProtectionAbility;
+import mage.constants.Layer;
 import mage.filter.FilterCard;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author ayratn
  */
 public class GainProtectionFromTypeTargetEffect extends GainAbilityTargetEffect {
 
-    private String typeName;
+    private final String typeName;
 
     public GainProtectionFromTypeTargetEffect(Duration duration, FilterCard protectionFrom) {
         super(new ProtectionAbility(new FilterCard()), duration);
@@ -34,13 +38,12 @@ public class GainProtectionFromTypeTargetEffect extends GainAbilityTargetEffect 
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent creature = game.getPermanent(source.getFirstTarget());
-        if (creature != null) {
-            creature.addAbility(ability, source.getSourceId(), game);
-            return true;
+        if (creature == null) {
+            return false;
         }
-        return false;
+        affectedObjects.add(source);
+        return true;
     }
-
 }

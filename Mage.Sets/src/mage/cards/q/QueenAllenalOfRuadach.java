@@ -1,22 +1,21 @@
 package mage.cards.q;
 
-import java.util.Map;
-import java.util.UUID;
 import mage.MageInt;
-import mage.abilities.Ability;
+import mage.MageObject;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.continuous.SetBasePowerToughnessSourceEffect;
-import mage.constants.*;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.CardType;
+import mage.constants.SubType;
+import mage.constants.SuperType;
+import mage.constants.Zone;
 import mage.filter.StaticFilters;
-import mage.game.Game;
-import mage.game.events.CreateTokenEvent;
-import mage.game.events.GameEvent;
 import mage.game.permanent.token.SoldierToken;
-import mage.game.permanent.token.Token;
+
+import java.util.UUID;
 
 /**
  *
@@ -43,7 +42,10 @@ public final class QueenAllenalOfRuadach extends CardImpl {
         ));
 
         // If one or more creature tokens would be created under your control, those tokens plus a 1/1 white Soldier creature token are created instead.
-        this.addAbility(new SimpleStaticAbility(new QueenAllenalOfRuadachEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.ADD, 1, new SoldierToken())
+                .withTokenCondition(MageObject::isCreature)
+                .setText("If one or more creature tokens would be created under your control, those tokens plus a 1/1 white Soldier creature token are created instead")
+        ));
     }
 
     private QueenAllenalOfRuadach(final QueenAllenalOfRuadach card) {
@@ -53,52 +55,5 @@ public final class QueenAllenalOfRuadach extends CardImpl {
     @Override
     public QueenAllenalOfRuadach copy() {
         return new QueenAllenalOfRuadach(this);
-    }
-}
-
-class QueenAllenalOfRuadachEffect extends ReplacementEffectImpl {
-
-    QueenAllenalOfRuadachEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        this.staticText = "If one or more creature tokens would be created under your control, those tokens plus a 1/1 white Soldier creature token are created instead.";
-    }
-
-    private QueenAllenalOfRuadachEffect(final QueenAllenalOfRuadachEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public QueenAllenalOfRuadachEffect copy() {
-        return new QueenAllenalOfRuadachEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        if (source.isControlledBy(event.getPlayerId())) {
-            for (Map.Entry<Token, Integer> entry : ((CreateTokenEvent) event).getTokens().entrySet()) {
-                if (entry.getValue() > 0 && entry.getKey().isCreature(game)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Map<Token, Integer> tokens = ((CreateTokenEvent) event).getTokens();
-        for (Map.Entry<Token, Integer> entry : tokens.entrySet()) {
-            if (entry.getKey() instanceof SoldierToken) {
-                entry.setValue(entry.getValue() + 1);
-                return false;
-            }
-        }
-        tokens.put(new SoldierToken(), 1);
-        return false;
     }
 }

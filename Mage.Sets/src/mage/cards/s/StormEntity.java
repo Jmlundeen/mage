@@ -1,13 +1,12 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -16,6 +15,8 @@ import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.watchers.common.CastSpellLastTurnWatcher;
+
+import java.util.UUID;
 
 /**
  *
@@ -32,12 +33,7 @@ public final class StormEntity extends CardImpl {
         // Haste
         this.addAbility(HasteAbility.getInstance());
         // Storm Entity enters the battlefield with a +1/+1 counter on it for each other spell cast this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(
-                        CounterType.P1P1.createInstance(),
-                        new OtherSpellsCastThisTurnCount(),
-                        true),
-                "with a +1/+1 counter on it for each other spell cast this turn"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1,new OtherSpellsCastThisTurnCount())));
     }
 
     private StormEntity(final StormEntity card) {

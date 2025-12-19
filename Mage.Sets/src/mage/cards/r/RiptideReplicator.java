@@ -3,22 +3,22 @@ package mage.cards.r;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ChooseColorEffect;
 import mage.abilities.effects.common.ChooseCreatureTypeEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.permanent.token.RiptideReplicatorToken;
@@ -41,7 +41,7 @@ public final class RiptideReplicator extends CardImpl {
         this.addAbility(ability);
 
         // Riptide Replicator enters the battlefield with X charge counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.CHARGE.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, GetXValue.instance)));
 
         // {4}, {T}: Create an X/X creature token of the chosen color and type, where X is the number of charge counters on Riptide Replicator.
         ability = new SimpleActivatedAbility(new RiptideReplicatorEffect(), new GenericManaCost(4));

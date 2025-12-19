@@ -3,7 +3,7 @@ package mage.cards.g;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.AtTheEndOfCombatDelayedTriggeredAbility;
 import mage.abilities.dynamicvalue.common.ManaSpentToCastCount;
 import mage.abilities.effects.Effect;
@@ -11,7 +11,7 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.CreateTokenCopyTargetEffect;
 import mage.abilities.effects.common.ExileTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -48,9 +48,8 @@ public final class GyrusWakerOfCorpses extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Gyrus, Walker of Corpses enters the battlefield with a number of +1/+1 counters on it equal to the amount of mana spent to cast it.
-        Effect effect = new AddCountersSourceEffect(CounterType.P1P1.createInstance(0), ManaSpentToCastCount.instance, true);
-        effect.setText("with a number of +1/+1 counters on it equal to the amount of mana spent to cast it");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, ManaSpentToCastCount.instance)
+                .setText("{this} enters with a number of +1/+1 counters on it equal to the amount of mana spent to cast it")));
 
         // Whenever Gyrus attacks, you may exile target creature card with lesser power from your graveyard. If you do, create a token that’s a copy of that card and that’s tapped and attacking. Exile the token at the end of combat.
         Ability ability = new AttacksTriggeredAbility(new GyrusWakerOfCorpsesEffect(), true);

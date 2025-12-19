@@ -1,6 +1,7 @@
 package mage.cards.u;
 
 import mage.ApprovingObject;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
@@ -25,6 +26,7 @@ import mage.target.TargetCard;
 import mage.target.common.TargetCardInHand;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -141,25 +143,28 @@ class UvildaDeanOfPerfectionGainAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = mor.getCard(game);
-        if (card == null) {
-            discard();
-            return true;
-        }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         Ability ability = new BeginningOfUpkeepTriggeredAbility(
                 Zone.EXILED, TargetController.YOU,
                 new RemoveCounterSourceEffect(CounterType.HONE.createInstance())
                         .setText("remove a hone counter from it"), false
         ).withInterveningIf(UvildaDeanOfPerfectionCondition.instance);
-        ability.setSourceId(card.getId());
-        ability.setControllerId(source.getControllerId());
-        game.getState().addOtherAbility(card, ability);
-        ability = new UvildaDeanOfPerfectionTriggeredAbility();
-        ability.setSourceId(card.getId());
-        ability.setControllerId(source.getControllerId());
-        game.getState().addOtherAbility(card, ability);
-        return true;
+
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, ability);
+            game.getState().addOtherAbility(card, new UvildaDeanOfPerfectionTriggeredAbility());
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = mor.getCard(game);
+        if (card != null) {
+            affectedObjects.add(card);
+            return true;
+        }
+        return false;
     }
 }
 

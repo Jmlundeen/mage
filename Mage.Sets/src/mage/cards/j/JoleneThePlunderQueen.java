@@ -7,8 +7,8 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.common.CreateTokenTargetEffect;
-import mage.abilities.effects.common.ReplaceTreasureWithAdditionalEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -21,7 +21,6 @@ import mage.game.Game;
 import mage.game.combat.Combat;
 import mage.game.events.GameEvent;
 import mage.game.permanent.token.TreasureToken;
-import mage.target.common.TargetControlledPermanent;
 import mage.target.targetpointer.FixedTarget;
 
 import java.util.Set;
@@ -48,7 +47,10 @@ public final class JoleneThePlunderQueen extends CardImpl {
         this.addAbility(new JoleneThePlunderQueenTriggeredAbility());
 
         // If you would create one or more Treasure tokens, instead create those tokens plus an additional Treasure token.
-        this.addAbility(new SimpleStaticAbility(new ReplaceTreasureWithAdditionalEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.ADD, 1)
+                .withTokenCondition((token, game) -> token.hasSubtype(SubType.TREASURE, game))
+                .setText("If you would create one or more Treasure tokens, instead create those tokens plus an additional Treasure token")
+        ));
 
         // Sacrifice five Treasures: Put five +1/+1 counters on Jolene.
         this.addAbility(new SimpleActivatedAbility(

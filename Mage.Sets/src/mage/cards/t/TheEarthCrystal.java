@@ -6,26 +6,19 @@ import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
 import mage.abilities.effects.common.counter.DistributeCountersEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
 import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.mageobject.ColorPredicate;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanentAmount;
-import mage.util.CardUtil;
 
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -48,7 +41,12 @@ public final class TheEarthCrystal extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new SpellsCostReductionControllerEffect(filter, 1)));
 
         // If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on that creature instead.
-        this.addAbility(new SimpleStaticAbility(new TheEarthCrystalEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.MULTIPLY, 2)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_CREATURE)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setText("if one or more +1/+1 counters would be put on a creature you control, " +
+                        "twice that many +1/+1 counters are put on that creature instead")
+        ));
 
         // {4}{G}{G}, {T}: Distribute two +1/+1 counters among one or two target creatures you control.
         Ability ability = new SimpleActivatedAbility(
@@ -69,49 +67,5 @@ public final class TheEarthCrystal extends CardImpl {
     @Override
     public TheEarthCrystal copy() {
         return new TheEarthCrystal(this);
-    }
-}
-
-class TheEarthCrystalEffect extends ReplacementEffectImpl {
-
-    TheEarthCrystalEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.BoostCreature, false);
-        staticText = "if one or more +1/+1 counters would be put on a creature you control, " +
-                "twice that many +1/+1 counters are put on that creature instead";
-    }
-
-    private TheEarthCrystalEffect(final TheEarthCrystalEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        event.setAmountForCounters(CardUtil.overflowMultiply(event.getAmount(), 2), true);
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_COUNTERS;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        if (!CounterType.P1P1.getName().equals(event.getData()) || event.getAmount() < 1) {
-            return false;
-        }
-        Permanent permanent = Optional
-                .ofNullable(event)
-                .map(GameEvent::getTargetId)
-                .map(game::getPermanent)
-                .orElseGet(() -> game.getPermanentEntering(event.getTargetId()));
-        return permanent != null
-                && permanent.isControlledBy(source.getControllerId())
-                && permanent.isCreature(game);
-    }
-
-    @Override
-    public TheEarthCrystalEffect copy() {
-        return new TheEarthCrystalEffect(this);
     }
 }

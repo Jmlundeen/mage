@@ -1,5 +1,6 @@
 package mage.abilities.dynamicvalue;
 
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.effects.Effect;
 import mage.game.Game;
@@ -12,6 +13,10 @@ import java.io.Serializable;
  * use it then think x100 times and override Copy method with copy constructor.
  */
 public interface DynamicValue extends Serializable, Copyable<DynamicValue> {
+
+    default int calculate(Game game, Ability sourceAbility, Effect effect, MageObject mageObject) {
+        return calculate(game, sourceAbility, effect);
+    }
 
     int calculate(Game game, Ability sourceAbility, Effect effect);
 

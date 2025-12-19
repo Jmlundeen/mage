@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -7,12 +8,15 @@ import mage.abilities.Mode;
 import mage.abilities.keyword.ProtectionAbility;
 import mage.choices.ChoiceColor;
 import mage.constants.Duration;
+import mage.constants.Layer;
 import mage.constants.Outcome;
 import mage.filter.FilterCard;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.List;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -51,6 +55,10 @@ public class GainProtectionFromColorTargetEffect extends GainAbilityTargetEffect
         if (sourceObject != null && controller != null) {
             if (controller.choose(Outcome.Protect, choice, game)) {
                 game.informPlayers(sourceObject.getLogName() + ": " + controller.getLogName() + " has chosen protection from " + choice.getChoice());
+                FilterCard protectionFilter = (FilterCard) ((ProtectionAbility) ability).getFilter();
+                protectionFilter.add(new ColorPredicate(choice.getColor()));
+                protectionFilter.setMessage(choice.getChoice());
+                ((ProtectionAbility) ability).setFilter(protectionFilter);
                 return;
             }
         }
@@ -58,17 +66,14 @@ public class GainProtectionFromColorTargetEffect extends GainAbilityTargetEffect
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent creature = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (creature != null) {
-            FilterCard protectionFilter = (FilterCard) ((ProtectionAbility) ability).getFilter();
-            protectionFilter.add(new ColorPredicate(choice.getColor()));
-            protectionFilter.setMessage(choice.getChoice());
-            ((ProtectionAbility) ability).setFilter(protectionFilter);
-            creature.addAbility(ability, source.getSourceId(), game);
-            return true;
+        if (creature == null) {
+            return false;
         }
-        return false;
+
+        affectedObjects.add(creature);
+        return true;
     }
 
     @Override

@@ -1,10 +1,12 @@
 package mage.cards.k;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -16,6 +18,7 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,8 +44,11 @@ public final class KatildaAndLier extends CardImpl {
         this.power = new MageInt(3);
         this.toughness = new MageInt(3);
 
-        // Each instant and sorcery card in your graveyard has flashback. The flashback cost is equal to that card's mana cost.
-        Ability ability = new SpellCastControllerTriggeredAbility(new KatildaAndLierEffect(), filterSpell, false);
+        // Whenever you cast a Human spell, target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
+        ContinuousEffect effect = new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost");
+        Ability ability = new SpellCastControllerTriggeredAbility(effect, filterSpell, false);
         ability.addTarget(new TargetCardInYourGraveyard(filterCard));
         this.addAbility(ability);
     }
@@ -54,35 +60,5 @@ public final class KatildaAndLier extends CardImpl {
     @Override
     public KatildaAndLier copy() {
         return new KatildaAndLier(this);
-    }
-}
-
-class KatildaAndLierEffect extends ContinuousEffectImpl {
-
-    KatildaAndLierEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost";
-    }
-
-    private KatildaAndLierEffect(final KatildaAndLierEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public KatildaAndLierEffect copy() {
-        return new KatildaAndLierEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card != null) {
-            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-            return true;
-        }
-        return false;
     }
 }

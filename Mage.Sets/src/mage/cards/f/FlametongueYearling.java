@@ -2,12 +2,12 @@ package mage.cards.f;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.MultikickerCount;
 import mage.abilities.dynamicvalue.common.SourcePermanentPowerValue;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.MultikickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -34,9 +34,7 @@ public final class FlametongueYearling extends CardImpl {
         this.addAbility(new MultikickerAbility("{2}"));
 
         // Flametongue Yearling enters the battlefield with a +1/+1 counter on it for each time it was kicked.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(0), MultikickerCount.instance, true
-        ), "with a +1/+1 counter on it for each time it was kicked"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, MultikickerCount.instance)));
 
         // When Flametongue Yearling enters the battlefield, it deals damage equal to its power to target creature.
         Ability ability = new EntersBattlefieldTriggeredAbility(new DamageTargetEffect(SourcePermanentPowerValue.NOT_NEGATIVE)

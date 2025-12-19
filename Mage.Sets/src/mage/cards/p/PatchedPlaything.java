@@ -1,9 +1,10 @@
 package mage.cards.p;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.CastFromHandSourcePermanentCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DoubleStrikeAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -30,10 +31,10 @@ public final class PatchedPlaything extends CardImpl {
         this.addAbility(DoubleStrikeAbility.getInstance());
 
         // Patched Plaything enters with two -1/-1 counters on it if you cast it from your hand.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.M1M1.createInstance(2)),
-                CastFromHandSourcePermanentCondition.instance, null,
-                "with two -1/-1 counters on it if you cast it from your hand"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.M1M1.createInstance(2)),
+                CastFromHandSourcePermanentCondition.instance)
+                .setText("{this} enters with two -1/-1 counters on it if you cast it from your hand")
         ), new CastFromHandWatcher());
     }
 

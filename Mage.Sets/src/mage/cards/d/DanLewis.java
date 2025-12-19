@@ -1,7 +1,7 @@
 package mage.cards.d;
 
 import mage.MageInt;
-import mage.MageObjectReference;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -17,6 +17,7 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -68,15 +69,9 @@ class DanLewisEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        if (layer == Layer.TypeChangingEffects_4) {
-            affectedObjectList.clear();
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
-                affectedObjectList.add(new MageObjectReference(permanent, game));
-            }
-        }
-        for (MageObjectReference mor : affectedObjectList) {
-            Permanent permanent = mor.getPermanent(game);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     permanent.addSubType(game, SubType.EQUIPMENT);
@@ -88,12 +83,19 @@ class DanLewisEffect extends ContinuousEffectImpl {
                     permanent.addAbility(new EquipAbility(1, false), source.getSourceId(), game);
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

@@ -1,11 +1,11 @@
 package mage.cards.g;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.effects.common.continuous.BoostSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -33,10 +33,7 @@ public final class GitaxianRaptor extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Gitaxian Raptor enters the battlefield with three oil counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.OIL.createInstance(3)),
-                "with three oil counters on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance(3))));
 
         // Remove an oil counter from Gitaxian Raptor: Gitaxian Raptor gets +1/-1 until end of turn.
         this.addAbility(new SimpleActivatedAbility(

@@ -1,8 +1,8 @@
 package mage.cards.b;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.counter.AddCounterChoiceSourceEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -24,8 +24,9 @@ public final class BootNipper extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Boot Nipper enters the battlefield with your choice of a deathtouch counter or a lifelink counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCounterChoiceSourceEffect(CounterType.DEATHTOUCH, CounterType.LIFELINK)
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.DEATHTOUCH.createInstance())
+                .withAdditionalCounters(CounterType.LIFELINK.createInstance())
+                .withChooseCounter()
         ));
     }
 

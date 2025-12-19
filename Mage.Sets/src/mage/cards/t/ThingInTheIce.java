@@ -1,7 +1,7 @@
 package mage.cards.t;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.common.TransformIntoSourceTriggeredAbility;
 import mage.abilities.condition.Condition;
@@ -9,7 +9,7 @@ import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.decorator.ConditionalOneShotEffect;
 import mage.abilities.effects.common.ReturnToHandFromBattlefieldAllEffect;
 import mage.abilities.effects.common.TransformSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.abilities.keyword.DefenderAbility;
 import mage.cards.CardSetInfo;
@@ -55,9 +55,7 @@ public final class ThingInTheIce extends TransformingDoubleFacedCard {
         this.getLeftHalfCard().addAbility(DefenderAbility.getInstance());
 
         // Thing in the Ice enters the battlefield with four ice counters on it.
-        this.getLeftHalfCard().addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.ICE.createInstance(4)).setText("with four ice counters on it")
-        ));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.ICE.createInstance(4))));
 
         // Whenever you cast an instant or sorcery spell, remove an ice counter from Thing in the Ice. Then if it has no ice counters on it, transform it.
         Ability ability = new SpellCastControllerTriggeredAbility(

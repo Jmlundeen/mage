@@ -3,13 +3,14 @@ package mage.cards.r;
 import mage.MageInt;
 import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.common.CantHaveMoreThanAmountCountersSourceAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.effects.common.PreventDamageToSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
+import mage.abilities.effects.common.continuous.rulemodifying.PreventCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.mana.SimpleManaAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
@@ -18,6 +19,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
+import mage.filter.StaticFilters;
 import mage.filter.predicate.permanent.TappedPredicate;
 import mage.game.Game;
 import mage.game.events.GameEvent;
@@ -42,10 +44,7 @@ public final class RasputinDreamweaver extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Rasputin Dreamweaver enters the battlefield with seven dream counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.DREAM.createInstance(7)),
-                "with seven dream counters on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.DREAM.createInstance(7))));
 
         // Remove a dream counter from Rasputin: Add {C}.
         this.addAbility(new SimpleManaAbility(
@@ -67,7 +66,10 @@ public final class RasputinDreamweaver extends CardImpl {
         ).withInterveningIf(RasputinDreamweaverCondition.instance), new RasputinDreamweaverWatcher());
 
         // Rasputin can't have more than seven dream counters on it.
-        this.addAbility(new CantHaveMoreThanAmountCountersSourceAbility(CounterType.DREAM, 7));
+        this.addAbility(new SimpleStaticAbility(new PreventCountersEffect(7, CounterType.DREAM)
+                .setText("{this} can't have more than seven dream counters on it")
+                .setPermanentFilter(StaticFilters.FILTER_SOURCE_PERMANENT)
+        ));
     }
 
     private RasputinDreamweaver(final RasputinDreamweaver card) {

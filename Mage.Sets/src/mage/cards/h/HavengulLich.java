@@ -1,6 +1,7 @@
 package mage.cards.h;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbility;
 import mage.abilities.DelayedTriggeredAbility;
@@ -20,6 +21,7 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -175,13 +177,22 @@ class HavengulLichEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = game.getCard(cardId);
+        for (MageItem object : affectedObjects) {
+            for (ActivatedAbility ability : card.getAbilities(game).getActivatedAbilities(Zone.BATTLEFIELD)) {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         Card card = game.getCard(cardId);
         if (permanent != null && card != null) {
-            for (ActivatedAbility ability : card.getAbilities(game).getActivatedAbilities(Zone.BATTLEFIELD)) {
-                permanent.addAbility(ability, source.getSourceId(), game, true);
-            }
+            affectedObjects.add(permanent);
+            return true;
         }
         return false;
     }

@@ -1,5 +1,6 @@
 package mage.cards.g;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.CompositeCost;
@@ -121,12 +122,9 @@ class GrimoireOfTheDeadEffect2 extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (UUID permanentId : getTargetPointer().getTargets(game, source)) {
-            Permanent permanent = game.getPermanent(permanentId);
-            if (permanent == null) {
-                continue;
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case ColorChangingEffects_5:
                     permanent.getColor(game).setBlack(true);
@@ -136,11 +134,26 @@ class GrimoireOfTheDeadEffect2 extends ContinuousEffectImpl {
                     break;
             }
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (UUID permanentId : getTargetPointer().getTargets(game, source)) {
+            Permanent permanent = game.getPermanent(permanentId);
+            if (permanent != null) {
+                affectedObjects.add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+        List<MageItem> affectedObjects = new ArrayList<>();
+        if (this.queryAffectedObjects(layer, source, game, affectedObjects)) {
+            this.applyToObjects(layer, sublayer, source, game, affectedObjects);
+            return true;
+        }
         return false;
     }
 

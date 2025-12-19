@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -11,6 +12,8 @@ import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
+
+import java.util.List;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -75,7 +78,18 @@ public class GainAbilitySourceEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            if (onCard) {
+                game.getState().addOtherAbility((Card) object, ability);
+            } else {
+                ((Permanent) object).addAbility(ability, source.getSourceId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (onCard) {
             Card card;
             if (getAffectedObjectsSet()) {
@@ -84,8 +98,7 @@ public class GainAbilitySourceEffect extends ContinuousEffectImpl {
                 card = game.getCard(source.getSourceId());
             }
             if (card != null) {
-                // add ability to card only once
-                game.getState().addOtherAbility(card, ability);
+                affectedObjects.add(card);
                 return true;
             }
         } else {
@@ -96,13 +109,27 @@ public class GainAbilitySourceEffect extends ContinuousEffectImpl {
                 permanent = game.getPermanent(source.getSourceId());
             }
             if (permanent != null) {
-                permanent.addAbility(ability, source.getSourceId(), game);
+                affectedObjects.add(permanent);
                 return true;
             }
         }
         if (duration == Duration.Custom) {
             this.discard();
         }
-        return true;
+        return false;
+    }
+
+    @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        int result = 0;
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                Permanent permanent = (Permanent) object;
+                if (permanent.getAbilities().contains(ability)) {
+                    result++;
+                }
+            }
+        }
+        return result;
     }
 }

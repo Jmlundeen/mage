@@ -6,6 +6,7 @@ import mage.cards.AdventureCardHalf;
 import mage.cards.Card;
 import mage.filter.predicate.Predicate;
 import mage.game.Game;
+import mage.game.permanent.PermanentCard;
 import mage.game.stack.Spell;
 
 /**
@@ -18,6 +19,8 @@ public enum AdventurePredicate implements Predicate<MageObject> {
     public boolean apply(MageObject input, Game game) {
         if (input instanceof Spell) {
             return ((Spell) input).getCard() instanceof AdventureCardHalf;
+        } else if (input instanceof PermanentCard) {
+            return ((PermanentCard) input).getCard() instanceof AdventureCardHalf;
         } else if (input instanceof Card) {
             return input instanceof AdventureCard || input instanceof AdventureCardHalf;
         } else {

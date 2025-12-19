@@ -1,18 +1,16 @@
 
 package mage.cards.e;
 
-import java.util.UUID;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.combat.CanBlockAdditionalCreatureAttachedEffect;
 import mage.abilities.keyword.EquipAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledCreaturePermanent;
+
+import java.util.UUID;
 
 
 /**
@@ -24,8 +22,8 @@ public final class EchoCirclet extends CardImpl {
         super(ownerId,setInfo,new CardType[]{CardType.ARTIFACT},"{2}");
         this.subtype.add(SubType.EQUIPMENT);
 
-        // Equipped creature can block an additional creature each combat. (static abilit of equipment, no ability that will be gained to equiped creature!)
-        this.addAbility(new SimpleStaticAbility(new EchoCircletEffect()));
+        // Equipped creature can block an additional creature each combat. (static ability of equipment, no ability that will be gained to equipped creature!)
+        this.addAbility(new SimpleStaticAbility(new CanBlockAdditionalCreatureAttachedEffect(AttachmentType.EQUIPMENT)));
 
         // Equip {1}
         this.addAbility(new EquipAbility(Outcome.BoostCreature, new GenericManaCost(1), new TargetControlledCreaturePermanent(), false));
@@ -39,52 +37,4 @@ public final class EchoCirclet extends CardImpl {
     public EchoCirclet copy() {
         return new EchoCirclet(this);
     }
-}
-
-class EchoCircletEffect extends ContinuousEffectImpl {
-
-    EchoCircletEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        staticText = "Equipped creature can block an additional creature each combat";
-    }
-
-    private EchoCircletEffect(final EchoCircletEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public EchoCircletEffect copy() {
-        return new EchoCircletEffect(this);
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm != null && perm.getAttachedTo() != null) {
-            Permanent equipped = game.getPermanent(perm.getAttachedTo());
-            if (equipped != null) {
-                switch (layer) {
-                    case RulesEffects:
-                        // maxBlocks = 0 equals to "can block any number of creatures"
-                        if (equipped.getMaxBlocks() > 0) {
-                            equipped.setMaxBlocks(equipped.getMaxBlocks() + 1);
-                        }
-                        break;
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
-    }
-
 }

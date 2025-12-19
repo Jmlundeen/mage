@@ -1,6 +1,7 @@
 
 package mage.cards.x;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -53,18 +54,22 @@ class XenograftAddSubtypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addSubType(game, subType);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
         if (subType == null) {
             return false;
         }
-        List<Permanent> permanents = game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game);
-        for (Permanent permanent : permanents) {
-            if (permanent != null) {
-                permanent.addSubType(game, subType);
-            }
-        }
-        return true;
+        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 
     @Override

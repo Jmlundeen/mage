@@ -1,8 +1,8 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -10,16 +10,13 @@ import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.LifelinkAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -70,33 +67,35 @@ class SerraAscendantEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
+            switch (layer) {
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.ModifyPT_7c) {
+                        creature.addPower(5);
+                        creature.addToughness(5);
+                    }
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    if (sublayer == SubLayer.NA) {
+                        creature.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent creature = game.getPermanent(source.getSourceId());
         Player controller = game.getPlayer(source.getControllerId());
         if (creature != null && controller != null) {
             if (controller.getLife() >= 30) {
-                switch (layer) {
-                    case PTChangingEffects_7:
-                        if (sublayer == SubLayer.ModifyPT_7c) {
-                            creature.addPower(5);
-                            creature.addToughness(5);
-                        }
-                        break;
-                    case AbilityAddingRemovingEffects_6:
-                        if (sublayer == SubLayer.NA) {
-                            creature.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
-                        }
-                        break;
-                }
-
+                affectedObjects.add(creature);
             }
             return true;
         }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
         return false;
     }
 
@@ -105,4 +104,8 @@ class SerraAscendantEffect extends ContinuousEffectImpl {
         return Layer.AbilityAddingRemovingEffects_6 == layer || Layer.PTChangingEffects_7 == layer;
     }
 
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.ModifyPT_7c;
+    }
 }

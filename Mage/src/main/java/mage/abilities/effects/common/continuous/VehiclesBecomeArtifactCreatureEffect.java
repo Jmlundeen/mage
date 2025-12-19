@@ -1,10 +1,13 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 public class VehiclesBecomeArtifactCreatureEffect extends ContinuousEffectImpl {
 
@@ -24,20 +27,21 @@ public class VehiclesBecomeArtifactCreatureEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(source.getControllerId())) {
-            if (permanent != null && permanent.hasSubtype(SubType.VEHICLE, game)) {
-                if (sublayer == SubLayer.NA) {
-                    permanent.addCardType(game, CardType.ARTIFACT);
-                    permanent.addCardType(game, CardType.CREATURE);// TODO: Check if giving CREATURE Type is correct
-                }
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addCardType(game, CardType.ARTIFACT);
+            permanent.addCardType(game, CardType.CREATURE);
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(source.getControllerId())) {
+            if (permanent.hasSubtype(SubType.VEHICLE, game)) {
+                affectedObjects.add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 }

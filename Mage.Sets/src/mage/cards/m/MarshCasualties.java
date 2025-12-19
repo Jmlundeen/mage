@@ -1,6 +1,7 @@
 
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.condition.LockedInCondition;
@@ -17,6 +18,7 @@ import mage.game.permanent.Permanent;
 import mage.target.TargetPlayer;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -86,16 +88,24 @@ class MarshCasualtiesEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addPower(power);
+            permanent.addToughness(toughness);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
             Permanent permanent = it.next().getPermanent(game);
             if (permanent != null) {
-                permanent.addPower(power);
-                permanent.addToughness(toughness);
+                affectedObjects.add(permanent);
             } else {
                 it.remove();
             }
         }
-        return true;
+        return !affectedObjectList.isEmpty();
     }
 }

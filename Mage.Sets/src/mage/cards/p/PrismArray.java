@@ -2,16 +2,17 @@
 package mage.cards.p;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.common.ColorsOfManaSpentToCastCount;
 import mage.abilities.effects.common.TapTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.keyword.ScryEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.AbilityWord;
 import mage.constants.CardType;
 import mage.counters.CounterType;
 import mage.target.common.TargetCreaturePermanent;
@@ -27,9 +28,11 @@ public final class PrismArray extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{4}{U}");
 
         // <i>Converge</i> &mdash; Prism Array enters the battlefield with a crystal counter on it for each color of mana spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.CRYSTAL.createInstance(), ColorsOfManaSpentToCastCount.getInstance(), true),
-                null, "<i>Converge</i> &mdash; {this} enters with a crystal counter on it for each color of mana spent to cast it.", null));
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.CRYSTAL, ColorsOfManaSpentToCastCount.getInstance())
+                        .setText("{this} enters with a crystal counter on it for each color of mana spent to cast it"))
+                .setAbilityWord(AbilityWord.CONVERGE)
+        );
 
         // Remove a crystal counter from Prism Array: Tap target creature.
         Ability ability = new SimpleActivatedAbility(

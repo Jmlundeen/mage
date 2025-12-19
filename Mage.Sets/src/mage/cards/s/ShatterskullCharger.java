@@ -1,13 +1,14 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.InvertCondition;
 import mage.abilities.condition.common.KickedCondition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.ReturnToHandSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.abilities.keyword.TrampleAbility;
@@ -48,9 +49,10 @@ public final class ShatterskullCharger extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // If Shatterskull Charger was kicked, it enters with a +1/+1 counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance()), KickedCondition.ONCE,
-                "If {this} was kicked, it enters with a +1/+1 counter on it.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with a +1/+1 counter on it")
         ));
 
         // At the beginning of your end step, if Shatterskull Charger doesn't have a +1/+1 counter on it, return it to its owner's hand.

@@ -5,20 +5,16 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.ContinuousEffectImpl;
-import mage.abilities.effects.common.ExileTargetForSourceEffect;
+import mage.abilities.effects.common.ExileTargetEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
-import mage.game.ExileZone;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInYourGraveyard;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -36,13 +32,16 @@ public final class PatchworkCrawler extends CardImpl {
         this.toughness = new MageInt(2);
 
         // {2}{U}: Exile target creature card from your graveyard and put a +1/+1 counter on Patchwork Crawler.
-        Ability ability = new SimpleActivatedAbility(new ExileTargetForSourceEffect(), new ManaCostsImpl<>("{2}{U}"));
+        Ability ability = new SimpleActivatedAbility(new ExileTargetEffect().setToSourceExileZone(true), new ManaCostsImpl<>("{2}{U}"));
         ability.addEffect(new AddCountersSourceEffect(CounterType.P1P1.createInstance()).concatBy("and"));
         ability.addTarget(new TargetCardInYourGraveyard(StaticFilters.FILTER_CARD_CREATURE_YOUR_GRAVEYARD));
         this.addAbility(ability);
 
         // Patchwork Crawler has all activated abilities of all creature cards exiled with it.
-        this.addAbility(new SimpleStaticAbility(new PatchworkCrawlerEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of all creature cards exiled with it")
+                .fromSourceExiled()
+        ));
     }
 
     private PatchworkCrawler(final PatchworkCrawler card) {
@@ -52,39 +51,5 @@ public final class PatchworkCrawler extends CardImpl {
     @Override
     public PatchworkCrawler copy() {
         return new PatchworkCrawler(this);
-    }
-}
-
-class PatchworkCrawlerEffect extends ContinuousEffectImpl {
-
-    PatchworkCrawlerEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of all creature cards exiled with it";
-    }
-
-    private PatchworkCrawlerEffect(final PatchworkCrawlerEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(game, source));
-        if (permanent == null || exileZone == null || exileZone.isEmpty()) {
-            return false;
-        }
-        for (Card card : exileZone.getCards(StaticFilters.FILTER_CARD_CREATURE, game)) {
-            for (Ability ability : card.getAbilities(game)) {
-                if (ability.isActivatedAbility()) {
-                    permanent.addAbility(ability, source.getSourceId(), game, true);
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public PatchworkCrawlerEffect copy() {
-        return new PatchworkCrawlerEffect(this);
     }
 }

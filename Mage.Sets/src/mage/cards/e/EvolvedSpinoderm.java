@@ -2,24 +2,22 @@ package mage.cards.e;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.decorator.ConditionalContinuousEffect;
 import mage.abilities.decorator.ConditionalOneShotEffect;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.common.SacrificeSourceEffect;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.abilities.keyword.HexproofAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.ComparisonType;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.counters.CounterType;
 
 import java.util.UUID;
@@ -41,15 +39,16 @@ public final class EvolvedSpinoderm extends CardImpl {
         this.toughness = new MageInt(5);
 
         // Evolved Spinoderm enters the battlefield with four oil counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.OIL.createInstance(4)),
-                "with four oil counters on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OIL.createInstance(4))));
 
         // Evolved Spinoderm has trample as long as it was two or fewer oil counters on it, Otherwise, it has hexproof.
+        ContinuousEffect trampleEffect = new ContinuousEffectBuilder(Outcome.AddAbility, ContinuousAffected.SOURCE)
+                .withGainedAbilities(TrampleAbility.getInstance());
+        ContinuousEffect hexproofEffect = new ContinuousEffectBuilder(Outcome.AddAbility, ContinuousAffected.SOURCE)
+                .withGainedAbilities(HexproofAbility.getInstance());
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
-                new GainAbilitySourceEffect(TrampleAbility.getInstance()),
-                new GainAbilitySourceEffect(HexproofAbility.getInstance()),
+                trampleEffect,
+                hexproofEffect,
                 condition1, "{this} has trample as long as it has two " +
                 "or fewer oil counters on it. Otherwise, it has hexproof"
         )));

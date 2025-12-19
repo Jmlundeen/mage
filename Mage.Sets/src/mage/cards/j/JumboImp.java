@@ -3,11 +3,11 @@ package mage.cards.j;
 
 import mage.MageInt;
 import mage.abilities.Ability;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -15,11 +15,10 @@ import mage.constants.*;
 import mage.counters.Counter;
 import mage.counters.CounterType;
 import mage.game.Game;
+import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -39,7 +38,7 @@ public final class JumboImp extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // As Jumbo Imp enters the battlefield, roll a six-sided die. Jumbo Imp enters the battlefield with a number of +1/+1 counters on it equal to the result.
-        this.addAbility(new EntersBattlefieldAbility(new JumboImpEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new JumboImpEffect(null)));
 
         // At the beginning of your upkeep, roll a six-sided die and put a number of +1/+1 counters on Jumbo Imp equal to the result. 
         Ability ability2 = new BeginningOfUpkeepTriggeredAbility(new JumboImpAddCountersEffect());
@@ -60,10 +59,12 @@ public final class JumboImp extends CardImpl {
     }
 }
 
-class JumboImpEffect extends EntersBattlefieldWithXCountersEffect {
+// TODO: allow for roll dice effect -> remember result -> use dynamic value for result. So no custom effect needed.
+class JumboImpEffect extends EntersWithCountersEffect {
 
     JumboImpEffect(Counter counter) {
         super(counter);
+        staticText = "as {this} enters, roll a six-sided die. {this} enters with a number of +1/+1 counters on it equal to the result";
     }
 
     private JumboImpEffect(JumboImpEffect effect) {
@@ -71,14 +72,12 @@ class JumboImpEffect extends EntersBattlefieldWithXCountersEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
         Player controller = game.getPlayer(source.getControllerId());
         Permanent permanent = game.getPermanentEntering(source.getSourceId());
         if (controller != null && permanent != null) {
             int amount = controller.rollDice(outcome, source, game, 6);
-            List<UUID> appliedEffects = (ArrayList<UUID>) this.getValue("appliedEffects"); // the basic event is the EntersBattlefieldEvent, so use already applied replacement effects from that event
-            permanent.addCounters(CounterType.P1P1.createInstance(amount), source.getControllerId(), source, game, appliedEffects);
-            return super.apply(game, source);
+            game.addEnterWithCounters(permanent.getId(), CounterType.P1P1.createInstance(amount));
         }
         return false;
     }
@@ -123,7 +122,7 @@ class JumboImpRemoveCountersEffect extends OneShotEffect {
 
     JumboImpRemoveCountersEffect() {
         super(Outcome.Detriment);
-        this.staticText = "roll a six-sided die and remove a number of +1/+1 counters on {this} equal to the result";
+        this.staticText = "roll a six-sided die and remove a number of +1/+1 counters from {this} equal to the result";
     }
 
     private JumboImpRemoveCountersEffect(final JumboImpRemoveCountersEffect effect) {

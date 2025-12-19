@@ -1,14 +1,15 @@
 package mage.cards.m;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.CastFromHandSourcePermanentCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.common.CreateTokenEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.cards.CardImpl;
@@ -40,10 +41,10 @@ public final class MyojinOfBloomingDawn extends CardImpl {
         this.toughness = new MageInt(6);
 
         // Myojin of Blooming Dawn enters the battlefield with an indestructible counter on it if you cast it from your hand.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.INDESTRUCTIBLE.createInstance()),
-                CastFromHandSourcePermanentCondition.instance, null,
-                "with an indestructible counter on it if you cast it from your hand"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.INDESTRUCTIBLE.createInstance()),
+                CastFromHandSourcePermanentCondition.instance)
+                .setText("{this} enters with an indestructible counter on it if you cast it from your hand")
         ), new CastFromHandWatcher());
 
         // Remove an indestructible counter from Myojin of Blooming Dawn: Create a 1/1 colorless Spirit creature token for each permanent you control.

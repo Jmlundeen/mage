@@ -1,9 +1,11 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.abilities.keyword.PlotAbility;
 import mage.cards.Card;
@@ -15,6 +17,7 @@ import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,7 +43,11 @@ public final class SlickshotLockpicker extends CardImpl {
         this.toughness = new MageInt(3);
 
         // When Slickshot Lockpicker enters the battlefield, target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        Ability ability = new EntersBattlefieldTriggeredAbility(new SlickshotLockpickerEffect());
+        Ability ability = new EntersBattlefieldTriggeredAbility(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("target instant or sorcery card in your graveyard gains flashback until end of turn. " +
+                        "The flashback cost is equal to its mana cost")
+        );
         ability.addTarget(new TargetCardInYourGraveyard(filter));
         this.addAbility(ability);
 
@@ -55,39 +62,5 @@ public final class SlickshotLockpicker extends CardImpl {
     @Override
     public SlickshotLockpicker copy() {
         return new SlickshotLockpicker(this);
-    }
-}
-
-/**
- * From {@link mage.cards.s.SnapcasterMage SnapcasterMage}
- */
-class SlickshotLockpickerEffect extends ContinuousEffectImpl {
-
-    SlickshotLockpickerEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "target instant or sorcery card in your graveyard gains flashback until end of turn. "
-                + "The flashback cost is equal to its mana cost";
-    }
-
-    private SlickshotLockpickerEffect(final SlickshotLockpickerEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public SlickshotLockpickerEffect copy() {
-        return new SlickshotLockpickerEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card != null) {
-            FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
-            return true;
-        }
-        return false;
     }
 }

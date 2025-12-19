@@ -2,19 +2,16 @@
 package mage.cards.j;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.MultikickerCount;
-import mage.abilities.effects.common.continuous.BoostAllEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.MultikickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
-import mage.constants.TargetController;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
@@ -28,7 +25,8 @@ public final class JoragaWarcaller extends CardImpl {
 
     private static final String rule = "Other Elf creatures you control get +1/+1 for each +1/+1 counter on {this}";
 
-    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("elf creatures you control");
+    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("other elf creatures you control");
+    private static final DynamicValue counterCount = new CountersSourceCount(CounterType.P1P1);
 
     static {
         filter.add(TargetController.YOU.getControllerPredicate());
@@ -48,14 +46,16 @@ public final class JoragaWarcaller extends CardImpl {
         this.addAbility(new MultikickerAbility("{1}{G}"));
         
         // Joraga Warcaller enters the battlefield with a +1/+1 counter on it for each time it was kicked.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(0), MultikickerCount.instance, true),
-                "with a +1/+1 counter on it for each time it was kicked"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, MultikickerCount.instance)));
 
         
         // Other Elf creatures you control get +1/+1 for each +1/+1 counter on Joraga Warcaller.
         this.addAbility(new SimpleStaticAbility(
-                new BoostAllEffect( new CountersSourceCount(CounterType.P1P1), new CountersSourceCount(CounterType.P1P1), Duration.WhileOnBattlefield, filter, true, rule)));
+                new ContinuousEffectBuilder(Outcome.BoostCreature, filter)
+                        .withAddPower(counterCount)
+                        .withAddToughness(counterCount)
+                        .setText(rule)
+        ));
         
     }
 

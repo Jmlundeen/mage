@@ -1,11 +1,13 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
-import mage.abilities.effects.RestrictionEffect;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author fireshoes
@@ -13,7 +15,7 @@ import mage.game.permanent.Permanent;
 public class UntapSourceDuringEachOtherPlayersUntapStepEffect extends ContinuousEffectImpl {
 
     public UntapSourceDuringEachOtherPlayersUntapStepEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Untap);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Untap);
         staticText = "Untap {this} during each other player's untap step";
     }
 
@@ -27,39 +29,24 @@ public class UntapSourceDuringEachOtherPlayersUntapStepEffect extends Continuous
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        boolean applied = Boolean.TRUE.equals(game.getState().getValue(source.getSourceId() + "applied"));
-        if (!applied && layer == Layer.RulesEffects) {
-            if (!source.isControlledBy(game.getActivePlayerId())
-                    && game.getStep() != null
-                    && game.getTurnStepType() == PhaseStep.UNTAP) {
-                game.getState().setValue(source.getSourceId() + "applied", true);
-                Permanent permanent = game.getPermanent(source.getSourceId());
-                if (permanent != null) {
-                    boolean untap = true;
-                    for (RestrictionEffect effect : game.getContinuousEffects().getApplicableRestrictionEffects(permanent, game).keySet()) {
-                        untap &= effect.canBeUntapped(permanent, source, game, true);
-                    }
-                    if (untap) {
-                        permanent.untap(game);
-                    }
-                }
-            }
-        } else if (applied && layer == Layer.RulesEffects) {
-            if (game.getStep() != null && game.getTurnStepType() == PhaseStep.END_TURN) {
-                game.getState().setValue(source.getSourceId() + "applied", false);
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).untap(game);
         }
-        return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent == null) {
+            return false;
+        }
+        boolean applied = Boolean.TRUE.equals(game.getState().getValue(source.getSourceId() + "applied"));
+        if (!applied && !source.isControlledBy(game.getActivePlayerId()) && game.getTurnStepType() == PhaseStep.UNTAP) {
+            affectedObjects.add(permanent);
+        } else if (applied && game.getTurnStepType() == PhaseStep.END_TURN) {
+            game.getState().setValue(source.getSourceId() + "applied", false);
+        }
+        return !affectedObjects.isEmpty();
     }
 }

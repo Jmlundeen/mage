@@ -1,9 +1,9 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CreaturesDiedThisTurnCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.CreaturesDiedThisTurnHint;
 import mage.abilities.keyword.FlashAbility;
 import mage.cards.CardImpl;
@@ -11,7 +11,6 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
-import mage.watchers.common.CreaturesDiedWatcher;
 
 import java.util.UUID;
 
@@ -31,11 +30,8 @@ public final class SautekhImmortal extends CardImpl {
         this.addAbility(FlashAbility.getInstance());
 
         // Elite Troops -- Sautekh Immortal enters the battlefield with a +1/+1 counter on it for each creature that died this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(
-                        CounterType.P1P1.createInstance(0),
-                        CreaturesDiedThisTurnCount.instance, true
-                ).setText("with a +1/+1 counter on it for each creature that died this turn.")
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.P1P1, CreaturesDiedThisTurnCount.instance)
         ).withFlavorWord("Elite Troops").addHint(CreaturesDiedThisTurnHint.instance));
     }
 

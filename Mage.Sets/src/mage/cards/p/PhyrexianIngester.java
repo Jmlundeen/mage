@@ -2,6 +2,7 @@
 package mage.cards.p;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +21,7 @@ import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -119,18 +121,26 @@ class PhyrexianIngesterBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent == null) {
-            return false;
-        }
-        for (UUID cardId : permanent.getImprinted()) {
-            Card card = game.getCard(cardId);
-            if (card != null) {
-                permanent.addPower(card.getPower().getValue());
-                permanent.addToughness(card.getToughness().getValue());
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (UUID cardId : permanent.getImprinted()) {;
+                Card card = game.getCard(cardId);
+                if (card != null) {
+                    permanent.addPower(card.getPower().getValue());
+                    permanent.addToughness(card.getToughness().getValue());
+                }
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent != null && !permanent.getImprinted().isEmpty()) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        return false;
     }
 }

@@ -1,9 +1,9 @@
 package mage.cards.s;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.ColorsOfManaSpentToCastCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -26,9 +26,9 @@ public final class SpringmantleCleric extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Springmantle Cleric enters the battlefield with a +1/+1 counter on it for each color of mana spent to cast it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(), ColorsOfManaSpentToCastCount.getInstance(), true
-        ), "with a +1/+1 counter on it for each color of mana spent to cast it."));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, ColorsOfManaSpentToCastCount.getInstance())
+                .setText("{this} enters with a +1/+1 counter on it for each color of mana spent to cast it")
+        ));
     }
 
     private SpringmantleCleric(final SpringmantleCleric card) {

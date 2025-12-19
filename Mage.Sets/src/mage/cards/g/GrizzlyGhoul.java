@@ -1,9 +1,9 @@
 package mage.cards.g;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CreaturesDiedThisTurnCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.CreaturesDiedThisTurnHint;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -11,7 +11,6 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
-import mage.watchers.common.CreaturesDiedWatcher;
 
 import java.util.UUID;
 
@@ -32,9 +31,9 @@ public final class GrizzlyGhoul extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Grizzly Ghoul enters the battlefield with a +1/+1 counter on it for each creature that died this turn.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(0), CreaturesDiedThisTurnCount.instance, true
-        ).setText("with a +1/+1 counter on it for each creature that died this turn.")).addHint(CreaturesDiedThisTurnHint.instance));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesDiedThisTurnCount.instance))
+                .addHint(CreaturesDiedThisTurnHint.instance)
+        );
     }
 
     private GrizzlyGhoul(final GrizzlyGhoul card) {

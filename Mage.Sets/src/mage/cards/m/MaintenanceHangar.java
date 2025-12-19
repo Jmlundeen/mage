@@ -1,16 +1,15 @@
 
 package mage.cards.m;
 
-import java.util.Set;
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.keyword.RepairAbility;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -20,6 +19,9 @@ import mage.filter.common.FilterCreatureCard;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -111,15 +113,18 @@ class MaintenanceHangarEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility((Card) object, new RepairAbility(6));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller != null) {
-            Set<Card> cards = controller.getGraveyard().getCards(filterCard, game);
-            cards.stream().forEach((card) -> {
-                game.getState().addOtherAbility(card, new RepairAbility(6));
-            });
-            return true;
+            affectedObjects.addAll(controller.getGraveyard().getCards(filterCard, game));
         }
-        return false;
+        return !affectedObjects.isEmpty();
     }
 }

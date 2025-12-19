@@ -3,20 +3,21 @@ package mage.cards.t;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.delayed.AtTheBeginOfNextEndStepDelayedTriggeredAbility;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
+import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetControlledPermanent;
-import mage.util.CardUtil;
+import mage.target.targetpointer.FixedTarget;
 
 import java.util.UUID;
 
@@ -109,16 +110,15 @@ class TeferisTimeTwistReturnEffect extends OneShotEffect {
         if (player == null) {
             return false;
         }
-        if (!player.moveCards(card, Zone.BATTLEFIELD, source, game)) {
-            return true;
-        }
-        Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
-        if (permanent != null && permanent.isCreature(game)) {
-            // TODO: This is technically wrong as it should enter with the counters,
-            // however there's currently no way to know that for sure
-            // this is similar to the blood moon issue
-            permanent.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game);
-        }
+        ContinuousEffect creatureCounter = new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(StaticFilters.FILTER_PERMANENT_CREATURE);
+        creatureCounter.setTargetPointer(new FixedTarget(card.getId(), game));
+        ContinuousEffect planeswalkerCounter = new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.LOYALTY.createInstance())
+                .setFilter(StaticFilters.FILTER_PERMANENT_PLANESWALKER);
+        planeswalkerCounter.setTargetPointer(new FixedTarget(card.getId(), game));
+        game.addEffect(creatureCounter, source);
+        game.addEffect(planeswalkerCounter, source);
+        player.moveCards(card, Zone.BATTLEFIELD, source, game);
         return true;
     }
 }

@@ -1,10 +1,10 @@
 package mage.cards.f;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.OpponentsLostLifeCondition;
-import mage.abilities.decorator.ConditionalOneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.OpponentsLostLifeHint;
 import mage.abilities.keyword.MenaceAbility;
 import mage.abilities.keyword.ReachAbility;
@@ -36,11 +36,11 @@ public final class FrilledSparkshooter extends CardImpl {
         this.addAbility(ReachAbility.getInstance());
 
         // Frilled Sparkshooter enters with a +1/+1 counter on it if an opponent lost life this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new ConditionalOneShotEffect(
-                        new AddCountersSourceEffect(CounterType.P1P1.createInstance()),
-                        OpponentsLostLifeCondition.instance, ""
-                ), "with a +1/+1 counter on it if an opponent lost life this turn"
+        this.addAbility(new SimpleStaticAbility(
+                new ConditionalReplacementEffect(
+                        new EntersWithCountersEffect(CounterType.P1P1.createInstance()),
+                        OpponentsLostLifeCondition.instance)
+                        .setText("{this} enters with a +1/+1 counter on it if an opponent lost life this turn")
         ).addHint(OpponentsLostLifeHint.instance));
     }
 

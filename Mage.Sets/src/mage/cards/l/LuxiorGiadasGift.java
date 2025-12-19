@@ -1,5 +1,6 @@
 package mage.cards.l;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
@@ -111,15 +112,25 @@ class LuxiorGiadasGiftEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Optional.ofNullable(source.getSourcePermanentIfItStillExists(game))
-                .map(Permanent::getAttachedTo)
-                .map(game::getPermanent)
-                .ifPresent(permanent -> {
-                    permanent.removeCardType(game, CardType.PLANESWALKER);
-                    permanent.removeAllSubTypes(game, SubTypeSet.PlaneswalkerType);
-                    permanent.addCardType(game, CardType.CREATURE);
-                });
-        return true;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeCardType(game, CardType.PLANESWALKER);
+            permanent.removeAllSubTypes(game, SubTypeSet.PlaneswalkerType);
+            permanent.addCardType(game, CardType.CREATURE);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent equipment = source.getSourcePermanentIfItStillExists(game);
+        if (equipment != null && equipment.getAttachedTo() != null) {
+            Permanent permanent = game.getPermanent(equipment.getAttachedTo());
+            if (permanent != null) {
+                affectedObjects.add(permanent);
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,6 +15,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -84,16 +86,29 @@ class TakenoSamuraiGeneralEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability ability : permanent.getAbilities()) {
+                if (ability instanceof BushidoAbility) {
+                    int value = ((BushidoAbility) ability).getValue(source, game, this);
+                    permanent.addPower(value);
+                    permanent.addToughness(value);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
             for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) { // filter may not be used again, because object can have changed filter relevant attributes but still geets boost
                 Permanent permanent = it.next().getPermanent(game);
                 if (permanent != null) {
                     for (Ability ability : permanent.getAbilities()) {
                         if (ability instanceof BushidoAbility) {
-                            int value = ((BushidoAbility) ability).getValue(source, game, this);
-                            permanent.addPower(value);
-                            permanent.addToughness(value);
+                            affectedObjects.add(permanent);
+                            break;
                         }
                     }
                 } else {
@@ -105,15 +120,13 @@ class TakenoSamuraiGeneralEffect extends ContinuousEffectImpl {
                 if (!perm.getId().equals(source.getSourceId())) {
                     for (Ability ability : perm.getAbilities()) {
                         if (ability instanceof BushidoAbility) {
-                            int value = ((BushidoAbility) ability).getValue(source, game, this);
-                            perm.addPower(value);
-                            perm.addToughness(value);
+                            affectedObjects.add(perm);
+                            break;
                         }
                     }
                 }
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
-
 }

@@ -1,20 +1,18 @@
 
 package mage.abilities.effects.common.continuous;
 
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.ContinuousEffectImpl;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.TargetController;
+import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author nantuko, LevelX2
@@ -72,29 +70,41 @@ public class MaximumHandSizeControllerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            switch (targetController) {
-                case ANY:
-                    for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
-                        setHandSize(game, source, playerId);
-                    }
-                    break;
-                case OPPONENT:
-                    for (UUID playerId : game.getOpponents(source.getControllerId())) {
-                        setHandSize(game, source, playerId);
-                    }
-                    break;
-                case YOU:
-                    setHandSize(game, source, source.getControllerId());
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Not supported yet.");
-            }
-            return true;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            setHandSize(game, source, object.getId());
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        switch (targetController) {
+            case ANY:
+                for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
+                    Player player = game.getPlayer(playerId);
+                    if (player != null) {
+                        affectedObjects.add(player);
+                    }
+                }
+                return !affectedObjects.isEmpty();
+            case OPPONENT:
+                for (UUID playerId : game.getOpponents(source.getControllerId())) {
+                    Player player = game.getPlayer(playerId);
+                    if (player != null) {
+                        affectedObjects.add(player);
+                    }
+                }
+                return !affectedObjects.isEmpty();
+            case YOU:
+                affectedObjects.add(controller);
+                return true;
+            default:
+                throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private void setHandSize(Game game, Ability source, UUID playerId) {

@@ -1,6 +1,7 @@
 package mage.cards.r;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbility;
 import mage.abilities.TriggeredAbilityImpl;
@@ -19,6 +20,7 @@ import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -75,13 +77,20 @@ class RiverSongDrawFromBottomEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Player) object).setDrawsFromBottom(true);
         }
-        player.setDrawsFromBottom(true);
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player player = game.getPlayer(source.getControllerId());
+        if (player != null) {
+            affectedObjects.add(player);
+            return true;
+        }
+        return false;
     }
 }
 

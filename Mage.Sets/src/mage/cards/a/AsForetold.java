@@ -1,5 +1,6 @@
 package mage.cards.a;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
@@ -19,6 +20,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -119,7 +121,7 @@ class AsForetoldAlternativeCost extends AlternativeCostSourceAbility {
 class AsForetoldAddAltCostEffect extends ContinuousEffectImpl {
 
     AsForetoldAddAltCostEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = "Once each turn, you may pay {0} rather than pay the mana cost for a spell you cast with mana value X or less, where X is the number of time counters on {this}.";
     }
 
@@ -133,36 +135,35 @@ class AsForetoldAddAltCostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            Permanent sourcePermanent = game.getPermanent(source.getSourceId());
-            if (sourcePermanent != null) {
-                Boolean wasItUsed = (Boolean) game.getState().getValue(
-                        sourcePermanent.getId().toString()
-                                + sourcePermanent.getZoneChangeCounter(game)
-                                + sourcePermanent.getTurnsOnBattlefield());
-                // If we haven't used it yet this turn, give the option of using the zero alternative cost
-                if (wasItUsed == null) {
-                    int timeCounters = sourcePermanent.getCounters(game).getCount(CounterType.TIME);
-                    AsForetoldAlternativeCost alternateCostAbility = new AsForetoldAlternativeCost(timeCounters);
-                    alternateCostAbility.setSourceId(source.getSourceId());
-                    controller.getAlternativeSourceCosts().add(alternateCostAbility);
-                }
-                // Return true even if we didn't add the alt cost. We still applied the effect
-                return true;
+        for (MageItem object : affectedObjects) {
+            Permanent sourcePermanent = (Permanent) object;
+            Boolean wasItUsed = (Boolean) game.getState().getValue(
+                    sourcePermanent.getId().toString()
+                            + sourcePermanent.getZoneChangeCounter(game)
+                            + sourcePermanent.getTurnsOnBattlefield());
+            // If we haven't used it yet this turn, give the option of using the zero alternative cost
+            if (wasItUsed == null) {
+                int timeCounters = sourcePermanent.getCounters(game).getCount(CounterType.TIME);
+                AsForetoldAlternativeCost alternateCostAbility = new AsForetoldAlternativeCost(timeCounters);
+                alternateCostAbility.setSourceId(source.getSourceId());
+                controller.getAlternativeSourceCosts().add(alternateCostAbility);
             }
         }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
         return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }

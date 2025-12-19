@@ -1,6 +1,7 @@
 package mage.cards.v;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.dynamicvalue.common.CardsInControllerHandCount;
@@ -21,6 +22,7 @@ import mage.target.TargetPlayer;
 import mage.target.common.TargetOpponent;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -118,10 +120,11 @@ class VislorTurloughGoadEffect extends GoadTargetEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent != null && permanent.isControlledBy(controllerId)) {
-            return super.apply(game, source);
+            affectedObjects.add(permanent);
+            return true;
         }
         discard();
         return false;

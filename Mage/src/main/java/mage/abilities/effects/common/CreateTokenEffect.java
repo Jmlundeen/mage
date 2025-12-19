@@ -111,7 +111,7 @@ public class CreateTokenEffect extends OneShotEffect {
             for (UUID tokenId : lastAddedTokenIds) {
                 Permanent tokenPermanent = game.getPermanent(tokenId);
                 if (tokenPermanent != null) {
-                    tokenPermanent.addCounters(counterType.createInstance(numberOfCounters.calculate(game, source, this)), source.getControllerId(), source, game);
+                    game.addEnterWithCounters(tokenPermanent.getId(), counterType.createInstance(numberOfCounters.calculate(game, source, this)));
                 }
             }
         }

@@ -1529,6 +1529,13 @@ public class GameState implements Serializable, Copyable<GameState> {
         return mageObjectAtt;
     }
 
+    /**
+     * created for {@link ContinuousEffects} dependency checking, not intended to be used elsewhere
+     */
+    public void removeMageObjectAttribute(UUID cardId) {
+        mageObjectAttribute.remove(cardId);
+    }
+
     public Map<MageObjectReference, Map<String, Object>> getPermanentCostsTags() {
         return permanentCostsTags;
     }
@@ -1729,5 +1736,9 @@ public class GameState implements Serializable, Copyable<GameState> {
 
     public boolean getReverseTurnOrder() {
         return this.reverseTurnOrder;
+    }
+
+    public void resetDependencies() {
+        this.effects.resetDependencies();
     }
 }

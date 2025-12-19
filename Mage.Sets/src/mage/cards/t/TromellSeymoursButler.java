@@ -9,20 +9,17 @@ import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.ProliferateEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.SuperType;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
-import mage.filter.common.FilterCreaturePermanent;
+import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.permanent.EnteredThisTurnPredicate;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.Game;
@@ -34,9 +31,10 @@ import java.util.UUID;
  */
 public final class TromellSeymoursButler extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterCreaturePermanent("nontoken creature");
+    private static final FilterPermanent filter = new FilterControlledCreaturePermanent("other nontoken creature you control");
 
     static {
+        filter.add(AnotherPredicate.instance);
         filter.add(TokenPredicate.FALSE);
     }
 
@@ -50,9 +48,9 @@ public final class TromellSeymoursButler extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Each other nontoken creature you control enters with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                filter, CounterType.P1P1.createInstance(), true
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(filter)
+        ));
 
         // {1}, {T}: Proliferate X times, where X is the number of nontoken creatures you control that entered this turn.
         Ability ability = new SimpleActivatedAbility(new TromellSeymoursButlerEffect(), new GenericManaCost(1));

@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.common.SimpleStaticAbility;
@@ -12,6 +13,8 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledCreaturePermanent;
+
+import java.util.List;
 
 /**
  * @author TheElk801
@@ -129,13 +132,21 @@ class ReconfigureTypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null || game.getPermanent(permanent.getAttachedTo()) == null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeCardType(game, CardType.CREATURE);
+            permanent.removeAllCreatureTypes(game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(source.getSourceId());
+        if (permanent == null || permanent.getAttachedTo() == null) {
             return false;
         }
-        permanent.removeCardType(game, CardType.CREATURE);
-        permanent.removeAllCreatureTypes(game);
+        affectedObjects.add(permanent);
         return true;
     }
 }

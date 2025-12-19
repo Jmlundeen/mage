@@ -1,5 +1,6 @@
 package mage.cards.o;
 
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.common.DiesSourceTriggeredAbility;
@@ -8,8 +9,8 @@ import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.TransformSourceEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.abilities.mana.WhiteManaAbility;
 import mage.cards.Card;
@@ -18,8 +19,6 @@ import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.MoveCardsParameters;
-import mage.game.events.CreateTokenEvent;
-import mage.game.events.GameEvent;
 import mage.players.Player;
 import mage.watchers.common.PlayerAttackedWatcher;
 
@@ -43,7 +42,11 @@ public final class OjerTaqDeepestFoundation extends TransformingDoubleFacedCard 
         this.getLeftHalfCard().addAbility(VigilanceAbility.getInstance());
 
         // If one or more creature tokens would be created under your control, three times that many of those tokens are created instead.
-        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new OjerTaqDeepestFoundationTriplingEffect()));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 3)
+                .withTokenCondition(MageObject::isCreature)
+                .setText("If one or more creature tokens would be created under your control, "
+                        + "three times that many of those tokens are created instead")
+        ));
 
         // When Ojer Taq dies, return it to the battlefield tapped and transformed under its owner's control.
         this.getLeftHalfCard().addAbility(new DiesSourceTriggeredAbility(new OjerTaqDeepestFoundationTransformEffect()));
@@ -100,47 +103,6 @@ class OjerTaqDeepestFoundationTransformEffect extends OneShotEffect {
                 .setByOwner(true);
         controller.moveCards(parameters, source, game);
         return true;
-    }
-}
-
-class OjerTaqDeepestFoundationTriplingEffect extends ReplacementEffectImpl {
-
-    OjerTaqDeepestFoundationTriplingEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Copy);
-        staticText = "If one or more creature tokens would be created under your control, "
-                + "three times that many of those tokens are created instead.";
-    }
-
-    private OjerTaqDeepestFoundationTriplingEffect(final OjerTaqDeepestFoundationTriplingEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public OjerTaqDeepestFoundationTriplingEffect copy() {
-        return new OjerTaqDeepestFoundationTriplingEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return event.getPlayerId().equals(source.getControllerId())
-                && (((CreateTokenEvent) event)
-                .getTokens()
-                .entrySet()
-                .stream()
-                .anyMatch(entry -> entry.getKey().isCreature(game) && entry.getValue() > 0));
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        if (event instanceof CreateTokenEvent) {
-            ((CreateTokenEvent) event).multiplyTokens(3, token -> token.isCreature(game));
-        }
-        return false;
     }
 }
 

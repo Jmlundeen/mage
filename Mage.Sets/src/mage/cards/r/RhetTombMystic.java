@@ -1,20 +1,24 @@
 package mage.cards.r;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.keyword.CyclingAbility;
-import mage.constants.*;
 import mage.abilities.keyword.FlyingAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -60,15 +64,21 @@ class RhetTombMysticEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, new CyclingAbility(new ManaCostsImpl<>("{1}{U}")));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         final Player controller = game.getPlayer(source.getControllerId());
         if (controller == null)
             return false;
 
-        controller.getHand().getCards(StaticFilters.FILTER_CARD_CREATURE, game)
-                .forEach(card -> game.getState().addOtherAbility(card, new CyclingAbility(new ManaCostsImpl<>("{1}{U}"))));
-
-        return true;
+        affectedObjects.addAll(controller.getHand().getCards(StaticFilters.FILTER_CARD_CREATURE, game));
+        return !affectedObjects.isEmpty();
     }
 
     @Override

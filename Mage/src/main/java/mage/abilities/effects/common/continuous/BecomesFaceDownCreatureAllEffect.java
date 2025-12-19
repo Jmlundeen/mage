@@ -10,8 +10,6 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
 
 /**
- *
- *
  * @author LevelX2
  */
 

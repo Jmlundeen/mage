@@ -3,12 +3,12 @@ package mage.cards.k;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.CreateTokenEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 public final class KinsbaileBorderguard extends CardImpl {
 
-    private static final FilterControlledPermanent filter = new FilterControlledPermanent();
+    private static final FilterControlledPermanent filter = new FilterControlledPermanent("other Kithkin you control");
 
     static {
         filter.add(SubType.KITHKIN.getPredicate());
@@ -41,8 +41,8 @@ public final class KinsbaileBorderguard extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Kinsbaile Borderguard enters the battlefield with a +1/+1 counter on it for each other Kithkin you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(0),
-                new PermanentsOnBattlefieldCount(filter), true), "with a +1/+1 counter on it for each other Kithkin you control"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, new PermanentsOnBattlefieldCount(filter))));
+
         // When Kinsbaile Borderguard dies, create a 1/1 white Kithkin Soldier creature token for each counter on it.
         this.addAbility(new DiesSourceTriggeredAbility(new CreateTokenEffect(new KithkinSoldierToken(), new AllCountersCount())));
     }

@@ -5,12 +5,13 @@ import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.MyTurnCondition;
 import mage.abilities.decorator.ConditionalContinuousEffect;
-import mage.abilities.effects.common.continuous.BoostSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.ContinuousAffected;
+import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 
@@ -30,15 +31,16 @@ public final class DapperShieldmate extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Dapper Shieldmate enters the battlefield with a shield counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.SHIELD.createInstance(1)),
-                "with a shield counter on it. <i>(If it would be dealt damage " +
-                        "or destroyed, remove a shield counter from it instead.)</i>"
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.SHIELD.createInstance())
+                    .setText("{this} enters with a shield counter on it. <i>(If it would be dealt damage " +
+                            "or destroyed, remove a shield counter from it instead.)</i>")
         ));
 
         // As long as it's your turn, Dapper Shieldmate gets +2/+0.
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
-                new BoostSourceEffect(2, 0, Duration.WhileOnBattlefield),
+                new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                        .withAddPower(2),
                 MyTurnCondition.instance, "during your turn, {this} gets +2/+0"
         )));
     }

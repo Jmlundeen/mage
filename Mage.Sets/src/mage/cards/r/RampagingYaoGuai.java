@@ -3,11 +3,11 @@ package mage.cards.r;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.DestroyTargetEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
@@ -45,7 +45,7 @@ public final class RampagingYaoGuai extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Rampaging Yao Guai enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
         // When Rampaging Yao Guai enters the battlefield, destroy any number of target artifacts and/or enchantments with total mana value X or less.
         Ability ability = new EntersBattlefieldTriggeredAbility(new DestroyTargetEffect());

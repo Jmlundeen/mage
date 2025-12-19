@@ -1,6 +1,7 @@
 package mage.cards.w;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -14,6 +15,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -63,31 +65,33 @@ class WerewolfPackLeaderEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
-            discard();
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeSubType(game, SubType.HUMAN);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.addAbility(TrampleAbility.getInstance(), source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(5);
+                        permanent.getToughness().setModifiedBaseValue(3);
+                    }
+            }
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeSubType(game, SubType.HUMAN);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.addAbility(TrampleAbility.getInstance(), source.getSourceId(), game);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(5);
-                    permanent.getToughness().setModifiedBaseValue(3);
-                    return true;
-                }
-        }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        }
+        discard();
         return false;
     }
 
@@ -100,5 +104,10 @@ class WerewolfPackLeaderEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

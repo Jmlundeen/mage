@@ -9,10 +9,6 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 /**
  * Use this effect only (I guess) with EntersBattlefieldAbility like abilities
  *
@@ -61,8 +57,7 @@ public class EntersBattlefieldWithXCountersEffect extends OneShotEffect {
             if (amount > 0) {
                 Counter counterToAdd = counter.copy();
                 counterToAdd.add(amount - counter.getCount());
-                List<UUID> appliedEffects = (ArrayList<UUID>) this.getValue("appliedEffects");
-                permanent.addCounters(counterToAdd, source.getControllerId(), source, game, appliedEffects);
+                game.addEnterWithCounters(permanent.getId(), counterToAdd);
             }
         }
         return true;

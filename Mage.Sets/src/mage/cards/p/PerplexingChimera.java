@@ -1,30 +1,23 @@
            
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.GainControlTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.events.GameEvent;
-import mage.game.events.GameEvent.EventType;
-import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.UUID;
 
 /**
  *
@@ -157,41 +150,12 @@ class PerplexingChimeraControlExchangeEffect extends OneShotEffect {
             game.informPlayers(controller.getLogName() + " got control of " + spell.getName() + " spell.");
             // and spell controller get control of Perplexing Chimera
             if (spellCaster != null) {
-                ContinuousEffect effect = new PerplexingChimeraControlEffect();
-                effect.setTargetPointer(new FixedTarget(spellCaster.getId()));
+                ContinuousEffect effect = new GainControlTargetEffect(Duration.Custom, spellCaster.getId());
+                effect.setTargetPointer(new FixedTarget(source.getSourceId()));
                 game.addEffect(effect, source);
             }
         }
 
         return false;
     }
-}
-
-class PerplexingChimeraControlEffect extends ContinuousEffectImpl {
-
-    PerplexingChimeraControlEffect() {
-        super(Duration.Custom, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        staticText = "PerplexingChimeraControlEffect";
-    }
-
-    private PerplexingChimeraControlEffect(final PerplexingChimeraControlEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public PerplexingChimeraControlEffect copy() {
-        return new PerplexingChimeraControlEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent != null) {
-            return permanent.changeControllerId(this.getTargetPointer().getFirst(game, source), game, source);
-        } else {
-            discard(); // if card once left the battlefield the effect can be discarded
-        }
-        return true;
-    }
-
 }

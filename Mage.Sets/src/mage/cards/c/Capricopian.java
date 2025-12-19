@@ -3,11 +3,12 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.ActivatedAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.IsStepCondition;
 import mage.abilities.costs.mana.GenericManaCost;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -37,9 +38,7 @@ public final class Capricopian extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Capricopian enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
         // {2}: Put a +1/+1 counter on Capricopian, then you may reselect which player Capricopian is attacking. Only the player Capricopian is attacking may activate this ability and only during the declare attackers step.
         this.addAbility(new CapricopianActivatedAbility());

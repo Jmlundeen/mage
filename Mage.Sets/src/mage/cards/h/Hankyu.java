@@ -1,5 +1,6 @@
 package mage.cards.h;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -23,6 +24,7 @@ import mage.target.common.TargetAnyTarget;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,7 +72,32 @@ class HankyuEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        Ability aimCounterAbility = new SimpleActivatedAbility(
+                new AddCountersTargetEffect(CounterType.AIM.createInstance())
+                        .setTargetPointer(new FixedTarget(permanent, game))
+                        .setText("put an aim counter on " + permanent.getName()),
+                new TapSourceCost()
+        );
+        Ability damageAbility = new SimpleActivatedAbility(
+                new DamageTargetEffect(HankyuValue.instance)
+                        .setText("this creature deals damage to any target equal " +
+                                "to the number of aim counters removed this way"),
+                new TapSourceCost()
+        );
+        damageAbility.addCost(new HankyuCost().setMageObjectReference(source, game));
+        damageAbility.addTarget(new TargetAnyTarget());
+
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
+            creature.addAbility(aimCounterAbility, source.getSourceId(), game);
+            creature.addAbility(damageAbility, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             return false;
@@ -79,21 +106,7 @@ class HankyuEffect extends ContinuousEffectImpl {
         if (creature == null) {
             return false;
         }
-        creature.addAbility(new SimpleActivatedAbility(
-                new AddCountersTargetEffect(CounterType.AIM.createInstance())
-                        .setTargetPointer(new FixedTarget(permanent, game))
-                        .setText("put an aim counter on " + permanent.getName()),
-                new TapSourceCost()
-        ), source.getSourceId(), game);
-        Ability ability = new SimpleActivatedAbility(
-                new DamageTargetEffect(HankyuValue.instance)
-                        .setText("this creature deals damage to any target equal " +
-                                "to the number of aim counters removed this way"),
-                new TapSourceCost()
-        );
-        ability.addCost(new HankyuCost().setMageObjectReference(source, game));
-        ability.addTarget(new TargetAnyTarget());
-        creature.addAbility(ability, source.getSourceId(), game);
+        affectedObjects.add(creature);
         return true;
     }
 }

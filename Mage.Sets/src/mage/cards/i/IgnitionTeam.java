@@ -1,29 +1,29 @@
 
 package mage.cards.i;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.continuous.BecomesCreatureTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
 import mage.constants.Duration;
-import mage.constants.Zone;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.common.FilterLandPermanent;
 import mage.filter.predicate.permanent.TappedPredicate;
 import mage.game.Game;
 import mage.game.permanent.token.custom.CreatureToken;
 import mage.target.common.TargetLandPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -39,10 +39,9 @@ public final class IgnitionTeam extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Ignition Team enters the battlefield with X +1/+1 counters on it, where X is the number of tapped lands on the battlefield.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(0),
-                new TappedLandsCount(), true), 
-                "with X +1/+1 counters on it, where X is the number of tapped lands on the battlefield."));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, new TappedLandsCount())
+                .setText("{this} enters with X +1/+1 counters on it, where X is the number of tapped lands on the battlefield")
+        ));
         
         // {2}{R}, Remove a +1/+1 counter from Ignition Team: Target land becomes a 4/4 red Elemental creature until end of turn. It's still a land.
         Ability ability = new SimpleActivatedAbility(new BecomesCreatureTargetEffect(

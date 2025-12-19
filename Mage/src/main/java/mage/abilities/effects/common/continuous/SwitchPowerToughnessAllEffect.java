@@ -2,6 +2,7 @@
 
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +16,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author LevelX2
@@ -49,24 +51,30 @@ public class SwitchPowerToughnessAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).switchPowerToughness();
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
-
-        if (!getAffectedObjectsSet()) {
-            game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game).forEach(Permanent::switchPowerToughness);
-        } else {
+        if (getAffectedObjectsSet()) {
             for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) { // filter may not be used again, because object can have changed filter relevant attributes but still gets boost
                 Permanent creature = it.next().getPermanent(game);
                 if (creature == null) {
                     it.remove();
                     continue;
                 }
-                creature.switchPowerToughness();
+                affectedObjects.add(creature);
             }
+        } else {
+            affectedObjects.addAll(game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game));
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

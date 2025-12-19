@@ -1,8 +1,8 @@
 package mage.cards.f;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.counter.AddCounterChoiceSourceEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -25,8 +25,9 @@ public final class FlycatcherGiraffid extends CardImpl {
         this.toughness = new MageInt(5);
 
         // Flycatcher Giraffid enters the battlefield with your choice of a vigilance counter or a reach counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCounterChoiceSourceEffect(CounterType.VIGILANCE, CounterType.REACH)
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.VIGILANCE.createInstance())
+                .withAdditionalCounters(CounterType.REACH.createInstance())
+                .withChooseCounter()
         ));
     }
 

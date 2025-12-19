@@ -1,5 +1,6 @@
 package mage.cards.w;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -12,6 +13,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -66,15 +68,23 @@ class WojekSirenBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addPower(1);
+            permanent.addToughness(1);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (MageObjectReference mageObjectReference : affectedObjectList) {
             Permanent permanent = mageObjectReference.getPermanent(game);
             if (permanent != null) {
-                permanent.addPower(1);
-                permanent.addToughness(1);
+                affectedObjects.add(permanent);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

@@ -79,7 +79,7 @@ class StragoAndRelmEffect extends OneShotEffect {
                     new GainAbilityTargetEffect(new BeginningOfEndStepTriggeredAbility(new SacrificeSourceEffect()))
             )) {
                 effect.setTargetPointer(new FixedTarget(card.getId()));
-                game.getState().addEffect(effect, card.getSpellAbility());
+                game.addEffect(effect, card.getSpellAbility());
                 game.addEffect(effect, source);
             }
         }

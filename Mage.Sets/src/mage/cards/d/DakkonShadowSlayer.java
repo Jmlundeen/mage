@@ -2,16 +2,18 @@ package mage.cards.d;
 
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.LandsYouControlCount;
 import mage.abilities.effects.common.ExileTargetEffect;
 import mage.abilities.effects.common.PutCardFromHandOrGraveyardOntoBattlefieldEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.keyword.SurveilEffect;
 import mage.abilities.hint.common.LandsYouControlHint;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.target.common.TargetCreaturePermanent;
@@ -31,10 +33,9 @@ public final class DakkonShadowSlayer extends CardImpl {
         this.setStartingLoyalty(0);
 
         // Dakkon, Shadow Slayer enters the battlefield with a number of loyalty counters on him equal to the number of lands you control.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(
-                        CounterType.LOYALTY.createInstance(0), LandsYouControlCount.instance, true
-                ), "with a number of loyalty counters on him equal to the number of lands you control"
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.LOYALTY, LandsYouControlCount.instance)
+                        .setText("{this} enters with a number of loyalty counters on him equal to the number of lands you control")
         ).addHint(LandsYouControlHint.instance));
 
         // +1: Surveil 2.

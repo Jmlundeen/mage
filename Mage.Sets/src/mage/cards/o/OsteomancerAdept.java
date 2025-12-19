@@ -1,10 +1,7 @@
 package mage.cards.o;
 
-import java.util.UUID;
-
 import mage.MageIdentifier;
 import mage.MageInt;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.Cost;
@@ -13,18 +10,21 @@ import mage.abilities.costs.CostsImpl;
 import mage.abilities.costs.common.ForageCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.AsThoughEffectImpl;
-import mage.abilities.effects.common.counter.AddCounterEnteringCreatureEffect;
-import mage.cards.Card;
-import mage.constants.*;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.DeathtouchAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.players.Player;
+import mage.target.targetpointer.FixedTarget;
 import mage.watchers.Watcher;
+
+import java.util.UUID;
 
 /**
  *
@@ -116,8 +116,8 @@ class OsteomancerAdeptWatcher extends Watcher {
                 && event.hasApprovingIdentifier(MageIdentifier.OsteomancerAdeptAlternateCast)) {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
-                game.getState().addEffect(new AddCounterEnteringCreatureEffect(new MageObjectReference(target.getCard(), game),
-                                CounterType.FINALITY.createInstance(), Outcome.UnboostCreature),
+                game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.FINALITY.createInstance())
+                                .setTargetPointer(new FixedTarget(target, game)),
                         target.getSpellAbility());
             }
         }

@@ -3,11 +3,11 @@ package mage.cards.p;
 import mage.MageInt;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.PreventDamageAndRemoveCountersEffect;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -33,7 +33,7 @@ public final class ProteanHydra extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Protean Hydra enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
         // If damage would be dealt to Protean Hydra, prevent that damage and remove that many +1/+1 counters from it.
         this.addAbility(new SimpleStaticAbility(

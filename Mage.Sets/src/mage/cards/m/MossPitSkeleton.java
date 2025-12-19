@@ -2,11 +2,12 @@ package mage.cards.m;
 
 import mage.MageInt;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
 import mage.abilities.condition.common.SourceInGraveyardCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.PutOnLibrarySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -37,9 +38,10 @@ public final class MossPitSkeleton extends CardImpl {
         this.addAbility(new KickerAbility("{3}"));
 
         // If Moss-Pit Skeleton was kicked, it enters with three +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(3)), KickedCondition.ONCE,
-                "If {this} was kicked, it enters with three +1/+1 counters on it.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(3))
+                        .setText("if {this} was kicked, it enters with three +1/+1 counters on it"),
+                KickedCondition.ONCE)
         ));
 
         // Whenever one or more +1/+1 counters are put on a creature you control, if Moss-Pit Skeleton is in your graveyard, you may put Moss-Pit Skeleton on top of your library.

@@ -85,7 +85,7 @@ class ThundermaneDragonWatcher extends Watcher {
             if (target != null) {
                 ContinuousEffect effect = new GainAbilityTargetEffect(HasteAbility.getInstance());
                 effect.setTargetPointer(new FixedTarget(target.getCard().getId()));
-                game.getState().addEffect(effect, target.getSpellAbility());
+                game.addEffect(effect, target.getSpellAbility());
             }
         }
     }

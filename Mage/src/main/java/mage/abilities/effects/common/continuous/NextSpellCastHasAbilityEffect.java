@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.Card;
@@ -13,6 +14,7 @@ import mage.players.Player;
 import mage.util.CardUtil;
 import mage.watchers.common.SpellsCastWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -66,7 +68,14 @@ public class NextSpellCastHasAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            game.getState().addOtherAbility((Card) object, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         UUID playerId;
         switch (targetController) {
             case SOURCE_TARGETS:
@@ -95,29 +104,29 @@ public class NextSpellCastHasAbilityEffect extends ContinuousEffectImpl {
         }
         for (Card card : game.getExile().getCardsInRange(game, playerId)) {
             if (filter.match(card, playerId, source, game)) {
-                game.getState().addOtherAbility(card, ability);
+                affectedObjects.add(card);
             }
         }
         for (Card card : player.getLibrary().getCards(game)) {
             if (filter.match(card, playerId, source, game)) {
-                game.getState().addOtherAbility(card, ability);
+                affectedObjects.add(card);
             }
         }
         for (Card card : player.getHand().getCards(game)) {
             if (filter.match(card, playerId, source, game)) {
-                game.getState().addOtherAbility(card, ability);
+                affectedObjects.add(card);
             }
         }
         for (Card card : player.getGraveyard().getCards(game)) {
             if (filter.match(card, playerId, source, game)) {
-                game.getState().addOtherAbility(card, ability);
+                affectedObjects.add(card);
             }
         }
         // workaround to gain cost reduction abilities to commanders before cast (make it playable)
         game.getCommanderCardsFromCommandZone(player, CommanderCardType.ANY)
                 .stream()
                 .filter(card -> filter.match(card, playerId, source, game))
-                .forEach(card -> game.getState().addOtherAbility(card, ability));
+                .forEach(affectedObjects::add);
 
         for (StackObject stackObject : game.getStack()) {
             if (!(stackObject instanceof Spell) || !stackObject.isControlledBy(playerId)) {
@@ -126,9 +135,9 @@ public class NextSpellCastHasAbilityEffect extends ContinuousEffectImpl {
             // TODO: Distinguish "you cast" to exclude copies
             Card card = game.getCard(stackObject.getSourceId());
             if (card != null && filter.match((Spell) stackObject, playerId, source, game)) {
-                game.getState().addOtherAbility(card, ability);
+                affectedObjects.add(card);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

@@ -1,12 +1,11 @@
 
 package mage.cards.f;
 
-import java.util.UUID;
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.MorbidCondition;
-import mage.abilities.decorator.ConditionalOneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.MorbidHint;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -15,6 +14,8 @@ import mage.constants.AbilityWord;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -29,10 +30,17 @@ public final class FesterhideBoar extends CardImpl {
         this.power = new MageInt(3);
         this.toughness = new MageInt(3);
 
+        // Trample
         this.addAbility(TrampleAbility.getInstance());
+
         // <i>Morbid</i> &mdash; Festerhide Boar enters the battlefield with two +1/+1 counters on it if a creature died this turn.
-        this.addAbility(new EntersBattlefieldAbility(new ConditionalOneShotEffect(new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                MorbidCondition.instance, ""), "with two +1/+1 counters on it if a creature died this turn").addHint(MorbidHint.instance).setAbilityWord(AbilityWord.MORBID));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                MorbidCondition.instance)
+                .setText("{this} enters with two +1/+1 counters on it if a creature died this turn"))
+                .addHint(MorbidHint.instance)
+                .setAbilityWord(AbilityWord.MORBID)
+        );
     }
 
     private FesterhideBoar(final FesterhideBoar card) {

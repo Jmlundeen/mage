@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -11,6 +12,8 @@ import mage.cards.Card;
 import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.List;
 
 /**
  * @author TheElk801, Susucr, notgreat
@@ -105,16 +108,24 @@ class PrototypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.setManaCost(new ManaCostsImpl<>(manaString));
+            permanent.getColor(game).setColor(color);
+            permanent.getPower().setModifiedBaseValue(power);
+            permanent.getToughness().setModifiedBaseValue(toughness);
+            permanent.saveCopiableValues(game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent == null || !permanent.isPrototyped()) {
             return false;
         }
-        permanent.setManaCost(new ManaCostsImpl<>(manaString));
-        permanent.getColor(game).setColor(color);
-        permanent.getPower().setModifiedBaseValue(power);
-        permanent.getToughness().setModifiedBaseValue(toughness);
-        permanent.saveCopiableValues(game);
+        affectedObjects.add(permanent);
         return true;
     }
 }

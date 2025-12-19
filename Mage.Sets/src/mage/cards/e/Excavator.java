@@ -1,7 +1,6 @@
 
 package mage.cards.e;
 
-import java.util.UUID;
 import mage.abilities.Abilities;
 import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
@@ -10,6 +9,7 @@ import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -17,8 +17,11 @@ import mage.constants.*;
 import mage.filter.common.FilterControlledLandPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
-import mage.target.common.TargetControlledPermanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -52,18 +55,16 @@ public final class Excavator extends CardImpl {
     }
 }
 
-class ExcavatorEffect extends ContinuousEffectImpl {
-
-    private Abilities<Ability> abilities = new AbilitiesImpl();
+class ExcavatorEffect extends ContinuousEffectBuilder {
 
     public ExcavatorEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
+        super(Duration.EndOfTurn, Outcome.AddAbility);
+        addLayer(Layer.AbilityAddingRemovingEffects_6);
         setText("Target creature gains landwalk of each of the land types of the sacrificed land until end of turn");
     }
 
     private ExcavatorEffect(final ExcavatorEffect effect) {
         super(effect);
-        this.abilities = abilities.copy();
     }
 
     @Override
@@ -74,47 +75,29 @@ class ExcavatorEffect extends ContinuousEffectImpl {
     @Override
     public void init(Ability source, Game game) {
         super.init(source, game);
-        for(Cost cost : source.getCosts()) {
-            if(cost instanceof SacrificeTargetCost) {
+        for (Cost cost : source.getCosts()) {
+            if (cost instanceof SacrificeTargetCost) {
                 SacrificeTargetCost sacrificeCost = (SacrificeTargetCost) cost;
-                for(Permanent permanent : sacrificeCost.getPermanents()) {
-                    if(permanent.hasSubtype(SubType.FOREST, game))
-                    {
-                        abilities.add(new ForestwalkAbility());
+                this.gainedAbilities = new ArrayList<>();
+                for (Permanent permanent : sacrificeCost.getPermanents()) {
+                    if (permanent.hasSubtype(SubType.FOREST, game)) {
+                        gainedAbilities.add(new ForestwalkAbility());
                     }
-                    if(permanent.hasSubtype(SubType.PLAINS, game))
-                    {
-                        abilities.add(new PlainswalkAbility());
+                    if (permanent.hasSubtype(SubType.PLAINS, game)) {
+                        gainedAbilities.add(new PlainswalkAbility());
                     }
-                    if(permanent.hasSubtype(SubType.ISLAND, game))
-                    {
-                        abilities.add(new IslandwalkAbility());
+                    if (permanent.hasSubtype(SubType.ISLAND, game)) {
+                        gainedAbilities.add(new IslandwalkAbility());
                     }
-                    if(permanent.hasSubtype(SubType.MOUNTAIN, game))
-                    {
-                        abilities.add(new MountainwalkAbility());
+                    if (permanent.hasSubtype(SubType.MOUNTAIN, game)) {
+                        gainedAbilities.add(new MountainwalkAbility());
                     }
-                    if(permanent.hasSubtype(SubType.SWAMP, game))
-                    {
-                        abilities.add(new SwampwalkAbility());
+                    if (permanent.hasSubtype(SubType.SWAMP, game)) {
+                        gainedAbilities.add(new SwampwalkAbility());
                     }
                 }
                 
             }
         }
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        for (UUID permanentId : getTargetPointer().getTargets(game, source)) {
-            Permanent permanent = game.getPermanentOrLKIBattlefield(permanentId);
-            if (permanent != null) {
-                for(Ability ability : abilities)
-                {
-                    permanent.addAbility(ability, source.getSourceId(), game);
-                }
-            }
-        }
-        return true;
     }
 }

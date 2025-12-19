@@ -1,6 +1,7 @@
 package mage.cards.o;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.Mana;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -18,6 +19,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 public class OmnathLocusOfAll extends CardImpl {
@@ -68,12 +70,21 @@ class OmnathLocusOfAllManaEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Player) object).getManaPool().setManaBecomesBlack(true);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player != null) {
-            player.getManaPool().setManaBecomesBlack(true);
+            affectedObjects.add(player);
+            return true;
+        } else {
+            return false;
         }
-        return true;
     }
 }
 

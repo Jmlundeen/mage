@@ -1,9 +1,14 @@
 package mage.cards.c;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.dynamicvalue.common.CountersSourceCount;
+import mage.abilities.dynamicvalue.common.ObjectCountersCount;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -30,7 +35,12 @@ public final class Clamavus extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Proclamator Hailer -- Each creature you control gets +1/+1 for each +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new ClamavusEffect()).withFlavorWord("Proclamator Hailer"));
+        DynamicValue xValue = new ObjectCountersCount(CounterType.P1P1);
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.BoostCreature, TargetController.YOU, StaticFilters.FILTER_PERMANENT_CREATURE)
+                .withAddPower(xValue)
+                .withAddToughness(xValue)
+                .setText("each creature you control gets +1/+1 for each +1/+1 counter on it")
+        ).withFlavorWord("Proclamator Hailer"));
     }
 
     private Clamavus(final Clamavus card) {
@@ -40,37 +50,5 @@ public final class Clamavus extends CardImpl {
     @Override
     public Clamavus copy() {
         return new Clamavus(this);
-    }
-}
-
-class ClamavusEffect extends ContinuousEffectImpl {
-
-    ClamavusEffect() {
-        super(Duration.WhileOnBattlefield, Layer.PTChangingEffects_7, SubLayer.ModifyPT_7c, Outcome.BoostCreature);
-        this.staticText = "each creature you control gets +1/+1 for each +1/+1 counter on it";
-    }
-
-    private ClamavusEffect(final ClamavusEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public ClamavusEffect copy() {
-        return new ClamavusEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        List<Permanent> permanents = game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_CREATURE, source.getControllerId(), game
-        );
-        for (Permanent permanent : permanents) {
-            int count = permanent.getCounters(game).getCount(CounterType.P1P1);
-            if (count > 0) {
-                permanent.addPower(count);
-                permanent.addToughness(count);
-            }
-        }
-        return true;
     }
 }

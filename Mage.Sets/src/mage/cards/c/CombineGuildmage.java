@@ -5,11 +5,12 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.MoveCounterTargetsEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
 import mage.constants.Duration;
 import mage.constants.SubType;
 import mage.counters.CounterType;
@@ -43,10 +44,10 @@ public final class CombineGuildmage extends CardImpl {
         this.toughness = new MageInt(2);
 
         // {1}{G}, {T}: This turn, each creature you control enters the battlefield with an additional +1/+1 counter on it.
-        Ability ability = new SimpleActivatedAbility(new EntersWithCountersControlledEffect(
-                Duration.EndOfTurn, StaticFilters.FILTER_PERMANENT_CREATURE,
-                CounterType.P1P1.createInstance(), false
-        ), new ManaCostsImpl<>("{1}{G}"));
+        Ability ability = new SimpleActivatedAbility(new EntersWithCountersEffect(
+                Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance(1))
+                .setFilter(StaticFilters.FILTER_CONTROLLED_CREATURE)
+                .setText("this turn, each creature you control enters with an additional +1/+1 counter on it"), new ManaCostsImpl<>("{1}{G}"));
         ability.addCost(new TapSourceCost());
         this.addAbility(ability);
 

@@ -2,9 +2,9 @@ package mage.cards.s;
 
 import mage.abilities.Ability;
 import mage.abilities.common.CanBlockOnlyFlyingAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.PutCardIntoGraveFromAnywhereAllTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.common.TapSourceCost;
@@ -13,7 +13,7 @@ import mage.abilities.decorator.ConditionalOneShotEffect;
 import mage.abilities.effects.common.DrawDiscardControllerEffect;
 import mage.abilities.effects.common.LookLibraryAndPickControllerEffect;
 import mage.abilities.effects.common.TransformSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardSetInfo;
@@ -40,10 +40,7 @@ public final class SoulcipherBoard extends TransformingDoubleFacedCard {
 
         // Soulcipher Board
         // Soulcipher Board enters the battlefield with three omen counters on it.
-        this.getLeftHalfCard().addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.OMEN.createInstance(3)),
-                "with three omen counters on it"
-        ));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.OMEN.createInstance(3))));
 
         // {1}{U}, {T}: Look at the top two cards of your library. Put one of them into your graveyard.
         Ability ability = new SimpleActivatedAbility(

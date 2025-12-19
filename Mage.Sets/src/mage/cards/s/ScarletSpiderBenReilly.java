@@ -2,12 +2,13 @@ package mage.cards.s;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.WebSlingingCondition;
 import mage.abilities.costs.common.ReturnToHandChosenControlledPermanentCost;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.abilities.keyword.WebSlingingAbility;
 import mage.cards.CardImpl;
@@ -47,9 +48,11 @@ public final class ScarletSpiderBenReilly extends CardImpl {
         // Sensational Save -- If Scarlet Spider was cast using web-slinging, he enters with X +1/+1 counters on him, where X is the mana value of the returned creature.
         String ruleText = CardUtil.italicizeWithEmDash("Sensational Save") + "If {this} was cast using web-slinging, " +
                 "he enters with X +1/+1 counters on him, where X is the mana value of the returned creature.";
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(),
-                ScarletSpiderBenReillyValue.instance, false),
-                WebSlingingCondition.THIS, ruleText, ""));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1, ScarletSpiderBenReillyValue.instance),
+                WebSlingingCondition.THIS)
+                .setText(ruleText)
+        ));
     }
 
     private ScarletSpiderBenReilly(final ScarletSpiderBenReilly card) {

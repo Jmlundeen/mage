@@ -2,9 +2,10 @@
 package mage.cards.g;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.RevoltCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.AbilityWord;
@@ -30,10 +31,11 @@ public final class GreenwheelLiberator extends CardImpl {
 
         // <i>Revolt</i> &mdash; Greenbelt Liberator enters the battlefield with two +1/+1 counters on it if a
         // permanent you controlled left the battlefield this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)), false,
-                RevoltCondition.instance, "{this} enters with two +1/+1 counters on it " +
-                "if a permanent you controlled left the battlefield this turn.", null
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                RevoltCondition.instance)
+                .setText ("{this} enters with two +1/+1 counters on it " +
+                "if a permanent you controlled left the battlefield this turn.")
         ).setAbilityWord(AbilityWord.REVOLT).addHint(RevoltCondition.getHint()), new RevoltWatcher());
     }
 

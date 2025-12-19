@@ -1,15 +1,19 @@
 package mage.abilities.effects;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.condition.Condition;
 import mage.constants.EffectType;
+import mage.constants.Layer;
 import mage.constants.Outcome;
+import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.target.targetpointer.TargetPointer;
 import mage.util.Copyable;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -86,5 +90,25 @@ public interface Effect extends Serializable, Copyable<Effect> {
      */
     public default Condition getCondition() {
         return null;
+    }
+
+    /**
+     * Applies the effect to the passed in list of objects. This method should only contain logic for applying to
+     * the objects. All object filtering should be done in {@link #queryAffectedObjects} before passing to this function.
+     */
+    void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects);
+
+    default void applyToObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        applyToObjects(null, null, source, game, affectedObjects);
+    }
+
+    /**
+     * Gathers all objects the effect should apply to. Do all filtering logic in this function to avoid errors in {@link #applyToObjects}.
+     * @return true if adding any objects to the affectedObjects list, otherwise return false
+     */
+    boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects);
+
+    default boolean queryAffectedObjects(Ability source, Game game, List<MageItem> affectedObjects) {
+        return queryAffectedObjects(null, source, game, affectedObjects);
     }
 }

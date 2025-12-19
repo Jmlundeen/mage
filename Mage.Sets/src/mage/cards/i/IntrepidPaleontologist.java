@@ -3,7 +3,6 @@ package mage.cards.i;
 import mage.MageIdentifier;
 import mage.MageInt;
 import mage.MageObject;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -11,7 +10,7 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.common.ExileTargetForSourceEffect;
-import mage.abilities.effects.common.counter.AddCounterEnteringCreatureEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -121,8 +120,7 @@ class IntrepidPaleontologistWatcher extends Watcher {
                 && event.hasApprovingIdentifier(MageIdentifier.IntrepidPaleontologistWatcher)) {
             Spell target = game.getSpell(event.getTargetId());
             if (target != null) {
-                game.getState().addEffect(new AddCounterEnteringCreatureEffect(new MageObjectReference(target.getCard(), game),
-                                CounterType.FINALITY.createInstance(), Outcome.UnboostCreature),
+                game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.SOURCE, CounterType.FINALITY.createInstance()),
                         target.getSpellAbility());
             }
         }

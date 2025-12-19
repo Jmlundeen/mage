@@ -1,9 +1,6 @@
 package mage.cards.g;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
@@ -19,6 +16,8 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.targetpointer.FixedTargets;
+
+import java.util.*;
 
 /**
  *
@@ -121,29 +120,29 @@ class GhoulsNightOutTypeChangingEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer subLayer, Ability source, Game game) {
-        boolean isActive = false;
-        for (UUID permId : getTargetPointer().getTargets(game, source)) {
-            Permanent permanent = game.getPermanent(permId);
-            if (permanent != null) {
-                switch (layer) {
-                    case ColorChangingEffects_5:
-                        permanent.getColor(game).setBlack(true);
-                        isActive = true;
-                        break;
-                    case TypeChangingEffects_4:
-                        permanent.addSubType(game, SubType.ZOMBIE);
-                        isActive = true;
-                        break;
-                }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case ColorChangingEffects_5:
+                    permanent.getColor(game).setBlack(true);
+                    break;
+                case TypeChangingEffects_4:
+                    permanent.addSubType(game, SubType.ZOMBIE);
+                    break;
             }
         }
-        return isActive;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (UUID permId : getTargetPointer().getTargets(game, source)) {
+            Permanent permanent = game.getPermanent(permId);
+            if (permanent != null) {
+                affectedObjects.add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

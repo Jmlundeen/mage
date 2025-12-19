@@ -2,11 +2,12 @@ package mage.abilities.keyword;
 
 import mage.abilities.Ability;
 import mage.abilities.StaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.condition.Condition;
+import mage.abilities.condition.common.SourceHasCounterCondition;
+import mage.abilities.decorator.ConditionalContinuousEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.constants.*;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
 import java.util.stream.Collectors;
@@ -17,15 +18,20 @@ import java.util.stream.Collectors;
 public class StationLevelAbility extends StaticAbility {
 
     private final int level;
+    private final Condition counterCondition;
+    private boolean hasPT = false;
 
     public StationLevelAbility(int level) {
         super(Zone.BATTLEFIELD, null);
         this.level = level;
+        counterCondition = new SourceHasCounterCondition(CounterType.CHARGE, ComparisonType.OR_GREATER, level);
     }
 
     private StationLevelAbility(final StationLevelAbility ability) {
         super(ability);
         this.level = ability.level;
+        this.counterCondition = ability.counterCondition;
+        this.hasPT = ability.hasPT;
     }
 
     @Override
@@ -34,12 +40,23 @@ public class StationLevelAbility extends StaticAbility {
     }
 
     public StationLevelAbility withLevelAbility(Ability ability) {
-        this.addEffect(new StationLevelAbilityEffect(ability, level));
+        this.addEffect(new ConditionalContinuousEffect(
+                new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                        .withGainedAbilities(ability),
+                counterCondition, ability.getRule()
+        ));
         return this;
     }
 
     public StationLevelAbility withPT(int power, int toughness) {
-        this.addEffect(new StationLevelCreatureEffect(power, toughness, level));
+        this.addEffect(new ConditionalContinuousEffect(
+                new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.BecomeCreature, ContinuousAffected.SOURCE)
+                        .withSetPower(power)
+                        .withSetToughness(toughness)
+                        .withAddedCardTypes(false, CardType.CREATURE),
+                counterCondition, power + "/" + toughness
+        ));
+        this.hasPT = true;
         return this;
     }
 
@@ -54,106 +71,6 @@ public class StationLevelAbility extends StaticAbility {
     }
 
     public boolean hasPT() {
-        return this.getEffects().stream().anyMatch(StationLevelCreatureEffect.class::isInstance);
-    }
-}
-
-class StationLevelAbilityEffect extends ContinuousEffectImpl {
-
-    private final Ability ability;
-    private final int level;
-
-    StationLevelAbilityEffect(Ability ability, int level) {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.ability = ability;
-        this.level = level;
-        this.ability.setRuleVisible(false);
-        this.staticText = ability.getRule();
-    }
-
-    private StationLevelAbilityEffect(final StationLevelAbilityEffect effect) {
-        super(effect);
-        this.ability = effect.ability;
-        this.level = effect.level;
-    }
-
-    @Override
-    public StationLevelAbilityEffect copy() {
-        return new StationLevelAbilityEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null || permanent.getCounters(game).getCount(CounterType.CHARGE) < level) {
-            return false;
-        }
-        permanent.addAbility(ability, source.getSourceId(), game);
-        return true;
-    }
-}
-
-class StationLevelCreatureEffect extends ContinuousEffectImpl {
-
-    private final int power;
-    private final int toughness;
-    private final int level;
-
-    StationLevelCreatureEffect(int power, int toughness, int level) {
-        super(Duration.WhileOnBattlefield, Outcome.BecomeCreature);
-        this.power = power;
-        this.toughness = toughness;
-        this.level = level;
-        staticText = power + "/" + toughness;
-    }
-
-    private StationLevelCreatureEffect(final StationLevelCreatureEffect effect) {
-        super(effect);
-        this.power = effect.power;
-        this.toughness = effect.toughness;
-        this.level = effect.level;
-    }
-
-    @Override
-    public StationLevelCreatureEffect copy() {
-        return new StationLevelCreatureEffect(this);
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null || permanent.getCounters(game).getCount(CounterType.CHARGE) < level) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.addCardType(game, CardType.CREATURE);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer != SubLayer.SetPT_7b) {
-                    return false;
-                }
-                permanent.getPower().setModifiedBaseValue(power);
-                permanent.getToughness().setModifiedBaseValue(toughness);
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        switch (layer) {
-            case TypeChangingEffects_4:
-            case PTChangingEffects_7:
-                return true;
-            default:
-                return false;
-        }
+        return hasPT;
     }
 }

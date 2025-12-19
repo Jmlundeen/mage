@@ -3,14 +3,15 @@ package mage.cards.m;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.BecomesTargetSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.dynamicvalue.common.SourcePermanentPowerValue;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.SacrificeSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -52,10 +53,10 @@ public final class MyriadConstruct extends CardImpl {
         this.addAbility(new KickerAbility("{3}"));
 
         // If Myriad Construct was kicked, it enters with a +1/+1 counter on it for each nonbasic land your opponents control.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(), xValue, false),
-                KickedCondition.ONCE, "If {this} was kicked, it enters " +
-                "with a +1/+1 counter on it for each nonbasic land your opponents control.", ""
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1, xValue),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with a +1/+1 counter on it for each nonbasic land your opponents control")
         ));
 
         // When Myriad Construct becomes the target of a spell, sacrifice it and create a number of 1/1 colourless Construct artifact creature tokens equal to its power.

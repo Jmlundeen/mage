@@ -1,8 +1,5 @@
 package mage.cards.c;
 
-import java.util.Map;
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.CaseAbility;
@@ -11,27 +8,26 @@ import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
 import mage.abilities.condition.common.SolvedSourceCondition;
 import mage.abilities.decorator.ConditionalReplacementEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.ReplacementEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.abilities.hint.common.CaseSolvedHint;
-import mage.constants.ComparisonType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SubType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ComparisonType;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
-import mage.game.events.CreateTokenEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.ClueArtifactToken;
-import mage.game.permanent.token.Token;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.UUID;
 
 /**
  *
@@ -51,8 +47,10 @@ public final class CaseOfThePilferedProof extends CardImpl {
                 new FilterCreaturePermanent(SubType.DETECTIVE, "You control three or more Detectives"),
                 ComparisonType.MORE_THAN, 2, true);
         // Solved -- If one or more tokens would be created under your control, those tokens plus a Clue token are created instead.
+        ReplacementEffect effect = new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.ADD, 1, new ClueArtifactToken());
+        effect.setText("if one or more tokens would be created under your control, those tokens plus a Clue token are created instead");
         Ability solvedAbility = new SimpleStaticAbility(new ConditionalReplacementEffect(
-                new CaseOfThePilferedProofReplacementEffect(), SolvedSourceCondition.SOLVED));
+                effect, SolvedSourceCondition.SOLVED));
 
         this.addAbility(new CaseAbility(initialAbility, toSolveCondition,solvedAbility)
                 .addHint(new CaseOfThePilferedProofHint(toSolveCondition)));
@@ -102,52 +100,6 @@ class CaseOfThePilferedProofTriggeredAbility extends TriggeredAbilityImpl {
                 && permanent.isControlledBy(this.getControllerId())) {
             getEffects().setTargetPointer(new FixedTarget(permanent, game));
             return true;
-        }
-        return false;
-    }
-}
-
-class CaseOfThePilferedProofReplacementEffect extends ReplacementEffectImpl {
-
-    CaseOfThePilferedProofReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        this.staticText = "If one or more tokens would be created under your control, those tokens plus a Clue token are created instead";
-    }
-
-    private CaseOfThePilferedProofReplacementEffect(final CaseOfThePilferedProofReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public CaseOfThePilferedProofReplacementEffect copy() {
-        return new CaseOfThePilferedProofReplacementEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return source.isControlledBy(event.getPlayerId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        if (event instanceof CreateTokenEvent) {
-            CreateTokenEvent tokenEvent = (CreateTokenEvent) event;
-            ClueArtifactToken clueToken = null;
-            Map<Token, Integer> tokens = tokenEvent.getTokens();
-            for (Map.Entry<Token, Integer> entry : tokens.entrySet()) {
-                if (entry.getKey() instanceof ClueArtifactToken) {
-                    clueToken = (ClueArtifactToken) entry.getKey();
-                }
-            }
-            if (clueToken == null) {
-                clueToken = new ClueArtifactToken();
-            }
-            tokens.put(clueToken, tokens.getOrDefault(clueToken, 0) + 1);
         }
         return false;
     }

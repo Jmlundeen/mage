@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -19,6 +20,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -97,7 +99,16 @@ class ImpendingAbilityTypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeCardType(game, CardType.CREATURE);
+            permanent.removeAllCreatureTypes(game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (!ImpendingCondition.instance.apply(game, source)) {
             return false;
         }
@@ -105,8 +116,7 @@ class ImpendingAbilityTypeEffect extends ContinuousEffectImpl {
         if (permanent.getCounters(game).getCount(CounterType.TIME) < 1) {
             return false;
         }
-        permanent.removeCardType(game, CardType.CREATURE);
-        permanent.removeAllCreatureTypes(game);
+        affectedObjects.add(permanent);
         return true;
     }
 }
@@ -127,20 +137,28 @@ class ImpendingAbilityRemoveEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeAbilities(
+                    permanent
+                            .getAbilities(game)
+                            .stream()
+                            .filter(ImpendingAbility.class::isInstance)
+                            .collect(Collectors.toList()),
+                    source.getSourceId(), game
+            );
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             discard();
             return false;
         }
-        permanent.removeAbilities(
-                permanent
-                        .getAbilities(game)
-                        .stream()
-                        .filter(ImpendingAbility.class::isInstance)
-                        .collect(Collectors.toList()),
-                source.getSourceId(), game
-        );
+        affectedObjects.add(permanent);
         return true;
     }
 }

@@ -104,6 +104,13 @@ public class StarfieldOfNyxTest extends CardTestPlayerBase {
         }
     }
 
+    /**
+     * Starfield of Nyx makes all enchantments you control into creatures
+     * Humility removes the abilities of all creatures (including self) in layer 6
+     * both starfield and humility apply in layer 7 (because they started to apply in earlier layers)
+     * result is that all enchantments are 1/1 creatures with no abilities
+     * if starfield has a later timestamp than humility, the enchantments would have their cmc as power/toughness
+     */
     @Test
     public void testStarfieldOfNyxLayers() {
 
@@ -116,13 +123,13 @@ public class StarfieldOfNyxTest extends CardTestPlayerBase {
         setStopAt(1, PhaseStep.POSTCOMBAT_MAIN);
         execute();
 
-        assertPowerToughness(playerA, "Master of the Feast", 3, 3, Filter.ComparisonScope.All);
-        assertPowerToughness(playerA, "Humility", 4, 4, Filter.ComparisonScope.All);
-        // Humility loses its ability in layer 6.  Layer 7 never gets Humility's effect
-        assertPowerToughness(playerA, "Emrakul, the Aeons Torn", 15, 15, Filter.ComparisonScope.All); // PT not affected
+        assertPowerToughness(playerA, "Master of the Feast", 1, 1, Filter.ComparisonScope.All);
+        assertPowerToughness(playerA, "Humility", 1, 1, Filter.ComparisonScope.All);
+        assertPowerToughness(playerA, "Emrakul, the Aeons Torn", 1, 1, Filter.ComparisonScope.All);
+        assertPowerToughness(playerA, "Crusade", 1, 1, Filter.ComparisonScope.All);
         Permanent emrakul = getPermanent("Emrakul, the Aeons Torn", playerA.getId());
         Assert.assertNotNull(emrakul);
-        Assert.assertFalse(emrakul.getAbilities().contains(FlyingAbility.getInstance())); // loses flying though
+        Assert.assertFalse(emrakul.getAbilities().contains(FlyingAbility.getInstance())); // loses flying
 
     }
 

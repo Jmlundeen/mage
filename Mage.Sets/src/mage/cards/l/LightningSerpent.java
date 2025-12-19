@@ -1,9 +1,10 @@
 package mage.cards.l;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.SacrificeSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.TrampleAbility;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
@@ -35,7 +36,7 @@ public final class LightningSerpent extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // Lightning Serpent enters the battlefield with X +1/+0 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P0.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P0, GetXValue.instance)));
 
         // At the beginning of the end step, sacrifice Lightning Serpent.
         this.addAbility(new BeginningOfEndStepTriggeredAbility(

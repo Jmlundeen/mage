@@ -1,6 +1,7 @@
 package mage.cards.v;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
@@ -22,6 +23,7 @@ import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -121,11 +123,6 @@ class VraskaTheSilencerContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
     public VraskaTheSilencerContinuousEffect copy() {
         return new VraskaTheSilencerContinuousEffect(this);
     }
@@ -137,27 +134,35 @@ class VraskaTheSilencerContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = affectedObjectList.get(0).getPermanent(game);
-        if (permanent == null) {
-            this.discard();
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.setIsAllCreatureTypes(game, false);
+                    permanent.retainAllArtifactSubTypes(game);
+                    permanent.removeAllCardTypes(game);
+                    permanent.addCardType(game, CardType.ARTIFACT);
+                    permanent.addSubType(game, SubType.TREASURE);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.addAbility(ability, source.getSourceId(), game);
+                    break;
+            }
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.setIsAllCreatureTypes(game, false);
-                permanent.retainAllArtifactSubTypes(game);
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.ARTIFACT);
-                permanent.addSubType(game, SubType.TREASURE);
-                break;
-            case AbilityAddingRemovingEffects_6:
-                permanent.addAbility(ability, source.getSourceId(), game);
-                break;
-        }
-        return true;
     }
 
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = affectedObjectList.get(0).getPermanent(game);
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
+        } else {
+            discard();
+            return false;
+        }
+    }
 
     @Override
     public boolean hasLayer(Layer layer) {

@@ -1,12 +1,15 @@
 package mage.cards.c;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapTargetCost;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.continuous.BoostControlledEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -18,6 +21,7 @@ import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -45,7 +49,11 @@ public final class CaptivatingVampire extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new BoostControlledEffect(1, 1, Duration.WhileOnBattlefield, filter1, true)));
 
         // Tap five untapped Vampires you control: Gain control of target creature. It becomes a Vampire in addition to its other types.
-        Ability ability = new SimpleActivatedAbility(new CaptivatingVampireEffect(), new TapTargetCost(new TargetControlledPermanent(5, 5, filter2, true)));
+        ContinuousEffect effect = new ContinuousEffectBuilder(Duration.EndOfGame, Outcome.Detriment)
+                .withGainControl()
+                .withAddedSubTypes(false, SubType.VAMPIRE)
+                .setText("Gain control of target creature. It becomes a Vampire in addition to its other types");
+        Ability ability = new SimpleActivatedAbility(effect, new TapTargetCost(new TargetControlledPermanent(5, 5, filter2, true)));
         ability.addTarget(new TargetCreaturePermanent());
         this.addAbility(ability);
     }
@@ -57,54 +65,6 @@ public final class CaptivatingVampire extends CardImpl {
     @Override
     public CaptivatingVampire copy() {
         return new CaptivatingVampire(this);
-    }
-
-}
-
-class CaptivatingVampireEffect extends ContinuousEffectImpl {
-
-    CaptivatingVampireEffect() {
-        super(Duration.Custom, Outcome.Detriment);
-        staticText = "Gain control of target creature. It becomes a Vampire in addition to its other types";
-    }
-
-    private CaptivatingVampireEffect(final CaptivatingVampireEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public CaptivatingVampireEffect copy() {
-        return new CaptivatingVampireEffect(this);
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent != null) {
-            switch (layer) {
-                case ControlChangingEffects_2:
-                    if (sublayer == SubLayer.NA) {
-                        permanent.changeControllerId(source.getControllerId(), game, source);
-                    }
-                    break;
-                case TypeChangingEffects_4:
-                    permanent.addSubType(game, SubType.VAMPIRE);
-                    break;
-            }
-            return true;
-        }
-        discard();
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.ControlChangingEffects_2 || layer == Layer.TypeChangingEffects_4;
     }
 
 }

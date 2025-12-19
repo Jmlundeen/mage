@@ -1,5 +1,6 @@
 package mage.cards.e;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.ContinuousRuleModifyingEffectImpl;
@@ -14,7 +15,9 @@ import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author padfoot
@@ -68,15 +71,22 @@ class EverybodyLivesPlayerEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (UUID playerId : game.getState().getPlayersInRange(source.getControllerId(), game)) {
-            Player player = game.getPlayer(playerId);
-            if (player != null) {
-                player.addAbility(HexproofAbility.getInstance());
-                player.setCanLoseLife(false);
-            }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
+            player.addAbility(HexproofAbility.getInstance());
+            player.setCanLoseLife(false);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getState().getPlayersInRange(source.getControllerId(), game)
+                .stream()
+                .map(game::getPlayer)
+                .collect(Collectors.toList())
+        );
+        return !affectedObjects.isEmpty();
     }
 }
 

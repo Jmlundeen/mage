@@ -1,20 +1,22 @@
 package mage.cards.a;
 
-import mage.MageObject;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ChooseCreatureTypeEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
-import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -30,7 +32,11 @@ public final class AshesOfTheFallen extends CardImpl {
         this.addAbility(new AsEntersBattlefieldAbility(new ChooseCreatureTypeEffect(Outcome.Benefit)));
 
         // Each creature card in your graveyard has the chosen creature type in addition to its other types.
-        this.addAbility(new SimpleStaticAbility(new AshesOfTheFallenEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
+                .setAffectedZones(Zone.GRAVEYARD)
+                .withGainChosenCreatureType(false)
+                .setText("Each creature card in your graveyard has the chosen creature type in addition to its other types")
+                ));
     }
 
     private AshesOfTheFallen(final AshesOfTheFallen card) {
@@ -40,50 +46,5 @@ public final class AshesOfTheFallen extends CardImpl {
     @Override
     public AshesOfTheFallen copy() {
         return new AshesOfTheFallen(this);
-    }
-}
-
-class AshesOfTheFallenEffect extends ContinuousEffectImpl {
-
-    AshesOfTheFallenEffect() {
-        super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
-        staticText = "Each creature card in your graveyard has the chosen creature type in addition to its other types";
-    }
-
-    private AshesOfTheFallenEffect(final AshesOfTheFallenEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (controller != null && permanent != null) {
-            SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(permanent.getId(), game);
-            if (subType != null) {
-                for (UUID cardId : controller.getGraveyard()) {
-                    Card card = game.getCard(cardId);
-                    if (card != null && card.isCreature(game) && !card.hasSubtype(subType, game)) {
-                        MageObject mageObject = game.getObject(card.getId());
-                        if (mageObject != null) {
-                            CardUtil.getObjectPartsAsObjects(mageObject).forEach(objectPart ->{
-                                if (objectPart.isCreature(game)) {
-                                    game.getState().getCreateMageObjectAttribute(objectPart, game).getSubtype().add(subType);
-                                }
-                            });
-                        }
-                    }
-                }
-            } else {
-                discard();
-            }
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public AshesOfTheFallenEffect copy() {
-        return new AshesOfTheFallenEffect(this);
     }
 }

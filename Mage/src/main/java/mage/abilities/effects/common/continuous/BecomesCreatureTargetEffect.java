@@ -1,5 +1,7 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -9,6 +11,7 @@ import mage.game.permanent.Permanent;
 import mage.game.permanent.token.Token;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -79,13 +82,37 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        boolean result = false;
-        for (UUID permanentId : getTargetPointer().getTargets(game, source)) {
-            Permanent permanent = game.getPermanent(permanentId);
-            if (permanent == null) {
-                continue;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (layer == Layer.TextChangingEffects_3) {
+            affectedObjectList.clear();
+            for (UUID targetId : getTargetPointer().getTargets(game, source)) {
+                Permanent permanent = game.getPermanent(targetId);
+                if (permanent == null) {
+                    permanent = game.getPermanentEntering(targetId);
+                }
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                    affectedObjectList.add(new MageObjectReference(permanent, game));
+                }
             }
+        } else {
+            for (MageObjectReference mor : affectedObjectList) {
+                Permanent permanent = mor.getPermanent(game);
+                if (permanent == null) {
+                    permanent = game.getPermanentEntering(mor.getSourceId());
+                }
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                }
+            }
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case TextChangingEffects_3:
                     if (loseName) {
@@ -146,22 +173,12 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
                         permanent.getPower().setModifiedBaseValue(token.getPower().getValue());
                     }
             }
-            result = true;
         }
-        if (!result && this.duration == Duration.Custom) {
-            this.discard();
-        }
-        return result;
     }
 
     public BecomesCreatureTargetEffect setRemoveSubtypes(boolean removeSubtypes) {
         this.removeSubtypes = removeSubtypes;
         return this;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 
     @Override
@@ -171,6 +188,11 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
                 || layer == Layer.ColorChangingEffects_5
                 || layer == Layer.TypeChangingEffects_4
                 || layer == Layer.TextChangingEffects_3;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 
     public BecomesCreatureTargetEffect withDurationRuleAtStart(boolean durationRuleAtStart) {

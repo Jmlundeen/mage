@@ -1,26 +1,26 @@
 package mage.cards.i;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.token.ClueAbility;
-import mage.constants.SubType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -34,9 +34,8 @@ public final class InvestigatorsJournal extends CardImpl {
         this.subtype.add(SubType.CLUE);
 
         // Investigator's Journal enters the battlefield with a number of suspect counters on it equal to the greatest number of creatures a player controls.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.SUSPECT.createInstance(), InvestigatorsJournalValue.instance, false),
-                "with a number of suspect counters on it equal to the greatest number of creatures a player controls"
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.SUSPECT, InvestigatorsJournalValue.instance)
+                .setText("{this} enters with a number of suspect counters on it equal to the greatest number of creatures a player controls")
         ));
 
         // {2}, {T}, Remove a suspect counter from Investigator's Journal: Draw a card.

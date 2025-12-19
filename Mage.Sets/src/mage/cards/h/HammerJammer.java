@@ -3,9 +3,9 @@ package mage.cards.h;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.common.AsEntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -20,8 +20,6 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -37,7 +35,7 @@ public final class HammerJammer extends CardImpl {
         this.toughness = new MageInt(0);
 
         // As Hammer Jammer enters the battlefield, roll a six-sided die. Hammer Jammer enters the battlefield with a number of +1/+1 counters on it equal to the result.
-        this.addAbility(new AsEntersBattlefieldAbility(new HammerJammerEntersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new SimpleStaticAbility(new HammerJammerEntersEffect(null)));
 
         // Whenever you roll a die, remove all +1/+1 counters from Hammer Jammer, then put a number of +1/+1 counters on it equal to the result.
         this.addAbility(new HammerJammerTriggeredAbility());
@@ -54,26 +52,25 @@ public final class HammerJammer extends CardImpl {
     }
 }
 
-class HammerJammerEntersEffect extends EntersBattlefieldWithXCountersEffect {
+// TODO: allow for roll dice effect -> remember result -> use dynamic value for result. So no custom effect needed.
+class HammerJammerEntersEffect extends EntersWithCountersEffect {
 
     HammerJammerEntersEffect(Counter counter) {
         super(counter);
-        staticText = "roll a six-sided die. {this} enters with a number of +1/+1 counters on it equal to the result";
+        staticText = "as {this} enters, roll a six-sided die. {this} enters with a number of +1/+1 counters on it equal to the result";
     }
 
-    private HammerJammerEntersEffect(EntersBattlefieldWithXCountersEffect effect) {
+    private HammerJammerEntersEffect(HammerJammerEntersEffect effect) {
         super(effect);
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
         Player controller = game.getPlayer(source.getControllerId());
         Permanent permanent = game.getPermanentEntering(source.getSourceId());
         if (controller != null && permanent != null) {
             int amount = controller.rollDice(outcome, source, game, 6);
-            List<UUID> appliedEffects = (ArrayList<UUID>) this.getValue("appliedEffects"); // the basic event is the EntersBattlefieldEvent, so use already applied replacement effects from that event
-            permanent.addCounters(CounterType.P1P1.createInstance(amount), source.getControllerId(), source, game, appliedEffects);
-            return super.apply(game, source);
+            game.addEnterWithCounters(permanent.getId(), CounterType.P1P1.createInstance(amount));
         }
         return false;
     }

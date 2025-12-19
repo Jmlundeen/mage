@@ -1,5 +1,6 @@
 package mage.cards.o;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,6 +14,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -59,17 +61,22 @@ class OneWithTheStarsEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
     public OneWithTheStarsEffect copy() {
         return new OneWithTheStarsEffect(this);
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.retainAllEnchantmentSubTypes(game);
+            permanent.removeAllCardTypes(game);
+            permanent.addCardType(game, CardType.ENCHANTMENT);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent enchantment = game.getPermanent(source.getSourceId());
         if (enchantment == null || enchantment.getAttachedTo() == null) {
             return false;
@@ -78,10 +85,7 @@ class OneWithTheStarsEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        permanent.setIsAllCreatureTypes(game, false);
-        permanent.retainAllEnchantmentSubTypes(game);
-        permanent.removeAllCardTypes(game);
-        permanent.addCardType(game, CardType.ENCHANTMENT);
+        affectedObjects.add(permanent);
         return true;
     }
 }

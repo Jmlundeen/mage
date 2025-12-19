@@ -5,8 +5,8 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.GainControlTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -73,42 +73,12 @@ class StarkeOfRathEffect extends OneShotEffect {
             Permanent targetPermanent = game.getPermanent(getTargetPointer().getFirst(game, source));
             if (targetPermanent != null) {
                 targetPermanent.destroy(source, game, false);
-                ContinuousEffect effect = new StarkeOfRathControlEffect();
-                effect.setTargetPointer(new FixedTarget(targetPermanent.getControllerId()));
+                ContinuousEffect effect = new GainControlTargetEffect(Duration.Custom, targetPermanent.getControllerId());
+                effect.setTargetPointer(new FixedTarget(source.getSourceId()));
                 game.addEffect(effect, source);
             }
             return true;
         }
         return false;
     }
-}
-
-class StarkeOfRathControlEffect extends ContinuousEffectImpl {
-
-    StarkeOfRathControlEffect() {
-        super(Duration.Custom, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        staticText = "That permanent's controller gains control of {this}";
-    }
-
-    private StarkeOfRathControlEffect(final StarkeOfRathControlEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public StarkeOfRathControlEffect copy() {
-        return new StarkeOfRathControlEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        Player newController = game.getPlayer(getTargetPointer().getFirst(game, source));
-        if (permanent != null && newController != null) {
-            return permanent.changeControllerId(newController.getId(), game, source);
-        } else {
-            discard();
-        }
-        return false;
-    }
-
 }

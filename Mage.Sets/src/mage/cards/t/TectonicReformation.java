@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -13,6 +14,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -57,14 +59,20 @@ class TectonicReformationEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, new CyclingAbility(new ManaCostsImpl<>("{R}")));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
-        for (Card card : controller.getHand().getCards(StaticFilters.FILTER_CARD_LAND, game)) {
-            game.getState().addOtherAbility(card, new CyclingAbility(new ManaCostsImpl<>("{R}")));
-        }
-        return true;
+        affectedObjects.addAll(controller.getHand().getCards(StaticFilters.FILTER_CARD_LAND, game));
+        return !affectedObjects.isEmpty();
     }
 }

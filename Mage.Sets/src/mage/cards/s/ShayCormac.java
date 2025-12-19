@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.BecomesTargetAnyTriggeredAbility;
@@ -22,6 +23,8 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -103,19 +106,29 @@ class ShayCormacEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (MageObjectReference mor : affectedObjectList) {
-            Permanent permanent = mor.getPermanent(game);
-            if (permanent == null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            for (Ability ability : permanent.getAbilities(game)) {
+                if (ability instanceof HexproofAbility || ability instanceof IndestructibleAbility
+                        || ability instanceof ProtectionAbility || ability instanceof ShroudAbility
+                        || ability instanceof WardAbility) {
+                    permanent.removeAbility(ability, source.getSourceId(), game);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+            MageObjectReference mor = it.next();
+            if (mor.getPermanent(game) == null) {
+                it.remove();
                 continue;
             }
-            // I know the removeIf is deprecated but I can't see any reason not to use it based on what the removeAbility method actually does
-            permanent.getAbilities(game).removeIf(HexproofBaseAbility.class::isInstance);
-            permanent.removeAbility(IndestructibleAbility.getInstance(), source.getSourceId(), game);
-            permanent.getAbilities(game).removeIf(ProtectionAbility.class::isInstance);
-            permanent.removeAbility(ShroudAbility.getInstance(), source.getSourceId(), game);
-            permanent.getAbilities(game).removeIf(WardAbility.class::isInstance);
+            affectedObjects.add(mor.getPermanent(game));
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -7,6 +8,8 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
+
+import java.util.List;
 
 /**
  * @author LevelX2
@@ -53,7 +56,21 @@ public class LoseCreatureTypeSourceEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.removeCardType(game, CardType.CREATURE);
+            if (!permanent.isKindred(game)) {
+                permanent.removeAllCreatureTypes(game);
+            }
+            if (permanent.isAttacking() || permanent.getBlocking() > 0) {
+                permanent.removeFromCombat(game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (dynamicValue.calculate(game, source, this) >= lessThan) {
             return false;
         }
@@ -61,13 +78,7 @@ public class LoseCreatureTypeSourceEffect extends ContinuousEffectImpl {
         if (permanent == null) {
             return false;
         }
-        permanent.removeCardType(game, CardType.CREATURE);
-        if (!permanent.isKindred(game)) {
-            permanent.removeAllCreatureTypes(game);
-        }
-        if (permanent.isAttacking() || permanent.getBlocking() > 0) {
-            permanent.removeFromCombat(game);
-        }
+        affectedObjects.add(permanent);
         return true;
     }
 

@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
@@ -17,6 +18,7 @@ import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.common.TargetOpponent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -105,12 +107,22 @@ class SenTripletsOpponentRevealsHandEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(getTargetPointer().getFirst(game, source));
-        if (player != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
             player.revealCards(player.getName() + "'s hand cards", player.getHand(), game, false);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player player = game.getPlayer(getTargetPointer().getFirst(game, source));
+        if (player != null) {
+            affectedObjects.add(player);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

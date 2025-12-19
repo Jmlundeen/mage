@@ -1,28 +1,27 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.MillCardsControllerEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.MultipliedValue;
 import mage.abilities.dynamicvalue.common.GetXValue;
-import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.MillCardsControllerEffect;
+import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.EscapeAbility;
+import mage.abilities.keyword.FlyingAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.counters.CounterType;
 import mage.constants.*;
+import mage.counters.CounterType;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -77,7 +76,16 @@ class TheMasterOfKeysEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            Ability ability = new EscapeAbility(card, card.getManaCost().getText(), 3);
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
@@ -89,13 +97,8 @@ class TheMasterOfKeysEffect extends ContinuousEffectImpl {
                 .filter(Objects::nonNull)
                 .filter(card -> !card.getManaCost().getText().isEmpty()) // card must have a mana cost
                 .filter(card -> card.isEnchantment(game)) // must be enchantment
-                .forEach(card -> {
-                    Ability ability = new EscapeAbility(card, card.getManaCost().getText(), 3);
-                    ability.setSourceId(card.getId());
-                    ability.setControllerId(card.getOwnerId());
-                    game.getState().addOtherAbility(card, ability);
-                });
-        return true;
+                .forEach(affectedObjects::add);
+        return !affectedObjects.isEmpty();
     }
 
     @Override

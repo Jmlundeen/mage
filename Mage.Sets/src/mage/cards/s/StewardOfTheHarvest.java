@@ -1,27 +1,19 @@
 package mage.cards.s;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.ActivatedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
-import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.ExileCardFromOwnGraveyardControllerEffect;
 import mage.abilities.effects.common.ExileTargetEffect;
-import mage.constants.*;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterLandCard;
-import mage.game.ExileZone;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInYourGraveyard;
-import mage.util.CardUtil;
+
+import java.util.UUID;
 
 /**
  *
@@ -45,7 +37,14 @@ public final class StewardOfTheHarvest extends CardImpl {
         this.addAbility(ability);
 
         // Creatures you control have all activated abilities of all land cards exiled with this creature.
-        this.addAbility(new SimpleStaticAbility(new StewardOfTheHarvestEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield, ContinuousAffected.STATIC_OR_DYNAMIC,
+                StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "Creatures you control have all activated abilities of all land cards exiled with this creature")
+                .fromSourceExiled()
+                .setCardWithAbilityFilter(StaticFilters.FILTER_CARD_LAND)
+                .setAffectedZones(Zone.BATTLEFIELD)
+                .setPermanentFilter(StaticFilters.FILTER_PERMANENT_CREATURE)
+        ));
     }
 
     private StewardOfTheHarvest(final StewardOfTheHarvest card) {
@@ -56,57 +55,4 @@ public final class StewardOfTheHarvest extends CardImpl {
     public StewardOfTheHarvest copy() {
         return new StewardOfTheHarvest(this);
     }
-}
-
-class StewardOfTheHarvestEffect extends ContinuousEffectImpl {
-
-    List<Ability> abilities = new ArrayList<>();
-    ExileZone lastZone;
-
-    public StewardOfTheHarvestEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "Creatures you control have all activated abilities of all land cards exiled with this creature.";
-    }
-
-    private StewardOfTheHarvestEffect(StewardOfTheHarvestEffect effect) {
-        super(effect);
-        this.abilities = effect.abilities;
-        this.lastZone = effect.lastZone;
-    }
-
-    @Override
-    public StewardOfTheHarvestEffect copy() {
-        return new StewardOfTheHarvestEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-            UUID exileId = CardUtil.getExileZoneId(game, source.getSourceId(), CardUtil.getActualSourceObjectZoneChangeCounter(game, source));
-            ExileZone exile = game.getExile().getExileZone(exileId);
-            if (exile != null) {
-                lastZone = exile;
-                if (abilities.isEmpty()) {
-                    exile.getCards(game).stream()
-                            .map(card -> card.getAbilities(game))
-                            .flatMap(List::stream)
-                            .filter(ability -> ability instanceof ActivatedAbility)
-                            .forEach(ability -> abilities.add(ability));
-                }
-            }
-            else {
-                abilities.clear();
-                if (lastZone != null) {
-                    lastZone.getCards(game).forEach(card -> game.getExile().moveToMainExileZone(card, game));
-                }
-            }
-
-        List<Permanent> creatures = game.getBattlefield().getActivePermanents(StaticFilters.FILTER_CONTROLLED_CREATURE, source.getControllerId(), source, game);
-        for (Ability ability : abilities) {
-            for (Permanent creature : creatures) {
-                creature.addAbility(ability, source.getSourceId(), game);
-            }
-        }
-        return true;
-    }
-
 }

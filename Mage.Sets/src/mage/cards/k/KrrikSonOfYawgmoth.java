@@ -1,24 +1,17 @@
 package mage.cards.k;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
-import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.LifelinkAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.SubLayer;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterMana;
 import mage.filter.FilterSpell;
@@ -26,6 +19,9 @@ import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -86,16 +82,22 @@ class KrrikSonOfYawgmothPhyrexianEffect extends ContinuousEffectImpl {
     public KrrikSonOfYawgmothPhyrexianEffect copy() {
         return new KrrikSonOfYawgmothPhyrexianEffect(this);
     }
-    
+
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        FilterMana filterMana = new FilterMana();
+        filterMana.setBlack(true);
+        for (MageItem object : affectedObjects) {
+            ((Player) object).addPhyrexianToColors(filterMana);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent sourcePermanent = game.getPermanent(source.getSourceId());
         Player controller = game.getPlayer(source.getControllerId());
-        FilterMana phyrexianBlack = new FilterMana();
-
-        phyrexianBlack.setBlack(true);
         if (controller != null && sourcePermanent != null) {
-            controller.addPhyrexianToColors(phyrexianBlack);
+            affectedObjects.add(controller);
             return true;
         }
         return false;

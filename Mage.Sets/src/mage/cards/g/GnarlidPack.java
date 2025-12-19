@@ -1,17 +1,18 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.MultikickerCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.MultikickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -30,9 +31,7 @@ public final class GnarlidPack extends CardImpl {
         this.addAbility(new MultikickerAbility("{1}{G}"));
 
         // Gnarlid Pack enters the battlefield with a +1/+1 counter on it for each time it was kicked.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(0), MultikickerCount.instance, true),
-                "with a +1/+1 counter on it for each time it was kicked"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, MultikickerCount.instance)));
     }
 
     private GnarlidPack(final GnarlidPack card) {

@@ -2,14 +2,14 @@ package mage.cards.h;
 
 import mage.MageInt;
 import mage.abilities.StateTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.decorator.ConditionalContinuousEffect;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.effects.common.RemoveAllCountersSourceEffect;
-import mage.abilities.effects.common.continuous.BoostSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
@@ -36,9 +36,7 @@ public final class Homarid extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Homarid enters the battlefield with a tide counter on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.TIDE.createInstance()), "with a tide counter on it."
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.TIDE.createInstance())));
 
         // At the beginning of your upkeep, put a tide counter on Homarid.
         this.addAbility(new BeginningOfUpkeepTriggeredAbility(
@@ -47,13 +45,20 @@ public final class Homarid extends CardImpl {
 
         // As long as there is exactly one tide counter on Homarid, it gets -1/-1.
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
-                new BoostSourceEffect(-1, -1, Duration.WhileOnBattlefield),
-                condition, "As long as there is exactly one tide counter on {this}, it gets -1/-1.")));
+                new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                        .withAddPower(-1)
+                        .withAddToughness(-1),
+                condition,
+                "As long as there is exactly one tide counter on {this}, it gets -1/-1."
+        )));
 
         // As long as there are exactly three tide counters on Homarid, it gets +1/+1.
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
-                new BoostSourceEffect(1, 1, Duration.WhileOnBattlefield),
-                condition2, "As long as there are exactly three tide counters on {this}, it gets +1/+1."
+                new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                        .withAddPower(1)
+                        .withAddToughness(1),
+                condition2,
+                "As long as there are exactly three tide counters on {this}, it gets +1/+1."
         )));
 
         // Whenever there are four or more tide counters on Homarid, remove all tide counters from it.

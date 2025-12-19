@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -17,7 +18,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -76,11 +77,23 @@ class StopColdEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Optional.ofNullable(source.getSourcePermanentIfItStillExists(game))
-                .map(Permanent::getAttachedTo)
-                .map(game::getPermanent)
-                .ifPresent(permanent -> permanent.removeAllAbilities(source.getSourceId(), game));
-        return true;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).removeAllAbilities(source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        if (permanent == null || permanent.getAttachedTo() == null) {
+            return false;
+        }
+        Permanent attachedTo = game.getPermanent(permanent.getAttachedTo());
+        if (attachedTo != null) {
+            affectedObjects.add(attachedTo);
+            return true;
+        }
+        return false;
     }
 }

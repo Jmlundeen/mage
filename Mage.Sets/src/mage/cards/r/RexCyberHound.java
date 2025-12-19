@@ -2,14 +2,13 @@ package mage.cards.r;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.ActivatedAbility;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.PayEnergyCost;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.MillCardsTargetEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.abilities.effects.common.counter.GetEnergyCountersControllerEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -19,7 +18,6 @@ import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 
@@ -29,6 +27,12 @@ import java.util.UUID;
  * @author Susucr
  */
 public final class RexCyberHound extends CardImpl {
+
+    private static final FilterCard filter = new FilterCard();
+
+    static {
+        filter.add(CounterType.BRAIN.getPredicate());
+    }
 
     public RexCyberHound(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{1}{W}{U}");
@@ -51,7 +55,10 @@ public final class RexCyberHound extends CardImpl {
         this.addAbility(ability);
 
         // Rex has all activated abilities of all cards in exile with brain counters on them.
-        this.addAbility(new SimpleStaticAbility(new RexCyberhoundContinuousEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of all cards in exile with brain counters on them")
+                .fromCardsInZones(filter, Zone.EXILED)
+        ));
     }
 
     private RexCyberHound(final RexCyberHound card) {
@@ -94,45 +101,4 @@ class RexCyberhoundTargetEffect extends OneShotEffect {
         return true;
     }
 
-}
-
-class RexCyberhoundContinuousEffect extends ContinuousEffectImpl {
-
-    private static final FilterCard filter = new FilterCard();
-
-    static {
-        filter.add(CounterType.BRAIN.getPredicate());
-    }
-
-    RexCyberhoundContinuousEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of all cards in exile with brain counters on them";
-        addDependencyType(DependencyType.AddingAbility);
-    }
-
-    private RexCyberhoundContinuousEffect(final RexCyberhoundContinuousEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public RexCyberhoundContinuousEffect copy() {
-        return new RexCyberhoundContinuousEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm == null) {
-            return false;
-        }
-        for (Card card : game.getExile().getCardsInRange(filter, source.getControllerId(), source, game)) {
-            for (Ability ability : card.getAbilities(game)) {
-                if (ability.isActivatedAbility()) {
-                    ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
-                    perm.addAbility(copyAbility, source.getSourceId(), game, true);
-                }
-            }
-        }
-        return true;
-    }
 }

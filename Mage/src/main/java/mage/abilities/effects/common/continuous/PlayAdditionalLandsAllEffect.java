@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.constants.Duration;
@@ -9,6 +10,8 @@ import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.players.Player;
 import mage.util.CardUtil;
+
+import java.util.List;
 
 /**
  * Each player may play an additional land on each of their turns.
@@ -47,12 +50,20 @@ public class PlayAdditionalLandsAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Player) object).setLandsPerTurn(CardUtil.overflowInc(((Player) object).getLandsPerTurn(), numExtraLands));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(game.getActivePlayerId());
-        if (player == null) {
+        if (player != null) {
+            affectedObjects.add(player);
+            return true;
+        } else {
             return false;
         }
-        player.setLandsPerTurn(CardUtil.overflowInc(player.getLandsPerTurn(), numExtraLands));
-        return true;
     }
 }

@@ -2,8 +2,8 @@
 
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -18,6 +18,9 @@ import mage.filter.FilterPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -67,13 +70,19 @@ class HoardSmelterEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addPower(costValue);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent target = game.getPermanent(source.getSourceId());
         if (target != null) {
-            target.addPower(costValue);
-            return true;
+            affectedObjects.add(target);
         }
-        return false;
+        return !affectedObjects.isEmpty();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package mage.abilities.decorator;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.condition.Condition;
@@ -91,6 +92,41 @@ public class ConditionalContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        boolean conditionState = condition.apply(game, source);
+        if (conditionState) {
+            effect.applyToObjects(layer, sublayer, source, game, affectedObjects);
+        } else if (otherwiseEffect != null) {
+            otherwiseEffect.applyToObjects(layer, sublayer, source, game, affectedObjects);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!initDone) { // if simpleStaticAbility, init won't be called
+            init(source, game);
+        }
+        boolean conditionState = condition.apply(game, source);
+        if (conditionState) {
+            return effect.queryAffectedObjects(layer, source, game, affectedObjects);
+        } else if (otherwiseEffect != null) {
+            return otherwiseEffect.queryAffectedObjects(layer, source, game, affectedObjects);
+        }
+        if (!conditionState && effect.getDuration() == Duration.OneUse) {
+            used = true;
+        }
+        switch (effect.getDuration()) {
+            case OneUse:
+                used = true;
+                break;
+            case Custom:
+            case WhileControlled:
+                this.discard();
+        }
+        return false;
+    }
+
+    @Override
     public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
         if (!initDone) { // if simpleStaticAbility, init won't be called
             init(source, game);
@@ -150,6 +186,16 @@ public class ConditionalContinuousEffect extends ContinuousEffectImpl {
     @Override
     public boolean hasLayer(Layer layer) {
         return effect.hasLayer(layer);
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return effect.hasSubLayer(sublayer);
+    }
+
+    @Override
+    public int calculateResult(Game game, Ability source, List<MageItem> affectedObjects) {
+        return effect.calculateResult(game, source, affectedObjects);
     }
 
     @Override

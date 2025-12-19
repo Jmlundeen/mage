@@ -1,15 +1,15 @@
 
 package mage.cards.j;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfCombatTriggeredAbility;
 import mage.abilities.common.CantBlockAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.triggers.BeginningOfCombatTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -21,6 +21,9 @@ import mage.players.Player;
 import mage.target.Target;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetOpponent;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -105,16 +108,23 @@ class JarJarBinksGainControlSourceEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).changeControllerId(getTargetPointer().getFirst(game, source), game, source);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         UUID targetOpponent = getTargetPointer().getFirst(game, source);
         Permanent permanent = game.getPermanent(source.getSourceId());
         if (permanent != null && targetOpponent != null) {
-            permanent.changeControllerId(targetOpponent, game, source);
+            affectedObjects.add(permanent);
         } else {
             // no valid target exists, effect can be discarded
             discard();
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }
 

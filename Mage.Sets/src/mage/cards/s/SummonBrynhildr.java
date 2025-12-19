@@ -191,7 +191,7 @@ class SummonBrynhildrHasteEffect extends OneShotEffect {
     public boolean apply(Game game, Ability source) {
         Spell spell = (Spell) getValue("spellCast");
         if (spell != null) {
-            game.getState().addEffect(new GainAbilityTargetEffect(HasteAbility.getInstance())
+            game.addEffect(new GainAbilityTargetEffect(HasteAbility.getInstance())
                     .setTargetPointer(new FixedTarget(spell.getCard().getId())), source);
         }
         return true;

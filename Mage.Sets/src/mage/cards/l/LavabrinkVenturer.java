@@ -1,6 +1,7 @@
 package mage.cards.l;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -10,12 +11,14 @@ import mage.abilities.keyword.ProtectionAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.Layer;
 import mage.constants.ModeChoice;
 import mage.constants.SubType;
 import mage.filter.FilterObject;
 import mage.filter.predicate.mageobject.ManaValueParityPredicate;
 import mage.game.Game;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -72,7 +75,7 @@ class LavabrinkVenturerEffect extends GainAbilitySourceEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (ModeChoice.ODD.checkMode(game, source)) {
             this.ability = new ProtectionAbility(oddFilter);
         } else if (ModeChoice.EVEN.checkMode(game, source)) {
@@ -80,7 +83,7 @@ class LavabrinkVenturerEffect extends GainAbilitySourceEffect {
         } else {
             return false;
         }
-        return super.apply(game, source);
+        return super.queryAffectedObjects(layer, source, game, affectedObjects);
     }
 
     @Override

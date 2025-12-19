@@ -4,9 +4,10 @@ import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.CopyPermanentEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -88,23 +89,14 @@ class SparkDoubleCopyApplier extends CopyApplier {
         // doesn't get a +1/+1 counter. On the other hand, if Spark Double copies Gideon Blackblade during your turn,
         // Spark Double enters as a planeswalker creature and gets both kinds of counters.
 
-        // counters only for original card, not copies
-        if (!isCopyOfCopy(source, blueprint, copyToObjectId)) {
-            // enters with an additional +1/+1 counter on it if it’s a creature
-            if (blueprint.isCreature()) {
-                blueprint.getAbilities().add(new EntersBattlefieldAbility(
-                        new AddCountersSourceEffect(CounterType.P1P1.createInstance(), false)
-                                .setText("with an additional +1/+1 counter on it")
-                ));
-            }
+        // enters with an additional +1/+1 counter on it if it’s a creature
+        if (blueprint.isCreature(game)) {
+            blueprint.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())));
+        }
 
-            // enters with an additional loyalty counter on it if it’s a planeswalker
-            if (blueprint.isPlaneswalker()) {
-                blueprint.getAbilities().add(new EntersBattlefieldAbility(
-                        new AddCountersSourceEffect(CounterType.LOYALTY.createInstance(), false)
-                                .setText("with an additional loyalty counter on it")
-                ));
-            }
+        // enters with an additional loyalty counter on it if it’s a planeswalker
+        if (blueprint.isPlaneswalker(game)) {
+            blueprint.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LOYALTY.createInstance())));
         }
 
         return true;

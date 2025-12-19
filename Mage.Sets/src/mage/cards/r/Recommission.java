@@ -1,24 +1,22 @@
 package mage.cards.r;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
+import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -75,45 +73,10 @@ class RecommissionEffect extends OneShotEffect {
         if (controller == null || card == null) {
             return false;
         }
-        game.addEffect(new RecommissionCounterEffect(), source);
+        game.addEffect(new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                        .setFilter(StaticFilters.FILTER_PERMANENT_CREATURE),
+                source);
         controller.moveCards(card, Zone.BATTLEFIELD, source, game);
         return true;
-    }
-}
-
-class RecommissionCounterEffect extends ReplacementEffectImpl {
-
-    RecommissionCounterEffect() {
-        super(Duration.EndOfStep, Outcome.BoostCreature);
-    }
-
-    private RecommissionCounterEffect(final RecommissionCounterEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public RecommissionCounterEffect copy() {
-        return new RecommissionCounterEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return getTargetPointer().getTargets(game, source).contains(event.getTargetId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent permanent = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (permanent == null || !permanent.isCreature(game)) {
-            return false;
-        }
-        permanent.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game, event.getAppliedEffects());
-        discard();
-        return false;
     }
 }

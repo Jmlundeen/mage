@@ -1,6 +1,7 @@
 package mage.cards.x;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
@@ -18,6 +19,7 @@ import mage.target.common.TargetOpponent;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -113,7 +115,17 @@ class XanatharLookAtTopCardOfLibraryEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player opponent = game.getPlayer(getTargetPointer().getFirst(game, source));
+        Card topCard = opponent.getLibrary().getFromTop(game);
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
+            player.lookAtCards("Top card of " + opponent.getName() + "'s library", topCard, game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (game.inCheckPlayableState()) { // Ignored - see https://github.com/magefree/mage/issues/6994
             return false;
         }
@@ -129,10 +141,9 @@ class XanatharLookAtTopCardOfLibraryEffect extends ContinuousEffectImpl {
         if (topCard == null) {
             return false;
         }
-        controller.lookAtCards("Top card of " + opponent.getName() + "'s library", topCard, game);
+        affectedObjects.add(controller);
         return true;
     }
-
 }
 
 class XanatharPlayFromTopOfTargetLibraryEffect extends AsThoughEffectImpl {

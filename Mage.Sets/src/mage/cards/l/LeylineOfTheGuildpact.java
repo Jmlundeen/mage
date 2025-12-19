@@ -1,5 +1,6 @@
 package mage.cards.l;
 
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -13,6 +14,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -63,13 +65,18 @@ class LeylineOfTheGuildpactEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).getColor(game).addColor(allColors);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_CONTROLLED_PERMANENT_NON_LAND,
                 source.getControllerId(), source, game
-        )) {
-            permanent.getColor(game).addColor(allColors);
-        }
-        return true;
+        ));
+        return !affectedObjects.isEmpty();
     }
 }

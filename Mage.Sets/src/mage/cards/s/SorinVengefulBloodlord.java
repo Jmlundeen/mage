@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -21,6 +22,7 @@ import mage.target.common.TargetCardInYourGraveyard;
 import mage.target.common.TargetPlayerOrPlaneswalker;
 import mage.target.targetadjustment.XManaValueTargetAdjuster;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -71,7 +73,7 @@ public final class SorinVengefulBloodlord extends CardImpl {
 
 class SorinVengefulBloodlordEffect extends ContinuousEffectImpl {
     SorinVengefulBloodlordEffect() {
-        super(Duration.Custom, Outcome.Neutral);
+        super(Duration.Custom, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
         staticText = "That creature is a Vampire in addition to its other types";
     }
 
@@ -80,12 +82,14 @@ class SorinVengefulBloodlordEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.TypeChangingEffects_4;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addSubType(game, SubType.VAMPIRE);
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent creature;
         if (source.getTargets().getFirstTarget() == null) {
             creature = game.getPermanent(getTargetPointer().getFirst(game, source));
@@ -96,17 +100,12 @@ class SorinVengefulBloodlordEffect extends ContinuousEffectImpl {
             }
         }
         if (creature != null) {
-            creature.addSubType(game, SubType.VAMPIRE);
+            affectedObjects.add(creature);
             return true;
         } else {
             this.used = true;
+            return false;
         }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
     }
 
     @Override

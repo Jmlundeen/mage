@@ -1,27 +1,30 @@
 package mage.cards.m;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.SubType;
+import mage.constants.SuperType;
+import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
-import mage.util.CardUtil;
+import mage.filter.common.FilterCreaturePermanent;
+import mage.filter.predicate.mageobject.SameNameAsSourcePredicate;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
  */
 public final class MarvinMurderousMimic extends CardImpl {
 
+    private static final FilterPermanent filter = new FilterCreaturePermanent("creatures you control that don't have the same name as this creature");
+
+    static {
+        filter.add(SameNameAsSourcePredicate.NOT);
+    }
     public MarvinMurderousMimic(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{2}");
 
@@ -31,7 +34,10 @@ public final class MarvinMurderousMimic extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Marvin, Murderous Mimic has all activated abilities of creatures you control that don't have the same name as this creature.
-        this.addAbility(new SimpleStaticAbility(new MarvinMurderousMimicEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of creatures you control that don't have the same name as this creature")
+                .fromPermanents(filter)
+        ));
     }
 
     private MarvinMurderousMimic(final MarvinMurderousMimic card) {
@@ -41,47 +47,5 @@ public final class MarvinMurderousMimic extends CardImpl {
     @Override
     public MarvinMurderousMimic copy() {
         return new MarvinMurderousMimic(this);
-    }
-}
-
-class MarvinMurderousMimicEffect extends ContinuousEffectImpl {
-
-    MarvinMurderousMimicEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of creatures " +
-                "you control that don't have the same name as this creature";
-    }
-
-    private MarvinMurderousMimicEffect(final MarvinMurderousMimicEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public MarvinMurderousMimicEffect copy() {
-        return new MarvinMurderousMimicEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null) {
-            return false;
-        }
-        List<Ability> abilities = game
-                .getBattlefield()
-                .getActivePermanents(
-                        StaticFilters.FILTER_CONTROLLED_CREATURE,
-                        source.getControllerId(), source, game
-                )
-                .stream()
-                .filter(p -> !CardUtil.haveSameNames(p, permanent))
-                .map(p -> p.getAbilities(game))
-                .flatMap(Collection::stream)
-                .filter(Ability::isActivatedAbility)
-                .collect(Collectors.toList());
-        for (Ability ability : abilities) {
-            permanent.addAbility(ability, source.getSourceId(), game);
-        }
-        return true;
     }
 }

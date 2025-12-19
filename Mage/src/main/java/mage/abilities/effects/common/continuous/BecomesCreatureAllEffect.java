@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
@@ -10,8 +11,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.Token;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author LevelX2
@@ -70,21 +71,36 @@ public class BecomesCreatureAllEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Set<Permanent> affectedPermanents = new HashSet<>();
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (getAffectedObjectsSet()) {
-            for (MageObjectReference ref : affectedObjectList) {
-                affectedPermanents.add(ref.getPermanent(game));
+            for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+                MageObjectReference mor = it.next();
+                Permanent permanent = mor.getPermanent(game);
+                if (permanent == null || !filter.match(permanent, source.getControllerId(), source, game)) {
+                    it.remove();
+                    continue;
+                }
+                if (filter.match(permanent, source.getControllerId(), source, game)) {
+                    affectedObjects.add(permanent);
+                } else {
+                    it.remove();
+                }
             }
+        } else if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
         } else {
-            affectedPermanents = new HashSet<>(game.getBattlefield()
-                    .getActivePermanents(filter, source.getControllerId(), source, game));
-        }
-
-        for (Permanent permanent : affectedPermanents) {
-            if (permanent == null) {
-                continue;
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter, source.getControllerId(), source, game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
             }
+        }
+        return !affectedObjects.isEmpty();
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case TextChangingEffects_3:
                     if (loseName) {
@@ -140,13 +156,8 @@ public class BecomesCreatureAllEffect extends ContinuousEffectImpl {
                     break;
             }
         }
-        return true;
     }
 
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
 
     @Override
     public boolean hasLayer(Layer layer) {
@@ -155,6 +166,12 @@ public class BecomesCreatureAllEffect extends ContinuousEffectImpl {
                 || layer == Layer.ColorChangingEffects_5
                 || layer == Layer.TypeChangingEffects_4
                 || layer == Layer.TextChangingEffects_3;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b
+                || sublayer == SubLayer.NA;
     }
 
     @Override

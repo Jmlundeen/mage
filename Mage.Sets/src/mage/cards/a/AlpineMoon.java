@@ -1,5 +1,6 @@
 package mage.cards.a;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -16,6 +17,7 @@ import mage.filter.predicate.mageobject.NamePredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -75,29 +77,39 @@ class AlpineMoonEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        String cardName = (String) game.getState().getValue(source.getSourceId().toString() + ChooseACardNameEffect.INFO_KEY);
-        if (cardName == null) {
-            return false;
-        }
-        FilterPermanent filter2 = filter.copy();
-        filter2.add(new NamePredicate(cardName));
-        for (Permanent land : game.getBattlefield().getActivePermanents(filter2, source.getControllerId(), game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent land = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     land.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
+                    land.removeAllSubTypes(game, SubTypeSet.BasicLandType);
                     break;
                 case AbilityAddingRemovingEffects_6:
+                    land.removeAllAbilities(source.getSourceId(), game);
                     land.addAbility(new AnyColorManaAbility(), source.getSourceId(), game);
                     break;
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
+            String cardName = (String) game.getState().getValue(source.getSourceId().toString() + ChooseACardNameEffect.INFO_KEY);
+            if (cardName == null) {
+                return false;
+            }
+            FilterPermanent filter2 = filter.copy();
+            filter2.add(new NamePredicate(cardName));
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(filter2, source.getControllerId(), game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

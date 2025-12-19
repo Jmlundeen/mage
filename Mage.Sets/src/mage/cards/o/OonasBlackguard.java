@@ -5,17 +5,19 @@ import mage.MageInt;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.discard.DiscardTargetEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
-import mage.filter.common.FilterCreaturePermanent;
+import mage.filter.common.FilterControlledCreaturePermanent;
+import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
 import mage.game.events.DamagedPlayerEvent;
 import mage.game.events.GameEvent;
@@ -29,7 +31,11 @@ import java.util.UUID;
  */
 public final class OonasBlackguard extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterCreaturePermanent(SubType.ROGUE, "Rogue creature");
+    private static final FilterPermanent filter = new FilterControlledCreaturePermanent(SubType.ROGUE, "other Rogue creature you control");
+
+    static {
+        filter.add(AnotherPredicate.instance);
+    }
 
     public OonasBlackguard(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{B}");
@@ -42,9 +48,9 @@ public final class OonasBlackguard extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // Each other Rogue creature you control enters the battlefield with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                filter, CounterType.P1P1.createInstance(), true
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(filter)
+        ));
 
         // Whenever a creature you control with a +1/+1 counter on it deals combat damage to a player, that player discards a card.
         this.addAbility(new OonasBlackguardTriggeredAbility());

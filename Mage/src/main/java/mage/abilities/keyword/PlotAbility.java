@@ -1,6 +1,7 @@
 package mage.abilities.keyword;
 
 import mage.MageIdentifier;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.SpecialAction;
@@ -161,31 +162,34 @@ class PlotAddSpellAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = mor.getCard(game);
-        if (card == null) {
-            discard();
-            return true;
-        }
-
-        Card mainCard = card.getMainCard();
-        UUID mainCardId = mainCard.getId();
-        Player player = game.getPlayer(card.getOwnerId());
-        if (game.getState().getZone(mainCardId) != Zone.EXILED || player == null) {
-            discard();
-            return true;
-        }
-
-        List<Card> faces = CardUtil.getCastableComponents(mainCard, null, source, player, game, null, false);
-        for (Card face : faces) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card face = (Card) object;
             // Add the spell ability to each castable face to have the proper name/paramaters.
             PlotSpellAbility ability = new PlotSpellAbility(face.getName());
             ability.setSourceId(face.getId());
-            ability.setControllerId(player.getId());
+            ability.setControllerId(face.getOwnerId());
             ability.setSpellAbilityType(face.getSpellAbility().getSpellAbilityType());
             game.getState().addOtherAbility(face, ability);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = mor.getCard(game);
+        if (card != null) {
+            Card mainCard = card.getMainCard();
+            UUID mainCardId = mainCard.getId();
+            Player player = game.getPlayer(card.getOwnerId());
+            if (game.getState().getZone(mainCardId) != Zone.EXILED || player == null) {
+                discard();
+                return false;
+            }
+            affectedObjects.addAll(CardUtil.getCastableComponents(mainCard, null, source, player, game, null, false));
+            return true;
+        }
+        discard();
+        return false;
     }
 }
 

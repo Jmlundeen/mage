@@ -26,7 +26,6 @@ import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetControlledCreaturePermanent;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -102,7 +101,8 @@ class SinUnendingCataclysmEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
+        Permanent sourcePermanent = game.getPermanentEntering(source.getSourceId());
+        if (player == null || sourcePermanent == null) {
             return false;
         }
         TargetPermanent target = new TargetPermanent(0, Integer.MAX_VALUE, filter, true);
@@ -126,10 +126,7 @@ class SinUnendingCataclysmEffect extends OneShotEffect {
             return false;
         }
         Counter counter = CounterType.P1P1.createInstance(2 * count);
-        Optional.ofNullable(source)
-                .map(Ability::getSourceId)
-                .map(game::getPermanentEntering)
-                .ifPresent(permanent -> permanent.addCounters(counter, source, game));
+        game.addEnterWithCounters(sourcePermanent.getId(), counter);
         return true;
     }
 }

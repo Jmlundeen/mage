@@ -1,18 +1,16 @@
 package mage.cards.t;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.common.continuous.SetBasePowerToughnessSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.VanishingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.common.FilterControlledPermanent;
 
@@ -24,7 +22,7 @@ import java.util.UUID;
 public final class Tidewalker extends CardImpl {
 
     private static final FilterControlledPermanent filter = new FilterControlledPermanent("Island you control");
-
+    private static final DynamicValue xvalue = new CountersSourceCount(CounterType.TIME);
     static {
         filter.add(SubType.ISLAND.getPredicate());
     }
@@ -36,13 +34,17 @@ public final class Tidewalker extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Tidewalker enters the battlefield with a time counter on it for each Island you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.TIME.createInstance(0), new PermanentsOnBattlefieldCount(filter), true), "with a time counter on it for each Island you control"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.TIME, new PermanentsOnBattlefieldCount(filter))));
 
         // Vanishing
         this.addAbility(new VanishingAbility(0));
 
         // Tidewalker's power and toughness are each equal to the number of time counters on it.
-        this.addAbility(new SimpleStaticAbility(Zone.ALL, new SetBasePowerToughnessSourceEffect(new CountersSourceCount(CounterType.TIME))));
+        this.addAbility(new SimpleStaticAbility(Zone.ALL, new ContinuousEffectBuilder(Duration.EndOfGame, Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                .withSetPower(xvalue)
+                .withSetToughness(xvalue)
+                .setText("{this}'s power and toughness are each equal to the number of time counters on it")
+        ));
     }
 
     private Tidewalker(final Tidewalker card) {

@@ -6,7 +6,7 @@ import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.mana.AnyColorManaAbility;
@@ -20,9 +20,7 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.common.FilterCreatureSpell;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.util.CardUtil;
 import mage.watchers.Watcher;
@@ -38,9 +36,16 @@ import java.util.UUID;
 public final class TorgalAFineHound extends CardImpl {
 
     private static final FilterSpell filter = new FilterCreatureSpell("your first Human creature spell each turn");
+    private static final FilterPermanent dogWolfFilter = new FilterControlledPermanent("Dog and/or Wolf you control");
+    private static final DynamicValue xValue = new PermanentsOnBattlefieldCount(dogWolfFilter);
+    private static final Hint hint = new ValueHint("Dogs and Wolves you control", xValue);
 
     static {
         filter.add(SubType.HUMAN.getPredicate());
+        dogWolfFilter.add(Predicates.or(
+                SubType.DOG.getPredicate(),
+                SubType.WOLF.getPredicate()
+        ));
     }
 
     public TorgalAFineHound(UUID ownerId, CardSetInfo setInfo) {
@@ -52,9 +57,15 @@ public final class TorgalAFineHound extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Whenever you cast your first Human creature spell each turn, that creature enters with an additional +1/+1 counter on it for each Dog and/or Wolf you control.
-        this.addAbility(new SpellCastControllerTriggeredAbility(new TorgalAFineHoundEffect(), filter, false)
+        this.addAbility(new SpellCastControllerTriggeredAbility(
+                new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1, xValue),
+                filter,
+                false,
+                SetTargetPointer.CARD)
                 .withTriggerCondition(TorgalAFineHoundCondition.instance)
-                .addHint(TorgalAFineHoundEffect.getHint()), new TorgalAFineHoundWatcher());
+                .addHint(hint),
+                new TorgalAFineHoundWatcher()
+        );
 
         // {T}: Add one mana of any color.
         this.addAbility(new AnyColorManaAbility());
@@ -81,65 +92,6 @@ enum TorgalAFineHoundCondition implements Condition {
     @Override
     public String toString() {
         return "";
-    }
-}
-
-class TorgalAFineHoundEffect extends ReplacementEffectImpl {
-
-    private static final FilterPermanent filter = new FilterControlledPermanent();
-
-    static {
-        filter.add(Predicates.or(
-                SubType.DOG.getPredicate(),
-                SubType.WOLF.getPredicate()
-        ));
-    }
-
-    private static final DynamicValue xValue = new PermanentsOnBattlefieldCount(filter);
-    private static final Hint hint = new ValueHint("Dogs and Wolves you control", xValue);
-
-    public static Hint getHint() {
-        return hint;
-    }
-
-    TorgalAFineHoundEffect() {
-        super(Duration.EndOfStep, Outcome.BoostCreature);
-        staticText = "that creature enters with an additional +1/+1 counter on it for each Dog and/or Wolf you control";
-    }
-
-    private TorgalAFineHoundEffect(final TorgalAFineHoundEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public TorgalAFineHoundEffect copy() {
-        return new TorgalAFineHoundEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Spell spell = (Spell) getValue("spellCast");
-        return spell != null && event.getTargetId().equals(spell.getCard().getId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        int count = xValue.calculate(game, source, this);
-        if (creature == null || count < 1) {
-            return false;
-        }
-        creature.addCounters(
-                CounterType.P1P1.createInstance(count), source.getControllerId(),
-                source, game, event.getAppliedEffects()
-        );
-        discard();
-        return false;
     }
 }
 

@@ -2,16 +2,19 @@ package mage.cards.p;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalContinuousEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.ContinuousAffected;
+import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 
@@ -33,11 +36,17 @@ public final class PouncingWurm extends CardImpl {
         this.addAbility(new KickerAbility("{2}{G}"));
 
         // If Pouncing Wurm was kicked, it enters with three +1/+1 counters on it and with haste.
-        Ability ability = new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(3)), KickedCondition.ONCE,
-                "If {this} was kicked, it enters with three +1/+1 counters on it and with haste.", ""
+        Ability ability = new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(3)),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with three +1/+1 counters on it")
         );
-        ability.addEffect(new GainAbilitySourceEffect(HasteAbility.getInstance(), Duration.WhileOnBattlefield));
+        ability.addEffect(new ConditionalContinuousEffect(
+                new ContinuousEffectBuilder(Outcome.AddAbility, ContinuousAffected.SOURCE)
+                        .withGainedAbilities(HasteAbility.getInstance()),
+                KickedCondition.ONCE,
+                "and with haste"
+        ));
         this.addAbility(ability);
     }
 

@@ -2,9 +2,10 @@
 package mage.cards.r;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.KickerAbility;
 import mage.abilities.keyword.VanishingAbility;
 import mage.cards.CardImpl;
@@ -33,8 +34,11 @@ public final class RavagingRiftwurm extends CardImpl {
         this.addAbility(new VanishingAbility(2));
 
         // If Ravaging Riftwurm was kicked, it enters with three additional time counters on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.TIME.createInstance(3)),
-                KickedCondition.ONCE, "If {this} was kicked, it enters with three additional time counters on it.", ""));
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.TIME.createInstance(3)),
+                KickedCondition.ONCE)
+                .setText("if {this} was kicked, it enters with three additional time counters on it")
+        ));
     }
 
     private RavagingRiftwurm(final RavagingRiftwurm card) {

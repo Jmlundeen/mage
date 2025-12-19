@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.StaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -7,6 +8,8 @@ import mage.abilities.hint.common.DayNightHint;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.game.Game;
+
+import java.util.List;
 
 /**
  * @author TheElk801
@@ -55,13 +58,17 @@ class NightboundEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (!game.hasDayNight()) {
             // 702.145f
             // Any time a player controls a permanent that is back face up with nightbound and it’s day,
             // that player transforms that permanent. This happens immediately and isn’t a state-based action.
             game.setDaytime(false);
         }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         return true;
     }
 }

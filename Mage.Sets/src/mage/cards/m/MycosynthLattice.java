@@ -1,5 +1,6 @@
 package mage.cards.m;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -62,11 +63,16 @@ class PermanentsAreArtifactsEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent perm : game.getBattlefield().getActivePermanents(source.getControllerId(), game)) {
-            perm.addCardType(game, CardType.ARTIFACT);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addCardType(game, CardType.ARTIFACT);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -87,67 +93,71 @@ class EverythingIsColorlessEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            ObjectColor colorless = new ObjectColor();
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        ObjectColor colorless = new ObjectColor();
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().getCreateMageObjectAttribute(card, game).getColor().setColor(colorless);
 
-            // permaments
-            for (Permanent perm : game.getBattlefield().getActivePermanents(source.getControllerId(), game)) {
-                perm.getColor(game).setColor(colorless);
+            // card with parts
+            if (card instanceof CardWithParts) {
+                Card leftHalfCard = ((CardWithParts) card).getLeftHalfCard();
+                Card rightHalfCard = ((CardWithParts) card).getRightHalfCard();
+                game.getState().getCreateMageObjectAttribute(leftHalfCard, game).getColor().setColor(colorless);
+                game.getState().getCreateMageObjectAttribute(rightHalfCard, game).getColor().setColor(colorless);
             }
-
-            List<Card> affectedCards = new ArrayList<>();
-
-            // spells
-            for (MageObject object : game.getStack()) {
-                if (object instanceof Spell) {
-                    game.getState().getCreateMageObjectAttribute(object, game).getColor().setColor(colorless);
-
-                    Card card = ((Spell) object).getCard();
-                    affectedCards.add(card);
-                }
-            }
-
-            // exile
-            affectedCards.addAll(game.getExile().getCardsInRange(game, controller.getId()));
-
-
-            for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
-                Player player = game.getPlayer(playerId);
-                if (player == null) {
-                    continue;
-                }
-
-                // command
-                affectedCards.addAll(game.getCommanderCardsFromCommandZone(player, CommanderCardType.ANY));
-
-                // hand
-                affectedCards.addAll(player.getHand().getCards(game));
-
-                // library
-                affectedCards.addAll(player.getLibrary().getCards(game));
-
-                // graveyard
-                affectedCards.addAll(player.getGraveyard().getCards(game));
-            }
-
-
-            // apply colors to all cards
-            affectedCards.forEach(card -> {
-                game.getState().getCreateMageObjectAttribute(card, game).getColor().setColor(colorless);
-
-                // card with parts
-                if (card instanceof CardWithParts) {
-                    Card leftHalfCard = ((CardWithParts) card).getLeftHalfCard();
-                    Card rightHalfCard = ((CardWithParts) card).getRightHalfCard();
-                    game.getState().getCreateMageObjectAttribute(leftHalfCard, game).getColor().setColor(colorless);
-                    game.getState().getCreateMageObjectAttribute(rightHalfCard, game).getColor().setColor(colorless);
-                }
-            });
-            return true;
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        ObjectColor colorless = new ObjectColor();
+
+        // permaments
+        for (Permanent perm : game.getBattlefield().getActivePermanents(source.getControllerId(), game)) {
+            perm.getColor(game).setColor(colorless);
+        }
+
+        List<Card> affectedCards = new ArrayList<>();
+
+        // spells
+        for (MageObject object : game.getStack()) {
+            if (object instanceof Spell) {
+                game.getState().getCreateMageObjectAttribute(object, game).getColor().setColor(colorless);
+
+                Card card = ((Spell) object).getCard();
+                affectedCards.add(card);
+            }
+        }
+
+        // exile
+        affectedCards.addAll(game.getExile().getCardsInRange(game, controller.getId()));
+
+
+        for (UUID playerId : game.getState().getPlayersInRange(controller.getId(), game)) {
+            Player player = game.getPlayer(playerId);
+            if (player == null) {
+                continue;
+            }
+
+            // command
+            affectedCards.addAll(game.getCommanderCardsFromCommandZone(player, CommanderCardType.ANY));
+
+            // hand
+            affectedCards.addAll(player.getHand().getCards(game));
+
+            // library
+            affectedCards.addAll(player.getLibrary().getCards(game));
+
+            // graveyard
+            affectedCards.addAll(player.getGraveyard().getCards(game));
+        }
+        affectedObjects.addAll(affectedCards);
+        return !affectedCards.isEmpty();
     }
 
     @Override

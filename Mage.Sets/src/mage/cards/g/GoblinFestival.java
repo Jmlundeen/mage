@@ -1,6 +1,7 @@
 
 package mage.cards.g;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -19,6 +20,7 @@ import mage.target.common.TargetAnyTarget;
 import mage.target.common.TargetOpponent;
 import mage.target.targetpointer.FixedTarget;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -111,12 +113,19 @@ class GoblinFestivalGainControlEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getFirstTarget());
-        permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent != null) {
-            return permanent.changeControllerId(controller, game, source);
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).changeControllerId(controller, game, source);
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
+        if (permanent == null) {
+            return false;
+        }
+        affectedObjects.add(permanent);
+        return true;
     }
 }

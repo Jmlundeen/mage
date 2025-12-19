@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.SpecialAction;
 import mage.abilities.SpellAbility;
@@ -29,6 +30,7 @@ import mage.players.Player;
 import mage.util.CardUtil;
 import mage.watchers.common.ForetoldWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -481,12 +483,9 @@ class ForetellAddAbilityEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        for (Card card : controller.getHand().getCards(filter, game)) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
             ForetellAbility foretellAbility = ForetellAbility.getForetellAbility(card, game, 2);
             if (foretellAbility != null) {
                 foretellAbility.setSourceId(card.getId());
@@ -494,6 +493,15 @@ class ForetellAddAbilityEffect extends ContinuousEffectImpl {
                 game.getState().addOtherAbility(card, foretellAbility);
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        affectedObjects.addAll(controller.getHand().getCards(filter, game));
+        return !affectedObjects.isEmpty();
     }
 }

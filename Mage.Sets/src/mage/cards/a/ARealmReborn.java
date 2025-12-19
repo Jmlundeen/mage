@@ -1,12 +1,12 @@
 package mage.cards.a;
 
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.Outcome;
 import mage.filter.StaticFilters;
 
 import java.util.UUID;
@@ -20,10 +20,10 @@ public final class ARealmReborn extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{4}{G}{G}");
 
         // Other permanents you control have "{T}: Add one mana of any color."
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
-                new AnyColorManaAbility(), Duration.WhileOnBattlefield,
-                StaticFilters.FILTER_PERMANENTS, true
-        )));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.Benefit, StaticFilters.FILTER_OTHER_CONTROLLED_PERMANENTS)
+                .withGainedAbilities(new AnyColorManaAbility())
+                .setText("{permFilter} have {gainedAbilitiesQuotes}")
+        ));
     }
 
     private ARealmReborn(final ARealmReborn card) {

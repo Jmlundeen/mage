@@ -5,8 +5,9 @@ import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.CantBeCounteredSourceAbility;
 import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.CopyPermanentEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -68,11 +69,9 @@ class AlteredEgoCopyApplier extends CopyApplier {
 
         if (!isCopyOfCopy(source, blueprint, copyToObjectId) && CardUtil.checkSourceCostsTagExists(game, source, "X")) {
             // except it enters with an additional X +1/+1 counters on it
-            blueprint.getAbilities().add(
-                    new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(
-                            CardUtil.getSourceCostsTag(game, source, "X", 0)
-                    )))
-            );
+            blueprint.getAbilities().add(new SimpleStaticAbility(
+                    new EntersWithCountersEffect(CounterType.P1P1.createInstance(CardUtil.getSourceCostsTagX(game, source, 0)))
+            ));
 
             /*
              * If the chosen creature has {X} in its mana cost, that X is considered to be 0.

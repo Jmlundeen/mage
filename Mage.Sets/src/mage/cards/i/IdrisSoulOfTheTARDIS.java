@@ -5,9 +5,11 @@ import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.ExileUntilSourceLeavesEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.abilities.keyword.VanishingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -21,10 +23,7 @@ import mage.target.TargetPermanent;
 import mage.target.targetpointer.FixedTarget;
 import mage.util.CardUtil;
 
-import java.util.Collection;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -47,7 +46,12 @@ public final class IdrisSoulOfTheTARDIS extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new IdrisSoulOfTheTARDISExileEffect()).setAbilityWord(AbilityWord.IMPRINT));
 
         // Idris has all activated and triggered abilities of the exiled card and gets +X/+X, where X is the exiled card's mana value.
-        this.addAbility(new SimpleStaticAbility(new IdrisSoulOfTheTARDISGainEffect()));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_OR_TRIGGERED_ABILITY,
+                "Idris has all activated and triggered abilities of the exiled card and gets +X/+X, where X is the exiled card's mana value")
+                .fromSourceExiled()
+                .withAddPower(ExiledCardManaValue.instance)
+                .withAddToughness(ExiledCardManaValue.instance)
+        ));
     }
 
     private IdrisSoulOfTheTARDIS(final IdrisSoulOfTheTARDIS card) {
@@ -95,73 +99,31 @@ class IdrisSoulOfTheTARDISExileEffect extends OneShotEffect {
     }
 }
 
-class IdrisSoulOfTheTARDISGainEffect extends ContinuousEffectImpl {
-
-    IdrisSoulOfTheTARDISGainEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        staticText = "{this} has all activated and triggered abilities of the exiled card " +
-                "and gets +X/+X, where X is the exiled card's mana value";
-    }
-
-    private IdrisSoulOfTheTARDISGainEffect(final IdrisSoulOfTheTARDISGainEffect effect) {
-        super(effect);
-    }
+enum ExiledCardManaValue implements DynamicValue {
+    instance;
 
     @Override
-    public IdrisSoulOfTheTARDISGainEffect copy() {
-        return new IdrisSoulOfTheTARDISGainEffect(this);
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+    public int calculate(Game game, Ability source, Effect effect) {
         ExileZone exileZone = game.getExile().getExileZone(CardUtil.getExileZoneId(
                 game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId())
         ));
-        if (permanent == null || exileZone == null || exileZone.isEmpty()) {
-            return false;
+        if (exileZone == null || exileZone.isEmpty()) {
+            return 0;
         }
-        switch (layer) {
-            case AbilityAddingRemovingEffects_6:
-                Set<Ability> abilities = exileZone
-                        .getCards(game)
-                        .stream()
-                        .map(card -> card.getAbilities(game))
-                        .flatMap(Collection::stream)
-                        .filter(ability -> ability.isActivatedAbility() || ability.isTriggeredAbility())
-                        .collect(Collectors.toSet());
-                for (Ability ability : abilities) {
-                    permanent.addAbility(ability, source.getSourceId(), game);
-                }
-                break;
-            case PTChangingEffects_7:
-                if (sublayer != SubLayer.ModifyPT_7c) {
-                    break;
-                }
-                int boost = exileZone
-                        .getCards(game)
-                        .stream()
-                        .mapToInt(MageObject::getManaValue)
-                        .sum();
-                permanent.addPower(boost);
-                permanent.addToughness(boost);
-        }
-        return true;
+        return exileZone
+                .getCards(game)
+                .stream()
+                .mapToInt(MageObject::getManaValue)
+                .sum();
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public ExiledCardManaValue copy() {
+        return instance;
     }
 
     @Override
-    public boolean hasLayer(Layer layer) {
-        switch (layer) {
-            case AbilityAddingRemovingEffects_6:
-            case PTChangingEffects_7:
-                return true;
-            default:
-                return false;
-        }
+    public String getMessage() {
+        return "the exiled card's mana value";
     }
 }

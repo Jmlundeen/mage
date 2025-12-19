@@ -1,11 +1,12 @@
 package mage.cards.d;
 
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
@@ -23,9 +24,9 @@ public final class DragonstormGlobe extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{3}");
 
         // Each Dragon you control enters with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                filter, CounterType.P1P1.createInstance(), false
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(filter)
+        ));
 
         // {T}: Add one mana of any color.
         this.addAbility(new AnyColorManaAbility());

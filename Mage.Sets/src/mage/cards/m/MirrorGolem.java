@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +21,7 @@ import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -106,7 +108,35 @@ class MirrorGolemEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent sourceObject = (Permanent) object;
+            UUID exileZoneId = CardUtil.getExileZoneId(game, source.getSourceId(), sourceObject.getZoneChangeCounter(game));
+            ExileZone exileZone = game.getExile().getExileZone(exileZoneId);
+            for (UUID imprinted : sourceObject.getImprinted()) {
+                if (imprinted != null && exileZone.contains(imprinted)) {
+                    Card card = game.getCard(imprinted);
+                    if (card != null) {
+                        for (CardType cardType : card.getCardType(game)) {
+                            FilterCard filterCard;
+                            if (cardType.equals(CardType.SORCERY)) {
+                                filterCard = new FilterCard("sorceries");
+                            } else if (cardType.equals(CardType.KINDRED)) {
+                                filterCard = new FilterCard("kindred");
+                            } else {
+                                filterCard = new FilterCard(cardType + "s");
+                            }
+                            filterCard.add(cardType.getPredicate());
+                            sourceObject.addAbility(new ProtectionAbility(filterCard), source.getSourceId(), game);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent sourceObject = game.getPermanent(source.getSourceId());
         if (sourceObject == null || sourceObject.getImprinted() == null) {
             return false;
@@ -116,26 +146,7 @@ class MirrorGolemEffect extends ContinuousEffectImpl {
         if (exileZone == null) {
             return false;
         }
-
-        for (UUID imprinted : sourceObject.getImprinted()) {
-            if (imprinted != null && exileZone.contains(imprinted)) {
-                Card card = game.getCard(imprinted);
-                if (card != null) {
-                    for (CardType cardType : card.getCardType(game)) {
-                        FilterCard filterCard;
-                        if (cardType.equals(CardType.SORCERY)) {
-                            filterCard = new FilterCard("sorceries");
-                        } else if (cardType.equals(CardType.KINDRED)) {
-                            filterCard = new FilterCard("kindred");
-                        } else {
-                            filterCard = new FilterCard(cardType.toString() + "s");
-                        }
-                        filterCard.add(cardType.getPredicate());
-                        sourceObject.addAbility(new ProtectionAbility(filterCard), source.getSourceId(), game);
-                    }
-                }
-            }
-        }
+        affectedObjects.add(sourceObject);
         return true;
     }
 

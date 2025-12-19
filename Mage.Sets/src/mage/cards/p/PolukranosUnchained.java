@@ -3,14 +3,17 @@ package mage.cards.p;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.condition.common.EscapedCondition;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.EntersBattlefieldEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.PreventDamageAndRemoveCountersEffect;
+import mage.abilities.effects.ReplacementEffect;
 import mage.abilities.effects.common.FightTargetSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.EscapeAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -48,7 +51,15 @@ public final class PolukranosUnchained extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Polukranos enters the battlefield with six +1/+1 counters on it. It escapes with twelve +1/+1 counters on it instead.
-        this.addAbility(new EntersBattlefieldAbility(new PolukranosUnchainedEffect()));
+        ReplacementEffect etbEffect = new EntersWithCountersEffect(CounterType.P1P1.createInstance(6));
+        ReplacementEffect escapeEffect = new EntersWithCountersEffect(CounterType.P1P1.createInstance(12))
+                .setText(". It escapes with twelve +1/+1 counters on it instead");
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                escapeEffect,
+                EscapedCondition.instance,
+                etbEffect)
+                .setText(etbEffect.getText(null) + escapeEffect.getText(null))
+        ));
 
         // If damage would be dealt to Polukranos while it has a +1/+1 counter on it, prevent that damage and remove that many +1/+1 counters from it.
         this.addAbility(new SimpleStaticAbility(

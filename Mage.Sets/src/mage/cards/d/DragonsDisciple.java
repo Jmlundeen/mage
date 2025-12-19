@@ -1,6 +1,5 @@
 package mage.cards.d;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
@@ -10,10 +9,10 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.keyword.WardAbility;
 import mage.cards.*;
+import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.SubType;
-import mage.constants.CardType;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
@@ -21,6 +20,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.UUID;
 
 /**
  *
@@ -86,6 +87,7 @@ class DragonsDiscipleEffect extends OneShotEffect {
         Player controller = game.getPlayer(source.getControllerId());
         Permanent sourcePermanent = game.getPermanentEntering(source.getSourceId());
         if (controller != null && sourcePermanent != null) {
+            boolean addCounter = false;
             TargetCardInHand target = new TargetCardInHand(filter);
             if (!target.possibleTargets(source.getControllerId(), source, game).isEmpty()
                     && controller.chooseUse(outcome, "Reveal a Dragon card from your hand?", source, game)
@@ -94,15 +96,19 @@ class DragonsDiscipleEffect extends OneShotEffect {
                 if (card != null) {
                     Cards revealedCards = new CardsImpl(card);
                     controller.revealCards(source, sourcePermanent.getIdName(), revealedCards, game);
-                    sourcePermanent.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game);
-                    return true;
+                    addCounter = true;
                 }
             }
-            for (Permanent permanent : game.getBattlefield().getAllActivePermanents(source.getControllerId())) {
-                if (permanent != null && permanent.hasSubtype(SubType.DRAGON, game)) {
-                    sourcePermanent.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game);
-                    return true;
+            if (!addCounter) {
+                for (Permanent permanent : game.getBattlefield().getAllActivePermanents(source.getControllerId())) {
+                    if (permanent != null && permanent.hasSubtype(SubType.DRAGON, game)) {
+                        addCounter = true;
+                        break;
+                    }
                 }
+            }
+            if (addCounter) {
+                game.addEnterWithCounters(sourcePermanent.getId(), CounterType.P1P1.createInstance());
             }
         }
         return false;

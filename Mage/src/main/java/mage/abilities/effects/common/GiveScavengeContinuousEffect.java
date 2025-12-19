@@ -1,5 +1,6 @@
 package mage.abilities.effects.common;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -13,6 +14,7 @@ import mage.filter.FilterCard;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -43,7 +45,18 @@ public class GiveScavengeContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            ScavengeAbility ability = new ScavengeAbility(new ManaCostsImpl<>(card.getManaCost().getText()));
+            ability.setSourceId(card.getId());
+            ability.setControllerId(card.getOwnerId());
+            game.getState().addOtherAbility(card, ability);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             discard();
@@ -57,11 +70,8 @@ public class GiveScavengeContinuousEffect extends ContinuousEffectImpl {
             if (card.getManaCost().getText().isEmpty()) { // Checks that the card has a mana cost.
                 continue;
             }
-            ScavengeAbility ability = new ScavengeAbility(new ManaCostsImpl<>(card.getManaCost().getText()));
-            ability.setSourceId(cardId);
-            ability.setControllerId(card.getOwnerId());
-            game.getState().addOtherAbility(card, ability);
+            affectedObjects.add(card);
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

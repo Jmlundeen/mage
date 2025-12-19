@@ -1,13 +1,13 @@
 package mage.cards.s;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
 import mage.abilities.decorator.ConditionalContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ReturnFromGraveyardToBattlefieldTargetEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -19,6 +19,9 @@ import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -70,83 +73,91 @@ public final class StarfieldOfNyx extends CardImpl {
     public StarfieldOfNyx copy() {
         return new StarfieldOfNyx(this);
     }
+}
 
-    static class StarfieldOfNyxEffect extends ContinuousEffectImpl {
+class StarfieldOfNyxEffect extends ContinuousEffectImpl {
 
-        private static final FilterControlledPermanent filter
-                = new FilterControlledPermanent("Each other non-Aura enchantment you control");
+    private static final FilterControlledPermanent filter
+            = new FilterControlledPermanent("Each other non-Aura enchantment you control");
 
-        static {
-            filter.add(CardType.ENCHANTMENT.getPredicate());
-            filter.add(Predicates.not(SubType.AURA.getPredicate()));
-            filter.add(AnotherPredicate.instance);
+    static {
+        filter.add(CardType.ENCHANTMENT.getPredicate());
+        filter.add(Predicates.not(SubType.AURA.getPredicate()));
+        filter.add(AnotherPredicate.instance);
+    }
+
+    StarfieldOfNyxEffect() {
+        super(Duration.WhileOnBattlefield, Outcome.BecomeCreature);
+        staticText = "Each other non-Aura enchantment you control is a creature "
+                + "in addition to its other types and has base power and "
+                + "toughness each equal to its mana value";
+
+        this.dependendToTypes.add(DependencyType.EnchantmentAddingRemoving); // Enchanted Evening
+        this.dependendToTypes.add(DependencyType.AuraAddingRemoving); // Cloudform
+        this.dependendToTypes.add(DependencyType.BecomeForest); // Song of the Dryads
+        this.dependendToTypes.add(DependencyType.BecomeMountain);
+        this.dependendToTypes.add(DependencyType.BecomePlains);
+        this.dependendToTypes.add(DependencyType.BecomeSwamp);
+        this.dependendToTypes.add(DependencyType.BecomeIsland);
+
+        this.dependencyTypes.add(DependencyType.BecomeCreature);  // Conspiracy
+
+    }
+
+    private StarfieldOfNyxEffect(final StarfieldOfNyxEffect effect) {
+        super(effect);
+    }
+
+    @Override
+    public StarfieldOfNyxEffect copy() {
+        return new StarfieldOfNyxEffect(this);
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    if (sublayer == SubLayer.NA) {
+                        permanent.addCardType(game, CardType.CREATURE);
+                    }
+                    break;
+
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        int manaCost = permanent.getManaValue();
+                        permanent.getPower().setModifiedBaseValue(manaCost);
+                        permanent.getToughness().setModifiedBaseValue(manaCost);
+                    }
+                    break;
+            }
         }
+    }
 
-        public StarfieldOfNyxEffect() {
-            super(Duration.WhileOnBattlefield, Outcome.BecomeCreature);
-            staticText = "Each other non-Aura enchantment you control is a creature "
-                    + "in addition to its other types and has base power and "
-                    + "toughness each equal to its mana value";
-
-            this.dependendToTypes.add(DependencyType.EnchantmentAddingRemoving); // Enchanted Evening
-            this.dependendToTypes.add(DependencyType.AuraAddingRemoving); // Cloudform
-            this.dependendToTypes.add(DependencyType.BecomeForest); // Song of the Dryads
-            this.dependendToTypes.add(DependencyType.BecomeMountain);
-            this.dependendToTypes.add(DependencyType.BecomePlains);
-            this.dependendToTypes.add(DependencyType.BecomeSwamp);
-            this.dependendToTypes.add(DependencyType.BecomeIsland);
-
-            this.dependencyTypes.add(DependencyType.BecomeCreature);  // Conspiracy
-
-        }
-
-        private StarfieldOfNyxEffect(final StarfieldOfNyxEffect effect) {
-            super(effect);
-        }
-
-        @Override
-        public StarfieldOfNyxEffect copy() {
-            return new StarfieldOfNyxEffect(this);
-        }
-
-        @Override
-        public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else {
             for (Permanent permanent : game.getBattlefield().getActivePermanents(filter,
                     source.getControllerId(), source, game)) {
-                switch (layer) {
-                    case TypeChangingEffects_4:
-                        if (sublayer == SubLayer.NA) {
-                            if (!permanent.isCreature(game)
-                                    && !permanent.hasSubtype(SubType.AURA, game)) {
-                                permanent.addCardType(game, CardType.CREATURE);
-                            }
-                        }
-                        break;
-
-                    case PTChangingEffects_7:
-                        if (sublayer == SubLayer.SetPT_7b
-                                && permanent.isCreature(game)
-                                && !permanent.hasSubtype(SubType.AURA, game)) {
-                            int manaCost = permanent.getManaValue();
-                            permanent.getPower().setModifiedBaseValue(manaCost);
-                            permanent.getToughness().setModifiedBaseValue(manaCost);
-                        }
-                        break;
-                }
-
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
             }
-            return true;
         }
+        return !affectedObjects.isEmpty();
+    }
 
-        @Override
-        public boolean apply(Game game, Ability source) {
-            return false;
-        }
+    @Override
+    public boolean hasLayer(Layer layer) {
+        return layer == Layer.PTChangingEffects_7
+                || layer == Layer.TypeChangingEffects_4;
+    }
 
-        @Override
-        public boolean hasLayer(Layer layer) {
-            return layer == Layer.PTChangingEffects_7
-                    || layer == Layer.TypeChangingEffects_4;
-        }
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA
+                || sublayer == SubLayer.SetPT_7b;
     }
 }

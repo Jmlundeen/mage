@@ -1,7 +1,7 @@
 
 package mage.cards.b;
 
-import java.util.UUID;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffect;
@@ -11,12 +11,7 @@ import mage.abilities.keyword.ProtectionAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.choices.ChoiceColor;
-import mage.constants.AbilityWord;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
+import mage.constants.*;
 import mage.filter.FilterObject;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.mageobject.ColorPredicate;
@@ -25,6 +20,9 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCreaturePermanent;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -130,12 +128,18 @@ class ProtectionChosenColorTargetEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addAbility(protectionAbility, source.getSourceId(), game);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent == null) {
             return false;
         }
-
         ObjectColor color = (ObjectColor) game.getState().getValue(permanent.getId() + "_color");
         if (color != null && (protectionAbility == null || !color.equals(chosenColor))) {
             chosenColor = color;
@@ -144,10 +148,9 @@ class ProtectionChosenColorTargetEffect extends ContinuousEffectImpl {
             protectionAbility = new ProtectionAbility(protectionFilter);
         }
         if (protectionAbility != null) {
-            permanent.addAbility(protectionAbility, source.getSourceId(), game);
+            affectedObjects.add(permanent);
             return true;
         }
-
         return false;
     }
 }

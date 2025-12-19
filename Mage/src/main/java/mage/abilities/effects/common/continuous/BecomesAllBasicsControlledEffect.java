@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -10,6 +11,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author TheElk801
@@ -55,45 +57,50 @@ public class BecomesAllBasicsControlledEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        if (!getAffectedObjectsSet()) {
-            for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                    StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND, source.getControllerId(), game
-            )) {
-                removeTypes(permanent, game, source);
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        if (!source.getAffectedObjects().isEmpty()) {
+            affectedObjects.addAll(source.getAffectedObjects());
+        } else if (getAffectedObjectsSet()) {
+            for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
+                Permanent permanent = it.next().getPermanent(game);
+                if (permanent != null) {
+                    affectedObjects.add(permanent);
+                } else {
+                    it.remove();
+                }
             }
-            return true;
-        }
-        for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext(); ) {
-            Permanent permanent = it.next().getPermanent(game);
-            if (permanent != null) {
-                removeTypes(permanent, game, source);
-            } else {
-                it.remove();
+        }else {
+            for (Permanent permanent : game.getBattlefield().getActivePermanents(StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND, source.getControllerId(), source, game)) {
+                affectedObjects.add(permanent);
+                source.getAffectedObjects().add(permanent);
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 
-    private static void removeTypes(Permanent permanent, Game game, Ability source) {
-        permanent.addSubType(game,
-                SubType.PLAINS,
-                SubType.ISLAND,
-                SubType.SWAMP,
-                SubType.MOUNTAIN,
-                SubType.FOREST);
-        // Optimization: Remove basic mana abilities since they are redundant with AnyColorManaAbility
-        //               and keeping them will only produce too many combinations inside ManaOptions
-        for (Ability basicManaAbility : basicManaAbilities) {
-            if (permanent.getAbilities(game).containsRule(basicManaAbility)) {
-                permanent.removeAbility(basicManaAbility, source.getSourceId(), game);
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            permanent.addSubType(game,
+                    SubType.PLAINS,
+                    SubType.ISLAND,
+                    SubType.SWAMP,
+                    SubType.MOUNTAIN,
+                    SubType.FOREST);
+            // Optimization: Remove basic mana abilities since they are redundant with AnyColorManaAbility
+            //               and keeping them will only produce too many combinations inside ManaOptions
+            for (Ability basicManaAbility : basicManaAbilities) {
+                if (permanent.getAbilities(game).containsRule(basicManaAbility)) {
+                    permanent.removeAbility(basicManaAbility, source.getSourceId(), game);
+                }
             }
-        }
-        // Add the {T}: Add one mana of any color ability
-        // This is functionally equivalent to having five "{T}: Add {COLOR}" for each COLOR in {W}{U}{B}{R}{G}
-        AnyColorManaAbility ability = new AnyColorManaAbility();
-        if (!permanent.getAbilities(game).containsRule(ability)) {
-            permanent.addAbility(ability, source.getSourceId(), game);
+            // Add the {T}: Add one mana of any color ability
+            // This is functionally equivalent to having five "{T}: Add {COLOR}" for each COLOR in {W}{U}{B}{R}{G}
+            AnyColorManaAbility ability = new AnyColorManaAbility();
+            if (!permanent.getAbilities(game).containsRule(ability)) {
+                permanent.addAbility(ability, source.getSourceId(), game);
+            }
         }
     }
 }

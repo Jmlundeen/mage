@@ -1,5 +1,6 @@
 package mage.cards.o;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -13,6 +14,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -61,13 +63,18 @@ class OathOfTeferiLoyaltyEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).setLoyaltyActivationsAvailable(2);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER,
                 source.getControllerId(), source, game
-        )) {
-            permanent.setLoyaltyActivationsAvailable(2);
-        }
-        return true;
+        ));
+        return !affectedObjects.isEmpty();
     }
 }

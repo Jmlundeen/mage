@@ -2,16 +2,14 @@ package mage.cards.m;
 
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.continuous.BoostEnchantedEffect;
+import mage.abilities.effects.common.continuous.LoseAllAbilitiesAttachedEffect;
 import mage.abilities.keyword.EnchantAbility;
 import mage.abilities.keyword.FlashAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
 
@@ -39,7 +37,7 @@ public final class MysticSubdual extends CardImpl {
 
         // Enchanted creature gets -2/-0 and loses all abilities.
         ability = new SimpleStaticAbility(new BoostEnchantedEffect(-2, 0));
-        ability.addEffect(new MysticSubdualEffect());
+        ability.addEffect(new LoseAllAbilitiesAttachedEffect(AttachmentType.EQUIPMENT).setText("and loses all abilities"));
         this.addAbility(ability);
     }
 
@@ -50,36 +48,5 @@ public final class MysticSubdual extends CardImpl {
     @Override
     public MysticSubdual copy() {
         return new MysticSubdual(this);
-    }
-}
-
-class MysticSubdualEffect extends ContinuousEffectImpl {
-
-    MysticSubdualEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "and loses all abilities";
-    }
-
-    private MysticSubdualEffect(final MysticSubdualEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public MysticSubdualEffect copy() {
-        return new MysticSubdualEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(source.getSourceId());
-        if (permanent == null) {
-            return false;
-        }
-        Permanent creature = game.getPermanent(permanent.getAttachedTo());
-        if (creature == null) {
-            return false;
-        }
-        creature.removeAllAbilities(source.getSourceId(), game);
-        return true;
     }
 }

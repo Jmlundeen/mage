@@ -1,14 +1,12 @@
 package mage.cards.d;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.Effect;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -20,6 +18,8 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.UUID;
+
 /**
  *
  * @author spjspj
@@ -30,8 +30,7 @@ public final class DivineIntervention extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{6}{W}{W}");
 
         // Divine Intervention enters the battlefield with 2 intervention counters on it.
-        Effect effect = new AddCountersSourceEffect(CounterType.INTERVENTION.createInstance(2));
-        this.addAbility(new EntersBattlefieldAbility(effect, "with two intervention counters on it"));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.INTERVENTION.createInstance(2))));
 
         // At the beginning of your upkeep, remove an intervention counter from Divine Intervention.
         this.addAbility(new BeginningOfUpkeepTriggeredAbility(new RemoveCounterSourceEffect(CounterType.INTERVENTION.createInstance())));

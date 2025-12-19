@@ -1,22 +1,21 @@
 
 package mage.cards.s;
 
-import java.util.Iterator;
-import java.util.UUID;
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
+import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetControlledCreaturePermanent;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -67,21 +66,30 @@ class SigilBlessingBoostControlledEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            int boost;
+            if (permanent.getId().equals(getTargetPointer().getFirst(game, source))) {
+                boost = 3;
+            } else {
+                boost = 1;
+            }
+            permanent.addPower(boost);
+            permanent.addToughness(boost);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         for (Iterator<MageObjectReference> it = affectedObjectList.iterator(); it.hasNext();) {
             Permanent permanent = it.next().getPermanent(game);
             if (permanent != null) {
-                int boost = 1;
-                if (permanent.getId().equals(getTargetPointer().getFirst(game, source))) {
-                    boost = 3;
-                }
-                permanent.addPower(boost);
-                permanent.addToughness(boost);
+                affectedObjects.add(permanent);
             } else {
                 it.remove(); // no longer on the battlefield, remove reference to object
             }
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
-
 }

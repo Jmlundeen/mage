@@ -1,7 +1,6 @@
 package mage.cards.t;
 
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.ReturnFromGraveyardToBattlefieldTargetEffect;
@@ -12,6 +11,9 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -57,10 +59,17 @@ class TuneUpEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addCardType(CardType.CREATURE);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(source.getFirstTarget());
         if (permanent != null && permanent.hasSubtype(SubType.VEHICLE, game)) {
-            permanent.addCardType(CardType.CREATURE);
+            affectedObjects.add(permanent);
             return true;
         }
         return false;

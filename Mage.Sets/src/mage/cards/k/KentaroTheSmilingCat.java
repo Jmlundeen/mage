@@ -1,8 +1,8 @@
 
 package mage.cards.k;
 
-import java.util.UUID;
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.SourceIsSpellCondition;
@@ -18,6 +18,9 @@ import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author LevelX2
@@ -64,7 +67,7 @@ class KentaroTheSmilingCatCastingEffect extends ContinuousEffectImpl {
     		SourceIsSpellCondition.instance, null, filterSamurai, true, new ColorlessManaValue());
 	
     public KentaroTheSmilingCatCastingEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
         staticText = "You may pay {X} rather than pay the mana cost for Samurai spells you cast, where X is that spell's mana value";
     }
     
@@ -82,25 +85,22 @@ class KentaroTheSmilingCatCastingEffect extends ContinuousEffectImpl {
         super.init(source, game, activePlayerId);
         alternativeCastingCostAbility.setSourceId(source.getSourceId());
     }
-    
+
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            controller.getAlternativeSourceCosts().add(alternativeCastingCostAbility);
-            return true;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((Player) object).getAlternativeSourceCosts().add(alternativeCastingCostAbility);
         }
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        affectedObjects.add(controller);
+        return true;
     }
 }
 

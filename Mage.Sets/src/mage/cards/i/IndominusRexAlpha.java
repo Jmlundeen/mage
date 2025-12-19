@@ -1,7 +1,5 @@
 package mage.cards.i;
 
-import java.util.*;
-
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
@@ -11,10 +9,13 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.keyword.*;
 import mage.cards.Card;
-import mage.cards.CardsImpl;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.cards.CardsImpl;
+import mage.constants.CardType;
+import mage.constants.Outcome;
+import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.counters.AbilityCounter;
 import mage.filter.StaticFilters;
 import mage.game.Game;
@@ -22,6 +23,11 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.TargetCard;
 import mage.target.common.TargetDiscard;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -124,9 +130,6 @@ class IndominusRexAlphaCountersEffect extends OneShotEffect {
         //allow cards to move to graveyard before checking for abilities
         game.processAction();
 
-        // the basic event is the EntersBattlefieldEvent, so use already applied replacement effects from that event
-        List<UUID> appliedEffects = (ArrayList<UUID>) this.getValue("appliedEffects");
-
         ArrayList<Ability> abilitiesToAdd = new ArrayList<>();
 
         for (Ability abilityToCopy : copyableAbilities) {
@@ -155,7 +158,7 @@ class IndominusRexAlphaCountersEffect extends OneShotEffect {
         }
 
         for (Ability abilityToCopy : abilitiesToAdd) {
-            permanent.addCounters(new AbilityCounter(abilityToCopy, 1), source.getControllerId(), source, game, appliedEffects);
+            game.addEnterWithCounters(permanent.getId(), new AbilityCounter(abilityToCopy, 1));
         }
         return !abilitiesToAdd.isEmpty();
     }

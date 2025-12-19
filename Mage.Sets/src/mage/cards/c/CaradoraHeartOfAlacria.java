@@ -3,7 +3,7 @@ package mage.cards.c;
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.common.replacement.ModifyCountersAddedEffect;
+import mage.abilities.effects.common.replacement.ReplaceCounterEffect;
 import mage.abilities.effects.common.search.SearchLibraryPutInHandEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -47,7 +47,12 @@ public final class CaradoraHeartOfAlacria extends CardImpl {
         ));
 
         // If one or more +1/+1 counters would be put on a creature or Vehicle you control, that many plus one +1/+1 counters are put on it instead.
-        this.addAbility(new SimpleStaticAbility(new ModifyCountersAddedEffect(StaticFilters.FILTER_CONTROLLED_PERMANENT_CREATURE_OR_VEHICLE, CounterType.P1P1)));
+        this.addAbility(new SimpleStaticAbility(new ReplaceCounterEffect(ReplaceCounterEffect.ModificationType.ADD, 1)
+                .setPermanentFilter(StaticFilters.FILTER_CONTROLLED_PERMANENT_CREATURE_OR_VEHICLE)
+                .addValidCounterTypes(CounterType.P1P1)
+                .setText("If one or more +1/+1 counters would be put on a creature or Vehicle you control, " +
+                        "that many plus one +1/+1 counters are put on it instead")
+        ));
     }
 
     private CaradoraHeartOfAlacria(final CaradoraHeartOfAlacria card) {

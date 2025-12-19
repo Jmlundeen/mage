@@ -5,8 +5,8 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.AsThoughManaEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.RestrictionEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
@@ -18,10 +18,7 @@ import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
 import mage.util.CardUtil;
 
-import java.util.Collection;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -47,7 +44,13 @@ public final class DranaAndLinvala extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new DranaAndLinvalaCantActivateEffect()));
 
         // Drana and Linvala has all activated abilities of all creatures your opponents control. You may spend mana as though it were mana of any color to activate those abilities.
-        Ability ability = new SimpleStaticAbility(new DranaAndLinvalaGainAbilitiesEffect());
+        Ability ability = new SimpleStaticAbility(new GainAbilitiesOfEffect(
+                StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of all creatures your opponents control")
+                .fromPermanents(StaticFilters.FILTER_PERMANENT_CREATURE)
+                .fromCardsControlledBy(TargetController.OPPONENT)
+                .modifyAbilities((newAbility) -> newAbility.getEffects().setValue("dranaLinvalaFlag", true))
+        );
         ability.addEffect(new DranaAndLinvalaManaEffect());
         this.addAbility(ability);
     }
@@ -89,50 +92,6 @@ class DranaAndLinvalaCantActivateEffect extends RestrictionEffect {
     @Override
     public DranaAndLinvalaCantActivateEffect copy() {
         return new DranaAndLinvalaCantActivateEffect(this);
-    }
-}
-
-class DranaAndLinvalaGainAbilitiesEffect extends ContinuousEffectImpl {
-
-    DranaAndLinvalaGainAbilitiesEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of all creatures your opponents control";
-        this.addDependencyType(DependencyType.AddingAbility);
-    }
-
-    private DranaAndLinvalaGainAbilitiesEffect(final DranaAndLinvalaGainAbilitiesEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = source.getSourcePermanentIfItStillExists(game);
-        if (perm == null) {
-            return false;
-        }
-        for (Ability ability : game
-                .getBattlefield()
-                .getActivePermanents(
-                        StaticFilters.FILTER_OPPONENTS_PERMANENT_CREATURE,
-                        source.getControllerId(), source, game
-                )
-                .stream()
-                .map(permanent -> permanent.getAbilities(game))
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .filter(Ability::isActivatedAbility)
-                .collect(Collectors.toList())) {
-            Ability addedAbility = perm.addAbility(ability, source.getSourceId(), game, true);
-            if (addedAbility != null) {
-                addedAbility.getEffects().setValue("dranaLinvalaFlag", true);
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public DranaAndLinvalaGainAbilitiesEffect copy() {
-        return new DranaAndLinvalaGainAbilitiesEffect(this);
     }
 }
 

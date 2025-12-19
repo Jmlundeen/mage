@@ -1,11 +1,13 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.LookLibraryAndPickControllerEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.NinjutsuAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -17,6 +19,7 @@ import mage.game.events.GameEvent;
 import mage.game.stack.StackAbility;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -39,7 +42,12 @@ public final class SatoruUmezawa extends CardImpl {
         this.addAbility(new SatoruUmezawaTriggeredAbility());
 
         // Each creature card in your hand has ninjutsu {2}{U}{B}.
-        this.addAbility(new SimpleStaticAbility(new SatoruUmezawaEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
+                .setAffectedZones(Zone.HAND)
+                .setCardFilter(StaticFilters.FILTER_CARD_CREATURE)
+                .withGainedAbilities(new NinjutsuAbility("{2}{U}{B}"))
+                .setText("each creature card in your hand has ninjutsu {2}{U}{B}")
+        ));
     }
 
     private SatoruUmezawa(final SatoruUmezawa card) {
@@ -81,34 +89,5 @@ class SatoruUmezawaTriggeredAbility extends TriggeredAbilityImpl {
         }
         StackAbility stackAbility = (StackAbility) game.getStack().getStackObject(event.getTargetId());
         return stackAbility.getStackAbility() instanceof NinjutsuAbility;
-    }
-}
-
-class SatoruUmezawaEffect extends ContinuousEffectImpl {
-
-    SatoruUmezawaEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "each creature card in your hand has ninjutsu {2}{U}{B}";
-    }
-
-    private SatoruUmezawaEffect(final SatoruUmezawaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public SatoruUmezawaEffect copy() {
-        return new SatoruUmezawaEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
-        for (Card card : player.getHand().getCards(StaticFilters.FILTER_CARD_CREATURE, game)) {
-            game.getState().addOtherAbility(card, new NinjutsuAbility("{2}{U}{B}"));
-        }
-        return true;
     }
 }

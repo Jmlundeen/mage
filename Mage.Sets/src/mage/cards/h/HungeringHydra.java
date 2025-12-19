@@ -1,23 +1,23 @@
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.DealtDamageToSourceTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
 import mage.abilities.effects.common.combat.CantBeBlockedByMoreThanOneSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.constants.SubType;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.game.Game;
+
+import java.util.UUID;
 
 /**
  *
@@ -33,9 +33,7 @@ public final class HungeringHydra extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Hungering Hydra enters the battlefield with X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
         // Hungering Hydra can't be blocked by more than one creature.
         this.addAbility(new SimpleStaticAbility(

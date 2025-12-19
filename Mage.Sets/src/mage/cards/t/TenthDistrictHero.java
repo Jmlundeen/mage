@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -20,6 +21,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -91,39 +93,42 @@ class TenthDistrictHeroEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TextChangingEffects_3:
+                    permanent.setName("Mileva, the Stalwart");
+                    break;
+                case TypeChangingEffects_4:
+                    permanent.addSuperType(game, SuperType.LEGENDARY);
+                    permanent.addCardType(game, CardType.CREATURE);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
+                            IndestructibleAbility.getInstance(), Duration.WhileOnBattlefield,
+                            StaticFilters.FILTER_PERMANENT_CREATURES, true
+                    )), source.getSourceId(), game);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        permanent.getPower().setModifiedBaseValue(5);
+                        permanent.getToughness().setModifiedBaseValue(5);
+                    }
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             discard();
             return false;
         }
-        switch (layer) {
-            case TextChangingEffects_3:
-                permanent.setName("Mileva, the Stalwart");
-                return true;
-            case TypeChangingEffects_4:
-                permanent.addSuperType(game, SuperType.LEGENDARY);
-                permanent.addCardType(game, CardType.CREATURE);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
-                        IndestructibleAbility.getInstance(), Duration.WhileOnBattlefield,
-                        StaticFilters.FILTER_PERMANENT_CREATURES, true
-                )), source.getSourceId(), game);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(5);
-                    permanent.getToughness().setModifiedBaseValue(5);
-                    return true;
-                }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override
@@ -136,5 +141,10 @@ class TenthDistrictHeroEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }

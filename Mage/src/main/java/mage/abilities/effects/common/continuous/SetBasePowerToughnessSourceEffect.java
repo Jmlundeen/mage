@@ -1,5 +1,6 @@
 package mage.abilities.effects.common.continuous;
 
+import mage.MageItem;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
@@ -10,6 +11,8 @@ import mage.constants.Layer;
 import mage.constants.Outcome;
 import mage.constants.SubLayer;
 import mage.game.Game;
+
+import java.util.List;
 
 /**
  * @author BetaSteward_at_googlemail.com, North, Alex-Vasile, xenohedron
@@ -85,7 +88,22 @@ public class SetBasePowerToughnessSourceEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        int newPower = power != null ? power.calculate(game, source, this) : Integer.MIN_VALUE;
+        int newToughness = toughness != null ? toughness.calculate(game, source, this) : Integer.MIN_VALUE;
+        for (MageItem object : affectedObjects) {
+            MageObject permanent = (MageObject) object;
+            if (newPower != Integer.MIN_VALUE) {
+                permanent.getPower().setModifiedBaseValue(newPower);
+            }
+            if (newToughness != Integer.MIN_VALUE) {
+                permanent.getToughness().setModifiedBaseValue(newToughness);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         MageObject mageObject = game.getPermanentEntering(source.getSourceId());
         if (mageObject == null) {
             if (this.characterDefining || this.duration == Duration.WhileOnBattlefield) {
@@ -99,12 +117,7 @@ public class SetBasePowerToughnessSourceEffect extends ContinuousEffectImpl {
             discard();
             return false;
         }
-        if (this.power != null) {
-            mageObject.getPower().setModifiedBaseValue(this.power.calculate(game, source, this));
-        }
-        if (this.toughness != null) {
-            mageObject.getToughness().setModifiedBaseValue(this.toughness.calculate(game, source, this));
-        }
+        affectedObjects.add(mageObject);
         return true;
     }
 }

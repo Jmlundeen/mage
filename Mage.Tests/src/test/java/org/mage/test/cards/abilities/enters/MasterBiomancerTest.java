@@ -1,6 +1,7 @@
 package org.mage.test.cards.abilities.enters;
 
 import mage.constants.PhaseStep;
+import mage.constants.SubType;
 import mage.constants.Zone;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
@@ -76,6 +77,8 @@ public class MasterBiomancerTest extends CardTestPlayerBase {
 
         //   P/T = 2/5 + 2* (2 * +1/+1) = 6 / 9
         assertPowerToughness(playerA, "Mindeye Drake", 6, 9);
+        assertSubtype("Mindeye Drake", SubType.MUTANT);
+        assertSubtype("Mindeye Drake", SubType.DRAKE);
     }
 
     /**

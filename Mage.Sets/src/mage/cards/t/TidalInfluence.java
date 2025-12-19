@@ -3,7 +3,6 @@ package mage.cards.t;
 import mage.ObjectColor;
 import mage.abilities.StateTriggeredAbility;
 import mage.abilities.common.CastOnlyIfConditionIsTrueAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
@@ -12,6 +11,7 @@ import mage.abilities.decorator.ConditionalContinuousEffect;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.effects.common.RemoveAllCountersSourceEffect;
 import mage.abilities.effects.common.continuous.BoostAllEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
@@ -55,12 +55,10 @@ public final class TidalInfluence extends CardImpl {
         this.addAbility(new CastOnlyIfConditionIsTrueAbility(conditionCast));
 
         // Tidal Influence enters the battlefield with a tide counter on it.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.TIDE.createInstance()),
-                "with a tide counter on it."));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.TIDE.createInstance())));
 
         // At the beginning of your upkeep, put a tide counter on Tidal Influence.
-        this.addAbility(new BeginningOfUpkeepTriggeredAbility(new AddCountersSourceEffect(CounterType.TIDE.createInstance())
-        ));
+        this.addAbility(new BeginningOfUpkeepTriggeredAbility(new AddCountersSourceEffect(CounterType.TIDE.createInstance())));
 
         // As long as there is exactly one tide counter on Tidal Influence, all blue creatures get -2/-0.
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(

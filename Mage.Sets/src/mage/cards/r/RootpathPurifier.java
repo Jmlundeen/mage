@@ -1,6 +1,8 @@
 package mage.cards.r;
 
 import mage.MageInt;
+import mage.MageItem;
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -10,10 +12,11 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -60,22 +63,25 @@ class RootpathPurifierEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            ((MageObject) object).addSuperType(game, SuperType.BASIC);
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return false;
         }
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND,
                 source.getControllerId(), source, game
-        )) {
-            permanent.addSuperType(game, SuperType.BASIC);
-        }
-        for (Card card : player.getLibrary().getCards(game)) {
-            if (card.isLand(game)) {
-                card.addSuperType(game, SuperType.BASIC);
-            }
-        }
-        return true;
+        ));
+        affectedObjects.addAll(player.getLibrary().getCards(game).stream()
+                .filter(Card::isLand)
+                .collect(Collectors.toList()));
+        return !affectedObjects.isEmpty();
     }
 }

@@ -3,13 +3,14 @@ package mage.cards.c;
 
 import mage.ObjectColor;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.costs.common.TapTargetCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.Effect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.cards.CardImpl;
@@ -43,15 +44,12 @@ public final class CoralReef extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{U}{U}");
 
         // Coral Reef enters the battlefield with four polyp counters on it.
-        Effect effect = new AddCountersSourceEffect(CounterType.POLYP.createInstance(4));
-        effect.setText("with four polyp counters on it");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.POLYP.createInstance(4))));
 
         // Sacrifice an Island: Put two polyp counters on Coral Reef.
-        effect = new AddCountersSourceEffect(CounterType.POLYP.createInstance(2), true);
+        Effect effect = new AddCountersSourceEffect(CounterType.POLYP.createInstance(2), true);
         effect.setText("Put two polyp counters on {this}");
-        this.addAbility(new SimpleActivatedAbility(effect,
-                new SacrificeTargetCost(islandFilter)));
+        this.addAbility(new SimpleActivatedAbility(effect, new SacrificeTargetCost(islandFilter)));
 
         // {U}, Tap an untapped blue creature you control, Remove a polyp counter from Coral Reef: Put a +0/+1 counter on target creature.
         Ability ability = new SimpleActivatedAbility(new AddCountersTargetEffect(CounterType.P0P1.createInstance()), new ManaCostsImpl<>("{U}"));

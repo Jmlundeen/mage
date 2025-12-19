@@ -1,6 +1,7 @@
 package mage.cards.r;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -14,6 +15,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -92,12 +94,10 @@ class RealmwrightEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + ChooseBasicLandTypeEffect.VALUE_KEY));
-        if (choice == null) {
-            return false;
-        }
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         Ability ability;
+        SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + ChooseBasicLandTypeEffect.VALUE_KEY));
+        assert choice != null;
         switch (choice) {
             case PLAINS:
                 ability = new WhiteManaAbility();
@@ -117,16 +117,23 @@ class RealmwrightEffect extends ContinuousEffectImpl {
             default:
                 ability = null;
         }
-        for (Permanent land : game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND,
-                source.getControllerId(), source, game
-        )) {
-            if (land == null || land.hasSubtype(choice, game)) {
-                continue;
-            }
+        for (MageItem object : affectedObjects) {
+            Permanent land = (Permanent) object;
             land.addSubType(game, choice);
             land.addAbility(ability, source.getSourceId(), game);
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + ChooseBasicLandTypeEffect.VALUE_KEY));
+        if (choice == null) {
+            return false;
+        }
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND,
+                source.getControllerId(), source, game
+        ));
+        return !affectedObjects.isEmpty();
     }
 }

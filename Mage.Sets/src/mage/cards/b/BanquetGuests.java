@@ -2,12 +2,15 @@ package mage.cards.b;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.dynamicvalue.MultipliedValue;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.AffinityAbility;
 import mage.abilities.keyword.IndestructibleAbility;
 import mage.abilities.keyword.TrampleAbility;
@@ -27,6 +30,8 @@ import java.util.UUID;
  */
 public final class BanquetGuests extends CardImpl {
 
+    private static final DynamicValue xValue = new MultipliedValue(GetXValue.instance, 2);
+
     public BanquetGuests(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{X}{G}{W}");
 
@@ -42,8 +47,8 @@ public final class BanquetGuests extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Banquet Guests enters the battlefield with twice X +1/+1 counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance(), 2)
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue)
+                .setText("with twice X +1/+1 counters on it")
         ));
 
         // {2}, Sacrifice a Food: Banquet Guests gains indestructible until end of turn.

@@ -3,8 +3,9 @@ package mage.cards.h;
 import mage.MageInt;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -37,10 +38,10 @@ public final class HotheadedGiant extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // Hotheaded Giant enters the battlefield with two -1/-1 counters on it unless you've cast another red spell this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.M1M1.createInstance(2)),
-                HotheadedGiantWatcher::checkSpell, null,
-                "with two -1/-1 counters on it unless you've cast another red spell this turn"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.M1M1.createInstance(2)),
+                HotheadedGiantWatcher::checkSpell)
+                .setText("{this} enters with two -1/-1 counters on it unless you've cast another red spell this turn")
         ), new HotheadedGiantWatcher());
     }
 

@@ -3,7 +3,7 @@ package mage.cards.a;
 import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.common.replacement.CreateTwiceThatManyTokensEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.abilities.keyword.WardAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -31,7 +31,10 @@ public final class AdrixAndNevTwincasters extends CardImpl {
         this.addAbility(new WardAbility(new ManaCostsImpl<>("{2}")));
 
         // If one or more tokens would be created under your control, twice that many of those tokens are created instead.
-        this.addAbility(new SimpleStaticAbility(new CreateTwiceThatManyTokensEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 2)
+                .setText("if one or more tokens would be created under your control, " +
+                        "twice that many of those tokens are created instead")
+        ));
     }
 
     private AdrixAndNevTwincasters(final AdrixAndNevTwincasters card) {

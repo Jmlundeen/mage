@@ -964,6 +964,76 @@ public class Spell extends StackObjectImpl implements Card {
         throw new UnsupportedOperationException("Unsupported operation");
     }
 
+    @Override
+    public void addSuperType(Game game, SuperType superType) {
+        card.addSuperType(game, superType);
+    }
+
+    @Override
+    public void removeAllSuperTypes(Game game) {
+        card.removeAllSuperTypes(game);
+    }
+
+    @Override
+    public void removeSuperType(Game game, SuperType superType) {
+        card.removeSuperType(game, superType);
+    }
+
+    @Override
+    public void addCardType(Game game, CardType... cardTypes) {
+        card.addCardType(game, cardTypes);
+    }
+
+    @Override
+    public void removeCardType(Game game, CardType... cardTypes) {
+        card.removeCardType(game, cardTypes);
+    }
+
+    @Override
+    public void removeAllCardTypes(Game game) {
+        card.removeAllCardTypes(game);
+    }
+
+    @Override
+    public void addSubType(Game game, SubType... subTypes) {
+        card.addSubType(game, subTypes);
+    }
+
+    @Override
+    public void copySubTypesFrom(Game game, MageObject mageObject, SubTypeSet subTypeSet) {
+        card.copySubTypesFrom(game, mageObject, subTypeSet);
+    }
+
+    @Override
+    public void removeAllSubTypes(Game game, SubTypeSet subTypeSet) {
+        card.removeAllSubTypes(game, subTypeSet);
+    }
+
+    @Override
+    public void retainAllArtifactSubTypes(Game game) {
+        card.retainAllArtifactSubTypes(game);
+    }
+
+    @Override
+    public void retainAllEnchantmentSubTypes(Game game) {
+        card.retainAllEnchantmentSubTypes(game);
+    }
+
+    @Override
+    public void retainAllLandSubTypes(Game game) {
+        card.retainAllLandSubTypes(game);
+    }
+
+    @Override
+    public void removeAllCreatureTypes(Game game) {
+        card.removeAllCreatureTypes(game);
+    }
+
+    @Override
+    public void removeSubType(Game game, SubType subType) {
+        card.removeSubType(game, subType);
+    }
+
     /**
      * Sync ZCC with card on stack
      *

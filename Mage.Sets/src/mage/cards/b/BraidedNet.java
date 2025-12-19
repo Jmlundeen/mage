@@ -1,8 +1,8 @@
 package mage.cards.b;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -11,7 +11,7 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.RestrictionEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.TapTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.common.ArtifactYouControlHint;
 import mage.abilities.keyword.CraftAbility;
 import mage.cards.CardSetInfo;
@@ -50,10 +50,7 @@ public final class BraidedNet extends TransformingDoubleFacedCard {
 
         // Braided Net
         // Braided Net enters the battlefield with three net counters on it.
-        this.getLeftHalfCard().addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.NET.createInstance(3)),
-                "with three net counters on it"
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.NET.createInstance(3))));
 
         // {T}, Remove a net counter from Braided Net: Tap another target nonland permanent. Its activated abilities can't be activated for as long as it remains tapped.
         Ability ability = new SimpleActivatedAbility(new TapTargetEffect(), new TapSourceCost());

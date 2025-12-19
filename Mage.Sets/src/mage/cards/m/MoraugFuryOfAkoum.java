@@ -1,6 +1,7 @@
 package mage.cards.m;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.common.LandfallAbility;
@@ -20,6 +21,7 @@ import mage.game.turn.TurnMod;
 import mage.watchers.Watcher;
 import mage.watchers.common.AttackedThisTurnWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,15 +72,21 @@ class MoraugFuryOfAkoumBoostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        AttackedThisTurnWatcher watcher = game.getState().getWatcher(AttackedThisTurnWatcher.class);
+        for (MageItem object : affectedObjects) {
+            ((Permanent) object).addPower(watcher.getAttackCount((Permanent) object, game));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         AttackedThisTurnWatcher watcher = game.getState().getWatcher(AttackedThisTurnWatcher.class);
         if (watcher == null) {
             return false;
         }
-        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game)) {
-            permanent.addPower(watcher.getAttackCount(permanent, game));
-        }
-        return true;
+        affectedObjects.addAll(game.getBattlefield().getAllActivePermanents(StaticFilters.FILTER_PERMANENT_CREATURE, source.getControllerId(), game));
+        return !affectedObjects.isEmpty();
     }
 }
 

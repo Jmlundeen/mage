@@ -1,11 +1,11 @@
 package mage.cards.c;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.CreaturesYouControlDiedCount;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DamageWithPowerFromOneToAnotherTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.cards.AdventureCard;
@@ -44,12 +44,9 @@ public final class CallousSellSword extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Callous Sell-Sword enters the battlefield with a +1/+1 counter on it for each creature that died under your control this turn.
-        this.getLeftHalfCard().addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(
-                        CounterType.P1P1.createInstance(0),
-                        CreaturesYouControlDiedCount.instance, true
-                ).setText("with a +1/+1 counter on it for each creature that died under your control this turn.")
-        ).addHint(hint));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesYouControlDiedCount.instance))
+                .addHint(hint)
+        );
 
         // Burn Together
         // Target creature you control deals damage equal to its power to any other target. Then sacrifice it.

@@ -1,6 +1,7 @@
 package mage.cards.y;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -61,7 +62,7 @@ public final class YurlokOfScorchThrash extends CardImpl {
 class YurlokOfScorchThrashRuleEffect extends ContinuousEffectImpl {
 
     YurlokOfScorchThrashRuleEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Detriment);
+        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Detriment);
         staticText = "A player losing unspent mana causes that player to lose that much life.";
     }
 
@@ -75,19 +76,13 @@ class YurlokOfScorchThrashRuleEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
         game.getState().setManaBurn(true);
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         return true;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.RulesEffects;
     }
 }
 

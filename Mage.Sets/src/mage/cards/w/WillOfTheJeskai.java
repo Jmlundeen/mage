@@ -1,23 +1,26 @@
 package mage.cards.w;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.condition.common.ControlACommanderCondition;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlashbackAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  *
@@ -39,7 +42,12 @@ public final class WillOfTheJeskai extends CardImpl {
         this.getSpellAbility().addEffect(new WillOfTheJeskaiEffect());
 
         // * Each instant and sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.
-        Mode mode = new Mode(new WillOfTheJeskaiFlashbackEffect());
+        Mode mode = new Mode(new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                .setAffectedZones(Zone.GRAVEYARD)
+                .setCardFilter(StaticFilters.FILTER_CARD_INSTANT_OR_SORCERY)
+                .withGainedAbility((card, source, game) -> new FlashbackAbility(card, card.getManaCost()))
+                .setText("Each instant and sorcery card in your graveyard gains flashback until end of turn. " +
+                        "The flashback cost is equal to its mana cost"));
         this.getSpellAbility().addMode(mode);
     }
 
@@ -85,64 +93,6 @@ class WillOfTheJeskaiEffect extends OneShotEffect {
             player.discard(player.getHand(), false, source, game);
             player.drawCards(5, source, game);
         }
-        return true;
-    }
-}
-
-class WillOfTheJeskaiFlashbackEffect extends ContinuousEffectImpl {
-
-    WillOfTheJeskaiFlashbackEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "each instant and sorcery card in your graveyard gains flashback until end of turn. " +
-                "The flashback cost is equal to its mana cost";
-    }
-
-    private WillOfTheJeskaiFlashbackEffect(final WillOfTheJeskaiFlashbackEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public WillOfTheJeskaiFlashbackEffect copy() {
-        return new WillOfTheJeskaiFlashbackEffect(this);
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        if (!getAffectedObjectsSet()) {
-            return;
-        }
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return;
-        }
-        player.getGraveyard()
-                .stream()
-                .map(game::getCard)
-                .filter(Objects::nonNull)
-                .filter(card -> card.isInstantOrSorcery(game))
-                .forEachOrdered(card -> affectedObjectList.add(new MageObjectReference(card, game)));
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
-        player.getGraveyard()
-                .stream()
-                .filter(cardId -> affectedObjectList.contains(new MageObjectReference(cardId, game)))
-                .forEachOrdered(cardId -> {
-                    Card card = game.getCard(cardId);
-                    if (card == null) {
-                        return;
-                    }
-                    FlashbackAbility ability = new FlashbackAbility(card, card.getManaCost());
-                    ability.setSourceId(cardId);
-                    ability.setControllerId(card.getOwnerId());
-                    game.getState().addOtherAbility(card, ability);
-                });
         return true;
     }
 }

@@ -1,21 +1,21 @@
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -31,9 +31,10 @@ public final class SpikeDrone extends CardImpl {
         this.power = new MageInt(0);
         this.toughness = new MageInt(0);
 
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(1)),
-            "with a +1/+1 counter on it"));
+        // Spike Drone enters the battlefield with a +1/+1 counter on it.
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())));
 
+        // {2}, Remove a +1/+1 counter from Spike Drone: Put a +1/+1 counter on target creature.
         Ability ability = new SimpleActivatedAbility(new AddCountersTargetEffect(CounterType.P1P1.createInstance(1)), new GenericManaCost(2));
         ability.addCost(new RemoveCountersSourceCost(CounterType.P1P1.createInstance(1)));
         ability.addTarget(new TargetCreaturePermanent());

@@ -1,6 +1,7 @@
 package mage.cards.p;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateOncePerGameActivatedAbility;
 import mage.abilities.costs.common.DiscardCardCost;
@@ -14,6 +15,7 @@ import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -64,26 +66,29 @@ class PossessedGoatEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addSubType(game, SubType.DEMON);
+                    break;
+                case ColorChangingEffects_5:
+                    permanent.getColor(game).setBlack(true);
+                    break;
+            }
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = source.getSourcePermanentIfItStillExists(game);
         if (permanent == null) {
             discard();
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.addSubType(game, SubType.DEMON);
-                return true;
-            case ColorChangingEffects_5:
-                permanent.getColor(game).setBlack(true);
-                return true;
-        }
-        return false;
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override

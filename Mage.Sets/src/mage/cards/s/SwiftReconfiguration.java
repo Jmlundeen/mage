@@ -1,5 +1,6 @@
 package mage.cards.s;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -15,6 +16,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -67,30 +69,33 @@ class SwiftReconfigurationEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.removeAllCardTypes(game);
+                    permanent.addCardType(game, CardType.ARTIFACT);
+                    permanent.addSubType(game, SubType.VEHICLE);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    permanent.addAbility(new CrewAbility(5), source.getSourceId(), game);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent aura = source.getSourcePermanentIfItStillExists(game);
         if (aura == null) {
             return false;
         }
         Permanent permanent = game.getPermanent(aura.getAttachedTo());
-        if (permanent == null) {
-            return false;
+        if (permanent != null) {
+            affectedObjects.add(permanent);
+            return true;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.ARTIFACT);
-                permanent.addSubType(game, SubType.VEHICLE);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.addAbility(new CrewAbility(5), source.getSourceId(), game);
-                return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
         return false;
     }
 

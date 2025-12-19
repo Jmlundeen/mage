@@ -2,9 +2,10 @@ package mage.cards.e;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.MenaceAbility;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
@@ -37,10 +38,10 @@ public final class EffortlessMaster extends CardImpl {
         this.addAbility(new MenaceAbility());
 
         // This creature enters with two +1/+1 counters on it if you've cast two or more spells this turn.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                EffortlessMasterCondition.instance, null,
-                "with two +1/+1 counters on it if you've cast two or more spells this turn"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                EffortlessMasterCondition.instance)
+                .setText("{this} enters with two +1/+1 counters on it if you've cast two or more spells this turn")
         ));
     }
 

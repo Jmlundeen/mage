@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -19,6 +20,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -73,15 +75,20 @@ class TheFugitiveDoctorEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card == null) {
-            return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Card card = (Card) object;
+            game.getState().addOtherAbility(card, new FlashbackAbility(card, new ManaCostsImpl<>("{2}{R}{G}")));
         }
-        FlashbackAbility ability = new FlashbackAbility(card, new ManaCostsImpl<>("{2}{R}{G}"));
-        ability.setSourceId(card.getId());
-        ability.setControllerId(card.getOwnerId());
-        game.getState().addOtherAbility(card, ability);
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Card card = game.getCard(getTargetPointer().getFirst(game, source));
+        if (card != null) {
+            affectedObjects.add(card);
+            return true;
+        }
+        return false;
     }
 }

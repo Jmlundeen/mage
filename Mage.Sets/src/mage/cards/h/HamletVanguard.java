@@ -1,11 +1,11 @@
 package mage.cards.h;
 
 import mage.MageInt;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.WardAbility;
@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 public final class HamletVanguard extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterControlledPermanent(SubType.HUMAN);
+    private static final FilterPermanent filter = new FilterControlledPermanent(SubType.HUMAN, "other nontoken Human you control");
 
     static {
         filter.add(AnotherPredicate.instance);
@@ -50,9 +50,9 @@ public final class HamletVanguard extends CardImpl {
         this.addAbility(new WardAbility(new ManaCostsImpl<>("{2}")));
 
         // Hamlet Vanguard enters the battlefield with two +1/+1 counters on it for each other nontoken Human you control.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(0), xValue, false
-        ), "with two +1/+1 counters on it for each other nontoken Human you control").addHint(hint));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, xValue))
+                .addHint(hint)
+        );
     }
 
     private HamletVanguard(final HamletVanguard card) {

@@ -43,6 +43,7 @@ public class JinGitaxiasTest extends CardTestPlayerBase {
 
         // turn 5
         checkHandCount("after III", 5, PhaseStep.POSTCOMBAT_MAIN, playerA, 16);
+        setChoice(playerA, "Mountain", 9);
 
         setStrictChooseMode(true);
         setStopAt(6, PhaseStep.POSTCOMBAT_MAIN);

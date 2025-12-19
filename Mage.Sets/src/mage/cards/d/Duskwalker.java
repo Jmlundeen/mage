@@ -1,21 +1,21 @@
 
 package mage.cards.d;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FearAbility;
 import mage.abilities.keyword.KickerAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Duration;
+import mage.constants.*;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -34,10 +34,13 @@ public final class Duskwalker extends CardImpl {
         this.addAbility(new KickerAbility("{3}{B}"));
         
         // If Duskwalker was kicked, it enters with two +1/+1 counters on it and with fear.
-        Ability ability = new EntersBattlefieldAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(2)),
-                KickedCondition.ONCE,
-                "If {this} was kicked, it enters with two +1/+1 counters on it and with fear.", "");
-        ability.addEffect(new GainAbilitySourceEffect(FearAbility.getInstance(), Duration.WhileOnBattlefield));
+        Ability ability = new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(2)),
+                KickedCondition.ONCE)
+                .setText("If {this} was kicked, it enters with two +1/+1 counters on it and with fear.")
+        );
+        ability.addEffect(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility, ContinuousAffected.SOURCE)
+                .withGainedAbilities(FearAbility.getInstance()));
         this.addAbility(ability);
     }
 

@@ -1,5 +1,6 @@
 package mage.cards.o;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Ability;
@@ -15,6 +16,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -72,9 +74,9 @@ class OpalTitanBecomesCreatureEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = affectedObjectList.get(0).getPermanent(game);
-        if (permanent != null) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     permanent.removeAllCardTypes(game);
@@ -98,15 +100,21 @@ class OpalTitanBecomesCreatureEffect extends ContinuousEffectImpl {
                     }
                     break;
             }
-            return true;
         }
-        this.discard();
-        return false;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageObjectReference mor : affectedObjectList) {
+            Permanent permanent = mor.getPermanent(game);
+            if (permanent != null) {
+                affectedObjects.add(permanent);
+            }
+        }
+        if (affectedObjects.isEmpty()) {
+            discard();
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override
@@ -114,5 +122,10 @@ class OpalTitanBecomesCreatureEffect extends ContinuousEffectImpl {
         return layer == Layer.PTChangingEffects_7
                 || layer == Layer.AbilityAddingRemovingEffects_6
                 || layer == Layer.TypeChangingEffects_4;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA || sublayer == SubLayer.SetPT_7b;
     }
 }

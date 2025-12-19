@@ -3,14 +3,11 @@ package mage.cards.r;
 import mage.MageInt;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.DevotionCount;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
-import mage.abilities.effects.common.continuous.SetBasePowerSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 
@@ -32,14 +29,15 @@ public final class RenataCalledToTheHunt extends CardImpl {
         // Renata's power is equal to your devotion to green.
         this.addAbility(new SimpleStaticAbility(
                 Zone.ALL,
-                new SetBasePowerSourceEffect(DevotionCount.G)
+                new ContinuousEffectBuilder(Outcome.BoostCreature, ContinuousAffected.SOURCE)
+                        .withSetPower(DevotionCount.G)
                         .setText("{this}'s power is equal to your devotion to green")
         ).addHint(DevotionCount.G.getHint()));
 
         // Each other creature you control enters the battlefield with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                StaticFilters.FILTER_PERMANENT_CREATURE, CounterType.P1P1.createInstance(), true
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(StaticFilters.FILTER_OTHER_CONTROLLED_CREATURE)
+        ));
     }
 
     private RenataCalledToTheHunt(final RenataCalledToTheHunt card) {

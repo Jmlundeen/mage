@@ -3,10 +3,10 @@ package mage.cards.a;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.cards.CardImpl;
@@ -39,11 +39,9 @@ public final class AmbitiousDragonborn extends CardImpl {
         this.toughness = new MageInt(0);
 
         // Ambitious Dragonborn enters the battlefield with X +1/+1 counters on it, where X is the greatest power among creatures you control and creature cards in your graveyard.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(
-                        CounterType.P1P1.createInstance(), AmbitiousDragonbornValue.instance, false
-                ), "with X +1/+1 counters on it, where X is the greatest power " +
-                "among creatures you control and creature cards in your graveyard"
+        this.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.P1P1, AmbitiousDragonbornValue.instance)
+                        .withXText()
         ).addHint(hint));
     }
 
@@ -84,7 +82,12 @@ enum AmbitiousDragonbornValue implements DynamicValue {
     }
 
     @Override
+    public String toString() {
+        return "X";
+    }
+
+    @Override
     public String getMessage() {
-        return "";
+        return "the greatest power among creatures you control and creature cards in your graveyard";
     }
 }

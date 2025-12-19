@@ -1,19 +1,19 @@
 package mage.cards.b;
 
 import mage.MageInt;
-import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.common.counter.AddCounterEnteringCreatureEffect;
+import mage.abilities.effects.ContinuousEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.WatcherScope;
+import mage.constants.*;
+import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
+import mage.target.targetpointer.FixedTarget;
 import mage.watchers.Watcher;
 
 import java.util.UUID;
@@ -58,8 +58,9 @@ class BiophagusWatcher extends Watcher {
             Spell target = game.getSpell(event.getTargetId());
             if (event.getSourceId() != null && event.getSourceId().equals(this.getSourceId())
                     && target != null && target.isCreature(game) && event.getFlag()) {
-                game.getState().addEffect(new AddCounterEnteringCreatureEffect(new MageObjectReference(target.getCard(), game)),
-                        target.getSpellAbility());
+                ContinuousEffect effect = new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                        .setTargetPointer(new FixedTarget(target, game));
+                game.addEffect(effect,target.getSpellAbility());
             }
         }
     }

@@ -3,10 +3,11 @@ package mage.cards.o;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.CreateTokenEffect;
-import mage.abilities.effects.common.EntersWithCountersControlledEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
 import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
@@ -27,10 +28,9 @@ public final class OathOfGideon extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new CreateTokenEffect(new KorAllyToken(), 2), false));
 
         // Each planeswalker you control enters the battlefield with an additional loyalty counter on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersControlledEffect(
-                StaticFilters.FILTER_PERMANENT_PLANESWALKER,
-                CounterType.LOYALTY.createInstance(), false
-        )));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.LOYALTY.createInstance())
+                .setFilter(StaticFilters.FILTER_CONTROLLED_PERMANENT_PLANESWALKER)
+        ));
     }
 
     private OathOfGideon(final OathOfGideon card) {

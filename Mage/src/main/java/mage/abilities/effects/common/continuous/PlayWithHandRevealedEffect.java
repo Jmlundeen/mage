@@ -1,27 +1,24 @@
 
 package mage.abilities.effects.common.continuous;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.effects.ContinuousEffectImpl;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.TargetController;
+import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author LoneFox
  */
 public class PlayWithHandRevealedEffect extends ContinuousEffectImpl {
 
-    private TargetController who;
+    private final TargetController who;
 
     public PlayWithHandRevealedEffect(TargetController who) {
         super(Duration.WhileOnBattlefield, Layer.PlayerEffects, SubLayer.NA, Outcome.Detriment);
@@ -34,35 +31,42 @@ public class PlayWithHandRevealedEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller != null) {
-            Iterable<UUID> affectedPlayers;
-            switch (who) {
-                case ANY:
-                    affectedPlayers = game.getState().getPlayersInRange(controller.getId(), game);
-                    break;
-                case OPPONENT:
-                    affectedPlayers = game.getOpponents(source.getControllerId());
-                    break;
-                case YOU:
-                    List<UUID> tmp = new ArrayList<>();
-                    tmp.add(source.getControllerId());
-                    affectedPlayers = tmp;
-                    break;
-                default:
-                    return false;
-            }
-
-            for (UUID playerID : affectedPlayers) {
-                Player player = game.getPlayer(playerID);
-                if (player != null) {
-                    player.revealCards("Cards in " + player.getName() + "'s hand", player.getHand(), game, false);
-                }
-            }
-            return true;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
+            player.revealCards("Cards in " + player.getName() + "'s hand", player.getHand(), game, false);
         }
-        return false;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Player controller = game.getPlayer(source.getControllerId());
+        if (controller == null) {
+            return false;
+        }
+        Iterable<UUID> affectedPlayers;
+        switch (who) {
+            case ANY:
+                affectedPlayers = game.getState().getPlayersInRange(controller.getId(), game);
+                break;
+            case OPPONENT:
+                affectedPlayers = game.getOpponents(source.getControllerId());
+                break;
+            case YOU:
+                List<UUID> tmp = new ArrayList<>();
+                tmp.add(source.getControllerId());
+                affectedPlayers = tmp;
+                break;
+            default:
+                return false;
+        }
+        for (UUID playerID : affectedPlayers) {
+            Player player = game.getPlayer(playerID);
+            if (player != null) {
+                affectedObjects.add(player);
+            }
+        }
+        return !affectedObjects.isEmpty();
     }
 
     @Override

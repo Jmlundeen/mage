@@ -1,19 +1,16 @@
 
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.decorator.ConditionalContinuousRuleModifyingEffect;
-import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.DontUntapInControllersUntapStepEnchantedEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.abilities.keyword.EnchantAbility;
 import mage.cards.CardImpl;
@@ -24,6 +21,8 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetCreaturePermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -42,9 +41,7 @@ public final class Merseine extends CardImpl {
         this.addAbility(new EnchantAbility(auraTarget));
 
         // Merseine enters the battlefield with three net counters on it.
-        Effect effect = new AddCountersSourceEffect(CounterType.NET.createInstance(3));
-        effect.setText("with three net counters on it");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.NET.createInstance(3))));
 
         // Enchanted creature doesn't untap during its controller's untap step if Merseine has a net counter on it.
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousRuleModifyingEffect(new DontUntapInControllersUntapStepEnchantedEffect(),

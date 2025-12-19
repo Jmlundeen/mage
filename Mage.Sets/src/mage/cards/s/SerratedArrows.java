@@ -1,15 +1,14 @@
 package mage.cards.s;
 
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.SacrificeSourceEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
@@ -32,9 +31,7 @@ public final class SerratedArrows extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{4}");
 
         // Serrated Arrows enters the battlefield with three arrowhead counters on it.
-        Effect effect = new AddCountersSourceEffect(CounterType.ARROWHEAD.createInstance(3));
-        effect.setText("with three arrowhead counters on it");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.ARROWHEAD.createInstance(3))));
 
         // At the beginning of your upkeep, if there are no arrowhead counters on Serrated Arrows, sacrifice it.
         this.addAbility(new BeginningOfUpkeepTriggeredAbility(new SacrificeSourceEffect().setText("sacrifice it")).withInterveningIf(condition));

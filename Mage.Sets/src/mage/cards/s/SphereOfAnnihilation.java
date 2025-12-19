@@ -1,15 +1,19 @@
 package mage.cards.s;
 
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.Cards;
 import mage.cards.CardsImpl;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.ComparisonType;
+import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
@@ -31,9 +35,7 @@ public final class SphereOfAnnihilation extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{X}{B}");
 
         // Sphere of Annihilation enters the battlefield with X void counters on it.
-        this.addAbility(new EntersBattlefieldAbility(
-                new EntersBattlefieldWithXCountersEffect(CounterType.VOID.createInstance())
-        ));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.VOID, GetXValue.instance)));
 
         // At the beginning of your upkeep, exile Sphere of Annihilation, all creatures and planeswalkers with mana value less than or equal to the number of void counters on it, and all creature and planeswalker cards in all graveyards with mana value less than or equal to the number of void counters on it.
         this.addAbility(new BeginningOfUpkeepTriggeredAbility(

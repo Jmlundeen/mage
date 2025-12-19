@@ -1,11 +1,10 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
-import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.effects.Effect;
+import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
@@ -13,6 +12,8 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -29,10 +30,10 @@ public final class SwarmOfBloodflies extends CardImpl {
 
         // Flying
         this.addAbility(FlyingAbility.getInstance());
+
         // Swarm of Bloodflies enters the battlefield with two +1/+1 counters on it.
-        Effect effect = new AddCountersSourceEffect(CounterType.P1P1.createInstance(2), true);
-        effect.setText("with two +1/+1 counters on it");
-        this.addAbility(new EntersBattlefieldAbility(effect));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))));
+
         // Whenever another creature dies, put a +1/+1 counter on Swarm of Bloodflies
         this.addAbility(new DiesCreatureTriggeredAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance()), false, true));
     }

@@ -1,5 +1,6 @@
 package mage.cards.v;
 
+import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
 import mage.abilities.common.DiesCreatureTriggeredAbility;
@@ -22,6 +23,7 @@ import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -144,9 +146,14 @@ class ValkyriesCallContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent creature = mor.getPermanent(game);
-        if (creature != null) {
+    public ValkyriesCallContinuousEffect copy() {
+        return new ValkyriesCallContinuousEffect(this);
+    }
+
+    @Override
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
             switch (layer) {
                 case TypeChangingEffects_4:
                     creature.addSubType(game, SubType.ANGEL);
@@ -155,21 +162,19 @@ class ValkyriesCallContinuousEffect extends ContinuousEffectImpl {
                     creature.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
                     break;
             }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent permanent = mor.getPermanent(game);
+        if (permanent != null) {
+            affectedObjects.add(permanent);
             return true;
         } else {
             this.used = true;
+            return false;
         }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public ValkyriesCallContinuousEffect copy() {
-        return new ValkyriesCallContinuousEffect(this);
     }
 
     @Override

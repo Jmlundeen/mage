@@ -1,7 +1,6 @@
 package mage.cards.m;
 
 import mage.MageItem;
-import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -13,8 +12,9 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.StaticFilters;
+import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.game.Game;
+import mage.game.command.CommandObject;
 import mage.game.command.Commander;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.ShapeshifterBlueToken;
@@ -25,9 +25,7 @@ import mage.util.CardUtil;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -78,78 +76,88 @@ class MaskwoodNexusEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            if (object instanceof Permanent) {
+                ((Permanent) object).setIsAllCreatureTypes(game, true);
+            }
+            if (object instanceof Card) {
+                // apply to all parts
+                Card card = (Card) object;
+                game.getState().getCreateMageObjectAttribute(card, game).getSubtype().setIsAllCreatureTypes(true);
+                CardUtil.getObjectParts(card).stream()
+                        .map(game::getObject)
+                        .filter(Objects::nonNull)
+                        .filter(part -> part.isCreature(game))
+                        .forEach(mageObject -> game.getState().getCreateMageObjectAttribute(mageObject, game)
+                                .getSubtype().setIsAllCreatureTypes(true)
+                        );
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return false;
         }
         // Creature cards you own that aren't on the battlefield
         // in graveyard
-        Set<Card> affectedCards = controller.getGraveyard().stream()
-                .map(game::getCard)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        for (UUID cardId : controller.getGraveyard()) {
+            Card card = game.getCard(cardId);
+            if (card != null && card.isCreature(game) && !card.isArtifact(game)) {
+                affectedObjects.add(card);
+            }
+        }
         // on Hand
-        controller.getHand().stream()
-                .map(game::getCard)
-                .filter(Objects::nonNull)
-                .forEach(affectedCards::add);
-
+        for (UUID cardId : controller.getHand()) {
+            Card card = game.getCard(cardId);
+            if (card != null && card.isCreature(game) && !card.isArtifact(game)) {
+                affectedObjects.add(card);
+            }
+        }
         // in Exile
-        game.getState().getExile().getCardsOwned(game, controller.getId()).stream()
-                .filter(card -> card.isOwnedBy(controller.getId()))
-                .forEach(affectedCards::add);
-
+        for (Card card : game.getState().getExile().getCardsOwned(game, source.getControllerId())) {
+            if (card.isCreature(game) && !card.isArtifact(game)) {
+                affectedObjects.add(card);
+            }
+        }
         // in Library (e.g. for Mystical Teachings)
-        affectedCards.addAll(controller.getLibrary().getCards(game));
-
+        for (Card card : controller.getLibrary().getCards(game)) {
+            if (card.isOwnedBy(controller.getId()) && card.isCreature(game) && !card.isArtifact(game)) {
+                affectedObjects.add(card);
+            }
+        }
         // commander in command zone
-        game.getState().getCommand().stream()
-                .filter(Commander.class::isInstance)
-                .map(MageItem::getId)
-                .map(game::getCard)
-                .filter(Objects::nonNull)
-                .filter(c -> c.isOwnedBy(controller.getId()))
-                .forEach(affectedCards::add);
-
-        // Apply to all affected cards by object parts
-        affectedCards.stream()
-                .map(card -> game.getObject(card.getId()))
-                .filter(Objects::nonNull)
-                .forEach(mageObject -> {
-                    if (mageObject.isCreature(game)) {
-                        game.getState().getCreateMageObjectAttribute(mageObject, game).getSubtype().setIsAllCreatureTypes(true);
-                    }
-                    CardUtil.getObjectParts(mageObject).stream()
-                            .filter(Objects::nonNull)
-                            .forEach(objectId -> {
-                                MageObject partObject = game.getObject(objectId);
-                                if (partObject != null && partObject.isCreature(game)) {
-                                    game.getState().getCreateMageObjectAttribute(partObject, game).getSubtype().setIsAllCreatureTypes(true);
-                                }
-                            });
-                });
+        for (CommandObject commandObject : game.getState().getCommand()) {
+            if (commandObject instanceof Commander) {
+                Card card = game.getCard((commandObject).getId());
+                if (card != null && card.isOwnedBy(controller.getId())
+                        && card.isCreature(game) && !card.isArtifact(game)) {
+                    affectedObjects.add(card);
+                }
+            }
+        }
 
         // creature spells you control
         for (StackObject stackObject : game.getStack()) {
             if (stackObject instanceof Spell
                     && stackObject.isControlledBy(source.getControllerId())
-                    && stackObject.isCreature(game)) {
+                    && stackObject.isCreature(game)
+                    && !stackObject.isArtifact(game)) {
                 Card card = ((Spell) stackObject).getCard();
-                game.getState().getCreateMageObjectAttribute(card, game).getSubtype().setIsAllCreatureTypes(true);
+                affectedObjects.add(card);
             }
         }
-
         // creatures you control
         List<Permanent> creatures = game.getBattlefield().getAllActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_CREATURE, source.getControllerId(), game);
+                new FilterControlledCreaturePermanent(), source.getControllerId(), game);
         for (Permanent creature : creatures) {
             if (creature != null) {
-                creature.setIsAllCreatureTypes(game, true);
+                affectedObjects.add(creature);
             }
         }
-
-        return true;
-
+        return !affectedObjects.isEmpty();
     }
 }

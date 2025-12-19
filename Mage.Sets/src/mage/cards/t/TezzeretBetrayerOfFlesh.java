@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -23,6 +24,7 @@ import mage.util.CardUtil;
 import mage.watchers.Watcher;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -157,31 +159,34 @@ class TezzeretBetrayerOfFleshTypeEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    permanent.addCardType(game, CardType.ARTIFACT, CardType.CREATURE);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer != SubLayer.SetPT_7b
+                            || permanent.hasSubtype(SubType.VEHICLE, game)) {
+                        break;
+                    }
+                    permanent.getPower().setModifiedBaseValue(4);
+                    permanent.getToughness().setModifiedBaseValue(4);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (permanent == null) {
             discard();
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.addCardType(game, CardType.ARTIFACT, CardType.CREATURE);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer != SubLayer.SetPT_7b
-                        || permanent.hasSubtype(SubType.VEHICLE, game)) {
-                    return false;
-                }
-                permanent.getPower().setModifiedBaseValue(4);
-                permanent.getToughness().setModifiedBaseValue(4);
-                return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+        affectedObjects.add(permanent);
+        return true;
     }
 
     @Override
@@ -192,5 +197,11 @@ class TezzeretBetrayerOfFleshTypeEffect extends ContinuousEffectImpl {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.NA
+                || sublayer == SubLayer.SetPT_7b;
     }
 }

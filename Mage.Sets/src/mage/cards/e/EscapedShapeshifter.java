@@ -1,6 +1,7 @@
 package mage.cards.e;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
@@ -12,13 +13,14 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.StaticFilters;
-import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author TheElk801
@@ -60,22 +62,32 @@ class EscapedShapeshifterEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            List<Ability> abilities = game.getBattlefield()
+                    .getActivePermanents(
+                            StaticFilters.FILTER_OPPONENTS_PERMANENT_CREATURE,
+                            source.getControllerId(), source, game
+                    ).stream()
+                    .filter(Objects::nonNull)
+                    .filter(oppPermanent -> !oppPermanent.getName().equals(permanent.getName()))
+                    .map(Permanent::getAbilities)
+                    .flatMap(Collection::stream).filter(EscapedShapeshifterEffect::checkAbility)
+                    .collect(Collectors.toList());
+            for (Ability ability : abilities) {
+                permanent.addAbility(ability, source.getSourceId(), game, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent sourcePermanent = game.getPermanent(source.getSourceId());
         if (sourcePermanent == null) {
             return false;
         }
-
-        game.getBattlefield()
-                .getActivePermanents(
-                        StaticFilters.FILTER_OPPONENTS_PERMANENT_CREATURE,
-                        source.getControllerId(), source, game
-                ).stream()
-                .filter(Objects::nonNull)
-                .filter(permanent -> !permanent.getName().equals("Escaped Shapeshifter"))
-                .map(Permanent::getAbilities)
-                .flatMap(Collection::stream).filter(EscapedShapeshifterEffect::checkAbility)
-                .forEach(ability -> sourcePermanent.addAbility(ability, source.getSourceId(), game));
+        affectedObjects.add(sourcePermanent);
         return true;
     }
 
@@ -87,10 +99,8 @@ class EscapedShapeshifterEffect extends ContinuousEffectImpl {
         }
         return ability instanceof ProtectionAbility
                 && ((ProtectionAbility) ability)
-                .getFilter()
-                .getPredicates()
-                .stream()
-                .anyMatch(ColorPredicate.class::isInstance);
+                .getFromColor()
+                .hasColor();
     }
 
     @Override

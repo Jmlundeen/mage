@@ -6,22 +6,20 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.AsThoughManaEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterPermanent;
+import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
 
-import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author Susucr
@@ -48,7 +46,10 @@ public final class SharkeyTyrantOfTheShire extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new SharkeyTyrantOfTheShireReplacementEffect(filter)));
 
         // Sharkey, Tyrant of the Shire has all activated abilities of lands your opponents control except mana abilities.
-        this.addAbility(new SimpleStaticAbility(new SharkeyTyrantOfTheShireContinousEffect(filter)));
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of lands your opponents control except mana abilities.")
+                .fromPermanents(filter)
+        ));
 
         // Mana of any type can be spent to activate Sharkey's abilities.
         this.addAbility(new SimpleStaticAbility(new SharkeyTyrantOfTheShireAsThoughEffect()));
@@ -104,48 +105,6 @@ class SharkeyTyrantOfTheShireReplacementEffect extends ReplacementEffectImpl {
             }
         }
         return false;
-    }
-}
-
-
-class SharkeyTyrantOfTheShireContinousEffect extends ContinuousEffectImpl {
-
-    private FilterPermanent filter;
-
-    SharkeyTyrantOfTheShireContinousEffect(FilterPermanent filter) {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.filter = filter;
-        staticText = "{this} has all activated abilities of " + filter.getMessage() + " except mana abilities.";
-        this.addDependencyType(DependencyType.AddingAbility);
-    }
-
-    private SharkeyTyrantOfTheShireContinousEffect(final SharkeyTyrantOfTheShireContinousEffect effect) {
-        super(effect);
-        this.filter = effect.filter;
-    }
-
-    @Override
-    public SharkeyTyrantOfTheShireContinousEffect copy() {
-        return new SharkeyTyrantOfTheShireContinousEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm == null) {
-            return false;
-        }
-        for (Ability ability : game.getBattlefield()
-                .getActivePermanents(filter, source.getControllerId(), source, game)
-                .stream()
-                .map(permanent -> permanent.getAbilities(game))
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .filter(Ability::isNonManaActivatedAbility)
-                .collect(Collectors.toList())) {
-            perm.addAbility(ability, source.getSourceId(), game, true);
-        }
-        return true;
     }
 }
 

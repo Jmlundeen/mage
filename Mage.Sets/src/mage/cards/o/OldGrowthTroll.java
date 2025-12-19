@@ -1,6 +1,7 @@
 package mage.cards.o;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
@@ -33,6 +34,7 @@ import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -149,12 +151,36 @@ class OldGrowthTrollContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent troll = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    troll.removeAllCardTypes(game);
+                    troll.addCardType(game, CardType.ENCHANTMENT);
+                    troll.removeAllSubTypes(game);
+                    troll.addSubType(game, SubType.AURA);
+                    break;
+                case AbilityAddingRemovingEffects_6:
+                    // Spell Ability can be null with clone effects (ex. Moritte)
+                    if (troll.getSpellAbility() == null) {
+                        troll.addAbility(new SpellAbility(null, null), source.getSourceId(), game);
+                    }
+                    troll.getSpellAbility().getTargets().clear();
+                    troll.getSpellAbility().getEffects().clear();
+                    TargetPermanent auraTarget = new TargetPermanent(filter);
+                    troll.getSpellAbility().addTarget(auraTarget);
+                    troll.getSpellAbility().addEffect(new AttachEffect(Outcome.BoostCreature));
+                    troll.addAbility(new EnchantAbility(auraTarget), source.getSourceId(), game);
+
+                    // add the activated ability
+                    troll.addAbility(makeAbility(), source.getSourceId(), game);
+            }
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         if (game.getState().getZoneChangeCounter(source.getSourceId()) > zoneChangeCounter) {
             discard();
             return false;
@@ -166,29 +192,7 @@ class OldGrowthTrollContinuousEffect extends ContinuousEffectImpl {
         if (sourceObject == null) {
             return false;
         }
-        Permanent troll = sourceObject;
-        switch (layer) {
-            case TypeChangingEffects_4:
-                troll.removeAllCardTypes(game);
-                troll.addCardType(game, CardType.ENCHANTMENT);
-                troll.removeAllSubTypes(game);
-                troll.addSubType(game, SubType.AURA);
-                break;
-            case AbilityAddingRemovingEffects_6:
-                // Spell Ability can be null with clone effects (ex. Moritte)
-                if (troll.getSpellAbility() == null) {
-                    troll.addAbility(new SpellAbility(null, null), source.getSourceId(), game);
-                }
-                troll.getSpellAbility().getTargets().clear();
-                troll.getSpellAbility().getEffects().clear();
-                TargetPermanent auraTarget = new TargetPermanent(filter);
-                troll.getSpellAbility().addTarget(auraTarget);
-                troll.getSpellAbility().addEffect(new AttachEffect(Outcome.BoostCreature));
-                troll.addAbility(new EnchantAbility(auraTarget), source.getSourceId(), game);
-
-                // add the activated ability
-                troll.addAbility(makeAbility(), source.getSourceId(), game);
-        }
+        affectedObjects.add(sourceObject);
         return true;
     }
 

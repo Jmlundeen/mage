@@ -5,30 +5,35 @@ import mage.abilities.Ability;
 import mage.abilities.ActivatedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
+import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
+import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.Target;
 import mage.target.common.TargetCardInHand;
 import mage.target.common.TargetCardInYourGraveyard;
 import mage.util.CardUtil;
 
-import java.util.Objects;
 import java.util.UUID;
 
 /**
  * @author TheElk801
  */
 public final class MairsilThePretender extends CardImpl {
+
+    private static final FilterCard filter = new FilterCard();
+
+    static {
+        filter.add(CounterType.CAGE.getPredicate());
+    }
 
     public MairsilThePretender(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}{B}{R}");
@@ -45,7 +50,12 @@ public final class MairsilThePretender extends CardImpl {
 
         // Mairsil, the Pretender has all activated abilities of all cards you own in exile with cage counters on them. 
         // You may activate each of those abilities only once each turn.
-        Ability ability = new SimpleStaticAbility(new MairsilThePretenderGainAbilitiesEffect());
+        Ability ability = new SimpleStaticAbility(new GainAbilitiesOfEffect(
+                StaticFilters.FILTER_ACTIVATED_ABILITY,
+                "{this} has all activated abilities of all cards you own in exile with cage counters on them. You may activate each of those abilities only once each turn")
+                .fromCardsInZones(filter, Zone.EXILED)
+                .modifyAbilities((newAbility) -> ((ActivatedAbility) newAbility).setMaxActivationsPerTurn(1)
+        ));
         this.addAbility(ability);
     }
 
@@ -109,46 +119,5 @@ class MairsilThePretenderExileEffect extends OneShotEffect {
             return CardUtil.moveCardWithCounter(game, source, controller, card, Zone.EXILED, CounterType.CAGE.createInstance());
         }
         return false;
-    }
-}
-
-class MairsilThePretenderGainAbilitiesEffect extends ContinuousEffectImpl {
-
-    private static final FilterCard filter = new FilterCard();
-
-    static {
-        filter.add(CounterType.CAGE.getPredicate());
-    }
-
-    public MairsilThePretenderGainAbilitiesEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        staticText = "{this} has all activated abilities of all cards you own in exile with cage counters on them. You may activate each of those abilities only once each turn";
-    }
-
-    private MairsilThePretenderGainAbilitiesEffect(final MairsilThePretenderGainAbilitiesEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent perm = game.getPermanent(source.getSourceId());
-        if (perm == null) {
-            return false;
-        }
-        for (Card card : game.getExile().getCardsOwned(filter, perm.getControllerId(), source, game)) {
-            for (Ability ability : card.getAbilities(game)) {
-                if (ability.isActivatedAbility()) {
-                    ActivatedAbility copyAbility = (ActivatedAbility) ability.copy();
-                    copyAbility.setMaxActivationsPerTurn(1);
-                    perm.addAbility(copyAbility, source.getSourceId(), game, true);
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public MairsilThePretenderGainAbilitiesEffect copy() {
-        return new MairsilThePretenderGainAbilitiesEffect(this);
     }
 }

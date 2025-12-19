@@ -2,12 +2,13 @@ package mage.cards.m;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.common.CastFromHandSourcePermanentCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -33,10 +34,10 @@ public final class MyojinOfRoaringBlades extends CardImpl {
         this.toughness = new MageInt(4);
 
         // Myojin of Roaring Blades enters the battlefield with an indestructible counter on it if you cast it from your hand.
-        this.addAbility(new EntersBattlefieldAbility(
-                new AddCountersSourceEffect(CounterType.INDESTRUCTIBLE.createInstance()),
-                CastFromHandSourcePermanentCondition.instance, null,
-                "with an indestructible counter on it if you cast it from your hand"
+        this.addAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.INDESTRUCTIBLE.createInstance()),
+                CastFromHandSourcePermanentCondition.instance)
+                .setText("{this} enters with an indestructible counter on it if you cast it from your hand")
         ), new CastFromHandWatcher());
 
         // Remove an indestructible counter from Myojin of Roaring Blades: It deals 7 damage to each of up to three targets.

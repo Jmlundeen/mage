@@ -1,11 +1,14 @@
 package mage.cards.r;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
+import mage.abilities.dynamicvalue.AdditiveDynamicValue;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.dynamicvalue.common.ObjectManaValue;
+import mage.abilities.dynamicvalue.common.StaticValue;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.mana.GreenManaAbility;
 import mage.cards.CardImpl;
@@ -18,10 +21,7 @@ import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.Predicate;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
-import mage.game.stack.Spell;
 
 import java.util.UUID;
 
@@ -34,7 +34,10 @@ public final class RunadiBehemothCaller extends CardImpl {
     private static final FilterPermanent filter = new FilterControlledCreaturePermanent("creatures you control with three or more +1/+1 counters on them");
 
     private static final FilterSpell filterSpell = new FilterSpell("a creature spell with mana value 5 or greater");
-
+    private static final DynamicValue manaValue = new AdditiveDynamicValue(
+            ObjectManaValue.SPELL,
+            StaticValue.get(-4)
+    );
     static {
         filter.add(RunadiBehemothCallerPredicate.instance);
         filterSpell.add(CardType.CREATURE.getPredicate());
@@ -51,12 +54,17 @@ public final class RunadiBehemothCaller extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Whenever you cast a creature spell with mana value 5 or greater, that creature enters the battlefield with X additional +1/+1 counters on it, where X is its mana value minus 4.
-        this.addAbility(new SpellCastControllerTriggeredAbility(new RunadiBehemothCallerCounterEffect(), filterSpell,
-                false, SetTargetPointer.SPELL));
+        this.addAbility(new SpellCastControllerTriggeredAbility(
+                new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1, manaValue)
+                        .setText("that creature enters with X additional +1/+1 counters on it, where X is its mana value minus 4"),
+                filterSpell,
+                false, SetTargetPointer.CARD));
 
         // Creatures you control with three or more +1/+1 counters on them have haste.
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
-                HasteAbility.getInstance(), Duration.WhileOnBattlefield, filter)));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.AddAbility, filter)
+                .withGainedAbilities(HasteAbility.getInstance())
+                .setText("creatures you control with three or more +1/+1 counters on them have haste")
+        ));
         
         // {T}: Add {G}.
         this.addAbility(new GreenManaAbility());
@@ -70,48 +78,6 @@ public final class RunadiBehemothCaller extends CardImpl {
     @Override
     public RunadiBehemothCaller copy() {
         return new RunadiBehemothCaller(this);
-    }
-}
-
-class RunadiBehemothCallerCounterEffect extends ReplacementEffectImpl {
-
-    RunadiBehemothCallerCounterEffect() {
-        super(Duration.EndOfTurn, Outcome.BoostCreature);
-        this.staticText = "that creature enters the battlefield with X additional +1/+1 counters on it, where X is its mana value minus 4";
-    }
-
-    private RunadiBehemothCallerCounterEffect(final RunadiBehemothCallerCounterEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public RunadiBehemothCallerCounterEffect copy() {
-        return new RunadiBehemothCallerCounterEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Spell spell = game.getSpellOrLKIStack(getTargetPointer().getFirst(game, source));
-        return spell != null && event.getTargetId().equals(spell.getSourceId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (creature != null) {
-            Spell spell = game.getSpellOrLKIStack(creature.getId());
-            if (spell != null) {
-                int countersToAdd = spell.getManaValue() - 4;
-                creature.addCounters(CounterType.P1P1.createInstance(countersToAdd),
-                        source.getControllerId(), source, game, event.getAppliedEffects());
-            }
-        }
-        return false;
     }
 }
 

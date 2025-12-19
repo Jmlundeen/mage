@@ -1,6 +1,7 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -16,6 +17,7 @@ import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -72,11 +74,9 @@ class ScionOfDracoEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        for (Permanent permanent : game.getBattlefield().getActivePermanents(
-                StaticFilters.FILTER_CONTROLLED_CREATURE,
-                source.getControllerId(), source, game
-        )) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
             ObjectColor color = permanent.getColor(game);
             if (color.isWhite()) {
                 permanent.addAbility(VigilanceAbility.getInstance(), source.getSourceId(), game);
@@ -94,6 +94,14 @@ class ScionOfDracoEffect extends ContinuousEffectImpl {
                 permanent.addAbility(TrampleAbility.getInstance(), source.getSourceId(), game);
             }
         }
-        return true;
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
+        affectedObjects.addAll(game.getBattlefield().getActivePermanents(
+                StaticFilters.FILTER_CONTROLLED_CREATURE,
+                source.getControllerId(), source, game
+        ));
+        return !affectedObjects.isEmpty();
     }
 }

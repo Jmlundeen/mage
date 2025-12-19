@@ -1,6 +1,7 @@
 package mage.cards.t;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
@@ -22,6 +23,7 @@ import mage.target.TargetPlayer;
 import mage.target.common.TargetCardInGraveyard;
 import mage.watchers.common.CardsMilledWatcher;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -86,14 +88,29 @@ class TheMasterTranscendentContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.TypeChangingEffects_4
-                || layer == Layer.ColorChangingEffects_5
-                || layer == Layer.PTChangingEffects_7;
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent creature = (Permanent) object;
+            switch (layer) {
+                case TypeChangingEffects_4:
+                    creature.removeAllCreatureTypes(game);
+                    creature.addSubType(game, SubType.MUTANT);
+                    break;
+                case ColorChangingEffects_5:
+                    creature.getColor(game).setColor(ObjectColor.GREEN);
+                    break;
+                case PTChangingEffects_7:
+                    if (sublayer == SubLayer.SetPT_7b) {
+                        creature.getPower().setModifiedBaseValue(3);
+                        creature.getToughness().setModifiedBaseValue(3);
+                    }
+                    break;
+            }
+        }
     }
 
     @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent creature;
         if (source.getTargets().getFirstTarget() == null) {
             creature = game.getPermanent(getTargetPointer().getFirst(game, source));
@@ -107,26 +124,19 @@ class TheMasterTranscendentContinuousEffect extends ContinuousEffectImpl {
             this.used = true;
             return false;
         }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                creature.removeAllCreatureTypes(game);
-                creature.addSubType(game, SubType.MUTANT);
-                break;
-            case ColorChangingEffects_5:
-                creature.getColor(game).setColor(ObjectColor.GREEN);
-                break;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    creature.getPower().setModifiedBaseValue(3);
-                    creature.getToughness().setModifiedBaseValue(3);
-                }
-                break;
-        }
+        affectedObjects.add(creature);
         return true;
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
+    public boolean hasLayer(Layer layer) {
+        return layer == Layer.TypeChangingEffects_4
+                || layer == Layer.ColorChangingEffects_5
+                || layer == Layer.PTChangingEffects_7;
+    }
+
+    @Override
+    public boolean hasSubLayer(SubLayer sublayer) {
+        return sublayer == SubLayer.SetPT_7b || sublayer == SubLayer.NA;
     }
 }

@@ -1,9 +1,11 @@
 package mage.cards.h;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.cost.CostModificationEffectImpl;
 import mage.abilities.keyword.BlitzAbility;
 import mage.cards.Card;
@@ -18,15 +20,17 @@ import mage.players.Player;
 import mage.util.CardUtil;
 import mage.watchers.common.CommanderPlaysCountWatcher;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author xenohedron
  */
 public final class HenzieToolboxTorre extends CardImpl {
+
+    private static final FilterCreatureCard filter = new FilterCreatureCard("creature spell you cast with mana value 4 or greater");
+    static {
+        filter.add(new ManaValuePredicate(ComparisonType.OR_GREATER, 4));
+    }
 
     public HenzieToolboxTorre(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{B}{R}{G}");
@@ -38,7 +42,12 @@ public final class HenzieToolboxTorre extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Each creature you cast with mana value 4 or greater has blitz. The blitz cost is equal to its mana cost.
-        this.addAbility(new SimpleStaticAbility(new HenzieToolboxTorreGainBlitzEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.AddAbility)
+                .setAffectedZones(Zone.LIBRARY, Zone.HAND, Zone.GRAVEYARD, Zone.EXILED, Zone.COMMAND, Zone.STACK)
+                .setCardFilter(filter)
+                .withGainedAbility((card, source, game) -> new BlitzAbility(card, card.getManaCost().getText()))
+                .setText("Each creature spell you cast with mana value 4 or greater has blitz. The blitz cost is equal to its mana cost.")
+        ));
 
         // Blitz costs you pay cost {1} less for each time you’ve cast your commander from the command zone this game.
         this.addAbility(new SimpleStaticAbility(new HenzieToolboxTorreBlitzDiscountEffect()));
@@ -52,70 +61,6 @@ public final class HenzieToolboxTorre extends CardImpl {
     @Override
     public HenzieToolboxTorre copy() {
         return new HenzieToolboxTorre(this);
-    }
-}
-
-class HenzieToolboxTorreGainBlitzEffect extends ContinuousEffectImpl {
-
-    private static final FilterCreatureCard filter = new FilterCreatureCard("creature spell you cast with mana value 4 or greater");
-    static {
-        filter.add(new ManaValuePredicate(ComparisonType.OR_GREATER, 4));
-    }
-
-    HenzieToolboxTorreGainBlitzEffect() {
-        super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "Each creature spell you cast with mana value 4 or greater has blitz. " +
-                "The blitz cost is equal to its mana cost. " +
-                "<i>(You may choose to cast that spell for its blitz cost. " +
-                "If you do, it gains haste and \"When this creature dies, draw a card.\" " +
-                "Sacrifice it at the beginning of the next end step.)</i>";
-    }
-
-    private HenzieToolboxTorreGainBlitzEffect(final HenzieToolboxTorreGainBlitzEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        if (controller == null) {
-            return false;
-        }
-        Set<Card> cardsToGainBlitz = new HashSet<>();
-        cardsToGainBlitz.addAll(controller.getHand().getCards(filter, game));
-        cardsToGainBlitz.addAll(controller.getGraveyard().getCards(filter, game));
-        controller.getLibrary().getCards(game).stream()
-                .filter(c -> filter.match(c, game))
-                .forEach(cardsToGainBlitz::add);
-        game.getExile().getCardsInRange(game, controller.getId()).stream()
-                .filter(c -> filter.match(c, game))
-                .forEach(cardsToGainBlitz::add);
-        game.getCommanderCardsFromCommandZone(controller, CommanderCardType.ANY)
-                .stream()
-                .filter(card -> filter.match(card, game))
-                .forEach(cardsToGainBlitz::add);
-        game.getStack().stream()
-                .filter(Spell.class::isInstance)
-                .filter(s -> s.isControlledBy(controller.getId()))
-                .filter(s -> filter.match((Spell) s, game))
-                .map(s -> game.getCard(s.getSourceId()))
-                .filter(Objects::nonNull)
-                .forEach(cardsToGainBlitz::add);
-        for (Card card : cardsToGainBlitz) {
-            if (card.getManaCost().getText().isEmpty()) {
-                continue; // card must have a mana cost
-            }
-            Ability ability = new BlitzAbility(card, card.getManaCost().getText());
-            ability.setSourceId(card.getId());
-            ability.setControllerId(card.getControllerOrOwnerId());
-            game.getState().addOtherAbility(card, ability);
-        }
-        return true;
-    }
-
-    @Override
-    public HenzieToolboxTorreGainBlitzEffect copy() {
-        return new HenzieToolboxTorreGainBlitzEffect(this);
     }
 }
 

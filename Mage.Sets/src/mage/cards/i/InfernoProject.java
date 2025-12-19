@@ -3,10 +3,10 @@ package mage.cards.i;
 import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.TrampleAbility;
@@ -41,10 +41,9 @@ public final class InfernoProject extends CardImpl {
         this.addAbility(TrampleAbility.getInstance());
 
         // Inferno Project enters the battlefield with X +1/+1 counters on it, where X is the total mana value of instant and sorcery cards in your graveyard.
-        this.addAbility(new EntersBattlefieldAbility(new AddCountersSourceEffect(
-                CounterType.P1P1.createInstance(0), InfernoProjectValue.instance, false
-        ), "with X +1/+1 counters on it, where X is the total mana value " +
-                "of instant and sorcery cards in your graveyard").addHint(hint));
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, InfernoProjectValue.instance))
+                .addHint(hint)
+        );
     }
 
     private InfernoProject(final InfernoProject card) {
@@ -83,6 +82,6 @@ enum InfernoProjectValue implements DynamicValue {
 
     @Override
     public String getMessage() {
-        return "";
+        return "total mana value of instant and sorcery cards in your graveyard";
     }
 }

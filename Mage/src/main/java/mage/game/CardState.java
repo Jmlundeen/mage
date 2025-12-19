@@ -3,6 +3,7 @@ package mage.game;
 import mage.abilities.Abilities;
 import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
+import mage.abilities.effects.ContinuousEffects;
 import mage.cards.Card;
 import mage.counters.Counter;
 import mage.counters.Counters;
@@ -109,6 +110,27 @@ public class CardState implements Serializable, Copyable<CardState> {
         info.clear();
         clearAbilities();
         lostAllAbilities = false;
+    }
+
+    /**
+     * created for {@link ContinuousEffects} dependency checking, not intended to be used elsewhere
+     * @param other - card state to copy from
+     */
+    public void copyFrom(CardState other) {
+        this.faceDown = other.faceDown;
+        this.info.clear();
+        this.info.putAll(other.info);
+        this.counters = other.counters.copy();
+        if (other.abilities != null) {
+            this.abilities = new AbilitiesImpl<>();
+            for (Ability ability : other.abilities) {
+                this.abilities.add(ability.copy());
+            }
+        } else {
+            this.abilities = null;
+        }
+        this.lostAllAbilities = other.lostAllAbilities;
+        this.meldedWith = other.meldedWith;
     }
 
     public boolean hasLostAllAbilities() {

@@ -3,9 +3,12 @@ package mage.cards.g;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.condition.common.SourceHasCounterCondition;
+import mage.abilities.decorator.ConditionalContinuousEffect;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.common.combat.CantAttackTargetEffect;
 import mage.abilities.effects.common.combat.CantBlockTargetEffect;
+import mage.abilities.effects.common.continuous.BecomesCreatureSourceEffect;
 import mage.abilities.effects.common.search.SearchLibraryGraveyardPutInHandEffect;
 import mage.abilities.keyword.*;
 import mage.cards.CardImpl;
@@ -18,8 +21,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AbilityPredicate;
 import mage.filter.predicate.mageobject.NamePredicate;
-import mage.game.Game;
-import mage.game.permanent.Permanent;
+import mage.game.permanent.token.custom.CreatureToken;
 import mage.target.TargetPermanent;
 
 import java.util.UUID;
@@ -49,7 +51,18 @@ public final class GrandMasterOfFlowers extends CardImpl {
         this.setStartingLoyalty(3);
 
         // As long as Grand Master of Flowers has seven or more loyalty counters on him, he's a 7/7 Dragon God creature with flying and indestructible.
-        this.addAbility(new SimpleStaticAbility(new GrandMasterOfFlowersEffect()));
+        ContinuousEffect effect = new BecomesCreatureSourceEffect(
+                new CreatureToken(7, 7, "7/7 Dragon God creature with flying and indestructible")
+                        .withSubType(SubType.DRAGON)
+                        .withSubType(SubType.GOD)
+                        .withAbility(FlyingAbility.getInstance())
+                        .withAbility(IndestructibleAbility.getInstance()),
+                CardType.PLANESWALKER,Duration.WhileOnBattlefield
+        );
+        this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
+                effect, new SourceHasCounterCondition(CounterType.LOYALTY, ComparisonType.OR_GREATER, 7),
+                "as long as {this} has seven or more loyalty counters on him, he's a 7/7 Dragon God creature with flying and indestructible"
+        )));
 
         // +1: Target creature without first strike, double strike, or vigilance can't attack or block until your next turn.
         Ability ability = new LoyaltyAbility(new CantAttackTargetEffect(Duration.UntilYourNextTurn)
@@ -72,68 +85,5 @@ public final class GrandMasterOfFlowers extends CardImpl {
     @Override
     public GrandMasterOfFlowers copy() {
         return new GrandMasterOfFlowers(this);
-    }
-}
-
-class GrandMasterOfFlowersEffect extends ContinuousEffectImpl {
-
-    GrandMasterOfFlowersEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        staticText = "as long as {this} has seven or more loyalty counters on him, " +
-                "he's a 7/7 Dragon God creature with flying and indestructible";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
-    }
-
-    private GrandMasterOfFlowersEffect(final GrandMasterOfFlowersEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public GrandMasterOfFlowersEffect copy() {
-        return new GrandMasterOfFlowersEffect(this);
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent == null || permanent.getCounters(game).getCount(CounterType.LOYALTY) < 7) {
-            return false;
-        }
-        switch (layer) {
-            case TypeChangingEffects_4:
-                permanent.removeAllCardTypes(game);
-                permanent.addCardType(game, CardType.CREATURE);
-                permanent.removeAllSubTypes(game);
-                permanent.addSubType(game, SubType.DRAGON);
-                permanent.addSubType(game, SubType.GOD);
-                return true;
-            case AbilityAddingRemovingEffects_6:
-                permanent.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
-                permanent.addAbility(IndestructibleAbility.getInstance(), source.getSourceId(), game);
-                return true;
-            case PTChangingEffects_7:
-                if (sublayer == SubLayer.SetPT_7b) {
-                    permanent.getPower().setModifiedBaseValue(7);
-                    permanent.getToughness().setModifiedBaseValue(7);
-                    return true;
-                }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        switch (layer) {
-            case TypeChangingEffects_4:
-            case AbilityAddingRemovingEffects_6:
-            case PTChangingEffects_7:
-                return true;
-        }
-        return false;
     }
 }

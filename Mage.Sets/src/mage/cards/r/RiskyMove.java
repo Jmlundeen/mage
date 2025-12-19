@@ -5,7 +5,6 @@ import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.GainControlTargetEffect;
 import mage.cards.CardImpl;
@@ -164,47 +163,13 @@ class RiskyMoveFlipCoinEffect extends OneShotEffect {
             Player chosenOpponent = game.getPlayer(target2.getFirstTarget());
             if (!controller.flipCoin(source, game, true)) {
                 if (permanent != null && chosenOpponent != null) {
-                    ContinuousEffect effect = new RiskyMoveCreatureGainControlEffect(Duration.EndOfGame, chosenOpponent.getId());
+                    ContinuousEffect effect = new GainControlTargetEffect(Duration.EndOfGame, chosenOpponent.getId());
                     effect.setTargetPointer(new FixedTarget(permanent, game));
                     game.addEffect(effect, source);
                     game.informPlayers(chosenOpponent.getLogName() + " has gained control of " + permanent.getLogName());
                     return true;
                 }
             }
-        }
-        return false;
-    }
-}
-
-class RiskyMoveCreatureGainControlEffect extends ContinuousEffectImpl {
-
-    private final UUID controller;
-
-    RiskyMoveCreatureGainControlEffect(Duration duration, UUID controller) {
-        super(duration, Layer.ControlChangingEffects_2, SubLayer.NA, Outcome.GainControl);
-        this.controller = controller;
-        this.staticText = "If you lose the flip, that opponent gains control of that creature";
-    }
-
-    private RiskyMoveCreatureGainControlEffect(final RiskyMoveCreatureGainControlEffect effect) {
-        super(effect);
-        this.controller = effect.controller;
-    }
-
-    @Override
-    public RiskyMoveCreatureGainControlEffect copy() {
-        return new RiskyMoveCreatureGainControlEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanent(getTargetPointer().getFirst(game, source));
-        if (permanent == null) {
-            permanent = game.getPermanent(source.getFirstTarget());
-        }
-
-        if (permanent != null) {
-            return permanent.changeControllerId(controller, game, source);
         }
         return false;
     }

@@ -1,6 +1,7 @@
 package mage.cards.w;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
@@ -15,6 +16,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -73,7 +75,16 @@ class WinterMisanthropicGuideEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        int count = CardTypesInGraveyardCount.YOU.calculate(game, source, this);
+        for (MageItem object : affectedObjects) {
+            Player player = (Player) object;
+            player.setMaxHandSize(Math.max(7 - count, 0));
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         int count = CardTypesInGraveyardCount.YOU.calculate(game, source, this);
         if (count < 4) {
             return false;
@@ -83,8 +94,8 @@ class WinterMisanthropicGuideEffect extends ContinuousEffectImpl {
             if (player == null) {
                 continue;
             }
-            player.setMaxHandSize(Math.max(7 - count, 0));
+            affectedObjects.add(player);
         }
-        return true;
+        return !affectedObjects.isEmpty();
     }
 }

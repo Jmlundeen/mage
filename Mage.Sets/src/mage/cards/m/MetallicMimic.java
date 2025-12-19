@@ -1,29 +1,37 @@
 
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
-import mage.abilities.Ability;
-import mage.abilities.effects.common.continuous.AddChosenSubtypeEffect;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.ChooseCreatureTypeEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.enterAttribute.EnterAttributeAddChosenSubtypeEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
+import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.game.events.EntersTheBattlefieldEvent;
-import mage.game.events.GameEvent;
-import mage.game.permanent.Permanent;
+import mage.filter.FilterPermanent;
+import mage.filter.common.FilterControlledCreaturePermanent;
+import mage.filter.predicate.mageobject.ChosenSubtypePredicate;
+
+import java.util.UUID;
 
 /**
  *
  * @author Styxo
  */
 public final class MetallicMimic extends CardImpl {
+
+    private static final FilterPermanent filter = new FilterControlledCreaturePermanent("other creature you control of the chosen type");
+
+    static {
+        filter.add(ChosenSubtypePredicate.TRUE);
+    }
 
     public MetallicMimic(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{2}");
@@ -34,14 +42,19 @@ public final class MetallicMimic extends CardImpl {
 
         // As Metallic Mimic enters the battlefield, choose a creature type.
         AsEntersBattlefieldAbility ability = new AsEntersBattlefieldAbility(new ChooseCreatureTypeEffect(Outcome.BoostCreature));
+
         // Metallic Mimic is the chosen type in addition to its other types.
         ability.addEffect(new EnterAttributeAddChosenSubtypeEffect());
         this.addAbility(ability);
-        this.addAbility(new SimpleStaticAbility(new AddChosenSubtypeEffect()));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.Benefit, ContinuousAffected.SOURCE)
+                .withGainChosenCreatureType(false)
+                .setText("{this} is the chosen type in addition to its other types")
+        ));
 
         // Each other creature you control of the chosen type enters the battlefield with an additional +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new MetallicMimicReplacementEffect()));
-
+        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
+                .setFilter(filter)
+        ));
     }
 
     private MetallicMimic(final MetallicMimic card) {
@@ -51,52 +64,5 @@ public final class MetallicMimic extends CardImpl {
     @Override
     public MetallicMimic copy() {
         return new MetallicMimic(this);
-    }
-
-}
-
-class MetallicMimicReplacementEffect extends ReplacementEffectImpl {
-
-    MetallicMimicReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.BoostCreature);
-        staticText = "Each other creature you control of the chosen type enters the battlefield with an additional +1/+1 counter on it";
-        setCharacterDefining(true);
-    }
-
-    private MetallicMimicReplacementEffect(final MetallicMimicReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ENTERS_THE_BATTLEFIELD;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
-        Permanent enteringCreature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (enteringCreature != null && sourcePermanent != null
-                && enteringCreature.isControlledBy(source.getControllerId())
-                && enteringCreature.isCreature(game)
-                && !event.getTargetId().equals(source.getSourceId())) {
-            SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
-            return subType != null && enteringCreature.hasSubtype(subType, game);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Permanent creature = ((EntersTheBattlefieldEvent) event).getTarget();
-        if (creature != null) {
-            creature.addCounters(CounterType.P1P1.createInstance(), source.getControllerId(), source, game, event.getAppliedEffects());
-        }
-        return false;
-    }
-
-    @Override
-    public MetallicMimicReplacementEffect copy() {
-        return new MetallicMimicReplacementEffect(this);
     }
 }

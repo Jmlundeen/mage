@@ -1,20 +1,16 @@
 package mage.cards.d;
 
 import mage.MageInt;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
-import mage.game.Game;
-import mage.game.events.CreateTokenEvent;
-import mage.game.events.GameEvent;
+import mage.constants.CardType;
+import mage.constants.PartnerVariantType;
+import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.game.permanent.token.MutagenToken;
-import mage.game.permanent.token.Token;
-import mage.util.CardUtil;
 
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -33,7 +29,10 @@ public final class DonatelloTheBrains extends CardImpl {
         this.toughness = new MageInt(4);
 
         // If one or more tokens would be created under your control, those tokens plus a Mutagen token are created instead.
-        this.addAbility(new SimpleStaticAbility(new DonatelloTheBrainsReplacementEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.ADD, 1, new MutagenToken())
+                .setText("if one or more tokens would be created under your control, " +
+                        "those tokens plus a Mutagen token are created instead")
+        ));
 
         // Partner--Character select
         this.addAbility(PartnerVariantType.CHARACTER_SELECT.makeAbility());
@@ -46,44 +45,5 @@ public final class DonatelloTheBrains extends CardImpl {
     @Override
     public DonatelloTheBrains copy() {
         return new DonatelloTheBrains(this);
-    }
-}
-
-class DonatelloTheBrainsReplacementEffect extends ReplacementEffectImpl {
-
-    DonatelloTheBrainsReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Benefit);
-        this.staticText = "if one or more tokens would be created under your control, " +
-                "those tokens plus a Mutagen token are created instead";
-    }
-
-    private DonatelloTheBrainsReplacementEffect(final DonatelloTheBrainsReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public DonatelloTheBrainsReplacementEffect copy() {
-        return new DonatelloTheBrainsReplacementEffect(this);
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.CREATE_TOKEN;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return source.isControlledBy(event.getPlayerId());
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Map<Token, Integer> tokens = ((CreateTokenEvent) event).getTokens();
-        Token token = CardUtil
-                .castStream(tokens.values(), MutagenToken.class)
-                .findAny()
-                .orElseGet(MutagenToken::new);
-        tokens.compute(token, CardUtil::setOrIncrementValue);
-        return false;
     }
 }

@@ -1295,6 +1295,7 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
             return false;
         }
 
+        applyEnterWithCounters(this, source, game);
         if (this.isPlaneswalker(game)) {
             int loyalty;
             if (this.getStartingLoyalty() == -2) {

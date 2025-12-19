@@ -1,5 +1,6 @@
 package mage.cards.t;
 
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTappedUnlessAbility;
@@ -150,20 +151,28 @@ class ThranPortalManaAbilityContinuousEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent thranPortal = (Permanent) object;
+            SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + ChooseBasicLandTypeEffect.VALUE_KEY));
+
+            if (!thranPortal.hasSubtype(choice, game)) {
+                thranPortal.addSubType(choice);
+            }
+            if (!thranPortal.hasAbility(abilityMap.get(choice), game)) {
+                thranPortal.addAbility(abilityMap.get(choice), source.getId(), game);
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent thranPortal = game.getPermanent(source.getSourceId());
         SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + ChooseBasicLandTypeEffect.VALUE_KEY));
         if (thranPortal == null || choice == null) {
             return false;
         }
-
-        if (!thranPortal.hasSubtype(choice, game)) {
-            thranPortal.addSubType(choice);
-        }
-        if (!thranPortal.hasAbility(abilityMap.get(choice), game)) {
-            thranPortal.addAbility(abilityMap.get(choice), source.getId(), game);
-        }
-
+        affectedObjects.add(thranPortal);
         return true;
     }
 }
@@ -185,22 +194,25 @@ class ThranPortalAdditionalCostEffect extends ContinuousEffectImpl {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        for (MageItem object : affectedObjects) {
+            Permanent permanent = (Permanent) object;
+            List<Ability> abilities = permanent.getAbilities(game);
+            for (Ability ability : abilities) {
+                if (ability.isManaAbility()) {
+                    ability.addCost(new PayLifeCost(1));
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent thranPortal = game.getPermanent(source.getSourceId());
         if (thranPortal == null) {
             return false;
         }
-        List<Ability> abilities = thranPortal.getAbilities(game);
-        if (abilities.isEmpty()) {
-            return false;
-        }
-        boolean result = false;
-        for (Ability ability : abilities) {
-            if (ability.isManaAbility()) {
-                ability.addCost(new PayLifeCost(1));
-                result = true;
-            }
-        }
-        return result;
+        affectedObjects.add(thranPortal);
+        return true;
     }
 }

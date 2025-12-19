@@ -1,7 +1,11 @@
 package org.mage.test.cards.single.c21;
 
+import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.effects.common.CreateTokenEffect;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
+import mage.game.permanent.token.SquirrelToken;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
@@ -52,5 +56,25 @@ public class EsixFractalBloomTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, nacatl, 1);
         assertPermanentCount(playerA, "Silvercoat Lion", 0);
         assertPermanentCount(playerA, 2); // Esix + Nactl
+    }
+
+    @Test
+    public void testOnlyFirstTokenCreationPerTurn() {
+        addCard(Zone.BATTLEFIELD, playerA, esix);
+        addCard(Zone.BATTLEFIELD, playerA, "Balduvian Bears");
+
+        addCustomCardWithAbility("create token", playerA,
+                new SimpleActivatedAbility(new CreateTokenEffect(new SquirrelToken()), new ManaCostsImpl<>()));
+
+        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "create");
+        setChoice(playerA, "Balduvian Bears");
+        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "create");
+
+        setStrictChooseMode(true);
+        setStopAt(1, PhaseStep.BEGIN_COMBAT);
+        execute();
+
+        assertPermanentCount(playerA, "Balduvian Bears", 2);
+        assertPermanentCount(playerA, "Squirrel Token", 1);
     }
 }

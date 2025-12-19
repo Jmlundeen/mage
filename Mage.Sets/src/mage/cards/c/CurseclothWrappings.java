@@ -1,27 +1,20 @@
 package mage.cards.c;
 
-import java.util.UUID;
-
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.continuous.BoostControlledEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.EmbalmAbility;
-import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Layer;
-import mage.constants.Outcome;
-import mage.constants.SubLayer;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.common.FilterCreaturePermanent;
-import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -41,7 +34,12 @@ public final class CurseclothWrappings extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new BoostControlledEffect(1, 1, Duration.WhileOnBattlefield, filter)));
         // {T}: Target creature card in your graveyard gains embalm until end of turn. The embalm cost is equal to its mana cost.
         Ability ability = new SimpleActivatedAbility(
-                new CurseClothWrappingsEffect(),
+                new ContinuousEffectBuilder(Duration.EndOfTurn, Outcome.AddAbility)
+                        .withGainedAbility((card, source, game) -> new EmbalmAbility(card.getManaCost(), card))
+                        .setText("Target creature card in your graveyard gains embalm until end of turn. " +
+                                "The embalm cost is equal to its mana cost. (Exile that card and pay its embalm cost: " +
+                                "Create a token that's a copy of it, except it's a white Zombie in addition to its other types " +
+                                "and has no mana cost. Embalm only as a sorcery.)"),
                 new TapSourceCost()
         );
         ability.addTarget(new TargetCardInYourGraveyard(new FilterCreatureCard("creature card in your graveyard")));
@@ -56,35 +54,4 @@ public final class CurseclothWrappings extends CardImpl {
     public CurseclothWrappings copy() {
         return new CurseclothWrappings(this);
     }
-}
-
-class CurseClothWrappingsEffect extends ContinuousEffectImpl {
-    public CurseClothWrappingsEffect() {
-        super(Duration.EndOfTurn, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.staticText = "Target creature card in your graveyard gains embalm until end of turn. " +
-                "The embalm cost is equal to its mana cost. (Exile that card and pay its embalm cost: " +
-                "Create a token that's a copy of it, except it's a white Zombie in addition to its other types " +
-                "and has no mana cost. Embalm only as a sorcery.)";
-    }
-
-    public CurseClothWrappingsEffect(final CurseClothWrappingsEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public CurseClothWrappingsEffect copy() {
-        return new CurseClothWrappingsEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Card card = game.getCard(getTargetPointer().getFirst(game, source));
-        if (card != null) {
-            EmbalmAbility embalmAbility = new EmbalmAbility(card.getManaCost(), card);
-            game.getState().addOtherAbility(card, embalmAbility);
-            return true;
-        }
-        return false;
-    }
-
 }

@@ -7,16 +7,16 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.effects.common.replacement.CreateTwiceThatManyTokensEffect;
+import mage.abilities.effects.common.replacement.ReplaceTokenEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.AnotherPredicate;
-import mage.target.common.TargetControlledPermanent;
-import mage.target.common.TargetSacrifice;
 
 import java.util.UUID;
 
@@ -46,7 +46,9 @@ public final class MondrakGloryDominus extends CardImpl {
         this.toughness = new MageInt(4);
 
         // If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.
-        this.addAbility(new SimpleStaticAbility(new CreateTwiceThatManyTokensEffect()));
+        this.addAbility(new SimpleStaticAbility(new ReplaceTokenEffect(ReplaceTokenEffect.ModificationType.MULTIPLY, 2)
+                .setText("If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead")
+        ));
 
         // {1}{W/P}{W/P}, Sacrifice two other artifacts and/or creatures: Put an indestructible counter on Mondrak, Glory Dominus.
         Ability ability = new SimpleActivatedAbility(

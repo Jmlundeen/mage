@@ -6,7 +6,7 @@ import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.DamageTargetEffect;
-import mage.abilities.effects.common.EntersBattlefieldWithXCountersEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.LifelinkAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -37,7 +37,9 @@ public final class MorlunDevourerOfSpiders extends CardImpl {
         this.addAbility(LifelinkAbility.getInstance());
 
         // Morlun enters with X +1/+1 counters on him.
-        this.addAbility(new EntersBattlefieldAbility(new EntersBattlefieldWithXCountersEffect(CounterType.P1P1.createInstance())));
+        this.addAbility(new EntersBattlefieldAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)
+                .setText("{this} enters with X +1/+1 counters on him")
+        ));
 
         // When Morlun enters, he deals X damage to target opponent.
         Ability ability = new EntersBattlefieldTriggeredAbility(new DamageTargetEffect(GetXValue.instance, "he"));
