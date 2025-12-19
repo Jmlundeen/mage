@@ -28,6 +28,7 @@ public class MagicFest2025 extends ExpansionSet {
         cards.add(new SetCardInfo("Rograkh, Son of Rohgahh", 11, Rarity.RARE, mage.cards.r.RograkhSonOfRohgahh.class));
         cards.add(new SetCardInfo("Scourge of Valkas", 14, Rarity.RARE, mage.cards.s.ScourgeOfValkas.class, RETRO_ART));
         cards.add(new SetCardInfo("Serra the Benevolent", 1, Rarity.MYTHIC, mage.cards.s.SerraTheBenevolent.class, RETRO_ART));
+        cards.add(new SetCardInfo("Sokka, Bold Boomeranger", 18, Rarity.RARE, mage.cards.s.SokkaBoldBoomeranger.class));
         cards.add(new SetCardInfo("Sliver Hive", 7, Rarity.RARE, mage.cards.s.SliverHive.class, RETRO_ART));
         cards.add(new SetCardInfo("Swords to Plowshares", 12, Rarity.RARE, mage.cards.s.SwordsToPlowshares.class));
         cards.add(new SetCardInfo("The First Sliver", 3, Rarity.MYTHIC, mage.cards.t.TheFirstSliver.class));
