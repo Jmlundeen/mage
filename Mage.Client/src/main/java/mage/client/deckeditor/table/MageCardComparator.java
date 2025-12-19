@@ -1,8 +1,8 @@
 package mage.client.deckeditor.table;
 
 import mage.cards.MageCard;
-import mage.client.util.comparators.CardViewComparator;
 import mage.cards.RateCard;
+import mage.client.util.comparators.CardViewComparator;
 import mage.view.CardView;
 import org.apache.log4j.Logger;
 
@@ -81,8 +81,16 @@ public class MageCardComparator implements CardViewComparator {
                 bCom = b.getExpansionSetCode();
                 break;
             case 8:
-                aCom = Integer.parseInt(a.getCardNumber().replaceAll("[\\D]", ""));
-                bCom = Integer.parseInt(b.getCardNumber().replaceAll("[\\D]", ""));
+                String cardNumberA = a.getCardNumber().replaceAll("[\\D]", "");
+                if (cardNumberA.isEmpty()) {
+                    cardNumberA = "0";
+                }
+                String cardNumberB = b.getCardNumber().replaceAll("[\\D]", "");
+                if (cardNumberB.isEmpty()) {
+                    cardNumberB = "0";
+                }
+                aCom = Integer.parseInt(cardNumberA);
+                bCom = Integer.parseInt(cardNumberB);
                 break;
             case 9:
                 aCom = RateCard.rateCard(a, Collections.emptyList());
