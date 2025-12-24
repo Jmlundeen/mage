@@ -18,6 +18,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
 import mage.util.functions.CopyApplier;
 
 import java.util.UUID;
@@ -78,7 +79,11 @@ class SparkDoubleCopyApplier extends CopyApplier {
         //
         // So, it's must make changes in blueprint (for farther copyable)
         blueprint.removeSuperType(SuperType.LEGENDARY);
+        return true;
+    }
 
+    @Override
+    public void applyExceptions(Game game, Permanent targetPermanent, Ability source) {
         // TODO: Blood Moon problem, can't apply on type changing effects (same as TeferisTimeTwist)
         // see https://magic.wizards.com/en/articles/archive/feature/war-spark-release-notes-2019-04-19
         // If the copied permanent is affected by a type-changing effect, Spark Double may enter the battlefield with
@@ -90,16 +95,13 @@ class SparkDoubleCopyApplier extends CopyApplier {
         // Spark Double enters as a planeswalker creature and gets both kinds of counters.
 
         // enters with an additional +1/+1 counter on it if it’s a creature
-        if (blueprint.isCreature(game)) {
-            blueprint.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())));
+        if (targetPermanent.isCreature(game)) {
+            targetPermanent.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())));
         }
 
         // enters with an additional loyalty counter on it if it’s a planeswalker
-        if (blueprint.isPlaneswalker(game)) {
-            blueprint.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LOYALTY.createInstance())));
+        if (targetPermanent.isPlaneswalker(game)) {
+            targetPermanent.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LOYALTY.createInstance())));
         }
-
-        return true;
     }
-
 }

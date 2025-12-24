@@ -135,7 +135,7 @@ public class CopyEffect extends ContinuousEffectImpl {
         }
     }
 
-    protected boolean copyToPermanent(Permanent permanent, Game game, Ability source) {
+    protected void copyToPermanent(Permanent permanent, Game game, Ability source) {
         // copy object to object
         permanent.setCopy(true, copyFromObject);
         MageObject copyFrom = copyFromObject;
@@ -188,7 +188,9 @@ public class CopyEffect extends ContinuousEffectImpl {
         CardUtil.copySetAndCardNumber(permanent, copyFrom);
 
         permanent.saveCopiableValues(game);
-        return true;
+        if (applier != null) {
+            applier.applyExceptions(game, permanent, source);
+        }
     }
 
     @Override

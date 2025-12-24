@@ -3,8 +3,10 @@ package mage.util.functions;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -22,9 +24,14 @@ public abstract class CopyApplier implements Serializable {
     // 5. For exception/non-copyable effects use isCopyOfCopy() to detect that situation (example: 706.9e, Spark Double, Altered Ego).
     public abstract boolean apply(Game game, MageObject blueprint, Ability source, UUID targetObjectId);
 
-    public boolean isCopyOfCopy(Ability source, MageObject blueprint, UUID targetObjectId) {
-        return blueprint.isCopy();
+    // Apply exceptions after all other modifications are applied. These are abilities that are not part of the copiable values
+    // (example: 707.9e. Spark Double, Altered Ego).
+    public void applyExceptions(Game game, Permanent targetPermanent, Ability source) {
+        // do nothing
     }
+
+    public boolean isCopyOfCopy(Ability source, UUID targetObjectId) {
+        return !Objects.equals(targetObjectId, source.getSourceId());    }
 
     public String getText() {
         return "";

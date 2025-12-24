@@ -15,6 +15,7 @@ import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 import mage.util.functions.CopyApplier;
 
@@ -60,6 +61,11 @@ class AlteredEgoCopyApplier extends CopyApplier {
 
     @Override
     public boolean apply(Game game, MageObject blueprint, Ability source, UUID copyToObjectId) {
+        return true;
+    }
+
+    @Override
+    public void applyExceptions(Game game, Permanent targetPermanent, Ability source) {
         // counters only for original card, not copies, see rules:
         // 706.9e
         // Some replacement effects that generate copy effects include an exception that’s an additional
@@ -67,21 +73,17 @@ class AlteredEgoCopyApplier extends CopyApplier {
         // effect is applied to that object after applying the copy effect with that exception, the
         // exception’s effect doesn’t happen.
 
-        if (!isCopyOfCopy(source, blueprint, copyToObjectId) && CardUtil.checkSourceCostsTagExists(game, source, "X")) {
-            // except it enters with an additional X +1/+1 counters on it
-            blueprint.getAbilities().add(new SimpleStaticAbility(
-                    new EntersWithCountersEffect(CounterType.P1P1.createInstance(CardUtil.getSourceCostsTagX(game, source, 0)))
-            ));
+        // except it enters with an additional X +1/+1 counters on it
+        targetPermanent.addAbility(new SimpleStaticAbility(
+                new EntersWithCountersEffect(CounterType.P1P1.createInstance(CardUtil.getSourceCostsTagX(game, source, 0)))
+        ), source.getSourceId(), game);
 
-            /*
-             * If the chosen creature has {X} in its mana cost, that X is considered to be 0.
-             * The value of X in Altered Ego's last ability will be whatever value was chosen for X while casting Altered Ego.
-             * (2016-04-08)
-             * So the X value of Altered Ego must be separate from the copied creature's X value
-             */
-            CardUtil.getSourceCostsTagsMap(game, source).remove("X");
-        }
-
-        return true;
+        /*
+         * If the chosen creature has {X} in its mana cost, that X is considered to be 0.
+         * The value of X in Altered Ego's last ability will be whatever value was chosen for X while casting Altered Ego.
+         * (2016-04-08)
+         * So the X value of Altered Ego must be separate from the copied creature's X value
+         */
+        CardUtil.getSourceCostsTagsMap(game, source).remove("X");
     }
 }

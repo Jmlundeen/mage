@@ -4,9 +4,7 @@ import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
-import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.CopyPermanentEffect;
-import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.ChangelingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -17,6 +15,7 @@ import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
 import mage.util.functions.CopyApplier;
 
 import java.util.UUID;
@@ -66,11 +65,14 @@ class MoritteOfTheFrostCopyApplier extends CopyApplier {
     public boolean apply(Game game, MageObject blueprint, Ability source, UUID copyToObjectId) {
         blueprint.addSuperType(SuperType.LEGENDARY);
         blueprint.addSuperType(SuperType.SNOW);
-
-        if (!isCopyOfCopy(source, blueprint, copyToObjectId) && blueprint.isCreature(game)) {
-            blueprint.getAbilities().add(new ChangelingAbility());
-            blueprint.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))));
-        }
         return true;
+    }
+
+    @Override
+    public void applyExceptions(Game game, Permanent targetPermanent, Ability source) {
+        if (targetPermanent.isCreature(game)) {
+            targetPermanent.addAbility(new ChangelingAbility(), source.getSourceId(), game);
+            targetPermanent.addCounters(CounterType.P1P1.createInstance(2), source.getControllerId(), source, game);
+        }
     }
 }
