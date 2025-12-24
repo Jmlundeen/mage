@@ -2,12 +2,15 @@
 package mage.cards.a;
 
 import mage.MageInt;
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ReplacementEffectImpl;
-import mage.abilities.effects.common.continuous.SetBasePowerToughnessSourceEffect;
+import mage.abilities.effects.common.CopyEffect;
 import mage.abilities.keyword.MorphAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.choices.Choice;
@@ -17,6 +20,7 @@ import mage.game.Game;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
+import mage.game.permanent.token.Token;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -103,6 +107,7 @@ class AquamorphEntityReplacementEffect extends ReplacementEffectImpl {
         if (permanent == null) {
             return false;
         }
+        MageObject referenceObject = getReferenceObject(permanent, game);
         Choice choice = new ChoiceImpl(true);
         choice.setMessage("Choose what the creature becomes to");
         choice.getChoices().add(choice51);
@@ -124,8 +129,32 @@ class AquamorphEntityReplacementEffect extends ReplacementEffectImpl {
                 toughness = 5;
                 break;
         }
-        game.addEffect(new SetBasePowerToughnessSourceEffect(power, toughness, Duration.WhileOnBattlefield), source);
+        if (permanent.isCopy()) {
+            if (referenceObject instanceof Token) {
+                ((Token) referenceObject).setPower(power);
+                ((Token) referenceObject).setToughness(toughness);
+            } else if (referenceObject instanceof Card) {
+                ((Card) referenceObject).setPT(power, toughness);
+            }
+        } else {
+            permanent.setPT(power, toughness);
+        }
         return false;
+    }
+
+    private MageObject getReferenceObject(Permanent permanent, Game game) {
+        if (permanent.isCopy()) {
+            for (ContinuousEffect effect : game.getState().getContinuousEffects().getLayeredEffects(game)) {
+                if (!(effect instanceof CopyEffect)) {
+                    continue;
+                }
+                CopyEffect copyEffect = (CopyEffect) effect;
+                if (copyEffect.getSourceId().equals(permanent.getId())) {
+                    return copyEffect.getTarget();
+                }
+            }
+        }
+        return permanent.getBasicMageObject();
     }
 
     @Override

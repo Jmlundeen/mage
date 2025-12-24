@@ -7,7 +7,6 @@ import mage.constants.EmptyNames;
 import mage.constants.PhaseStep;
 import mage.constants.SubType;
 import mage.constants.Zone;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
@@ -68,7 +67,6 @@ public class PrimalClayTest extends CardTestPlayerBase {
     }
 
     @Test
-    @Ignore("current workaround implementation doesn't account for this")
     public void testClaySubtypeGained() {
         addCard(Zone.HAND, playerA, clay);
         addCard(Zone.BATTLEFIELD, playerA, "Island", 4);
@@ -114,7 +112,6 @@ public class PrimalClayTest extends CardTestPlayerBase {
         assertGraveyardCount(playerA, cryptoplasm, 1);
     }
 
-    @Ignore("Chosen characteristics of Primal Clay should be copiable values")
     @Test
     public void testClayCopySubtypeOnBattlefield() {
         addCard(Zone.HAND, playerA, clay);
@@ -166,7 +163,7 @@ public class PrimalClayTest extends CardTestPlayerBase {
         assertPowerToughness(playerA, plasma, 1, 6);
         assertPowerToughness(playerB, plasma, 2, 2);
         assertAbility(playerB, plasma, FlyingAbility.getInstance(), true);
-        //assertAbility(playerB, plasma, DefenderAbility.getInstance(), true); TODO: this is a copiable value
+        assertAbility(playerB, plasma, DefenderAbility.getInstance(), true);
     }
 
     @Test
@@ -269,7 +266,7 @@ public class PrimalClayTest extends CardTestPlayerBase {
         addCard(Zone.BATTLEFIELD, playerA, "Plains", 5);
 
         castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, clay);
-        setChoice(playerA, "a 1/6 artifact creature with defender");
+        setChoice(playerA, "a 1/6 Wall artifact creature with defender");
         waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
 
         castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, cloudshift, clay);

@@ -1,15 +1,17 @@
 package mage.cards.c;
 
 import mage.MageInt;
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ReplacementEffectImpl;
-import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
-import mage.abilities.effects.common.continuous.SetBasePowerToughnessSourceEffect;
+import mage.abilities.effects.common.CopyEffect;
 import mage.abilities.keyword.DefenderAbility;
 import mage.abilities.keyword.DevoidAbility;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.VigilanceAbility;
+import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.choices.Choice;
@@ -19,6 +21,7 @@ import mage.game.Game;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
+import mage.game.permanent.token.Token;
 import mage.players.Player;
 
 import java.util.UUID;
@@ -88,6 +91,7 @@ class CorruptedShapeshifterReplacementEffect extends ReplacementEffectImpl {
         Permanent permanent = ((EntersTheBattlefieldEvent) event).getTarget();
         Player controller = game.getPlayer(source.getControllerId());
         if (permanent != null && controller != null) {
+            MageObject referenceObject = getReferenceObject(permanent, game);
             Choice choice = new ChoiceImpl(true);
             choice.setMessage("Choose what " + permanent.getIdName() + " becomes to");
             choice.getChoices().add(choice33);
@@ -102,23 +106,57 @@ class CorruptedShapeshifterReplacementEffect extends ReplacementEffectImpl {
                 case choice33:
                     power = 3;
                     toughness = 3;
-                    game.addEffect(new GainAbilitySourceEffect(FlyingAbility.getInstance(), Duration.Custom), source);
+                    addAbility(referenceObject, FlyingAbility.getInstance());
                     break;
                 case choice25:
                     power = 2;
                     toughness = 5;
-                    game.addEffect(new GainAbilitySourceEffect(VigilanceAbility.getInstance(), Duration.Custom), source);
+                    addAbility(referenceObject, VigilanceAbility.getInstance());
                     break;
                 case choice012:
                     power = 0;
                     toughness = 12;
-                    game.addEffect(new GainAbilitySourceEffect(DefenderAbility.getInstance(), Duration.Custom), source);
+                    addAbility(referenceObject, DefenderAbility.getInstance());
                     break;
             }
-            game.addEffect(new SetBasePowerToughnessSourceEffect(power, toughness, Duration.WhileOnBattlefield), source);
+            if (permanent.isCopy()) {
+                if (referenceObject instanceof Token) {
+                    ((Token) referenceObject).setPower(power);
+                    ((Token) referenceObject).setToughness(toughness);
+                } else if (referenceObject instanceof Card) {
+                    ((Card) referenceObject).setPT(power, toughness);
+                }
+            } else {
+                permanent.setPT(power, toughness);
+            }
         }
         return false;
 
+    }
+
+    private MageObject getReferenceObject(Permanent permanent, Game game) {
+        if (permanent.isCopy()) {
+            for (ContinuousEffect effect : game.getState().getContinuousEffects().getLayeredEffects(game)) {
+                if (!(effect instanceof CopyEffect)) {
+                    continue;
+                }
+                CopyEffect copyEffect = (CopyEffect) effect;
+                if (copyEffect.getSourceId().equals(permanent.getId())) {
+                    return copyEffect.getTarget();
+                }
+            }
+        }
+        return permanent.getBasicMageObject();
+    }
+
+    private void addAbility(MageObject referenceObject, Ability ability) {
+        if (referenceObject instanceof Permanent) {
+            ((Permanent) referenceObject).addAbility(ability, null, null, false);
+        } else if (referenceObject instanceof Card) {
+            ((Card) referenceObject).addAbility(ability);
+        } else if (referenceObject instanceof Token) {
+            ((Token) referenceObject).addAbility(ability);
+        }
     }
 
     @Override

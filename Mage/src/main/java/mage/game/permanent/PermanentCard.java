@@ -266,7 +266,7 @@ public class PermanentCard extends PermanentImpl {
 
     @Override
     public MageObject getBasicMageObject() {
-        return card;
+        return this.isTransformed() ? secondSideCard : card;
     }
 
     public Card getCard() {
@@ -314,6 +314,13 @@ public class PermanentCard extends PermanentImpl {
         }
         return super.getManaValue();
 
+    }
+
+    @Override
+    public void setPT(int power, int toughness) {
+        Card refCard = this.isTransformed() ? secondSideCard : this.card;
+        refCard.setPT(power, toughness);
+        super.setPT(power, toughness);
     }
 
     @Override

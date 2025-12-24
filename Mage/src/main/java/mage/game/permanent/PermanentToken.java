@@ -159,7 +159,7 @@ public class PermanentToken extends PermanentImpl {
 
     @Override
     public MageObject getBasicMageObject() {
-        return token;
+        return this.isTransformed() ? token.getBackFace() : token;
     }
 
     public Token getToken() {
@@ -198,6 +198,14 @@ public class PermanentToken extends PermanentImpl {
         // isn’t represented by a transforming token or a transforming double-faced card,
         // nothing happens.
         return token.getBackFace() != null;
+    }
+
+    @Override
+    public void setPT(int power, int toughness) {
+        Token token = this.isTransformed() ? this.token.getBackFace() : this.token;
+        token.setPower(power);
+        token.setToughness(toughness);
+        super.setPT(power, toughness);
     }
 
     @Override
