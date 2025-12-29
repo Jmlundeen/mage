@@ -412,7 +412,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     && addedCardTypes.contains(CardType.ARTIFACT)
                     && addedCardTypes.contains(CardType.CREATURE);
             for (SubTypeSet set : setsToRemove) {
-                if (removeOtherSubtypes || (set == SubTypeSet.CreatureType && artifactCreatureCondition)) {
+                if (removeOtherSubtypes && !(set == SubTypeSet.CreatureType && artifactCreatureCondition)) {
                     mageObject.removeAllSubTypes(game, set);
                 }
             }
