@@ -155,7 +155,7 @@ class EaterOfVirtueGainAbilityAttachedEffect extends ContinuousEffectImpl {
     }
 
     private void getAbilitiesInExile(Game game, Ability source, Set<Ability> exileAbilities) {
-        ExileZone exileZone = game.getState().getExile().getExileZone(CardUtil.getExileZoneId(source.getSourceId().toString() + "cards exiled by Eater of Virtue", game));
+        ExileZone exileZone = game.getState().getExile().getExileZone(source.getSourceId());
         if (exileZone == null || exileZone.isEmpty()) {
             return;
         }
