@@ -5,7 +5,9 @@ import mage.abilities.common.ActivateIfConditionActivatedAbility;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.condition.common.CardsInHandCondition;
+import mage.abilities.condition.common.SourceOnBattlefieldCondition;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.decorator.ConditionalContinuousEffect;
 import mage.abilities.dynamicvalue.common.CardsInControllerHandCount;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
@@ -73,9 +75,12 @@ public class JinGitaxias extends TransformingDoubleFacedCard {
         sagaAbility.addChapterEffect(this.getRightHalfCard(), SagaChapter.CHAPTER_I,
                 new DrawCardSourceControllerEffect(CardsInControllerHandCount.ANY)
                         .setText("draw cards equal to the number of cards in your hand"),
-                new MaximumHandSizeControllerEffect(Integer.MAX_VALUE, Duration.WhileOnBattlefield,
-                        MaximumHandSizeControllerEffect.HandSizeModification.SET)
-                        .setText("you have no maximum hand size for as long as you control {this}"));
+                new ConditionalContinuousEffect(
+                        new MaximumHandSizeControllerEffect(Integer.MAX_VALUE, Duration.WhileControlled,
+                        MaximumHandSizeControllerEffect.HandSizeModification.SET),
+                        SourceOnBattlefieldCondition.instance,
+                        "you have no maximum hand size for as long as you control {this}")
+                );
 
         // II — Return all non-Phyrexian creatures to their owners' hands.
         sagaAbility.addChapterEffect(this.getRightHalfCard(), SagaChapter.CHAPTER_II, new ReturnToHandFromBattlefieldAllEffect(filterNonPhyrexian));
