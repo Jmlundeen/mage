@@ -181,8 +181,12 @@ class WretchedBonemassGainAbilityEffect extends ContinuousEffectImpl {
 
     @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
+
         Set<Ability> abilities = game.getExile()
-                .getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), game.getState().getZoneChangeCounter(source.getSourceId()) - 2))
+                .getExileZone(CardUtil.getExileZoneId(game,
+                        sourcePermanent.getMainCard().getId(),
+                        sourcePermanent.getZoneChangeCounter(game) - 1))
                 .getCards(game)
                 .stream()
                 .map(card -> card.getAbilities(game))
@@ -204,7 +208,10 @@ class WretchedBonemassGainAbilityEffect extends ContinuousEffectImpl {
             return false;
         }
         ExileZone exileZone = game.getExile()
-                .getExileZone(CardUtil.getExileZoneId(game, source.getSourceId(), sourcePermanent.getZoneChangeCounter(game) - 1));
+                .getExileZone(CardUtil.getExileZoneId(game,
+                        sourcePermanent.getMainCard().getId(),
+                        sourcePermanent.getZoneChangeCounter(game) - 1)
+                );
         if (exileZone == null) {
             return false;
         }
