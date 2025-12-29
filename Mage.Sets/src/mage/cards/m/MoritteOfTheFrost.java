@@ -4,7 +4,9 @@ import mage.MageInt;
 import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldAbility;
+import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.CopyPermanentEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.ChangelingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -72,7 +74,7 @@ class MoritteOfTheFrostCopyApplier extends CopyApplier {
     public void applyExceptions(Game game, Permanent targetPermanent, Ability source) {
         if (targetPermanent.isCreature(game)) {
             targetPermanent.addAbility(new ChangelingAbility(), source.getSourceId(), game);
-            targetPermanent.addCounters(CounterType.P1P1.createInstance(2), source.getControllerId(), source, game);
+            targetPermanent.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance(2))), source.getSourceId(), game);
         }
     }
 }
