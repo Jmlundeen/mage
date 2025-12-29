@@ -1,16 +1,21 @@
 package mage.abilities.common;
 
+import mage.MageObject;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbility;
 import mage.abilities.TriggeredAbilityImpl;
+import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.Effects;
-import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.ReadAheadAbility;
 import mage.cards.Card;
 import mage.cards.DoubleFacedCardHalf;
-import mage.constants.*;
+import mage.constants.Duration;
+import mage.constants.SagaChapter;
+import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
@@ -50,7 +55,7 @@ public class SagaAbility extends SimpleStaticAbility {
         this.readAhead = readAhead;
         this.setRuleVisible(true);
         this.setRuleAtTheTop(true);
-        Ability ability = new EntersBattlefieldAbility(new SagaLoreCountersEffect(maxChapter));
+        Ability ability = new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LORE, LoreCounterDynamicValue.instance));
         ability.setRuleVisible(false);
         card.addAbility(ability);
         if (readAhead) {
@@ -175,44 +180,44 @@ public class SagaAbility extends SimpleStaticAbility {
     }
 }
 
-class SagaLoreCountersEffect extends OneShotEffect {
-
-    private final SagaChapter maxChapter;
-
-    SagaLoreCountersEffect(SagaChapter maxChapter) {
-        super(Outcome.Benefit);
-        this.maxChapter = maxChapter;
-    }
-
-    private SagaLoreCountersEffect(final SagaLoreCountersEffect effect) {
-        super(effect);
-        this.maxChapter = effect.maxChapter;
-    }
+enum LoreCounterDynamicValue implements DynamicValue {
+    instance;
 
     @Override
-    public SagaLoreCountersEffect copy() {
-        return new SagaLoreCountersEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Permanent permanent = game.getPermanentEntering(source.getSourceId());
-        if (permanent == null) {
-            return false;
-        }
+    public int calculate(Game game, Ability sourceAbility, Effect effect, MageObject mageObject) {
+        Permanent permanent = (Permanent) mageObject;
         if (!permanent.hasAbility(ReadAheadAbility.getInstance(), game)
-                && !GainReadAheadAbility.checkForAbility(game, source)) {
-            return permanent.addCounters(CounterType.LORE.createInstance(), source, game);
+                && !GainReadAheadAbility.checkForAbility(game, sourceAbility)) {
+            return 1;
         }
-        Player player = game.getPlayer(source.getControllerId());
+        Player player = game.getPlayer(sourceAbility.getControllerId());
         if (player == null) {
-            return false;
+            return 0;
         }
-        int counters = player.getAmount(
-                1, maxChapter.getNumber(),
-                "Choose the number of lore counters to enter with", source, game
+        return player.getAmount(
+                1, ((SagaAbility) sourceAbility).getMaxChapter().getNumber(),
+                "Choose the number of lore counters to enter with", sourceAbility, game
         );
-        return permanent.addCounters(CounterType.LORE.createInstance(counters), source, game);
+    }
+
+    @Override
+    public int calculate(Game game, Ability sourceAbility, Effect effect) {
+        return 0;
+    }
+
+    @Override
+    public DynamicValue copy() {
+        return LoreCounterDynamicValue.instance;
+    }
+
+    @Override
+    public String toString() {
+        return "1";
+    }
+
+    @Override
+    public String getMessage() {
+        return "";
     }
 }
 
