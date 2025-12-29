@@ -1,20 +1,19 @@
 package mage.cards.o;
 
 import mage.MageInt;
+import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.continuous.BecomesBasicLandTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.PhaseStep;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetLandPermanent;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -61,7 +60,7 @@ class OrcishFarmerEffect extends BecomesBasicLandTargetEffect {
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
         Permanent p = game.getPermanent(getTargetPointer().getFirst(game, source));
         if (p == null) {
             discard();
@@ -73,6 +72,7 @@ class OrcishFarmerEffect extends BecomesBasicLandTargetEffect {
             discard();
             return false;
         }
-        return super.apply(game, source);
+        affectedObjects.add(p);
+        return true;
     }
 }
