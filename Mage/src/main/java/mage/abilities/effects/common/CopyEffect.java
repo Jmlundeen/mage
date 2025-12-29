@@ -101,6 +101,9 @@ public class CopyEffect extends ContinuousEffectImpl {
                 affectedObjectList.add(mor);
             }
         }
+        if (permanent != null && applier != null) {
+            applier.applyExceptions(game, permanent, source);
+        }
     }
 
     @Override
@@ -144,19 +147,21 @@ public class CopyEffect extends ContinuousEffectImpl {
             applier.apply(game, copyFrom, source, permanent.getId());
         }
         permanent.setName(copyFrom.getName());
-        permanent.getColor(game).setColor(copyFrom.getColor(game));
+        permanent.getColor(game).setColor(copyFrom.getColor());
         permanent.getManaCost().clear();
         permanent.getManaCost().add(copyFrom.getManaCost().copy());
         permanent.removeAllCardTypes(game);
-        for (CardType type : copyFrom.getCardType(game)) {
+        for (CardType type : copyFrom.getCardType()) {
             permanent.addCardType(game, type);
         }
 
         permanent.removeAllSubTypes(game);
-        permanent.copySubTypesFrom(game, copyFrom);
+        for (SubType type : copyFrom.getSubtype()) {
+            permanent.addSubType(game, type);
+        }
 
         permanent.removeAllSuperTypes(game);
-        for (SuperType type : copyFrom.getSuperType(game)) {
+        for (SuperType type : copyFrom.getSuperType()) {
             permanent.addSuperType(game, type);
         }
 
@@ -188,9 +193,6 @@ public class CopyEffect extends ContinuousEffectImpl {
         CardUtil.copySetAndCardNumber(permanent, copyFrom);
 
         permanent.saveCopiableValues(game);
-        if (applier != null) {
-            applier.applyExceptions(game, permanent, source);
-        }
     }
 
     @Override
