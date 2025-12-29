@@ -10,7 +10,10 @@ import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.target.targetpointer.TargetPointer;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -50,6 +53,8 @@ public interface ContinuousEffect extends Effect {
     boolean hasSubLayer(SubLayer sublayer);
 
     boolean isInactive(Ability source, Game game);
+
+    boolean isInitialized();
 
     /**
      * Init ability data like ZCC or targets on first check in game cycle (ApplyEffects)

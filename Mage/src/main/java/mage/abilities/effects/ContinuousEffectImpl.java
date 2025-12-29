@@ -29,6 +29,7 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
     protected long order;
     protected boolean used = false;
     protected boolean discarded = false; // for manual effect discard
+    protected boolean initialized = false;
 
     // 611.2c
     // Two types of affected objects (targets):
@@ -88,6 +89,7 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
         this.order = effect.order;
         this.used = effect.used;
         this.discarded = effect.discarded;
+        this.initialized = effect.initialized;
         this.affectedObjectsSet = effect.affectedObjectsSet;
         this.affectedObjectList.addAll(effect.affectedObjectList);
         this.temporary = effect.temporary;
@@ -178,6 +180,10 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
         // continuous effect uses init code, so do nothing here
     }
 
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     @Override
     public void init(Ability source, Game game) {
         init(source, game, game.getActivePlayerId());
@@ -185,6 +191,10 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
 
     @Override
     public void init(Ability source, Game game, UUID activePlayerId) {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
         getTargetPointer().init(game, source);
         if (this.affectedObjectsSet == null) {
             initAffectedObjectsSet(source);
