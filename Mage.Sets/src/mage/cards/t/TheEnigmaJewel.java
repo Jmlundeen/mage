@@ -112,11 +112,11 @@ class LocusOfEnlightenmentEffect extends ContinuousEffectImpl {
 
     @Override
     public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
+        Permanent sourcePermanent = game.getPermanent(source.getSourceId());
         ExileZone exileZone = game
                 .getExile()
-                .getExileZone(CardUtil.getExileZoneId(
-                        game, source.getSourceId(), source.getSourceObject(game).getZoneChangeCounter(game) - 2
-                ));
+                .getExileZone(CardUtil.getExileZoneId(game, sourcePermanent.getMainCard().getId(),
+                        sourcePermanent.getMainCard().getZoneChangeCounter(game) - 1));
         Abilities<Ability> abilities = new AbilitiesImpl<>();
         for (Card card : exileZone.getCards(game)) {
             for (Ability ability : card.getAbilities(game)) {
@@ -143,9 +143,8 @@ class LocusOfEnlightenmentEffect extends ContinuousEffectImpl {
         }
         ExileZone exileZone = game
                 .getExile()
-                .getExileZone(CardUtil.getExileZoneId(
-                        game, permanent.getId(), permanent.getZoneChangeCounter(game) - 1
-                ));
+                .getExileZone(CardUtil.getExileZoneId(game, permanent.getMainCard().getId(),
+                        permanent.getMainCard().getZoneChangeCounter(game) - 1));
         if (exileZone == null) {
             return false;
         }
