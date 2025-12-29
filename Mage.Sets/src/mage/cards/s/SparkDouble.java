@@ -96,12 +96,14 @@ class SparkDoubleCopyApplier extends CopyApplier {
 
         // enters with an additional +1/+1 counter on it if it’s a creature
         if (targetPermanent.isCreature(game)) {
-            targetPermanent.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())));
+            targetPermanent.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1.createInstance())),
+                    source.getSourceId(), game, false);
         }
 
         // enters with an additional loyalty counter on it if it’s a planeswalker
         if (targetPermanent.isPlaneswalker(game)) {
-            targetPermanent.getAbilities().add(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LOYALTY.createInstance())));
+            targetPermanent.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LOYALTY.createInstance())),
+                    source.getSourceId(), game, false);
         }
     }
 }
