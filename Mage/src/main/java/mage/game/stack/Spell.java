@@ -366,11 +366,7 @@ public class Spell extends StackObjectImpl implements Card {
                     }
                 } else {
                     permId = card.getId();
-                    MageObjectReference mor = new MageObjectReference(getSpellAbility());
-                    game.storePermanentCostsTags(mor, getSpellAbility());
-                    MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
-                            .setFaceDown(isFaceDown());
-                    permanentCreated = controller.moveCards(parameters, ability, game);
+                    permanentCreated = movePermanent(game, controller);
                 }
                 if (permanentCreated) {
                     if (bestow) {
@@ -401,10 +397,7 @@ public class Spell extends StackObjectImpl implements Card {
             }
             // Aura has no legal target and its a bestow enchantment -> Add it to battlefield as creature
             if (bestow) {
-                MageObjectReference mor = new MageObjectReference(getSpellAbility());
-                game.storePermanentCostsTags(mor, getSpellAbility());
-                MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD);
-                return controller.moveCards(parameters, ability, game);
+                return movePermanent(game, controller);
             } else {
                 //20091005 - 608.2b
                 if (!game.isSimulation()) {
@@ -419,13 +412,17 @@ public class Spell extends StackObjectImpl implements Card {
             token.putOntoBattlefield(1, game, ability, getControllerId(), false, false, null, null, false);
             return true;
         } else {
-            MageObjectReference mor = new MageObjectReference(getSpellAbility());
-            game.storePermanentCostsTags(mor, getSpellAbility());
-            MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
-                    .setFaceDownType(getFaceDownType(ability))
-                    .setFaceDown(isFaceDown());
-            return controller.moveCards(parameters, ability, game);
+            return movePermanent(game, controller);
         }
+    }
+
+    private boolean movePermanent(Game game, Player controller) {
+        MageObjectReference mor = new MageObjectReference(card, game, 1);
+        game.storePermanentCostsTags(mor, getSpellAbility());
+        MoveCardsParameters parameters = new MoveCardsParameters(card, Zone.BATTLEFIELD)
+                .setFaceDownType(getFaceDownType(ability))
+                .setFaceDown(isFaceDown());
+        return controller.moveCards(parameters, ability, game);
     }
 
     private boolean hasTargets(SpellAbility spellAbility, Game game) {
