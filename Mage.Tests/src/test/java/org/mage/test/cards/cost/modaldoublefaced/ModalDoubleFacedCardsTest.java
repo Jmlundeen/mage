@@ -27,6 +27,34 @@ import java.util.Map;
  */
 public class ModalDoubleFacedCardsTest extends CardTestPlayerBase {
 
+    /**
+     * {@link mage.cards.s.SejiriShelter}
+     * <br>
+     * Sejiri Shelter
+     * <br>
+     * {1}{W}
+     * <br>
+     * Instant
+     * <br>
+     * Target creature you control gains protection from the color of your choice until end of turn.
+     * <br>
+     * /
+     */
+    private static final String sejiriShelter = "Sejiri Shelter";
+    /**
+     * {@link mage.cards.s.SejiriShelter}
+     * <br>
+     * Sejiri Glacier
+     * <br>
+     * Land
+     * <br>
+     * This land enters tapped.
+     * {T}: Add {W}.
+     * <br>
+     * /
+     */
+    private static final String sejiriGlacier = "Sejiri Glacier";
+
     @Test
     public void test_Playable_AsCreature() {
         removeAllCardsFromHand(playerA);
@@ -429,6 +457,33 @@ public class ModalDoubleFacedCardsTest extends CardTestPlayerBase {
         Assert.assertEquals("card must be on exile", Zone.EXILED, currentGame.getState().getZone(mdfCard.getId()));
         Assert.assertEquals("left part must be on exile", Zone.EXILED, currentGame.getState().getZone(mdfCard.getLeftHalfCard().getId()));
         Assert.assertEquals("right part must be on exile", Zone.EXILED, currentGame.getState().getZone(mdfCard.getRightHalfCard().getId()));
+    }
+
+    /**
+     * test exiling a mdf that has a permanent backside but not a permanent on the front. If exiled and told to return, it should remain in exile.
+     */
+    @Test
+    public void test_ExileAndNotReturnToBattlefield() {
+        addCard(Zone.BATTLEFIELD, playerA, "Venser, the Sojourner");
+        addCard(Zone.BATTLEFIELD, playerA, sejiriGlacier);
+
+        // exile
+        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "+2:", sejiriGlacier);
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
+        checkPermanentCount("exile", 1, PhaseStep.PRECOMBAT_MAIN, playerA, sejiriGlacier, 0);
+        checkExileCount("exile", 1, PhaseStep.PRECOMBAT_MAIN, playerA, sejiriShelter, 1);
+
+        // return at the end
+        showBattlefield("hmm b", 2, PhaseStep.PRECOMBAT_MAIN, playerA);
+        showExile("hmm e", 2, PhaseStep.PRECOMBAT_MAIN, playerA);
+        showGraveyard("hmm g", 2, PhaseStep.PRECOMBAT_MAIN, playerA);
+        checkPermanentCount("return", 2, PhaseStep.PRECOMBAT_MAIN, playerA, sejiriGlacier, 0);
+        checkExileCount("return", 2, PhaseStep.PRECOMBAT_MAIN, playerA, sejiriShelter, 1);
+
+        setStrictChooseMode(true);
+        setStopAt(2, PhaseStep.END_TURN);
+        execute();
+
     }
 
     @Test
