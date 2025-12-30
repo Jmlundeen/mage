@@ -2,16 +2,19 @@ package mage.abilities.keyword;
 
 import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.common.EntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.condition.CompoundCondition;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.AlternativeSourceCostsImpl;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.decorator.ConditionalContinuousEffect;
 import mage.abilities.decorator.ConditionalOneShotEffect;
+import mage.abilities.decorator.ConditionalReplacementEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.AddContinuousEffectToGame;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
+import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.RemoveCounterSourceEffect;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.constants.*;
@@ -44,10 +47,22 @@ public class ImpendingAbility extends AlternativeSourceCostsImpl {
     public ImpendingAbility(int amount, String manaString) {
         super(IMPENDING_KEYWORD + ' ' + amount, String.format(IMPENDING_REMINDER, CardUtil.numberToText(amount)), new ManaCostsImpl<>(manaString), IMPENDING_KEYWORD);
         this.setRuleAtTheTop(true);
-        this.addSubAbility(new EntersBattlefieldAbility(new ConditionalOneShotEffect(
-                new AddCountersSourceEffect(CounterType.TIME.createInstance(amount)), ImpendingCondition.instance, ""
-        ), "").setRuleVisible(false));
-        this.addSubAbility(new SimpleStaticAbility(new ImpendingAbilityTypeEffect()).setRuleVisible(false));
+        // enters with time counters
+        this.addSubAbility(new SimpleStaticAbility(new ConditionalReplacementEffect(
+                new EntersWithCountersEffect(CounterType.TIME.createInstance(amount)),
+                ImpendingCondition.instance)
+        ).setRuleVisible(false));
+        // is not a creature while it has time counters
+        this.addSubAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
+                new ContinuousEffectBuilder(Duration.WhileOnBattlefield, Outcome.Detriment, ContinuousAffected.SOURCE)
+                        .withRemovedCardTypes(CardType.CREATURE),
+                new CompoundCondition(
+                        ImpendingCondition.instance,
+                        new SourceHasCounterCondition(CounterType.TIME, ComparisonType.MORE_THAN, 0)
+                ),
+                "As long as this permanent has a time counter on it, if it was cast for its impending cost, it's not a creature."
+        )).setRuleVisible(false));
+        // remove time counter at end step and lose impending if none remain
         Ability ability = new BeginningOfEndStepTriggeredAbility(
                 TargetController.YOU, new RemoveCounterSourceEffect(CounterType.TIME.createInstance()),
                 false, ImpendingCondition.instance
@@ -79,45 +94,6 @@ enum ImpendingCondition implements Condition {
     @Override
     public boolean apply(Game game, Ability source) {
         return CardUtil.checkSourceCostsTagExists(game, source, ImpendingAbility.getActivationKey());
-    }
-}
-
-class ImpendingAbilityTypeEffect extends ContinuousEffectImpl {
-
-    ImpendingAbilityTypeEffect() {
-        super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
-        staticText = "As long as this permanent has a time counter on it, if it was cast for its impending cost, it's not a creature.";
-    }
-
-    private ImpendingAbilityTypeEffect(final ImpendingAbilityTypeEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public ImpendingAbilityTypeEffect copy() {
-        return new ImpendingAbilityTypeEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            Permanent permanent = (Permanent) object;
-            permanent.removeCardType(game, CardType.CREATURE);
-            permanent.removeAllCreatureTypes(game);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        if (!ImpendingCondition.instance.apply(game, source)) {
-            return false;
-        }
-        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
-        if (permanent.getCounters(game).getCount(CounterType.TIME) < 1) {
-            return false;
-        }
-        affectedObjects.add(permanent);
-        return true;
     }
 }
 
