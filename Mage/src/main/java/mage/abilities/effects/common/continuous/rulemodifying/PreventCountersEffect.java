@@ -73,7 +73,7 @@ public class PreventCountersEffect extends ContinuousRuleModifyingEffectImpl {
     private PreventCountersEffect(final PreventCountersEffect effect) {
         super(effect);
         this.maxCounters = effect.maxCounters;
-        this.validCounterTypes = new HashSet<>(validCounterTypes);
+        this.validCounterTypes = new HashSet<>(effect.validCounterTypes);
         this.eventController = effect.eventController;
         this.permanentFilter = effect.permanentFilter;
         this.validPlayerTarget = effect.validPlayerTarget;
