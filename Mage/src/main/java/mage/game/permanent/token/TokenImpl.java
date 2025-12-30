@@ -11,7 +11,10 @@ import mage.cards.Card;
 import mage.cards.repository.TokenInfo;
 import mage.cards.repository.TokenRepository;
 import mage.cards.repository.TokenType;
-import mage.constants.*;
+import mage.constants.Outcome;
+import mage.constants.SpellAbilityCastMode;
+import mage.constants.SubType;
+import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.events.CreateTokenEvent;
 import mage.game.events.CreatedTokenEvent;
@@ -333,7 +336,7 @@ public abstract class TokenImpl extends MageObjectImpl implements Token {
                 newPermanent.updateZoneChangeCounter(game, emptyEvent);
 
                 if (source != null) {
-                    MageObjectReference mor = new MageObjectReference(newPermanent.getId(),newPermanent.getZoneChangeCounter(game)-1,game);
+                    MageObjectReference mor = new MageObjectReference(newPermanent.getId(),newPermanent.getZoneChangeCounter(game),game);
                     game.storePermanentCostsTags(mor, source);
                 }
             }

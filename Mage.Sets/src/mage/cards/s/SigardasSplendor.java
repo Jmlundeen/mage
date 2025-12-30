@@ -3,11 +3,11 @@ package mage.cards.s;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.GainLifeEffect;
 import mage.abilities.hint.Hint;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -55,8 +55,8 @@ public final class SigardasSplendor extends CardImpl {
         return new SigardasSplendor(this);
     }
 
-    static String getKey(Game game, Ability source, int offset) {
-        return "SigardasSplendor_" + source.getSourceId() + "_" + (offset + CardUtil.getActualSourceObjectZoneChangeCounter(game, source));
+    static String getKey(Game game, Ability source) {
+        return "SigardasSplendor_" + source.getSourceId() + "_" + (CardUtil.getActualSourceObjectZoneChangeCounter(game, source));
     }
 }
 
@@ -68,7 +68,7 @@ enum SigardasSplendorHint implements Hint {
         if (ability.getSourcePermanentIfItStillExists(game) == null) {
             return null;
         }
-        Object object = game.getState().getValue(SigardasSplendor.getKey(game, ability, 0));
+        Object object = game.getState().getValue(SigardasSplendor.getKey(game, ability));
         return "Last noted life total: " + (object != null ? (Integer) object : "None");
     }
 
@@ -101,7 +101,7 @@ class SigardasSplendorNoteEffect extends OneShotEffect {
             return false;
         }
         game.informPlayers(player.getLogName() + " notes their life total of " + player.getLife());
-        game.getState().setValue(SigardasSplendor.getKey(game, source, 1), player.getLife());
+        game.getState().setValue(SigardasSplendor.getKey(game, source), player.getLife());
         return true;
     }
 }
@@ -129,7 +129,7 @@ class SigardasSplendorDrawEffect extends OneShotEffect {
         if (player == null) {
             return false;
         }
-        String key = SigardasSplendor.getKey(game, source, 0);
+        String key = SigardasSplendor.getKey(game, source);
         Object object = game.getState().getValue(key);
         int notedLife = object instanceof Integer ? (Integer) object : Integer.MIN_VALUE;
         if (player.getLife() >= notedLife) {

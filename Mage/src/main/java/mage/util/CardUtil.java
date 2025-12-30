@@ -1766,6 +1766,11 @@ public final class CardUtil {
         if (zcc == 0) {
             // if ability is not activated yet then use current object's zcc (example: triggered etb ability checking the kicker conditional)
             zcc = game.getState().getZoneChangeCounter(source.getSourceId());
+            Permanent enteringPermanent = game.getPermanentEntering(source.getSourceId());
+            if (enteringPermanent != null && !(enteringPermanent instanceof PermanentToken)) {
+                // permanent is entering battlefield, so zcc will be +1
+                ++zcc;
+            }
         }
         return zcc;
     }
@@ -1788,14 +1793,11 @@ public final class CardUtil {
 
         // find object info from the source ability (it can be a permanent or a spell on stack, on the moment of trigger/resolve)
         MageObject sourceObject = ability.getSourceObject(game);
-        Zone sourceObjectZone = game.getState().getZone(sourceObject.getId());
         int zcc = CardUtil.getActualSourceObjectZoneChangeCounter(game, ability);
-        // find "stack moment" zcc:
-        // * permanent cards enters from STACK to BATTLEFIELD (+1 zcc)
-        // * permanent tokens enters from OUTSIDE to BATTLEFIELD (+1 zcc, see prepare code in TokenImpl.putOntoBattlefieldHelper)
-        // * spells and copied spells resolves on STACK (zcc not changes)
-        if (sourceObjectZone != Zone.STACK) {
-            --zcc;
+        if (sourceObject != null && sourceObject.isPermanent(game) && ability.getZone() == Zone.STACK) {
+            // ability for a permanent triggering on the stack
+            // so zcc must be +1 to reference stack moment
+            ++zcc;
         }
         return new MageObjectReference(ability.getSourceId(), zcc, game);
     }

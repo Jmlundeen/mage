@@ -121,7 +121,7 @@ public class WarpAbility extends SpellAbility {
     public static boolean checkIfPermanentWarped(Permanent permanent, Game game) {
         return permanent != null
                 && game.getPermanentCostsTags()
-                .getOrDefault(new MageObjectReference(permanent, game, -1), Collections.emptyMap())
+                .getOrDefault(new MageObjectReference(permanent, game), Collections.emptyMap())
                 .containsKey(WarpAbility.WARP_ACTIVATION_VALUE_KEY);
     }
 }

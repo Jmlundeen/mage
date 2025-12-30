@@ -37,7 +37,8 @@ public class ManaSpentToCastWatcher extends Watcher {
         if (event.getType() == GameEvent.EventType.SPELL_CAST){
                 Spell spell = (Spell) game.getObject(event.getTargetId());
                 if (spell != null) {
-                    manaMap.put(new MageObjectReference(spell.getSpellAbility()),
+                    int offset = spell.isPermanent(game) ? 1 : 0;
+                    manaMap.put(new MageObjectReference(spell.getCard(), game, offset),
                             spell.getSpellAbility().getManaCostsToPay().getUsedManaToPay());
                 }
         }

@@ -34,7 +34,7 @@ import mage.game.events.BatchEvent;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
 import mage.game.permanent.Permanent;
-import mage.game.permanent.PermanentToken;
+import mage.game.permanent.PermanentCard;
 import mage.game.stack.Spell;
 import mage.game.stack.StackAbility;
 import mage.players.Player;
@@ -1719,7 +1719,7 @@ public abstract class AbilityImpl implements Ability {
     private int getCurrentSourceObjectZoneChangeCounter(Game game){
         int zcc = game.getState().getZoneChangeCounter(getSourceId());
         Permanent p = game.getPermanentEntering(getSourceId());
-        if (p != null && !(p instanceof PermanentToken)){
+        if (p instanceof PermanentCard){
             // If the triggered ability triggered while the permanent is entering the battlefield
             // then add 1 zcc so that it triggers as if the permanent was already on the battlefield
             // So "Enters with counters" causes "Whenever counters are placed" to trigger with battlefield zcc

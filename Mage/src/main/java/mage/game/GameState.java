@@ -1555,7 +1555,7 @@ public class GameState implements Serializable, Copyable<GameState> {
      */
     public void cleanupPermanentCostsTags(Game game) {
         getPermanentCostsTags().entrySet().removeIf(entry ->
-                !(entry.getKey().getZoneChangeCounter() == game.getState().getZoneChangeCounter(entry.getKey().getSourceId()) - 1)
+                !(entry.getKey().getZoneChangeCounter() == game.getState().getZoneChangeCounter(entry.getKey().getSourceId()))
         ); // The stored MOR is the stack-moment MOR so need to subtract one from the permanent's ZCC for the check
     }
 
