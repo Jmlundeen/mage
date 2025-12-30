@@ -913,7 +913,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder withRemovedCardTypes(CardType... cardTypes) {
         removedCardTypes = Arrays.asList(cardTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
-        this.removeOtherCardTypes = true;
         return this;
     }
 
@@ -952,7 +951,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public ContinuousEffectBuilder withRemovedSubTypes(SubType... subTypes) {
         removedSubTypes = Arrays.asList(subTypes);
         this.addLayer(Layer.TypeChangingEffects_4);
-        this.removeOtherSubtypes = true;
         return this;
     }
 
