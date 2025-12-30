@@ -55,7 +55,7 @@ public class SagaAbility extends SimpleStaticAbility {
         this.readAhead = readAhead;
         this.setRuleVisible(true);
         this.setRuleAtTheTop(true);
-        Ability ability = new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LORE, LoreCounterDynamicValue.instance));
+        Ability ability = new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.LORE, new LoreCounterDynamicValue(maxChapter)));
         ability.setRuleVisible(false);
         card.addAbility(ability);
         if (readAhead) {
@@ -180,8 +180,17 @@ public class SagaAbility extends SimpleStaticAbility {
     }
 }
 
-enum LoreCounterDynamicValue implements DynamicValue {
-    instance;
+class LoreCounterDynamicValue implements DynamicValue {
+
+    private final SagaChapter maxChapter;
+
+    public LoreCounterDynamicValue(SagaChapter maxChapter) {
+        this.maxChapter = maxChapter;
+    }
+
+    private LoreCounterDynamicValue(final LoreCounterDynamicValue value) {
+        this.maxChapter = value.maxChapter;
+    }
 
     @Override
     public int calculate(Game game, Ability sourceAbility, Effect effect, MageObject mageObject) {
@@ -195,7 +204,7 @@ enum LoreCounterDynamicValue implements DynamicValue {
             return 0;
         }
         return player.getAmount(
-                1, ((SagaAbility) sourceAbility).getMaxChapter().getNumber(),
+                1, maxChapter.getNumber(),
                 "Choose the number of lore counters to enter with", sourceAbility, game
         );
     }
@@ -207,7 +216,7 @@ enum LoreCounterDynamicValue implements DynamicValue {
 
     @Override
     public DynamicValue copy() {
-        return LoreCounterDynamicValue.instance;
+        return new LoreCounterDynamicValue(this);
     }
 
     @Override
