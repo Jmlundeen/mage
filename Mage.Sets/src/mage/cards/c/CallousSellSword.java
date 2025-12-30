@@ -44,7 +44,7 @@ public final class CallousSellSword extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // Callous Sell-Sword enters the battlefield with a +1/+1 counter on it for each creature that died under your control this turn.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesYouControlDiedCount.instance))
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, CreaturesYouControlDiedCount.instance))
                 .addHint(hint)
         );
 

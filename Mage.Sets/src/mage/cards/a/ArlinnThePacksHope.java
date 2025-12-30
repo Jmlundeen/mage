@@ -45,7 +45,7 @@ public final class ArlinnThePacksHope extends TransformingDoubleFacedCard {
         ).setText("until your next turn, you may cast creature spells as though they had flash"), 1);
         ability.addEffect(new EntersWithCountersEffect(Duration.UntilYourNextTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
                 .setFilter(StaticFilters.FILTER_CONTROLLED_CREATURE).concatBy(", and"));
-        this.addAbility(ability);
+        this.getLeftHalfCard().addAbility(ability);
 
         // −3: Create two 2/2 green Wolf creature tokens.
         this.getLeftHalfCard().addAbility(new LoyaltyAbility(new CreateTokenEffect(new WolfToken(), 2), -3));

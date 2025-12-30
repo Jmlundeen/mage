@@ -127,18 +127,15 @@ class FeatherTheRedeemedEffect extends ReplacementEffectImpl {
 
     // we store both Spell and Card to work properly on split cards.
     private final MageObjectReference morSpell;
-    private final MageObjectReference morCard;
 
     FeatherTheRedeemedEffect(Spell spell, Game game) {
         super(Duration.OneUse, Outcome.Benefit);
         this.morSpell = new MageObjectReference(spell.getCard(), game);
-        this.morCard = new MageObjectReference(spell.getMainCard(), game);
     }
 
     private FeatherTheRedeemedEffect(final FeatherTheRedeemedEffect effect) {
         super(effect);
         this.morSpell = effect.morSpell;
-        this.morCard = effect.morCard;
     }
 
     @Override
@@ -166,10 +163,11 @@ class FeatherTheRedeemedEffect extends ReplacementEffectImpl {
     @Override
     public boolean applies(GameEvent event, Ability source, Game game) {
         ZoneChangeEvent zEvent = ((ZoneChangeEvent) event);
+        Spell spell = morSpell.getSpell(game);
         return Zone.STACK.equals(zEvent.getFromZone())
                 && Zone.GRAVEYARD.equals(zEvent.getToZone())
                 && morSpell.refersTo(event.getSourceId(), game) // this is how we check that the spell resolved properly (and was not countered or the like)
-                && morCard.refersTo(event.getTargetId(), game); // this is how we check that the card being moved is the one we want.
+                && spell != null && !spell.isCountered();
     }
 
     @Override

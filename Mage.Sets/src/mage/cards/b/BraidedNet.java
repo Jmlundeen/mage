@@ -50,7 +50,7 @@ public final class BraidedNet extends TransformingDoubleFacedCard {
 
         // Braided Net
         // Braided Net enters the battlefield with three net counters on it.
-        this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.NET.createInstance(3))));
+        this.getLeftHalfCard().addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.NET.createInstance(3))));
 
         // {T}, Remove a net counter from Braided Net: Tap another target nonland permanent. Its activated abilities can't be activated for as long as it remains tapped.
         Ability ability = new SimpleActivatedAbility(new TapTargetEffect(), new TapSourceCost());

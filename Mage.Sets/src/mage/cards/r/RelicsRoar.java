@@ -26,6 +26,7 @@ public final class RelicsRoar extends CardImpl {
                         .withAddedCardTypes(CardType.CREATURE, CardType.ARTIFACT)
                         .withAddedSubTypes(false, SubType.DINOSAUR)
                         .withSetPowerAndToughness(4, 3)
+                        .setText("Until end of turn, target artifact or creature becomes a Dinosaur artifact creature with base power and toughness 4/3 in addition to its other types.")
         );
         this.getSpellAbility().addTarget(new TargetPermanent(StaticFilters.FILTER_PERMANENT_ARTIFACT_OR_CREATURE));
     }
