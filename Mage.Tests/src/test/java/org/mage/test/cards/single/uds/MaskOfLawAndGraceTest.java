@@ -1,5 +1,6 @@
 package org.mage.test.cards.single.uds;
 
+import mage.abilities.keyword.ProtectionAbility;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import org.junit.Test;
@@ -42,14 +43,15 @@ public class MaskOfLawAndGraceTest extends CardTestPlayerBase {
 
     @Test
     public void testMaskOfLawAndGrace() {
-        addCard(Zone.BATTLEFIELD, playerA, balduvianBears);
+        addCard(Zone.BATTLEFIELD, playerA, balduvianBears + "@bearA");
         addCard(Zone.BATTLEFIELD, playerB, jaradGolgariLichLord);
         addCard(Zone.BATTLEFIELD, playerA, "Plains");
         addCard(Zone.HAND, playerA, maskOfLawAndGrace);
         addCard(Zone.BATTLEFIELD, playerB, balduvianBears);
 
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, maskOfLawAndGrace, balduvianBears);
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, maskOfLawAndGrace, "@bearA");
 
+        checkAbility("bear has protection", 1, PhaseStep.BEGIN_COMBAT, playerA, balduvianBears, ProtectionAbility.class, true);
         attack(1, playerA, balduvianBears);
         block(1, playerB, jaradGolgariLichLord, balduvianBears);
         block(1, playerB, balduvianBears, balduvianBears);
