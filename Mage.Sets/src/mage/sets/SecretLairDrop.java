@@ -214,7 +214,7 @@ public class SecretLairDrop extends ExpansionSet {
         cards.add(new SetCardInfo("Blasphemous Act", 1756, Rarity.RARE, mage.cards.b.BlasphemousAct.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Blasphemous Act", 1998, Rarity.RARE, mage.cards.b.BlasphemousAct.class, FULL_ART_USE_VARIOUS));
         cards.add(new SetCardInfo("Blighted Agent", 1203, Rarity.RARE, mage.cards.b.BlightedAgent.class));
-        cards.add(new SetCardInfo("Blightsteel Colossus", 2223, Rarity.MYTHIC, mage.cards.b.BlightsteelColossus.class));
+        cards.add(new SetCardInfo("Blightsteel Colossus", 2223, Rarity.MYTHIC, mage.cards.b.BlightsteelColossus.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Blightsteel Colossus", 1079, Rarity.MYTHIC, mage.cards.b.BlightsteelColossus.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Blightsteel Colossus", "1079b", Rarity.MYTHIC, mage.cards.b.BlightsteelColossus.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Blind Obedience", 1030, Rarity.RARE, mage.cards.b.BlindObedience.class, NON_FULL_USE_VARIOUS));
@@ -440,7 +440,7 @@ public class SecretLairDrop extends ExpansionSet {
         cards.add(new SetCardInfo("Dark Ritual", 2001, Rarity.RARE, mage.cards.d.DarkRitual.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Dark Ritual", 2020, Rarity.RARE, mage.cards.d.DarkRitual.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Darksteel Citadel", 608, Rarity.RARE, mage.cards.d.DarksteelCitadel.class));
-        cards.add(new SetCardInfo("Darksteel Colossus", 57, Rarity.MYTHIC, mage.cards.d.DarksteelColossus.class));
+        cards.add(new SetCardInfo("Darksteel Colossus", 57, Rarity.MYTHIC, mage.cards.d.DarksteelColossus.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Darksteel Colossus", 1081, Rarity.MYTHIC, mage.cards.d.DarksteelColossus.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Darksteel Colossus", "1081b", Rarity.MYTHIC, mage.cards.d.DarksteelColossus.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Darksteel Ingot", 204, Rarity.RARE, mage.cards.d.DarksteelIngot.class));
@@ -521,7 +521,7 @@ public class SecretLairDrop extends ExpansionSet {
         cards.add(new SetCardInfo("Dragonlord Atarka", "1970b", Rarity.MYTHIC, mage.cards.d.DragonlordAtarka.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Dragonlord Dromoka", 1971, Rarity.MYTHIC, mage.cards.d.DragonlordDromoka.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Dragonlord Dromoka", "1971b", Rarity.MYTHIC, mage.cards.d.DragonlordDromoka.class, NON_FULL_USE_VARIOUS));
-        cards.add(new SetCardInfo("Dragonlord Kolaghan", 1269, Rarity.MYTHIC, mage.cards.d.DragonlordKolaghan.class));
+        cards.add(new SetCardInfo("Dragonlord Kolaghan", 1269, Rarity.MYTHIC, mage.cards.d.DragonlordKolaghan.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Dragonlord Kolaghan", 1972, Rarity.MYTHIC, mage.cards.d.DragonlordKolaghan.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Dragonlord Kolaghan", "1972b", Rarity.MYTHIC, mage.cards.d.DragonlordKolaghan.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Dragonlord Ojutai", 1973, Rarity.MYTHIC, mage.cards.d.DragonlordOjutai.class, NON_FULL_USE_VARIOUS));
@@ -736,7 +736,7 @@ public class SecretLairDrop extends ExpansionSet {
         cards.add(new SetCardInfo("Gandalf, Friend of the Shire", 1294, Rarity.RARE, mage.cards.g.GandalfFriendOfTheShire.class));
         cards.add(new SetCardInfo("Gargos, Vicious Watcher", 1329, Rarity.RARE, mage.cards.g.GargosViciousWatcher.class, FULL_ART));
         cards.add(new SetCardInfo("Garruk Relentless", 2169, Rarity.MYTHIC, mage.cards.g.GarrukRelentless.class));
-        cards.add(new SetCardInfo("Garruk Wildspeaker", 1142, Rarity.RARE, mage.cards.g.GarrukWildspeaker.class));
+        cards.add(new SetCardInfo("Garruk Wildspeaker", 1142, Rarity.RARE, mage.cards.g.GarrukWildspeaker.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Garruk Wildspeaker", 749, Rarity.MYTHIC, mage.cards.g.GarrukWildspeaker.class, FULL_ART_USE_VARIOUS));
         cards.add(new SetCardInfo("Garruk Wildspeaker", "749b", Rarity.MYTHIC, mage.cards.g.GarrukWildspeaker.class, FULL_ART_USE_VARIOUS));
         cards.add(new SetCardInfo("Garruk Wildspeaker", 1457, Rarity.MYTHIC, mage.cards.g.GarrukWildspeaker.class, FULL_ART_USE_VARIOUS));
@@ -1820,7 +1820,7 @@ public class SecretLairDrop extends ExpansionSet {
         cards.add(new SetCardInfo("Sliver Legion", 1310, Rarity.MYTHIC, mage.cards.s.SliverLegion.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Sliver Overlord", 10, Rarity.MYTHIC, mage.cards.s.SliverOverlord.class));
         cards.add(new SetCardInfo("Smothering Tithe", 7009, Rarity.RARE, mage.cards.s.SmotheringTithe.class));
-        cards.add(new SetCardInfo("Smuggler's Copter", 446, Rarity.RARE, mage.cards.s.SmugglersCopter.class));
+        cards.add(new SetCardInfo("Smuggler's Copter", 446, Rarity.RARE, mage.cards.s.SmugglersCopter.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Smuggler's Copter", 1968, Rarity.RARE, mage.cards.s.SmugglersCopter.class, FULL_ART_USE_VARIOUS));
         cards.add(new SetCardInfo("Smuggler's Copter", "1968b", Rarity.RARE, mage.cards.s.SmugglersCopter.class, FULL_ART_USE_VARIOUS));
         cards.add(new SetCardInfo("Snap", 412, Rarity.RARE, mage.cards.s.Snap.class, NON_FULL_USE_VARIOUS));
@@ -2040,7 +2040,7 @@ public class SecretLairDrop extends ExpansionSet {
         cards.add(new SetCardInfo("Tasigur, the Golden Fang", 1396, Rarity.RARE, mage.cards.t.TasigurTheGoldenFang.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Tasigur, the Golden Fang", "1396*", Rarity.RARE, mage.cards.t.TasigurTheGoldenFang.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Taurean Mauler", 1899, Rarity.RARE, mage.cards.t.TaureanMauler.class));
-        cards.add(new SetCardInfo("Teferi's Ageless Insight", 1721, Rarity.RARE, mage.cards.t.TeferisAgelessInsight.class, FULL_ART));
+        cards.add(new SetCardInfo("Teferi's Ageless Insight", 1721, Rarity.RARE, mage.cards.t.TeferisAgelessInsight.class, FULL_ART_USE_VARIOUS));
         cards.add(new SetCardInfo("Teferi's Ageless Insight", 2214, Rarity.RARE, mage.cards.t.TeferisAgelessInsight.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Teferi's Ageless Insight", "2214b", Rarity.RARE, mage.cards.t.TeferisAgelessInsight.class, NON_FULL_USE_VARIOUS));
         cards.add(new SetCardInfo("Teferi's Protection", 164, Rarity.RARE, mage.cards.t.TeferisProtection.class, NON_FULL_USE_VARIOUS));
