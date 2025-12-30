@@ -9,7 +9,10 @@ import mage.abilities.effects.common.cost.SpellsCostModificationThatTargetSource
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
+import mage.constants.TargetController;
 import mage.filter.FilterCard;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
@@ -47,7 +50,6 @@ public final class JubilantSkybonder extends CardImpl {
         );
 
         ContinuousEffect effect = new GainAbilityAllEffect(gainAbility, Duration.WhileOnBattlefield, filter).withForceQuotes();
-        effect.setDependedToType(DependencyType.AddingAbility);
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

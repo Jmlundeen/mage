@@ -142,7 +142,6 @@ class OldGrowthTrollContinuousEffect extends ContinuousEffectImpl {
     OldGrowthTrollContinuousEffect(int zoneChangeCounter) {
         super(Duration.Custom, Outcome.Neutral);
         this.zoneChangeCounter = zoneChangeCounter;
-        dependencyTypes.add(DependencyType.AuraAddingRemoving);
     }
 
     private OldGrowthTrollContinuousEffect(final OldGrowthTrollContinuousEffect ability) {

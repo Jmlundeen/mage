@@ -8,7 +8,10 @@ import mage.abilities.Mode;
 import mage.abilities.common.LinkedEffectIdStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.cards.Card;
-import mage.constants.*;
+import mage.constants.Duration;
+import mage.constants.Layer;
+import mage.constants.Outcome;
+import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
@@ -44,8 +47,6 @@ public class GainAbilityTargetEffect extends ContinuousEffectImpl {
 
         this.staticText = rule;
         this.useOnCard = useOnCard;
-
-        this.generateGainAbilityDependencies(ability, null);
     }
 
     protected GainAbilityTargetEffect(final GainAbilityTargetEffect effect) {

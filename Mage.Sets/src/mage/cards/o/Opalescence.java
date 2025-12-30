@@ -55,11 +55,6 @@ public final class Opalescence extends CardImpl {
             super(Duration.WhileOnBattlefield, Outcome.BecomeCreature);
             staticText = "Each other non-Aura enchantment is a creature in addition to its other "
                     + "types and has base power and base toughness each equal to its mana value";
-            
-            this.dependendToTypes.add(DependencyType.EnchantmentAddingRemoving); // Enchanted Evening
-            this.dependendToTypes.add(DependencyType.AuraAddingRemoving); // Cloudform
-            
-            this.dependencyTypes.add(DependencyType.BecomeCreature);  // Conspiracy
         }
 
         private OpalescenceEffect(final OpalescenceEffect effect) {

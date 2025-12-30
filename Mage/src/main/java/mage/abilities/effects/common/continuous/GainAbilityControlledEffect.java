@@ -46,8 +46,6 @@ public class GainAbilityControlledEffect extends ContinuousEffectImpl {
         this.filter = filter;
         this.excludeSource = excludeSource;
         setText();
-
-        this.generateGainAbilityDependencies(ability, filter);
     }
 
     protected GainAbilityControlledEffect(final GainAbilityControlledEffect effect) {

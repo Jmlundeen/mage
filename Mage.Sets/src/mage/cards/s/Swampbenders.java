@@ -58,8 +58,6 @@ class SwampbendersEffect extends ContinuousEffectImpl {
     SwampbendersEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.AIDontUseIt);
         staticText = "lands you control are Swamps in addition to their other types.";
-        this.dependendToTypes.add(DependencyType.BecomeNonbasicLand);
-        this.dependencyTypes.add(DependencyType.BecomeSwamp);
     }
 
     private SwampbendersEffect(final SwampbendersEffect effect) {

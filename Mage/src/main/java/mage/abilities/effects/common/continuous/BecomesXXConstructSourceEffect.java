@@ -19,7 +19,6 @@ public class BecomesXXConstructSourceEffect extends ContinuousEffectImpl {
             sb.append(" until end of turn");
         }
         this.staticText = sb.toString();
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private BecomesXXConstructSourceEffect(final BecomesXXConstructSourceEffect effect) {

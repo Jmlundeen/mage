@@ -73,7 +73,6 @@ class CommandersPlateEffect extends ContinuousEffectImpl {
     CommandersPlateEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
         this.staticText = "has protection from each color that's not in your commander's color identity";
-        this.generateGainAbilityDependencies(ProtectionAbility.from(new ObjectColor("WUBRG")), null);
         this.concatBy("and");
     }
 

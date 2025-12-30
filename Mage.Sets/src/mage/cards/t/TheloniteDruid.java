@@ -10,7 +10,9 @@ import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.common.continuous.BecomesCreatureAllEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledLandPermanent;
 import mage.game.permanent.token.custom.CreatureToken;
@@ -41,7 +43,6 @@ public final class TheloniteDruid extends CardImpl {
         ContinuousEffect effect = new BecomesCreatureAllEffect(
                 new CreatureToken(2, 3),
                 "Forests", filter, Duration.EndOfTurn, false);
-        effect.getDependencyTypes().add(DependencyType.BecomeForest);
         Ability ability = new SimpleActivatedAbility(
                 effect,
                 new ManaCostsImpl<>("{1}{G}"));

@@ -1,14 +1,17 @@
 package mage.cards.k;
 
-import java.util.UUID;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.common.continuous.BecomesCreatureAllEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
 import mage.filter.common.FilterLandPermanent;
 import mage.game.permanent.token.custom.CreatureToken;
+
+import java.util.UUID;
 
 /**
  *
@@ -27,12 +30,6 @@ public final class KormusBell extends CardImpl {
                 new CreatureToken(1, 1, "1/1 black creatures").withColor("B"),
                 "lands", filter,
                 Duration.WhileOnBattlefield, true);
-        effect.addDependedToType(DependencyType.BecomeNonbasicLand);
-        effect.addDependedToType(DependencyType.BecomeForest);
-        effect.addDependedToType(DependencyType.BecomeIsland);
-        effect.addDependedToType(DependencyType.BecomeMountain);
-        effect.addDependedToType(DependencyType.BecomePlains);
-        effect.addDependedToType(DependencyType.BecomeSwamp);
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

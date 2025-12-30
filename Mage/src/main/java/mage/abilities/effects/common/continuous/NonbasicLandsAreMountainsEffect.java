@@ -26,8 +26,6 @@ public class NonbasicLandsAreMountainsEffect extends ContinuousEffectImpl {
     public NonbasicLandsAreMountainsEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         this.staticText = "nonbasic lands are Mountains";
-        this.dependencyTypes.add(DependencyType.BecomeMountain);
-        this.dependendToTypes.add(DependencyType.BecomeNonbasicLand);
     }
 
     private NonbasicLandsAreMountainsEffect(final NonbasicLandsAreMountainsEffect effect) {

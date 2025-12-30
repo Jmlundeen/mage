@@ -63,7 +63,6 @@ class TheIrencragBecomesContinuousEffect extends ContinuousEffectImpl {
         super(Duration.WhileOnBattlefield, Outcome.Benefit);
         staticText = "{this} become a legendary Equipment artifact named Everflame, Heroes' Legacy. "
                 + "If you do, it gains equip {3} and \"Equipped creature gets +3/+3\" and loses all other abilities";
-        dependencyTypes.add(DependencyType.ArtifactAddingRemoving);
     }
 
     protected TheIrencragBecomesContinuousEffect(final TheIrencragBecomesContinuousEffect effect) {

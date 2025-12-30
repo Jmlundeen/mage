@@ -1,14 +1,8 @@
 package org.mage.test.cards.continuous;
 
-import mage.abilities.effects.ContinuousEffectImpl;
-import mage.abilities.effects.common.continuous.GainAbilityAllEffect;
-import mage.abilities.keyword.HasteAbility;
-import mage.constants.*;
+import mage.constants.PhaseStep;
+import mage.constants.Zone;
 import mage.counters.CounterType;
-import mage.filter.FilterPermanent;
-import mage.filter.predicate.Predicates;
-import mage.filter.predicate.mageobject.NamePredicate;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
@@ -16,42 +10,6 @@ import org.mage.test.serverside.base.CardTestPlayerBase;
  * @author JayDi85
  */
 public class GainAbilityDependenciesTest extends CardTestPlayerBase {
-
-    @Test
-    public void test_GenerationByFilters() {
-        // auto-dependency must find subtype predicate and add dependecy on it
-        FilterPermanent filterEmpty = new FilterPermanent("empty");
-        FilterPermanent filterSubtype = new FilterPermanent(SubType.HUMAN, "single");
-        FilterPermanent filterOr = new FilterPermanent("or");
-        filterOr.add(Predicates.or(
-                SubType.HUMAN.getPredicate(),
-                SubType.ORC.getPredicate()));
-        FilterPermanent filterTree = new FilterPermanent("tree");
-        filterTree.add(Predicates.and(
-                new NamePredicate("test"),
-                Predicates.or(
-                        SubType.HUMAN.getPredicate(),
-                        SubType.ORC.getPredicate())
-        ));
-        FilterPermanent filterNotTree = new FilterPermanent("tree");
-        filterNotTree.add(Predicates.not(
-                Predicates.or(
-                        SubType.HUMAN.getPredicate(),
-                        SubType.ORC.getPredicate())
-        ));
-
-        ContinuousEffectImpl effectEmpty = new GainAbilityAllEffect(HasteAbility.getInstance(), Duration.EndOfTurn, filterEmpty);
-        ContinuousEffectImpl effectSubtype = new GainAbilityAllEffect(HasteAbility.getInstance(), Duration.EndOfTurn, filterSubtype);
-        ContinuousEffectImpl effectOr = new GainAbilityAllEffect(HasteAbility.getInstance(), Duration.EndOfTurn, filterOr);
-        ContinuousEffectImpl effectTree = new GainAbilityAllEffect(HasteAbility.getInstance(), Duration.EndOfTurn, filterTree);
-        ContinuousEffectImpl effectNotTree = new GainAbilityAllEffect(HasteAbility.getInstance(), Duration.EndOfTurn, filterNotTree);
-
-        Assert.assertFalse("must haven't depends with empty filter", effectEmpty.getDependedToTypes().contains(DependencyType.AddingCreatureType));
-        Assert.assertTrue("must have depend from subtype predicate", effectSubtype.getDependedToTypes().contains(DependencyType.AddingCreatureType));
-        Assert.assertTrue("must have depend from or predicate", effectOr.getDependedToTypes().contains(DependencyType.AddingCreatureType));
-        Assert.assertTrue("must have depend from tree predicate", effectTree.getDependedToTypes().contains(DependencyType.AddingCreatureType));
-        Assert.assertTrue("must have depend from not-tree predicate", effectNotTree.getDependedToTypes().contains(DependencyType.AddingCreatureType));
-    }
 
     /**
      * I had an elephant token equipped with Amorphous Axe attacking and a Tempered Sliver in play. The token did combat

@@ -42,7 +42,6 @@ public class GainAbilitySourceEffect extends ContinuousEffectImpl {
         this.staticText = "{this} " + (duration == Duration.WhileOnBattlefield ? "has" : "gains") +
                 ' ' + CardUtil.stripReminderText(ability.getRule()) +
                 (duration.toString().isEmpty() ? "" : ' ' + duration.toString());
-        this.generateGainAbilityDependencies(ability, null);
     }
 
     protected GainAbilitySourceEffect(final GainAbilitySourceEffect effect) {

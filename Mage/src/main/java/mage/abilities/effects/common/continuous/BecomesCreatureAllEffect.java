@@ -41,7 +41,6 @@ public class BecomesCreatureAllEffect extends ContinuousEffectImpl {
         this.loseName = loseName;
         this.loseTypes = loseTypes;
 
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     protected BecomesCreatureAllEffect(final BecomesCreatureAllEffect effect) {

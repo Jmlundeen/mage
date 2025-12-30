@@ -65,8 +65,6 @@ class YgraEaterOfAllEffect extends ContinuousEffectImpl {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.AddAbility);
         staticText = "Other creatures are Food artifacts in addition to their other types " +
                 "and have \"{2}, {T}, Sacrifice this permanent: You gain 3 life.\"";
-        this.dependencyTypes.add(DependencyType.ArtifactAddingRemoving);
-        this.dependendToTypes.add(DependencyType.BecomeCreature);
     }
 
     private YgraEaterOfAllEffect(final YgraEaterOfAllEffect effect) {

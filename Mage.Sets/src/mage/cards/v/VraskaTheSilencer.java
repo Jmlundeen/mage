@@ -114,7 +114,6 @@ class VraskaTheSilencerContinuousEffect extends ContinuousEffectImpl {
         super(Duration.WhileOnBattlefield, Outcome.Neutral);
         this.staticText = "It's a Treasure artifact and loses all other card types.";
         this.mor = mor;
-        dependencyTypes.add(DependencyType.ArtifactAddingRemoving);
     }
 
     private VraskaTheSilencerContinuousEffect(final VraskaTheSilencerContinuousEffect effect) {

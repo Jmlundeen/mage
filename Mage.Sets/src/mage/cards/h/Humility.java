@@ -43,7 +43,6 @@ public final class Humility extends CardImpl {
 
         public HumilityEffect(Duration duration) {
             super(duration, Outcome.LoseAbility);
-            addDependedToType(DependencyType.BecomeCreature);
             staticText = "All creatures lose all abilities and have base power and toughness 1/1";
         }
 

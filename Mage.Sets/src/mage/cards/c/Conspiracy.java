@@ -56,8 +56,6 @@ public final class Conspiracy extends CardImpl {
             staticText = "Creatures you control are the chosen type. The same is "
                     + "true for creature spells you control and creature cards "
                     + "you own that aren't on the battlefield.";
-
-            this.dependendToTypes.add(DependencyType.BecomeCreature);  // Opalescence and Starfield of Nyx
         }
 
         private ConspiracyEffect(final ConspiracyEffect effect) {

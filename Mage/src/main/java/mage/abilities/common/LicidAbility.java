@@ -90,7 +90,6 @@ class LicidContinuousEffect extends ContinuousEffectImpl {
     LicidContinuousEffect(UUID messageId) {
         super(Duration.Custom, Outcome.Neutral);
         this.messageId = messageId;
-        dependencyTypes.add(DependencyType.AuraAddingRemoving);
     }
 
     LicidContinuousEffect(final LicidContinuousEffect ability) {

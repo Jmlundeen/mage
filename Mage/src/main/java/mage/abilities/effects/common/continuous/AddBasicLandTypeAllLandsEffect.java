@@ -23,26 +23,6 @@ public class AddBasicLandTypeAllLandsEffect extends ContinuousEffectImpl {
         this.subType = subType;
         this.staticText = "Each land is " + subType.getIndefiniteArticle() + " "
                 + subType.getDescription() + " in addition to its other land types";
-        this.dependendToTypes.add(DependencyType.BecomeNonbasicLand);
-        switch (subType) {
-            case PLAINS:
-                this.dependencyTypes.add(DependencyType.BecomePlains);
-                break;
-            case ISLAND:
-                this.dependencyTypes.add(DependencyType.BecomeIsland);
-                break;
-            case SWAMP:
-                this.dependencyTypes.add(DependencyType.BecomeSwamp);
-                break;
-            case MOUNTAIN:
-                this.dependencyTypes.add(DependencyType.BecomeMountain);
-                break;
-            case FOREST:
-                this.dependencyTypes.add(DependencyType.BecomeForest);
-                break;
-            default:
-                throw new UnsupportedOperationException("Subtype should be a basic land type");
-        }
     }
 
     private AddBasicLandTypeAllLandsEffect(final AddBasicLandTypeAllLandsEffect effect) {

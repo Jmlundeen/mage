@@ -52,7 +52,6 @@ class EscapedShapeshifterEffect extends ContinuousEffectImpl {
 
     EscapedShapeshifterEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.addDependedToType(DependencyType.AddingAbility);
         staticText = "As long as an opponent controls a creature with flying not named Escaped Shapeshifter, " +
                 "{this} has flying. The same is true for first strike, trample, and protection from any color.";
     }

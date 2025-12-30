@@ -52,7 +52,6 @@ class TitaniasSongEffect extends ContinuousEffectImpl {
     public TitaniasSongEffect(Duration duration) {
         super(duration, Outcome.BecomeCreature);
         staticText = "Each noncreature artifact loses its abilities and is an artifact creature with power and toughness each equal to its mana value";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private TitaniasSongEffect(final TitaniasSongEffect effect) {

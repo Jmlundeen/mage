@@ -30,7 +30,6 @@ public class GainAnchorWordAbilitySourceEffect extends ContinuousEffectImpl {
         this.ability = ability;
         this.modeChoice = modeChoice;
         this.ability.setRuleVisible(false);
-        this.generateGainAbilityDependencies(ability, null);
     }
 
     private GainAnchorWordAbilitySourceEffect(final GainAnchorWordAbilitySourceEffect effect) {

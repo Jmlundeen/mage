@@ -66,11 +66,6 @@ class NearbyPlanetEffect extends ContinuousEffectImpl {
 
     NearbyPlanetEffect() {
         super(Duration.Custom, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
-        dependendToTypes.add(DependencyType.BecomeMountain);
-        dependendToTypes.add(DependencyType.BecomeForest);
-        dependendToTypes.add(DependencyType.BecomeSwamp);
-        dependendToTypes.add(DependencyType.BecomeIsland);
-        dependendToTypes.add(DependencyType.BecomePlains);
         staticText = "Rangeling <i>(This card is every land type, including Plains, Island, Swamp, " +
                 "Mountain, Forest, Desert, Gate, Lair, Locus, and all those Urza's ones.)</i>";
     }

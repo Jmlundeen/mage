@@ -32,7 +32,7 @@ public final class RaisedByGiants extends CardImpl {
         ));
         ability.addEffect(new AddCardSubtypeAllEffect(
                 StaticFilters.FILTER_CREATURES_OWNED_COMMANDER,
-                SubType.GIANT, null
+                SubType.GIANT
         ).setText("and are Giants in addition to their other types"));
         this.addAbility(ability);
     }

@@ -64,7 +64,6 @@ class XenicPoltergeistEffect extends ContinuousEffectImpl {
     public XenicPoltergeistEffect() {
         super(Duration.Custom, Outcome.BecomeCreature);
         staticText = "Until your next upkeep, target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private XenicPoltergeistEffect(final XenicPoltergeistEffect effect) {

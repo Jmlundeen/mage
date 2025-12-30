@@ -31,7 +31,7 @@ public final class BreachTheMultiverse extends CardImpl {
         this.getSpellAbility().addEffect(new MillCardsEachPlayerEffect(10, TargetController.EACH_PLAYER));
         this.getSpellAbility().addEffect(new BreachTheMultiverseEffect());
         this.getSpellAbility().addEffect(new AddCardSubtypeAllEffect(
-                StaticFilters.FILTER_CONTROLLED_CREATURE, SubType.PHYREXIAN, DependencyType.AddingCreatureType
+                StaticFilters.FILTER_CONTROLLED_CREATURE, SubType.PHYREXIAN
         ).setText("Then each creature you control becomes a Phyrexian in addition to its other types"));
     }
 

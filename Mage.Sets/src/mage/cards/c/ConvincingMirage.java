@@ -75,25 +75,6 @@ class ConvincingMirageContinousEffect extends ContinuousEffectImpl {
         SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + ChooseBasicLandTypeEffect.VALUE_KEY));
         if (choice == null) {
             discard();
-            return;
-        }
-
-        switch (choice) {
-            case FOREST:
-                dependencyTypes.add(DependencyType.BecomeForest);
-                break;
-            case PLAINS:
-                dependencyTypes.add(DependencyType.BecomePlains);
-                break;
-            case MOUNTAIN:
-                dependencyTypes.add(DependencyType.BecomeMountain);
-                break;
-            case ISLAND:
-                dependencyTypes.add(DependencyType.BecomeIsland);
-                break;
-            case SWAMP:
-                dependencyTypes.add(DependencyType.BecomeSwamp);
-                break;
         }
     }
 

@@ -8,7 +8,6 @@ import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardSetInfo;
 import mage.cards.RoomCard;
-import mage.constants.DependencyType;
 import mage.constants.Duration;
 import mage.filter.StaticFilters;
 
@@ -27,7 +26,6 @@ public final class GreenhouseRicketyGazebo extends RoomCard {
         ContinuousEffect effect = new GainAbilityControlledEffect(
                 new AnyColorManaAbility(), Duration.WhileOnBattlefield, StaticFilters.FILTER_LANDS, false
         );
-        effect.addDependedToType(DependencyType.BecomeNonbasicLand);
         this.getLeftHalfCard().addAbility(new SimpleStaticAbility(effect));
 
         // Rickety Gazebo

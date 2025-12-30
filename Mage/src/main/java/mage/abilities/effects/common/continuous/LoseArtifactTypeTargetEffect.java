@@ -17,7 +17,6 @@ public class LoseArtifactTypeTargetEffect extends ContinuousEffectImpl {
 
     public LoseArtifactTypeTargetEffect(Duration duration) {
         super(duration, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
-        dependencyTypes.add(DependencyType.ArtifactAddingRemoving);
         setText("isn't an artifact");
     }
 

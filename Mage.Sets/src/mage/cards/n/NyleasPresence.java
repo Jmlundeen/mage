@@ -66,11 +66,6 @@ class NyleasPresenceLandTypeEffect extends ContinuousEffectImpl {
     NyleasPresenceLandTypeEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         this.staticText = "Enchanted land is every basic land type in addition to its other types";
-        dependencyTypes.add(DependencyType.BecomePlains);
-        dependencyTypes.add(DependencyType.BecomeIsland);
-        dependencyTypes.add(DependencyType.BecomeSwamp);
-        dependencyTypes.add(DependencyType.BecomeMountain);
-        dependencyTypes.add(DependencyType.BecomeForest);
     }
 
     private NyleasPresenceLandTypeEffect(final NyleasPresenceLandTypeEffect effect) {

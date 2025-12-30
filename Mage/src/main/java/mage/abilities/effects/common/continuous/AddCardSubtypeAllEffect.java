@@ -21,12 +21,11 @@ public class AddCardSubtypeAllEffect extends ContinuousEffectImpl {
     /**
      * Note: must set text manually
      */
-    public AddCardSubtypeAllEffect(FilterPermanent filter, SubType addedSubtype, DependencyType dependency) {
+    public AddCardSubtypeAllEffect(FilterPermanent filter, SubType addedSubtype) {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
         this.filter = filter;
         this.addedSubtype = addedSubtype;
         this.staticText = filter.getMessage() + " are " + addedSubtype.getPluralName() + " in addition to their other types";
-        addDependencyType(dependency);
     }
 
     protected AddCardSubtypeAllEffect(final AddCardSubtypeAllEffect effect) {

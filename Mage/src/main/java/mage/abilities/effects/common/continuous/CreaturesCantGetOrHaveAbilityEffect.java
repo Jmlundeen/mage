@@ -3,7 +3,6 @@ package mage.abilities.effects.common.continuous;
 import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffectImpl;
-import mage.constants.DependencyType;
 import mage.constants.Duration;
 import mage.constants.Layer;
 import mage.constants.Outcome;
@@ -33,7 +32,6 @@ public class CreaturesCantGetOrHaveAbilityEffect extends ContinuousEffectImpl {
         this.ability = ability;
         this.filter = filter;
         staticText = filter.getMessage() + " lose " + ability.getRule() + " and can't have or gain " + ability.getRule();
-        addDependedToType(DependencyType.AddingAbility);
     }
 
     protected CreaturesCantGetOrHaveAbilityEffect(final CreaturesCantGetOrHaveAbilityEffect effect) {

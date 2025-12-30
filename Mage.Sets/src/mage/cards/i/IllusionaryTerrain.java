@@ -77,23 +77,18 @@ class IllusionaryTerrainEffect extends ContinuousEffectImpl {
             // the land mana ability is intrinsic, so add it here, not layer 6
             permanent.removeAllSubTypes(game, SubTypeSet.NonBasicLandType);
             if (permanent.hasSubtype(SubType.FOREST, game)) {
-                this.dependencyTypes.add(DependencyType.BecomeForest);
                 permanent.addAbility(new GreenManaAbility(), source.getSourceId(), game);
             }
             if (permanent.hasSubtype(SubType.PLAINS, game)) {
-                this.dependencyTypes.add(DependencyType.BecomePlains);
                 permanent.addAbility(new WhiteManaAbility(), source.getSourceId(), game);
             }
             if (permanent.hasSubtype(SubType.MOUNTAIN, game)) {
-                this.dependencyTypes.add(DependencyType.BecomeMountain);
                 permanent.addAbility(new RedManaAbility(), source.getSourceId(), game);
             }
             if (permanent.hasSubtype(SubType.ISLAND, game)) {
-                this.dependencyTypes.add(DependencyType.BecomeIsland);
                 permanent.addAbility(new BlueManaAbility(), source.getSourceId(), game);
             }
             if (permanent.hasSubtype(SubType.SWAMP, game)) {
-                this.dependencyTypes.add(DependencyType.BecomeSwamp);
                 permanent.addAbility(new BlackManaAbility(), source.getSourceId(), game);
             }
         }

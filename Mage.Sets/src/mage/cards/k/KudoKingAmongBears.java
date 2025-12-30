@@ -7,7 +7,10 @@ import mage.abilities.effects.common.continuous.AddCardSubtypeAllEffect;
 import mage.abilities.effects.common.continuous.SetBasePowerToughnessAllEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
@@ -38,7 +41,7 @@ public final class KudoKingAmongBears extends CardImpl {
                 2, 2, Duration.WhileOnBattlefield, filter
         ));
         ability.addEffect(new AddCardSubtypeAllEffect(
-                filter, SubType.BEAR, DependencyType.AddingCreatureType
+                filter, SubType.BEAR
         ).setText("and are Bears in addition to their other types"));
         this.addAbility(ability);
     }

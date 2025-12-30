@@ -58,8 +58,6 @@ class SoulSculptorEffect extends ContinuousEffectImpl {
     SoulSculptorEffect() {
         super(Duration.Custom, Outcome.LoseAbility);
         staticText = "target becomes an Enchantment and loses all abilites";
-        dependencyTypes.add(DependencyType.EnchantmentAddingRemoving);
-        dependencyTypes.add(DependencyType.AddingAbility);
 
     }
 

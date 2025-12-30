@@ -59,7 +59,6 @@ class PermanentsAreArtifactsEffect extends ContinuousEffectImpl {
     PermanentsAreArtifactsEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
         staticText = "All permanents are artifacts in addition to their other types";
-        this.dependencyTypes.add(DependencyType.ArtifactAddingRemoving); // March of the Machines
     }
 
     @Override

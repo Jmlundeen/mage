@@ -105,23 +105,6 @@ class TerraformerContinuousEffect extends ContinuousEffectImpl {
             return;
         }
 
-        switch (choice) {
-            case FOREST:
-                dependencyTypes.add(DependencyType.BecomeForest);
-                break;
-            case PLAINS:
-                dependencyTypes.add(DependencyType.BecomePlains);
-                break;
-            case MOUNTAIN:
-                dependencyTypes.add(DependencyType.BecomeMountain);
-                break;
-            case ISLAND:
-                dependencyTypes.add(DependencyType.BecomeIsland);
-                break;
-            case SWAMP:
-                dependencyTypes.add(DependencyType.BecomeSwamp);
-                break;
-        }
         if (getAffectedObjectsSet()) {
             game.getBattlefield()
                     .getActivePermanents(

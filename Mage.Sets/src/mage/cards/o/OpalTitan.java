@@ -50,7 +50,6 @@ class OpalTitanBecomesCreatureEffect extends ContinuousEffectImpl {
     OpalTitanBecomesCreatureEffect() {
         super(Duration.WhileOnBattlefield, Outcome.BecomeCreature);
         staticText = "it becomes a 4/4 Giant creature with protection from each of that spell's colors.";
-        this.addDependencyType(DependencyType.BecomeCreature);
     }
 
     private OpalTitanBecomesCreatureEffect(final OpalTitanBecomesCreatureEffect effect) {

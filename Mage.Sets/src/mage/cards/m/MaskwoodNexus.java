@@ -63,7 +63,6 @@ class MaskwoodNexusEffect extends ContinuousEffectImpl {
         staticText = "Creatures you control are every creature type. "
                 + "The same is true for creature spells you control "
                 + "and creature cards you own that aren't on the battlefield.";
-        this.dependendToTypes.add(DependencyType.BecomeCreature);
     }
 
     private MaskwoodNexusEffect(final MaskwoodNexusEffect effect) {

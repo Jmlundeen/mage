@@ -10,7 +10,6 @@ import mage.abilities.keyword.FirstStrikeAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.DependencyType;
 import mage.constants.Duration;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledEnchantmentPermanent;
@@ -45,7 +44,6 @@ public final class NaturalEmergence extends CardImpl {
                 ).withAbility(FirstStrikeAbility.getInstance()), "lands",
                 StaticFilters.FILTER_CONTROLLED_PERMANENT_LANDS, Duration.WhileOnBattlefield, false
         );
-        effect.getDependedToTypes().add(DependencyType.BecomeNonbasicLand);
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

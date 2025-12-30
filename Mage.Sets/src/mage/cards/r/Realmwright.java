@@ -53,7 +53,6 @@ class RealmwrightEffect extends ContinuousEffectImpl {
     RealmwrightEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
         staticText = "Lands you control are the chosen type in addition to their other types";
-        dependendToTypes.add(DependencyType.BecomeNonbasicLand);
     }
 
     private RealmwrightEffect(final RealmwrightEffect effect) {
@@ -71,25 +70,6 @@ class RealmwrightEffect extends ContinuousEffectImpl {
         SubType choice = SubType.byDescription((String) game.getState().getValue(source.getSourceId().toString() + ChooseBasicLandTypeEffect.VALUE_KEY));
         if (choice == null) {
             discard();
-            return;
-        }
-
-        switch (choice) {
-            case PLAINS:
-                dependencyTypes.add(DependencyType.BecomePlains);
-                break;
-            case ISLAND:
-                dependencyTypes.add(DependencyType.BecomeIsland);
-                break;
-            case SWAMP:
-                dependencyTypes.add(DependencyType.BecomeSwamp);
-                break;
-            case MOUNTAIN:
-                dependencyTypes.add(DependencyType.BecomeMountain);
-                break;
-            case FOREST:
-                dependencyTypes.add(DependencyType.BecomeForest);
-                break;
         }
     }
 

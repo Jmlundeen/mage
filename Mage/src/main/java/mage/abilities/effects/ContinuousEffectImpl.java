@@ -3,12 +3,7 @@ package mage.abilities.effects;
 import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.abilities.CompoundAbility;
-import mage.abilities.keyword.ChangelingAbility;
 import mage.constants.*;
-import mage.filter.Filter;
-import mage.filter.predicate.Predicate;
-import mage.filter.predicate.Predicates;
 import mage.game.Game;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
@@ -16,7 +11,9 @@ import mage.players.Player;
 import mage.target.targetpointer.TargetPointer;
 import mage.watchers.common.EndStepCountWatcher;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author BetaSteward_at_googlemail.com, JayDi85
@@ -45,8 +42,6 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
     protected List<MageObjectReference> affectedObjectList = new ArrayList<>();
 
     protected boolean temporary = false;
-    protected EnumSet<DependencyType> dependencyTypes; // this effect has the dependencyTypes defined here
-    protected EnumSet<DependencyType> dependendToTypes; // this effect is dependent to this types
     /*
      A Characteristic Defining Ability (CDA) is an ability that defines a characteristic of a card or token.
      There are 3 specific rules that distinguish a CDA from other abilities.
@@ -71,8 +66,6 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
         this.duration = duration;
         this.order = 0;
         this.effectType = EffectType.CONTINUOUS;
-        this.dependencyTypes = EnumSet.noneOf(DependencyType.class);
-        this.dependendToTypes = EnumSet.noneOf(DependencyType.class);
     }
 
     protected ContinuousEffectImpl(Duration duration, Layer layer, SubLayer sublayer, Outcome outcome) {
@@ -97,8 +90,6 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
         this.startingTurnWasActive = effect.startingTurnWasActive;
         this.effectStartingOnTurn = effect.effectStartingOnTurn;
         this.effectStartingEndStep = effect.effectStartingEndStep;
-        this.dependencyTypes = effect.dependencyTypes;
-        this.dependendToTypes = effect.dependendToTypes;
         this.characterDefining = effect.characterDefining;
         this.nextTurnNumber = effect.nextTurnNumber;
         this.effectStartingStepNum = effect.effectStartingStepNum;
@@ -434,52 +425,6 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
     }
 
     @Override
-    public Set<UUID> isDependentTo(List<ContinuousEffect> allEffectsInLayer) {
-        Set<UUID> dependentToEffects = new HashSet<>();
-        if (dependendToTypes != null) {
-            for (ContinuousEffect effect : allEffectsInLayer) {
-                if (!effect.getId().equals(this.getId())) {
-                    for (DependencyType dependencyType : effect.getDependencyTypes()) {
-                        if (dependendToTypes.contains(dependencyType)) {
-                            dependentToEffects.add(effect.getId());
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return dependentToEffects;
-    }
-
-    @Override
-    public EnumSet<DependencyType> getDependencyTypes() {
-        return dependencyTypes;
-    }
-
-    @Override
-    public EnumSet<DependencyType> getDependedToTypes() {
-        return dependendToTypes;
-    }
-
-    @Override
-    public void addDependencyType(DependencyType dependencyType) {
-        if (dependencyType != null) {
-            dependencyTypes.add(dependencyType);
-        }
-    }
-
-    @Override
-    public void setDependedToType(DependencyType dependencyType) {
-        dependendToTypes.clear();
-        dependendToTypes.add(dependencyType);
-    }
-
-    @Override
-    public void addDependedToType(DependencyType dependencyType) {
-        dependendToTypes.add(dependencyType);
-    }
-
-    @Override
     public ContinuousEffect setTargetPointer(TargetPointer targetPointer) {
         super.setTargetPointer(targetPointer);
         return this;
@@ -489,61 +434,6 @@ public abstract class ContinuousEffectImpl extends EffectImpl implements Continu
     public ContinuousEffect withTargetDescription(String target) {
         super.withTargetDescription(target);
         return this;
-    }
-
-    /**
-     * Auto-generates dependencies on different effects (what's apply first and
-     * what's apply second)
-     *
-     * @param abilityToGain
-     * @param filterToSearch
-     */
-    public void generateGainAbilityDependencies(Ability abilityToGain, Filter filterToSearch) {
-        this.addDependencyType(DependencyType.AddingAbility);
-        this.generateGainAbilityDependenciesFromAbility(abilityToGain);
-        this.generateGainAbilityDependenciesFromFilter(filterToSearch);
-    }
-
-    public void generateGainAbilityDependencies(CompoundAbility abilityToGain, Filter filterToSearch) {
-        this.addDependencyType(DependencyType.AddingAbility);
-        this.generateGainAbilityDependenciesFromAbility(abilityToGain);
-        this.generateGainAbilityDependenciesFromFilter(filterToSearch);
-    }
-
-    private void generateGainAbilityDependenciesFromAbility(CompoundAbility compoundAbility) {
-        if (compoundAbility == null) {
-            return;
-        }
-        for (Ability ability : compoundAbility) {
-            generateGainAbilityDependenciesFromAbility(ability);
-        }
-    }
-
-    private void generateGainAbilityDependenciesFromAbility(Ability ability) {
-        if (ability == null) {
-            return;
-        }
-
-        // 1. "Is all type" ability (changeling)
-        // make dependency
-        if (ability instanceof ChangelingAbility) {
-            this.addDependencyType(DependencyType.AddingCreatureType);
-        }
-    }
-
-    private void generateGainAbilityDependenciesFromFilter(Filter filter) {
-        if (filter == null) {
-            return;
-        }
-
-        // 1. "Is all type" ability (changeling)
-        // wait dependency
-        // extraPredicates from some filters is player related, you don't need it here
-        List<Predicate> list = new ArrayList<>();
-        Predicates.collectAllComponents(filter.getPredicates(), filter.getExtraPredicates(), list);
-        if (list.stream().anyMatch(SubType.SubTypePredicate.class::isInstance)) {
-            this.addDependedToType(DependencyType.AddingCreatureType);
-        }
     }
 
     public boolean canLookAtNextTopLibraryCard(Game game) {

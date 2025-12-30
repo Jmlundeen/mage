@@ -46,7 +46,6 @@ class TuneUpEffect extends ContinuousEffectImpl {
     TuneUpEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
         this.staticText = "If it's a Vehicle, it becomes an artifact creature";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private TuneUpEffect(final TuneUpEffect effect) {

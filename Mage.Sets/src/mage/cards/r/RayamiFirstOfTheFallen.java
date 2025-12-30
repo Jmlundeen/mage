@@ -73,7 +73,6 @@ class RayamiFirstOfTheFallenEffect extends ContinuousEffectImpl {
 
     RayamiFirstOfTheFallenEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-        this.addDependedToType(DependencyType.AddingAbility);
         staticText = "As long as an exiled creature card with a blood counter on it has flying, " +
                 "{this} has flying. The same is true for first strike, double strike, deathtouch, haste, " +
                 "hexproof, indestructible, lifelink, menace, protection, reach, trample, and vigilance.";

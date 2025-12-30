@@ -61,7 +61,6 @@ class ScionOfDracoEffect extends ContinuousEffectImpl {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.Benefit);
         staticText = "each creature you control has vigilance if it's white, hexproof if it's blue, " +
                 "lifelink if it's black, first strike if it's red, and trample if it's green";
-        this.addDependencyType(DependencyType.AddingAbility);
     }
 
     private ScionOfDracoEffect(final ScionOfDracoEffect effect) {

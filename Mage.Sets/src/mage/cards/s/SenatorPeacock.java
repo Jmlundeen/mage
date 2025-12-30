@@ -35,7 +35,7 @@ public final class SenatorPeacock extends CardImpl {
 
         // Artifacts you control are Clues in addition to their other types and have "{2}, Sacrifice this artifact: Draw a card."
         Ability ability = new SimpleStaticAbility(new AddCardSubtypeAllEffect(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACTS, SubType.CLUE, null
+                StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACTS, SubType.CLUE
         ).setText("artifacts you control are Clues in addition to their other types"));
         ability.addEffect(new GainAbilityAllEffect(
                 new ClueAbility(false), Duration.WhileOnBattlefield,

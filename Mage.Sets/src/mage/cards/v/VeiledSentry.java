@@ -47,7 +47,6 @@ class VeiledSentryEffect extends ContinuousEffectImpl {
     public VeiledSentryEffect() {
         super(Duration.Custom, Outcome.BecomeCreature);
         staticText = "{this} becomes an Illusion creature with power and toughness each equal to that spell's mana value";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private VeiledSentryEffect(final VeiledSentryEffect effect) {

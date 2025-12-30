@@ -70,11 +70,6 @@ class BelloBardOfTheBramblesEffect extends ContinuousEffectImpl {
         staticText = "during your turn, each non-Equipment artifact and non-Aura enchantment you control " +
                 "with mana value 4 or greater is a 4/4 Elemental creature in addition to its other types and has " +
                 "indestructible, haste, and \"Whenever this creature deals combat damage to a player, draw a card.\"";
-
-        this.dependendToTypes.add(DependencyType.EnchantmentAddingRemoving); // Enchanted Evening
-        this.dependendToTypes.add(DependencyType.ArtifactAddingRemoving); // March of the Machines
-
-        this.dependencyTypes.add(DependencyType.BecomeCreature);  // Conspiracy
     }
 
     private BelloBardOfTheBramblesEffect(final BelloBardOfTheBramblesEffect effect) {

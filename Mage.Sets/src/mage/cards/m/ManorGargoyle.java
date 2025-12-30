@@ -1,7 +1,6 @@
 
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Abilities;
 import mage.abilities.Ability;
@@ -19,12 +18,12 @@ import mage.abilities.keyword.IndestructibleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.DependencyType;
 import mage.constants.Duration;
-import mage.constants.Zone;
+import mage.constants.SubType;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -61,14 +60,12 @@ public final class ManorGargoyle extends CardImpl {
          */
         // Manor Gargoyle has indestructible as long as it has defender.
         GainAbilitySourceEffect gainEffect = new GainAbilitySourceEffect(IndestructibleAbility.getInstance());
-        gainEffect.setDependedToType(DependencyType.LooseDefenderEffect);
         ConditionalContinuousEffect effect = new ConditionalContinuousEffect(gainEffect, HasDefenderCondition.instance, rule);
 
         this.addAbility(new SimpleStaticAbility(effect));
 
         // {1}: Until end of turn, Manor Gargoyle loses defender and gains flying.
         ContinuousEffect effect2 = new LoseAbilitySourceEffect(DefenderAbility.getInstance(), Duration.EndOfTurn);
-        effect2.addDependencyType(DependencyType.LooseDefenderEffect);
         effect2.setText("Until end of turn, {this} loses defender");
         Ability ability = new SimpleActivatedAbility(effect2, new ManaCostsImpl<>("{1}"));
         effect2 = new GainAbilitySourceEffect(FlyingAbility.getInstance(), Duration.EndOfTurn);

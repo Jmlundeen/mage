@@ -3,11 +3,11 @@ package mage.cards.t;
 import mage.MageInt;
 import mage.MageItem;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfCombatTriggeredAbility;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.keyword.WardAbility;
 import mage.abilities.token.ClueAbility;
+import mage.abilities.triggers.BeginningOfCombatTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -62,7 +62,6 @@ class TangletroveKelpEffect extends ContinuousEffectImpl {
     TangletroveKelpEffect() {
         super(Duration.EndOfTurn, Outcome.BecomeCreature);
         staticText = "other Clues you control become 6/6 Plant creatures in addition to their other types until end of turn";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private TangletroveKelpEffect(final TangletroveKelpEffect effect) {

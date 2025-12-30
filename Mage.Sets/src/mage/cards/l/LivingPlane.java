@@ -1,14 +1,17 @@
 package mage.cards.l;
 
-import java.util.UUID;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.common.continuous.BecomesCreatureAllEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SuperType;
 import mage.filter.common.FilterLandPermanent;
 import mage.game.permanent.token.custom.CreatureToken;
+
+import java.util.UUID;
 
 /**
  *
@@ -26,7 +29,6 @@ public final class LivingPlane extends CardImpl {
         ContinuousEffect effect = new BecomesCreatureAllEffect(
                 new CreatureToken(1, 1, "1/1 creatures"),
                 "lands", filter, Duration.WhileOnBattlefield, false);
-        effect.getDependedToTypes().add(DependencyType.BecomeNonbasicLand);
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

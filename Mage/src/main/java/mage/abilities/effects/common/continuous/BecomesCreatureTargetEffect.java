@@ -60,7 +60,6 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
         this.loseName = loseName;
         this.keepAbilities = keepAbilities;
         this.loseOtherCardTypes = loseOtherCardTypes;
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     protected BecomesCreatureTargetEffect(final BecomesCreatureTargetEffect effect) {
@@ -71,7 +70,6 @@ public class BecomesCreatureTargetEffect extends ContinuousEffectImpl {
         this.loseName = effect.loseName;
         this.keepAbilities = effect.keepAbilities;
         this.loseOtherCardTypes = effect.loseOtherCardTypes;
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
         this.durationRuleAtStart = effect.durationRuleAtStart;
         this.removeSubtypes = effect.removeSubtypes;
     }

@@ -28,7 +28,6 @@ public class GainHarnessedAbilitySourceEffect extends ContinuousEffectImpl {
         staticText = ability.getRule();
         this.ability = ability;
         this.ability.setRuleVisible(false);
-        generateGainAbilityDependencies(ability, null);
     }
 
     private GainHarnessedAbilitySourceEffect(final GainHarnessedAbilitySourceEffect effect) {

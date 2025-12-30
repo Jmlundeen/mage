@@ -32,7 +32,6 @@ public class GainClassAbilitySourceEffect extends ContinuousEffectImpl {
         this.ability = ability;
         this.level = level;
         this.ability.setRuleVisible(false);
-        generateGainAbilityDependencies(ability, null);
     }
 
     private GainClassAbilitySourceEffect(final GainClassAbilitySourceEffect effect) {

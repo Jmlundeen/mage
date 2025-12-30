@@ -76,7 +76,6 @@ class ArixmethesIsLandEffect extends ContinuousEffectImpl {
 
     ArixmethesIsLandEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
-        this.dependencyTypes.add(DependencyType.BecomeNonbasicLand);
     }
 
     private ArixmethesIsLandEffect(final ArixmethesIsLandEffect effect) {

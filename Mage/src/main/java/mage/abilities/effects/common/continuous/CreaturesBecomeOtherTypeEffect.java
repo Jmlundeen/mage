@@ -19,8 +19,6 @@ public class CreaturesBecomeOtherTypeEffect extends ContinuousEffectImpl {
         super(duration, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Neutral);
         this.filter = filter;
         this.subType = subType;
-
-        this.dependendToTypes.add(DependencyType.BecomeCreature);  // Opalescence and Starfield of Nyx
         this.staticText = this.filter.getMessage() + " is " + this.subType.getIndefiniteArticle()
                 + " " + this.subType + " in addition to its other types";
     }

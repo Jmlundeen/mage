@@ -45,7 +45,6 @@ class ShelteringPrayersEffect extends ContinuousEffectImpl {
     ShelteringPrayersEffect() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
         staticText = "Basic lands each player controls have shroud as long as that player controls three or fewer lands.";
-        dependencyTypes.add(DependencyType.AddingAbility);
 
     }
 

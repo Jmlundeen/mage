@@ -8,7 +8,6 @@ import mage.abilities.keyword.MenaceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.DependencyType;
 import mage.constants.SubType;
 import mage.constants.TargetController;
 import mage.filter.common.FilterCreaturePermanent;
@@ -42,7 +41,6 @@ public final class SonorousHowlbonder extends CardImpl {
 
         // Each creature you control with menace can't be blocked except by three or more creatures.
         ContinuousEffect effect = new CantBeBlockedByOneAllEffect(3, filter);
-        effect.setDependedToType(DependencyType.AddingAbility);
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

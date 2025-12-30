@@ -13,7 +13,6 @@ import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.DependencyType;
 import mage.constants.Duration;
 import mage.constants.SubType;
 import mage.filter.FilterPermanent;
@@ -51,7 +50,6 @@ public final class FrondlandFelidar extends CardImpl {
         ability.addCost(new TapSourceCost());
         ability.addTarget(new TargetCreaturePermanent());
         ContinuousEffect effect = new GainAbilityAllEffect(ability, Duration.WhileOnBattlefield, filter);
-        effect.setDependedToType(DependencyType.AddingAbility);
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

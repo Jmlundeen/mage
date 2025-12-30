@@ -8,10 +8,7 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author nantuko
@@ -25,16 +22,7 @@ public class AddCardTypeTargetEffect extends ContinuousEffectImpl {
         if (addedCardType.length == 0) {
             throw new IllegalArgumentException("AddCardTypeTargetEffect should be called with at least one card type.");
         }
-        for (CardType cardType : addedCardType) {
-            this.addedCardTypes.add(cardType);
-            if (cardType == CardType.ENCHANTMENT) {
-                dependencyTypes.add(DependencyType.EnchantmentAddingRemoving);
-            } else if (cardType == CardType.ARTIFACT) {
-                dependencyTypes.add(DependencyType.ArtifactAddingRemoving);
-            } else if (cardType == CardType.LAND) {
-                dependencyTypes.add(DependencyType.BecomeNonbasicLand);
-            }
-        }
+        this.addedCardTypes.addAll(Arrays.asList(addedCardType));
 
     }
 

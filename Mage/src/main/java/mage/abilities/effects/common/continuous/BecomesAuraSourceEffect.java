@@ -28,7 +28,6 @@ public class BecomesAuraSourceEffect extends ContinuousEffectImpl {
         newAbility = new EnchantAbility(target);
         newAbility.setRuleAtTheTop(true);
         staticText = "it becomes an Aura with enchant " + target.getTargetName();
-        dependencyTypes.add(DependencyType.AuraAddingRemoving);
 
     }
 

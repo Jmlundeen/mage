@@ -6,8 +6,8 @@ import mage.MageObjectReference;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
-import mage.abilities.effects.Effect;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
@@ -64,7 +64,6 @@ class LiegeOfTheTangleEffect extends ContinuousEffectImpl {
     LiegeOfTheTangleEffect() {
         super(Duration.EndOfGame, Outcome.BecomeCreature);
         staticText = "each of those lands is an 8/8 green Elemental creature for as long as it has an awakening counter on it. They're still lands";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private LiegeOfTheTangleEffect(final LiegeOfTheTangleEffect effect) {

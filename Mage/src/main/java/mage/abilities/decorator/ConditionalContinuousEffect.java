@@ -8,10 +8,14 @@ import mage.abilities.condition.FixedCondition;
 import mage.abilities.condition.LockedInCondition;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
-import mage.constants.*;
+import mage.constants.Duration;
+import mage.constants.EffectType;
+import mage.constants.Layer;
+import mage.constants.SubLayer;
 import mage.game.Game;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Adds condition to {@link ContinuousEffect}. Acts as decorator.
@@ -203,29 +207,6 @@ public class ConditionalContinuousEffect extends ContinuousEffectImpl {
         return new ConditionalContinuousEffect(this);
     }
 
-    @Override
-    public EnumSet<DependencyType> getDependencyTypes() {
-        if (effect != null) {
-            return effect.getDependencyTypes();
-        }
-        return super.getDependencyTypes();
-    }
-
-    @Override
-    public EnumSet<DependencyType> getDependedToTypes() {
-        if (effect != null) {
-            return effect.getDependedToTypes();
-        }
-        return super.getDependedToTypes();
-    }
-
-    @Override
-    public Set<UUID> isDependentTo(List<ContinuousEffect> allEffectsInLayer) {
-        if (effect != null) {
-            return effect.isDependentTo(allEffectsInLayer);
-        }
-        return super.isDependentTo(allEffectsInLayer);
-    }
 
     /**
      * Return all effects list, for tests only

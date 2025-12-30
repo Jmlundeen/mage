@@ -1,7 +1,5 @@
 package mage.cards.g;
 
-import java.util.UUID;
-
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
@@ -9,13 +7,15 @@ import mage.abilities.effects.common.combat.AttacksIfAbleAllEffect;
 import mage.abilities.effects.common.combat.CantBeBlockedByCreaturesAllEffect;
 import mage.abilities.effects.common.continuous.AddCardSubtypeAllEffect;
 import mage.abilities.effects.common.continuous.SetBasePowerToughnessAllEffect;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
+
+import java.util.UUID;
 
 /**
  * @author TheElk801
@@ -55,7 +55,7 @@ public final class GraazUnstoppableJuggernaut extends CardImpl {
                 5, 3, Duration.WhileOnBattlefield, filter3
         ));
         ability.addEffect(new AddCardSubtypeAllEffect(
-                filter3, SubType.JUGGERNAUT, null
+                filter3, SubType.JUGGERNAUT
         ).setText("and are Juggernauts in addition to their other creature types"));
         this.addAbility(ability);
     }

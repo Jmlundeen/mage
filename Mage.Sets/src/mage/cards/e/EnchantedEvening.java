@@ -40,8 +40,6 @@ class EnchangedEveningEffect extends ContinuousEffectImpl {
     // TODO: Change to AddSubTypeAllEffect after dependency update
     EnchangedEveningEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
-        this.dependencyTypes.add(DependencyType.EnchantmentAddingRemoving);
-        this.dependencyTypes.add(DependencyType.AuraAddingRemoving);
         this.staticText = "All permanents are enchantments in addition to their other types";
     }
 

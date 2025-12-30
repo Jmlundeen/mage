@@ -54,9 +54,6 @@ class MephidrossVampireEffect extends ContinuousEffectImpl {
     MephidrossVampireEffect() {
         super(Duration.WhileOnBattlefield, Outcome.Detriment);
         this.staticText = "Each creature you control is a Vampire in addition to its other creature types and has \"Whenever this creature deals damage to a creature, put a +1/+1 counter on this creature.\"";
-
-        // wait become creature effects first then apply own
-        this.addDependedToType(DependencyType.BecomeCreature);
     }
 
     private MephidrossVampireEffect(final MephidrossVampireEffect effect) {

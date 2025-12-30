@@ -50,7 +50,6 @@ class RootpathPurifierEffect extends ContinuousEffectImpl {
     RootpathPurifierEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
         staticText = "lands you control and land cards in your library are basic";
-        dependendToTypes.add(DependencyType.BecomeNonbasicLand);
     }
 
     private RootpathPurifierEffect(final RootpathPurifierEffect effect) {

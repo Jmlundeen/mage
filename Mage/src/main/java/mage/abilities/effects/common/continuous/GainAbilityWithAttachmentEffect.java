@@ -52,7 +52,6 @@ public class GainAbilityWithAttachmentEffect extends ContinuousEffectImpl {
         Collections.addAll(this.costs, costs);
         this.useAttachedCost = attachedCost;
         this.consumer = consumer;
-        this.generateGainAbilityDependencies(makeAbility(null, null), null);
     }
 
     protected GainAbilityWithAttachmentEffect(final GainAbilityWithAttachmentEffect effect) {

@@ -60,8 +60,6 @@ public class GainAbilityAttachedEffect extends ContinuousEffectImpl {
         if (rule != null) {
             this.staticText = rule;
         }
-
-        this.generateGainAbilityDependencies(ability, null);
     }
 
     protected GainAbilityAttachedEffect(final GainAbilityAttachedEffect effect) {

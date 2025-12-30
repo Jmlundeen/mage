@@ -4,9 +4,7 @@ import mage.MageItem;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.ContinuousEffectImpl;
-import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.SacrificeSourceUnlessPaysEffect;
 import mage.abilities.mana.WhiteManaAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
@@ -18,9 +16,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author LevelX2
@@ -55,12 +51,6 @@ public final class Conversion extends CardImpl {
         ConversionEffect() {
             super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
             this.staticText = "All Mountains are Plains";
-            this.dependendToTypes.add(DependencyType.BecomeForest);
-            this.dependendToTypes.add(DependencyType.BecomeIsland);
-            this.dependendToTypes.add(DependencyType.BecomeMountain);
-            this.dependendToTypes.add(DependencyType.BecomePlains);
-            this.dependendToTypes.add(DependencyType.BecomeSwamp);
-            this.dependencyTypes.add(DependencyType.BecomePlains);
         }
 
         private ConversionEffect(final ConversionEffect effect) {
@@ -90,13 +80,5 @@ public final class Conversion extends CardImpl {
             return !affectedObjects.isEmpty();
         }
 
-        @Override
-        public Set<UUID> isDependentTo(List<ContinuousEffect> allEffectsInLayer) {
-            return allEffectsInLayer
-                    .stream()
-                    .filter(effect -> effect.getDependencyTypes().contains(DependencyType.BecomeMountain))
-                    .map(Effect::getId)
-                    .collect(Collectors.toSet());
-        }
     }
 }

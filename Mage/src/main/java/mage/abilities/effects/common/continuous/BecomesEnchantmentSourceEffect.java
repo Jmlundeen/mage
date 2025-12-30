@@ -18,7 +18,6 @@ public class BecomesEnchantmentSourceEffect extends ContinuousEffectImpl {
     public BecomesEnchantmentSourceEffect() {
         super(Duration.Custom, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.AddAbility);
         staticText = "{this} becomes an enchantment";
-        dependencyTypes.add(DependencyType.EnchantmentAddingRemoving);
     }
 
     protected BecomesEnchantmentSourceEffect(final BecomesEnchantmentSourceEffect effect) {

@@ -14,7 +14,10 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -43,21 +46,6 @@ public class BecomesBasicLandTargetEffect extends ContinuousEffectImpl {
     public BecomesBasicLandTargetEffect(Duration duration, boolean chooseLandType, boolean loseOther, SubType... landNames) {
         super(duration, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         this.landTypes.addAll(Arrays.asList(landNames));
-        if (landTypes.contains(SubType.MOUNTAIN)) {
-            dependencyTypes.add(DependencyType.BecomeMountain);
-        }
-        if (landTypes.contains(SubType.FOREST)) {
-            dependencyTypes.add(DependencyType.BecomeForest);
-        }
-        if (landTypes.contains(SubType.SWAMP)) {
-            dependencyTypes.add(DependencyType.BecomeSwamp);
-        }
-        if (landTypes.contains(SubType.ISLAND)) {
-            dependencyTypes.add(DependencyType.BecomeIsland);
-        }
-        if (landTypes.contains(SubType.PLAINS)) {
-            dependencyTypes.add(DependencyType.BecomePlains);
-        }
         this.chooseLandType = chooseLandType;
         this.loseOther = loseOther;
     }

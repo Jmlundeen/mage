@@ -56,7 +56,6 @@ class BiotransferenceEffect extends ContinuousEffectImpl {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Benefit);
         staticText = "Creatures you control are artifacts in addition to their other types. " +
                 "The same is true for creature spells you control and creature cards you own that aren't on the battlefield";
-        this.dependencyTypes.add(DependencyType.ArtifactAddingRemoving); // March of the Machines
     }
 
     private BiotransferenceEffect(final BiotransferenceEffect effect) {

@@ -14,7 +14,6 @@ public class VehiclesBecomeArtifactCreatureEffect extends ContinuousEffectImpl {
     public VehiclesBecomeArtifactCreatureEffect(Duration duration) {
         super(duration, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.BecomeCreature);
         staticText = "Vehicles you control become artifact creatures until end of turn";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private VehiclesBecomeArtifactCreatureEffect(final VehiclesBecomeArtifactCreatureEffect effect) {

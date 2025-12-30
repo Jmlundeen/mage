@@ -11,7 +11,9 @@ import mage.abilities.effects.common.continuous.BecomesCreatureAllEffect;
 import mage.abilities.effects.common.continuous.BoostTargetEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
 import mage.filter.common.FilterControlledPermanent;
 import mage.game.permanent.token.custom.CreatureToken;
 import mage.target.common.TargetCreaturePermanent;
@@ -41,11 +43,6 @@ public final class AmbushCommander extends CardImpl {
         ContinuousEffect effect = new BecomesCreatureAllEffect(
                 new CreatureToken(1, 1, "1/1 green Elf creatures").withColor("G").withSubType(SubType.ELF),
                 "lands", filter2, Duration.WhileOnBattlefield, true);
-        effect.addDependedToType(DependencyType.BecomeForest);
-        effect.addDependedToType(DependencyType.BecomeIsland);
-        effect.addDependedToType(DependencyType.BecomeMountain);
-        effect.addDependedToType(DependencyType.BecomePlains);
-        effect.addDependedToType(DependencyType.BecomeSwamp);
         this.addAbility(new SimpleStaticAbility(effect));
 
         // {1}{G}, Sacrifice an Elf: Target creature gets +3/+3 until end of turn.

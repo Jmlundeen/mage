@@ -72,9 +72,6 @@ class AnimateDeadReplaceAbilityEffect extends ContinuousEffectImpl {
         staticText = (becomesAura ? "it becomes an Aura with" :
                 "it loses \"enchant creature card in a graveyard\" and gains"
         ) + " \"enchant creature put onto the battlefield with {this}.\"";
-        if (becomesAura) {
-            dependencyTypes.add(DependencyType.AuraAddingRemoving);
-        }
     }
 
     private AnimateDeadReplaceAbilityEffect(final AnimateDeadReplaceAbilityEffect effect) {

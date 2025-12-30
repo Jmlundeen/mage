@@ -3,16 +3,13 @@ package mage.abilities.effects;
 import mage.MageItem;
 import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.constants.DependencyType;
 import mage.constants.Duration;
 import mage.constants.Layer;
 import mage.constants.SubLayer;
 import mage.game.Game;
 import mage.target.targetpointer.TargetPointer;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -70,18 +67,6 @@ public interface ContinuousEffect extends Effect {
     SubLayer getSublayer();
 
     List<MageObjectReference> getAffectedObjects();
-
-    Set<UUID> isDependentTo(List<ContinuousEffect> allEffectsInLayer);
-
-    EnumSet<DependencyType> getDependencyTypes();
-
-    void addDependencyType(DependencyType dependencyType);
-
-    void setDependedToType(DependencyType dependencyType);
-
-    EnumSet<DependencyType> getDependedToTypes();
-
-    void addDependedToType(DependencyType dependencyType);
 
     void setStartingControllerAndTurnNum(Game game, UUID startingController, UUID activePlayerId);
 

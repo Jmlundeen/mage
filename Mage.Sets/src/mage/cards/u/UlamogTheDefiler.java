@@ -146,7 +146,6 @@ class UlamogTheDefilerContinuousAbility extends ContinuousEffectImpl {
     UlamogTheDefilerContinuousAbility() {
         super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
         staticText = "{this} has annihilator X, where X is the number of +1/+1 counters on it";
-        this.addDependencyType(DependencyType.AddingAbility);
         this.ability = new AnnihilatorAbility(0);
         this.lastAmount = 0;
     }

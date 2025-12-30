@@ -92,16 +92,6 @@ class StarfieldOfNyxEffect extends ContinuousEffectImpl {
                 + "in addition to its other types and has base power and "
                 + "toughness each equal to its mana value";
 
-        this.dependendToTypes.add(DependencyType.EnchantmentAddingRemoving); // Enchanted Evening
-        this.dependendToTypes.add(DependencyType.AuraAddingRemoving); // Cloudform
-        this.dependendToTypes.add(DependencyType.BecomeForest); // Song of the Dryads
-        this.dependendToTypes.add(DependencyType.BecomeMountain);
-        this.dependendToTypes.add(DependencyType.BecomePlains);
-        this.dependendToTypes.add(DependencyType.BecomeSwamp);
-        this.dependendToTypes.add(DependencyType.BecomeIsland);
-
-        this.dependencyTypes.add(DependencyType.BecomeCreature);  // Conspiracy
-
     }
 
     private StarfieldOfNyxEffect(final StarfieldOfNyxEffect effect) {

@@ -69,7 +69,6 @@ public final class DeathMaskDuplicant extends CardImpl {
 
         public DeathMaskDuplicantEffect() {
             super(Duration.WhileOnBattlefield, Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, Outcome.AddAbility);
-            this.addDependedToType(DependencyType.AddingAbility);
             staticText = "As long as a card exiled with {this} has flying, {this} has flying. The same is true for fear, first strike, double strike, haste, landwalk, protection, and trample";
         }
 

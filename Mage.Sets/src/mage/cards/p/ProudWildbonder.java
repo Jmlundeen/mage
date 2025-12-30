@@ -9,7 +9,6 @@ import mage.abilities.keyword.TrampleAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.DependencyType;
 import mage.constants.Duration;
 import mage.constants.SubType;
 import mage.filter.FilterPermanent;
@@ -46,7 +45,6 @@ public final class ProudWildbonder extends CardImpl {
         );
         effect.setText("Creatures you control with trample have " +
                 "\"You may have this creature assign its combat damage as though it weren't blocked.\"");
-        effect.setDependedToType(DependencyType.AddingAbility);
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

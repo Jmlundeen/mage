@@ -10,6 +10,7 @@ import mage.game.Game;
 import mage.game.permanent.Permanent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -25,16 +26,7 @@ public class AddCardTypeSourceEffect extends ContinuousEffectImpl {
         if (addedCardType.length == 0) {
             throw new IllegalArgumentException("AddCardTypeSourceEffect should be called with at least one card type.");
         }
-        for (CardType cardType : addedCardType) {
-            this.addedCardTypes.add(cardType);
-            if (cardType == CardType.ENCHANTMENT) {
-                dependencyTypes.add(DependencyType.EnchantmentAddingRemoving);
-            } else if (cardType == CardType.ARTIFACT) {
-                dependencyTypes.add(DependencyType.ArtifactAddingRemoving);
-            } else if (cardType == CardType.LAND) {
-                dependencyTypes.add(DependencyType.BecomeNonbasicLand);
-            }
-        }
+        this.addedCardTypes.addAll(Arrays.asList(addedCardType));
     }
 
     protected AddCardTypeSourceEffect(final AddCardTypeSourceEffect effect) {

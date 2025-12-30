@@ -2,13 +2,13 @@ package mage.cards.l;
 
 import mage.MageInt;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.AddCardSubtypeAllEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.*;
 import mage.constants.*;
 import mage.filter.FilterPermanent;
@@ -45,7 +45,7 @@ public final class LaughingJasperFlint extends CardImpl {
 
         // Creatures you control but don't own are Mercenaries in addition to their other types.
         this.addAbility(new SimpleStaticAbility(new AddCardSubtypeAllEffect(
-                filter, SubType.MERCENARY, DependencyType.AddingCreatureType
+                filter, SubType.MERCENARY
         )));
 
         // At the beginning of your upkeep, exile the top X cards of target opponent's library, where X is the number of outlaws you control. Until end of turn, you may cast spells from among those cards, and mana of any type can be spent to cast those spells.

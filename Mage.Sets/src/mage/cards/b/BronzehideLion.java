@@ -117,7 +117,6 @@ class BronzehideLionContinuousEffect extends ContinuousEffectImpl {
     BronzehideLionContinuousEffect(int zoneChangeCounter) {
         super(Duration.Custom, Outcome.Neutral);
         this.zoneChangeCounter = zoneChangeCounter;
-        dependencyTypes.add(DependencyType.AuraAddingRemoving);
     }
 
     private BronzehideLionContinuousEffect(final BronzehideLionContinuousEffect ability) {

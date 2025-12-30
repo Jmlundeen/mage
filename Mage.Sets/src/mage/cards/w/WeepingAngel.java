@@ -72,7 +72,6 @@ class WeepingAngelMarbleizeEffect extends ContinuousEffectImpl {
     WeepingAngelMarbleizeEffect() {
         super(Duration.EndOfTurn, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         staticText = "{this} isn't a creature until end of turn.";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
     }
 
     private WeepingAngelMarbleizeEffect(final WeepingAngelMarbleizeEffect effect) {

@@ -1,12 +1,9 @@
 package mage.cards.s;
 
-import mage.MageObjectReference;
-import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.common.AttacksAllTriggeredAbility;
 import mage.abilities.effects.ContinuousEffect;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.continuous.BecomesCreatureAllEffect;
@@ -96,79 +93,3 @@ class SarkhanTheMasterlessDamageEffect extends OneShotEffect {
     }
 }
 
-class SarkhanTheMasterlessBecomeDragonEffect extends ContinuousEffectImpl {
-
-    SarkhanTheMasterlessBecomeDragonEffect() {
-        super(Duration.EndOfTurn, Outcome.BecomeCreature);
-        staticText = "Until end of turn, each planeswalker you control becomes a 4/4 red Dragon creature and gains flying.";
-        this.dependencyTypes.add(DependencyType.BecomeCreature);
-    }
-
-    private SarkhanTheMasterlessBecomeDragonEffect(final SarkhanTheMasterlessBecomeDragonEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public SarkhanTheMasterlessBecomeDragonEffect copy() {
-        return new SarkhanTheMasterlessBecomeDragonEffect(this);
-    }
-
-    @Override
-    public void init(Ability source, Game game) {
-        super.init(source, game);
-        for (Permanent permanent : game.getBattlefield().getAllActivePermanents(source.getControllerId())) {
-            if (permanent != null && permanent.isPlaneswalker(game)) {
-                affectedObjectList.add(new MageObjectReference(permanent, game));
-            }
-        }
-    }
-
-    @Override
-    public boolean apply(Layer layer, SubLayer sublayer, Ability source, Game game) {
-        boolean flag = false;
-        for (MageObjectReference mor : affectedObjectList) {
-            Permanent permanent = mor.getPermanent(game);
-            if (permanent == null) {
-                continue;
-            }
-            flag = true;
-            switch (layer) {
-                case TypeChangingEffects_4:
-                    if (sublayer == SubLayer.NA) {
-                        permanent.removeAllCardTypes(game);
-                        permanent.addCardType(game, CardType.CREATURE);
-                        permanent.removeAllSubTypes(game);
-                        permanent.addSubType(game, SubType.DRAGON);
-                    }
-                    break;
-                case ColorChangingEffects_5:
-                    permanent.getColor(game).setColor(ObjectColor.RED);
-                    break;
-                case AbilityAddingRemovingEffects_6:
-                    if (sublayer == SubLayer.NA) {
-                        permanent.addAbility(FlyingAbility.getInstance(), source.getSourceId(), game);
-                    }
-                    break;
-                case PTChangingEffects_7:
-                    if (sublayer == SubLayer.SetPT_7b) {
-                        permanent.getPower().setModifiedBaseValue(4);
-                        permanent.getToughness().setModifiedBaseValue(4);
-                    }
-            }
-        }
-        return flag;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return false;
-    }
-
-    @Override
-    public boolean hasLayer(Layer layer) {
-        return layer == Layer.PTChangingEffects_7
-                || layer == Layer.AbilityAddingRemovingEffects_6
-                || layer == Layer.ColorChangingEffects_5
-                || layer == Layer.TypeChangingEffects_4;
-    }
-}

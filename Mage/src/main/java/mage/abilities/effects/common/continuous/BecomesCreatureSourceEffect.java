@@ -60,7 +60,6 @@ public class BecomesCreatureSourceEffect extends ContinuousEffectImpl {
         this.keepCreatureSubtypes = (retainType == CardType.ENCHANTMENT); // default usage, override if needed
         this.durationRuleAtStart = (retainType == CardType.PLANESWALKER || retainType == CardType.CREATURE);
         setText();
-        this.addDependencyType(DependencyType.BecomeCreature);
     }
 
     protected BecomesCreatureSourceEffect(final BecomesCreatureSourceEffect effect) {

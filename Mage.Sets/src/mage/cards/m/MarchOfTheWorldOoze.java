@@ -37,7 +37,7 @@ public final class MarchOfTheWorldOoze extends CardImpl {
                 6, 6, Duration.WhileOnBattlefield, StaticFilters.FILTER_CONTROLLED_CREATURES
         ));
         ability.addEffect(new AddCardSubtypeAllEffect(
-                StaticFilters.FILTER_CONTROLLED_CREATURES, SubType.OOZE, null
+                StaticFilters.FILTER_CONTROLLED_CREATURES, SubType.OOZE
         ).setText("and are Oozes in addition to their other types"));
         this.addAbility(ability);
 

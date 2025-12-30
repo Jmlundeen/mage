@@ -41,7 +41,6 @@ class MeltingEffect extends ContinuousEffectImpl {
     MeltingEffect() {
         super(Duration.WhileOnBattlefield, Layer.TypeChangingEffects_4, SubLayer.NA, Outcome.Detriment);
         this.staticText = "All lands are no longer snow";
-        this.dependendToTypes.add(DependencyType.BecomeNonbasicLand);
     }
 
     private MeltingEffect(final MeltingEffect effect) {

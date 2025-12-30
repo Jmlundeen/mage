@@ -45,15 +45,13 @@ public final class RagostDeftGastronaut extends CardImpl {
 
         // Artifacts you control are Foods in addition to their other types and have "{2}, {T}, Sacrifice this artifact: You gain 3 life."
         ContinuousEffect effect = new AddCardSubtypeAllEffect(
-                StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACTS, SubType.FOOD, null
+                StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACTS, SubType.FOOD
         );
-        effect.getDependedToTypes().add(DependencyType.ArtifactAddingRemoving);
         Ability ability = new SimpleStaticAbility(effect);
         effect = new GainAbilityAllEffect(
                 new FoodAbility(), Duration.WhileOnBattlefield, StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACTS,
                 "and have \"{2}, {T}, Sacrifice this artifact: You gain 3 life.\""
         );
-        effect.getDependedToTypes().add(DependencyType.ArtifactAddingRemoving);
         ability.addEffect(effect);
         this.addAbility(ability);
 

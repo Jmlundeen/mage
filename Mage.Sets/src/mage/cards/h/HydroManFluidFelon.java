@@ -74,7 +74,6 @@ class HydroManFluidFelonEffect extends ContinuousEffectImpl {
     HydroManFluidFelonEffect() {
         super(Duration.UntilYourNextTurn, Outcome.Neutral);
         this.staticText = "Until your next turn, he becomes a land and gains \"{T}: Add {U}.\"";
-        this.addDependencyType(DependencyType.BecomeNonbasicLand);
     }
 
     protected HydroManFluidFelonEffect(final HydroManFluidFelonEffect effect) {
