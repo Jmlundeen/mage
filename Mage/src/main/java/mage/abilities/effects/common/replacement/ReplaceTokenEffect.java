@@ -94,7 +94,7 @@ public class ReplaceTokenEffect extends ReplacementEffectImpl {
         this.modificationType = effect.modificationType;
         this.factor = effect.factor;
         this.gainControl = effect.gainControl;
-        this.token = this.token == null ? null : effect.token.copy();
+        this.token = effect.token == null ? null : effect.token.copy();
         this.tokenCondition = effect.tokenCondition;
         this.target = effect.target;
         this.optional = effect.optional;
