@@ -7,6 +7,9 @@ syntax: glob
 #un-ignore target implementations
 !Mage/src/main/java/mage/target
 
+# maven flattend-poms
+.flattened-pom.xml
+
 # logs and logs rotation
 *.log
 *.log.*

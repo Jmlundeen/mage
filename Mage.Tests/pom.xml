@@ -6,8 +6,8 @@
     <parent>
         <groupId>org.mage</groupId>
         <artifactId>mage-root</artifactId>
-        <version>1.4.58</version>
-    </parent> 
+        <version>${revision}</version>
+    </parent>
 
     <artifactId>mage-tests</artifactId>
     <packaging>jar</packaging>

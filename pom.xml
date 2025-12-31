@@ -5,18 +5,19 @@
 
     <groupId>org.mage</groupId>
     <artifactId>mage-root</artifactId>
-    <version>1.4.58</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
     <name>Mage Root</name>
     <description>Mage Root POM</description>
 
     <properties>
-        <!-- app: game must be able to run under java 8 -->
+        <!-- app: single version definition for all modules - change only this line -->
+        <revision>1.5</revision>
         <java.version>1.8</java.version>
         <root.dir>${project.basedir}</root.dir>
 
-        <!-- TODO: research and optimize version in modules (version change for modules and server configs must be changeable by one line instead perl script -->
-        <mage-version>1.4.58</mage-version>
+        <!-- mage-version kept for backward compatibility with configs -->
+        <mage-version>${revision}</mage-version>
         <argLine>-Dfile.encoding=UTF-8</argLine>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
@@ -92,6 +93,36 @@
                         <!-- prepare command line to inject in java agent (collect code executing stats) -->
                         <goals>
                             <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+                Flatten plugin for CI-friendly versioning
+                Replaces ${revision} with actual version in installed/deployed POMs
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
                         </goals>
                     </execution>
                 </executions>
