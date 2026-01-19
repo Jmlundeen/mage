@@ -114,13 +114,17 @@ public class WsMessageDispatcher {
             ok = false;
         }
 
+        if (!ok) {
+            return error(requestId, sessionId, WsProto.ErrorCode.AUTH_FAILED, "Auth failed");
+        }
+
         return WsProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
                 .setAuth(WsProto.AuthResponse.newBuilder()
-                        .setOk(ok)
-                        .setMessage(ok ? "OK" : "Auth failed")
+                        .setOk(true)
+                        .setMessage("OK")
                         .build())
                 .build();
     }

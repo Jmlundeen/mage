@@ -28,6 +28,8 @@ public final class WsServerMain {
     private static final String configPathProp = "xmage.config.path";
     private static final String defaultConfigPath = Paths.get("config", "config.xml").toString();
 
+    private static final WsConnectionRegistry connections = new WsConnectionRegistry();
+
     private WsServerMain() {
     }
 
@@ -43,11 +45,12 @@ public final class WsServerMain {
 
         final ConfigWrapper config = new ConfigWrapper(ConfigFactory.loadFromFile(configPath));
 
-        // Keep it simple for now: separate port from the JBoss server port.
-        // Later we will add wsPort/wsEnabled to config.xml + JAXB.
-        int wsPort = Integer.getInteger("xmage.ws.port", config.getPort() + 1000);
+        // Keep WS always active and run it in parallel with JBoss remoting.
+        // Port is derived deterministically from the main server port.
+        int wsPort = config.getPort() + 500;
 
         MainManagerFactory managerFactory = new MainManagerFactory(config);
+
         boolean detailsMode = Boolean.getBoolean("xmage.detailsMode");
         WsMessageDispatcher dispatcher = new WsMessageDispatcher(managerFactory, detailsMode);
 
@@ -72,10 +75,12 @@ public final class WsServerMain {
 
     private static void onClose(WsCloseContext ctx) {
         logger.info("WS close: " + ctx.getSessionId());
+        connections.onDisconnect(ctx.session::close);
     }
 
     private static void onError(WsErrorContext ctx) {
         logger.warn("WS error: " + ctx.getSessionId());
+        connections.onDisconnect(ctx.session::close);
     }
 
     private static void onBinary(WsBinaryMessageContext ctx, WsMessageDispatcher dispatcher) {
@@ -93,6 +98,7 @@ public final class WsServerMain {
             // just stash it as an attribute to help with logging.
             if (ctx.attribute("sessionId") == null && !in.getSessionId().isEmpty()) {
                 ctx.attribute("sessionId", in.getSessionId());
+                connections.onSessionIdentified(in.getSessionId(), ctx.session::close);
             }
 
             out = dispatcher.handle(in);

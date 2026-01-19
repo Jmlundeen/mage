@@ -1,13 +1,9 @@
-
 package mage.remote;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
 import mage.players.net.UserData;
+
+import java.net.*;
+import java.util.Enumeration;
 
 /**
  *
@@ -31,6 +27,10 @@ public class Connection {
     private String userIdStr;
     private int socketWriteTimeout;
 
+    // Dev/test: enable the parallel WS+Protobuf transport for migrated calls (hello/auth/ping).
+    // Default is false to keep current JBoss Remoting behavior unchanged.
+    private boolean wsTransportEnabled;
+
     private UserData userData;
 
     private static final String serialization = "?serializationtype=java";
@@ -46,6 +46,7 @@ public class Connection {
     public Connection(String parameter) {
         this.parameter = parameter;
         socketWriteTimeout = 10000;
+        wsTransportEnabled = false;
     }
 
     @Override
@@ -256,5 +257,13 @@ public class Connection {
 
     public int getSocketWriteTimeout() {
         return socketWriteTimeout;
+    }
+
+    public boolean isWsTransportEnabled() {
+        return wsTransportEnabled;
+    }
+
+    public void setWsTransportEnabled(boolean wsTransportEnabled) {
+        this.wsTransportEnabled = wsTransportEnabled;
     }
 }

@@ -13,6 +13,10 @@ import mage.interfaces.ServerState;
 import mage.interfaces.callback.ClientCallback;
 import mage.players.PlayerType;
 import mage.players.net.UserData;
+import mage.remote.transport.AuthResult;
+import mage.remote.transport.ClientTransport;
+import mage.remote.transport.HelloResult;
+import mage.remote.transport.WsClientTransport;
 import mage.util.ThreadUtils;
 import mage.utils.CompressUtil;
 import mage.view.*;
@@ -76,6 +80,8 @@ public class SessionImpl implements Session {
     private boolean canceled = false;
     private boolean jsonLogActive = false;
     private String lastError = "";
+
+    private ClientTransport wsTransport;
 
     public SessionImpl(MageClient client) {
         this.client = client;
@@ -261,6 +267,52 @@ public class SessionImpl implements Session {
             public boolean work() throws Throwable {
                 setLastError("");
                 logger.info("Logging: as username " + getUserName() + " to server " + connection.getHost() + ':' + connection.getPort());
+
+                // Optional incremental WS migration for hello/auth.
+                if (connection.isWsTransportEnabled() && connection.getAdminPassword() == null) {
+                    // Keep remoting connection established for all other RPCs.
+                    // Only migrate the login handshake on WS.
+                    if (wsTransport == null) {
+                        wsTransport = new WsClientTransport();
+                    }
+                    wsTransport.connect(connection);
+
+                    // Hello is non-session message.
+                    HelloResult hello = wsTransport.hello("XMage", client.getVersion().toString());
+                    if (hello != null) {
+                        logger.info("WS Hello: serverName=" + hello.getServerName() + ", serverVersion=" + hello.getServerVersion());
+                    }
+
+                    // sessionId is created by the existing remoting connect init logic.
+                    // If it isn't set yet, generate one compatible with server session manager.
+                    if (sessionId == null || sessionId.isEmpty()) {
+                        sessionId = UUID.randomUUID().toString();
+                    }
+
+                    AuthResult auth = wsTransport.auth(sessionId, connection.getUsername(), connection.getPassword());
+                    if (auth == null || !auth.isOk()) {
+                        setLastError(auth == null ? "Auth failed" : auth.getMessage());
+                        logger.info("Logging: FAIL");
+                        return false;
+                    }
+
+                    // For now, server state and version checks still come from the remoting server proxy.
+                    serverState = server.getServerState();
+                    if (serverState == null) {
+                        throw new MageVersionException(client.getVersion(), null);
+                    }
+
+                    if (client.getVersion().compareTo(serverState.getVersion()) != 0) {
+                        throw new MageVersionException(client.getVersion(), serverState.getVersion());
+                    }
+
+                    server.connectSetUserData(connection.getUsername(), sessionId, connection.getUserData(), client.getVersion().toString(), connection.getUserIdStr());
+
+                    logger.info("Logging: DONE");
+                    client.connected(getUserName() + '@' + connection.getHost() + ':' + connection.getPort() + ' ');
+                    return true;
+                }
+
                 boolean result;
 
                 if (connection.getAdminPassword() == null) {
@@ -1744,10 +1796,17 @@ public class SessionImpl implements Session {
             }
 
             long startTime = System.nanoTime();
-            if (!server.ping(sessionId, lastPingInfo)) {
-                logger.error("Ping failed: " + this.getUserName() + " Session: " + sessionId + " to MAGE server at " + connection.getHost() + ':' + connection.getPort());
-                throw new MageException("Ping failed");
+
+            if (connection != null && connection.isWsTransportEnabled() && wsTransport != null) {
+                long clientTimeMillis = System.currentTimeMillis();
+                wsTransport.ping(sessionId, clientTimeMillis);
+            } else {
+                if (!server.ping(sessionId, lastPingInfo)) {
+                    logger.error("Ping failed: " + this.getUserName() + " Session: " + sessionId + " to MAGE server at " + connection.getHost() + ':' + connection.getPort());
+                    throw new MageException("Ping failed");
+                }
             }
+
             pingTime.add(System.nanoTime() - startTime);
             long milliSeconds = TimeUnit.MILLISECONDS.convert(pingTime.getLast(), TimeUnit.NANOSECONDS);
             String lastPing = milliSeconds > 0 ? milliSeconds + "ms" : "<1ms";
