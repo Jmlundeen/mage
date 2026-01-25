@@ -96,6 +96,7 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
     private static final String FULL_SCREEN_PROP = "xmage.fullScreen"; // -Dxmage.fullScreen=false
     private static final String GUI_MODAL_MODE_PROP = "xmage.guiModalMode"; // -Dxmage.guiModalMode=false
     private static final String SKIP_DONE_SYMBOLS = "-skipDoneSymbols";
+    private static final String WS_ENABLED_PROP = "xmage.ws"; // -Dxmage.ws=true
     private static final String DEBUG_ARG = "-debug"; // enable debug button in main menu
 
     private static final String NOT_CONNECTED_TEXT = "<not connected>";
@@ -119,6 +120,7 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
     private static boolean skipSmallSymbolGenerationForExisting = false;
     private static boolean debugMode = false;
     private static boolean guiModalModeEnabled = false; // non-blocking UI mode enabled by default
+    private static boolean wsTransportEnabled = false;
 
     private JToggleButton switchPanelsButton = null; // from main menu
     private static String SWITCH_PANELS_BUTTON_NAME = "Switch panels";
@@ -162,6 +164,10 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
 
     public static boolean isGuiModalModeEnabled() {
         return guiModalModeEnabled;
+    }
+
+    public static boolean isWsTransportEnabled() {
+        return wsTransportEnabled;
     }
 
     @Override
@@ -1541,6 +1547,9 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
             }
             if (System.getProperty(GUI_MODAL_MODE_PROP) != null) {
                 guiModalModeEnabled = Boolean.parseBoolean(System.getProperty(GUI_MODAL_MODE_PROP));
+            }
+            if (System.getProperty(WS_ENABLED_PROP) != null) {
+                wsTransportEnabled = Boolean.parseBoolean(System.getProperty(WS_ENABLED_PROP));
             }
 
             // enable debug menu by default for developer build (if you run it from source code)

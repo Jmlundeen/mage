@@ -27,10 +27,6 @@ public class Connection {
     private String userIdStr;
     private int socketWriteTimeout;
 
-    // Dev/test: enable the parallel WS+Protobuf transport for migrated calls (hello/auth/ping).
-    // Default is false to keep current JBoss Remoting behavior unchanged.
-    private boolean wsTransportEnabled;
-
     private UserData userData;
 
     private static final String serialization = "?serializationtype=java";
@@ -46,7 +42,6 @@ public class Connection {
     public Connection(String parameter) {
         this.parameter = parameter;
         socketWriteTimeout = 10000;
-        wsTransportEnabled = false;
     }
 
     @Override
@@ -257,13 +252,5 @@ public class Connection {
 
     public int getSocketWriteTimeout() {
         return socketWriteTimeout;
-    }
-
-    public boolean isWsTransportEnabled() {
-        return wsTransportEnabled;
-    }
-
-    public void setWsTransportEnabled(boolean wsTransportEnabled) {
-        this.wsTransportEnabled = wsTransportEnabled;
     }
 }

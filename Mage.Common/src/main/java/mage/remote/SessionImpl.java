@@ -13,13 +13,11 @@ import mage.interfaces.ServerState;
 import mage.interfaces.callback.ClientCallback;
 import mage.players.PlayerType;
 import mage.players.net.UserData;
-import mage.remote.transport.AuthResult;
-import mage.remote.transport.ClientTransport;
-import mage.remote.transport.HelloResult;
-import mage.remote.transport.WsClientTransport;
 import mage.util.ThreadUtils;
 import mage.utils.CompressUtil;
-import mage.view.*;
+import mage.view.DraftPickView;
+import mage.view.TournamentView;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.jboss.remoting.*;
 import org.jboss.remoting.callback.Callback;
@@ -80,8 +78,6 @@ public class SessionImpl implements Session {
     private boolean canceled = false;
     private boolean jsonLogActive = false;
     private String lastError = "";
-
-    private ClientTransport wsTransport;
 
     public SessionImpl(MageClient client) {
         this.client = client;
@@ -268,51 +264,6 @@ public class SessionImpl implements Session {
                 setLastError("");
                 logger.info("Logging: as username " + getUserName() + " to server " + connection.getHost() + ':' + connection.getPort());
 
-                // Optional incremental WS migration for hello/auth.
-                if (connection.isWsTransportEnabled() && connection.getAdminPassword() == null) {
-                    // Keep remoting connection established for all other RPCs.
-                    // Only migrate the login handshake on WS.
-                    if (wsTransport == null) {
-                        wsTransport = new WsClientTransport();
-                    }
-                    wsTransport.connect(connection);
-
-                    // Hello is non-session message.
-                    HelloResult hello = wsTransport.hello("XMage", client.getVersion().toString());
-                    if (hello != null) {
-                        logger.info("WS Hello: serverName=" + hello.getServerName() + ", serverVersion=" + hello.getServerVersion());
-                    }
-
-                    // sessionId is created by the existing remoting connect init logic.
-                    // If it isn't set yet, generate one compatible with server session manager.
-                    if (sessionId == null || sessionId.isEmpty()) {
-                        sessionId = UUID.randomUUID().toString();
-                    }
-
-                    AuthResult auth = wsTransport.auth(sessionId, connection.getUsername(), connection.getPassword());
-                    if (auth == null || !auth.isOk()) {
-                        setLastError(auth == null ? "Auth failed" : auth.getMessage());
-                        logger.info("Logging: FAIL");
-                        return false;
-                    }
-
-                    // For now, server state and version checks still come from the remoting server proxy.
-                    serverState = server.getServerState();
-                    if (serverState == null) {
-                        throw new MageVersionException(client.getVersion(), null);
-                    }
-
-                    if (client.getVersion().compareTo(serverState.getVersion()) != 0) {
-                        throw new MageVersionException(client.getVersion(), serverState.getVersion());
-                    }
-
-                    server.connectSetUserData(connection.getUsername(), sessionId, connection.getUserData(), client.getVersion().toString(), connection.getUserIdStr());
-
-                    logger.info("Logging: DONE");
-                    client.connected(getUserName() + '@' + connection.getHost() + ':' + connection.getPort() + ' ');
-                    return true;
-                }
-
                 boolean result;
 
                 if (connection.getAdminPassword() == null) {
@@ -335,7 +286,7 @@ public class SessionImpl implements Session {
                     }
 
                     if (!connection.getUsername().equals(ADMIN_NAME)) {
-                        server.connectSetUserData(connection.getUsername(), sessionId, connection.getUserData(), client.getVersion().toString(), connection.getUserIdStr());
+                        server.connectSetUserData(sessionId, connection.getUserData(), client.getVersion().toString(), connection.getUserIdStr());
                     }
 
                     logger.info("Logging: DONE");
@@ -718,7 +669,7 @@ public class SessionImpl implements Session {
         // Is server works fine, possible use cases:
         // - client connected by network, but can't process register/login process due errors like wrong username
         // - client connected to broken server that has a wrong config or broken/miss libraries
-        return isConnected() && serverState != null && serverState.getGameTypes().size() > 0;
+        return isConnected() && serverState != null && !serverState.getGameTypes().isEmpty();
     }
 
     @Override
@@ -727,12 +678,12 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public List<GameTypeView> getGameTypes() {
+    public List<ViewProto.GameTypeView> getGameTypes() {
         return serverState.getGameTypes();
     }
 
     @Override
-    public List<GameTypeView> getTournamentGameTypes() {
+    public List<ViewProto.GameTypeView> getTournamentGameTypes() {
         return serverState.getTournamentGameTypes();
     }
 
@@ -747,7 +698,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public List<TournamentTypeView> getTournamentTypes() {
+    public List<ViewProto.TournamentTypeView> getTournamentTypes() {
         return serverState.getTournamentTypes();
     }
 
@@ -810,14 +761,8 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public Optional<TableView> getTable(UUID roomId, UUID tableId) {
-        try {
-            if (isConnected()) {
-                return Optional.ofNullable(server.roomGetTableById(roomId, tableId));
-            }
-        } catch (MageException ex) {
-            handleMageException(ex);
-        }
+    public Optional<ViewProto.TableView> getTable(UUID roomId, UUID tableId) {
+
         return Optional.empty();
     }
 
@@ -894,7 +839,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public Collection<TableView> getTables(UUID roomId) throws MageRemoteException {
+    public Collection<ViewProto.TableView> getTables(UUID roomId) throws MageRemoteException {
         try {
             if (isConnected()) {
                 return server.roomGetAllTables(roomId);
@@ -909,7 +854,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public Collection<MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException {
+    public Collection<ViewProto.MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException {
         try {
             if (isConnected()) {
                 return server.roomGetFinishedMatches(roomId);
@@ -924,7 +869,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public Collection<RoomUsersView> getRoomUsers(UUID roomId) throws MageRemoteException {
+    public ViewProto.RoomUsersView getRoomUsers(UUID roomId) throws MageRemoteException {
         try {
             if (isConnected()) {
                 return server.roomGetUsers(roomId);
@@ -935,7 +880,7 @@ public class SessionImpl implements Session {
         } catch (Throwable t) {
             handleThrowable(t);
         }
-        return new ArrayList<>();
+        return ViewProto.RoomUsersView.getDefaultInstance();
     }
 
     @Override
@@ -1259,7 +1204,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public TableView createTable(UUID roomId, MatchOptions matchOptions) {
+    public ViewProto.TableView createTable(UUID roomId, MatchOptions matchOptions) {
         try {
             if (isConnected()) {
                 return server.roomCreateTable(sessionId, roomId, matchOptions);
@@ -1273,7 +1218,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions) {
+    public ViewProto.TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions) {
         try {
             if (isConnected()) {
                 return server.roomCreateTournament(sessionId, roomId, tournamentOptions);
@@ -1603,7 +1548,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public List<UserView> getUsers() {
+    public List<ViewProto.UserView> getUsers() {
         try {
             if (isConnected()) {
                 return server.adminGetUsers(sessionId);
@@ -1771,7 +1716,7 @@ public class SessionImpl implements Session {
     public boolean updatePreferencesForServer(UserData userData) {
         try {
             if (isConnected()) {
-                server.connectSetUserData(connection.getUsername(), sessionId, userData, null, null);
+                server.connectSetUserData(sessionId, userData, null, null);
             }
             return true;
         } catch (MageException ex) {
@@ -1797,14 +1742,9 @@ public class SessionImpl implements Session {
 
             long startTime = System.nanoTime();
 
-            if (connection != null && connection.isWsTransportEnabled() && wsTransport != null) {
-                long clientTimeMillis = System.currentTimeMillis();
-                wsTransport.ping(sessionId, clientTimeMillis);
-            } else {
-                if (!server.ping(sessionId, lastPingInfo)) {
-                    logger.error("Ping failed: " + this.getUserName() + " Session: " + sessionId + " to MAGE server at " + connection.getHost() + ':' + connection.getPort());
-                    throw new MageException("Ping failed");
-                }
+            if (!server.ping(sessionId, lastPingInfo)) {
+                logger.error("Ping failed: " + this.getUserName() + " Session: " + sessionId + " to MAGE server at " + connection.getHost() + ':' + connection.getPort());
+                throw new MageException("Ping failed");
             }
 
             pingTime.add(System.nanoTime() - startTime);
