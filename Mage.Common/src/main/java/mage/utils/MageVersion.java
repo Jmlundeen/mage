@@ -1,6 +1,7 @@
 package mage.utils;
 
 import mage.util.JarVersion;
+import mage.ws.v1.model.ModelProto;
 
 import java.io.Serializable;
 
@@ -38,6 +39,10 @@ public class MageVersion implements Serializable, Comparable<MageVersion> {
         this(MAGE_VERSION_MAJOR, MAGE_VERSION_MINOR, MAGE_VERSION_RELEASE, MAGE_VERSION_RELEASE_INFO, sourceClass);
     }
 
+    public MageVersion(int major, int minor, int release, String releaseInfo) {
+        this(major, minor, release, releaseInfo, null);
+    }
+
     public MageVersion(int major, int minor, int release, String releaseInfo, Class sourceClass) {
         this.major = major;
         this.minor = minor;
@@ -51,7 +56,11 @@ public class MageVersion implements Serializable, Comparable<MageVersion> {
         }
 
         // build time
-        this.buildTime = JarVersion.getBuildTime(sourceClass);
+        if (sourceClass != null) {
+            this.buildTime = JarVersion.getBuildTime(sourceClass);
+        } else {
+            this.buildTime = "";
+        }
     }
 
     public String toString(boolean showBuildTime) {
@@ -94,5 +103,29 @@ public class MageVersion implements Serializable, Comparable<MageVersion> {
 
     public String getBuildTime() {
         return this.buildTime;
+    }
+
+    public ModelProto.MageVersion toProto() {
+        return ModelProto.MageVersion.newBuilder()
+                .setMajor(this.major)
+                .setMinor(this.minor)
+                .setRelease(this.release)
+                .setReleaseInfo(this.releaseInfo)
+                .setBuildTime(this.buildTime)
+                .build();
+    }
+
+    public static MageVersion fromProto(ModelProto.MageVersion proto, Class sourceClass) {
+        return new MageVersion(
+                proto.getMajor(),
+                proto.getMinor(),
+                proto.getRelease(),
+                proto.getReleaseInfo(),
+                sourceClass
+        );
+    }
+
+    public static MageVersion fromProto(ModelProto.MageVersion proto) {
+        return fromProto(proto, null);
     }
 }

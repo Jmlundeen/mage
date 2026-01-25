@@ -1,7 +1,9 @@
 package mage.server.ws;
 
+import mage.ws.v1.WsProto;
 import org.apache.log4j.Logger;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,6 +18,8 @@ public class WsConnectionRegistry {
 
     public interface CloseableConnection {
         void close();
+        void send(ByteBuffer data);
+        boolean isOpen();
     }
 
     private final ConcurrentHashMap<String, CloseableConnection> bySessionId = new ConcurrentHashMap<>();
@@ -42,5 +46,41 @@ public class WsConnectionRegistry {
         }
 
         bySessionId.entrySet().removeIf(e -> e.getValue() == connection);
+    }
+
+    /**
+     * Broadcast a server message to all connected clients.
+     *
+     * @param message The protobuf message to broadcast
+     */
+    public void broadcast(WsProto.ServerMessage message) {
+        byte[] data = message.toByteArray();
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+
+        int successCount = 0;
+        int failCount = 0;
+
+        for (CloseableConnection conn : bySessionId.values()) {
+            try {
+                if (conn.isOpen()) {
+                    conn.send(buffer.duplicate());
+                    successCount++;
+                }
+            } catch (Exception e) {
+                failCount++;
+                logger.debug("Failed to broadcast to connection", e);
+            }
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Broadcasted " + message.getPayloadCase() + " to " + successCount + " clients (" + failCount + " failed)");
+        }
+    }
+
+    /**
+     * Get the number of active connections.
+     */
+    public int getConnectionCount() {
+        return bySessionId.size();
     }
 }

@@ -8,15 +8,10 @@ import mage.client.table.TablePlayerPanel;
 import mage.client.util.Event;
 import mage.client.util.IgnoreList;
 import mage.client.util.Listener;
-import mage.constants.MatchBufferTime;
-import mage.constants.MatchTimeLimit;
-import mage.constants.MultiplayerAttackOption;
-import mage.constants.RangeOfInfluence;
-import mage.constants.SkillLevel;
+import mage.constants.*;
 import mage.game.match.MatchOptions;
 import mage.players.PlayerType;
-import mage.view.GameTypeView;
-import mage.view.TableView;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -42,7 +37,7 @@ public class NewTableDialog extends MageDialog {
     public static final String PLAYER_DATA_DELIMETER_NEW = "@@@";
 
     private final CustomOptionsDialog customOptions;
-    private TableView table;
+    private ViewProto.TableView table;
     private UUID playerId;
     private UUID roomId;
     private String lastSessionId;
@@ -517,9 +512,9 @@ public class NewTableDialog extends MageDialog {
             // join AI
             for (TablePlayerPanel player : players) {
                 if (player.getPlayerType() != PlayerType.HUMAN) {
-                    if (!player.joinTable(roomId, table.getTableId())) {
+                    if (!player.joinTable(roomId, UUID.fromString(table.getTableId()))) {
                         // error message must be sent by a server
-                        SessionHandler.removeTable(roomId, table.getTableId());
+                        SessionHandler.removeTable(roomId, UUID.fromString(table.getTableId()));
                         table = null;
                         return;
                     }
@@ -529,7 +524,7 @@ public class NewTableDialog extends MageDialog {
             // join itself
             if (SessionHandler.joinTable(
                     roomId,
-                    table.getTableId(),
+                    UUID.fromString(table.getTableId()),
                     this.player1Panel.getPlayerName(),
                     PlayerType.HUMAN, 1,
                     DeckImporter.importDeckFromFile(this.player1Panel.getDeckFile(), true),
@@ -542,7 +537,7 @@ public class NewTableDialog extends MageDialog {
             handleError(ex);
         }
         // JOptionPane.showMessageDialog(MageFrame.getDesktop(), "Error joining table.", "Error", JOptionPane.ERROR_MESSAGE);
-        SessionHandler.removeTable(roomId, table.getTableId());
+        SessionHandler.removeTable(roomId, UUID.fromString(table.getTableId()));
         table = null;
     }//GEN-LAST:event_btnOKActionPerformed
 
@@ -593,7 +588,7 @@ public class NewTableDialog extends MageDialog {
 
     private MatchOptions getMatchOptions() {
         // current settings
-        GameTypeView gameType = (GameTypeView) cbGameType.getSelectedItem();
+        ViewProto.GameTypeView gameType = (ViewProto.GameTypeView) cbGameType.getSelectedItem();
         MatchOptions options = new MatchOptions(this.txtName.getText(), gameType.getName(), false);
         options.getPlayerTypes().add(PlayerType.HUMAN);
         for (TablePlayerPanel player : players) {
@@ -737,15 +732,16 @@ public class NewTableDialog extends MageDialog {
     }
 
     private void setGameOptions() {
-        GameTypeView gameType = (GameTypeView) cbGameType.getSelectedItem();
+        ViewProto.GameTypeView gameType = (ViewProto.GameTypeView) cbGameType.getSelectedItem();
+        assert gameType != null;
         int oldValue = (Integer) this.spnNumPlayers.getValue();
         this.spnNumPlayers.setModel(new SpinnerNumberModel(gameType.getMinPlayers(), gameType.getMinPlayers(), gameType.getMaxPlayers(), 1));
         this.spnNumPlayers.setEnabled(gameType.getMinPlayers() != gameType.getMaxPlayers());
         if (oldValue >= gameType.getMinPlayers() && oldValue <= gameType.getMaxPlayers()) {
             this.spnNumPlayers.setValue(oldValue);
         }
-        this.cbAttackOption.setEnabled(gameType.isUseAttackOption());
-        this.cbRange.setEnabled(gameType.isUseRange());
+        this.cbAttackOption.setEnabled(gameType.getUseAttackOption());
+        this.cbRange.setEnabled(gameType.getUseRange());
         // hide multiplayer options row if none are editable, otherwise show it
         JComponent[] multiplayerOptions = {
                 lblNumPlayers,
@@ -855,7 +851,7 @@ public class NewTableDialog extends MageDialog {
         this.setVisible(true);
     }
 
-    public TableView getTable() {
+    public ViewProto.TableView getTable() {
         return table;
     }
 
@@ -915,7 +911,7 @@ public class NewTableDialog extends MageDialog {
         this.spnNumPlayers.setValue(Integer.parseInt(PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TABLE_NUMBER_PLAYERS + versionStr, "2")));
 
         String gameTypeName = PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TABLE_GAME_TYPE + versionStr, "Two Player Duel");
-        for (GameTypeView gtv : SessionHandler.getGameTypes()) {
+        for (ViewProto.GameTypeView gtv : SessionHandler.getGameTypes()) {
             if (gtv.getName().equals(gameTypeName)) {
                 cbGameType.setSelectedItem(gtv);
                 break;

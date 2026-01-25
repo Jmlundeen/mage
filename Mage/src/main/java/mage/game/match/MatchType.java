@@ -2,6 +2,8 @@
 
 package mage.game.match;
 
+import mage.ws.v1.view.ViewProto;
+
 import java.io.Serializable;
 
 /**
@@ -71,4 +73,15 @@ public abstract class MatchType implements Serializable {
         return sideboardingAllowed;
     }
 
+    public ViewProto.GameTypeView getGameTypeView() {
+        return ViewProto.GameTypeView.newBuilder()
+                .setName(this.name)
+                .setMinPlayers(this.minPlayers)
+                .setMaxPlayers(this.maxPlayers)
+                .setNumTeams(this.numTeams)
+                .setPlayersPerTeam(this.playersPerTeam)
+                .setUseRange(this.useRange)
+                .setUseAttackOption(this.useAttackOption)
+                .build();
+    }
 }

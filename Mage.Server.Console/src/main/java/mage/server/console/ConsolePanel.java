@@ -4,8 +4,7 @@
  import mage.components.table.TableModelWithTooltip;
  import mage.components.table.TimeAgoTableCellRenderer;
  import mage.remote.Session;
- import mage.view.TableView;
- import mage.view.UserView;
+ import mage.ws.v1.view.ViewProto;
  import org.apache.log4j.Logger;
 
  import javax.swing.*;
@@ -16,7 +15,6 @@
  import java.util.*;
  import java.util.concurrent.CancellationException;
  import java.util.concurrent.ExecutionException;
- import java.util.stream.Collectors;
 
  import static javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN;
  import static javax.swing.JTable.AUTO_RESIZE_OFF;
@@ -52,14 +50,14 @@
          this.tblTables.getColumnModel().getColumn(TableTableModel.COLUMN_CREATED).setCellRenderer(TimeAgoTableCellRenderer.getInstance());
      }
 
-     public void update(List<UserView> users) {
+     public void update(List<ViewProto.UserView> users) {
          int row = this.tblUsers.getSelectedRow();
          tableUserModel.loadData(users);
          this.tblUsers.repaint();
          this.tblUsers.getSelectionModel().setSelectionInterval(row, row);
      }
 
-     public void update(Collection<TableView> tables) {
+     public void update(Collection<ViewProto.TableView> tables) {
          int row = this.tblTables.getSelectedRow();
          tableTableModel.loadData(tables);
          this.tblTables.repaint();
@@ -380,8 +378,8 @@
      private void btnRemoveTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveTableActionPerformed
          int row = this.tblTables.convertRowIndexToModel(tblTables.getSelectedRow());
          if (row >= 0) {
-             TableView tableView = this.tableTableModel.getTableView(row);
-             ConsoleFrame.getSession().removeTable(tableView.getTableId());
+             ViewProto.TableView tableView = this.tableTableModel.getTableView(row);
+             ConsoleFrame.getSession().removeTable(UUID.fromString(tableView.getTableId()));
          }
      }//GEN-LAST:event_btnRemoveTableActionPerformed
 
@@ -423,12 +421,12 @@
      public static final int POS_CLIENT_VERSION = 8;
 
      private final String[] columnNames = new String[]{"User Name", "Host", "Time Connected", "Last activity", "SessionId", "Gameinfo", "User state", "Chat mute", "Client Version"};
-     private UserView[] users = new UserView[0];
+     private ViewProto.UserView[] users = new ViewProto.UserView[0];
      private static final DateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
      private static final DateFormat formatterTimeStamp = new SimpleDateFormat("yy-M-dd HH:mm:ss");
 
-     public void loadData(List<UserView> users) {
-         this.users = users.toArray(new UserView[0]);
+     public void loadData(List<ViewProto.UserView> users) {
+         this.users = users.toArray(new ViewProto.UserView[0]);
          this.fireTableDataChanged();
      }
 
@@ -450,9 +448,9 @@
              case POS_HOST:
                  return users[arg0].getHost();
              case POS_TIME_CONNECTED:
-                 return formatterTime.format(users[arg0].getTimeConnected());
+                 return formatterTime.format(new Date(users[arg0].getTimeConnectedInMillis()));
              case POS_LAST_ACTIVITY:
-                 return formatterTime.format(users[arg0].getLastActivity());
+                 return formatterTime.format(new Date(users[arg0].getLastActivityInMillis()));
              case POS_SESSION_ID:
                  return users[arg0].getSessionId();
              case POS_GAME_INFO:
@@ -460,10 +458,10 @@
              case POS_USER_STATE:
                  return users[arg0].getUserState();
              case POS_CHAT_MUTE:
-                 if (users[arg0].getMuteChatUntil() == null) {
+                 if (users[arg0].getMuteChatUntilInMillis() == 0) {
                      return "";
                  }
-                 return formatterTimeStamp.format(users[arg0].getMuteChatUntil());
+                 return formatterTimeStamp.format(new Date(users[arg0].getMuteChatUntilInMillis()));
              case POS_CLIENT_VERSION:
                  return users[arg0].getClientVersion();
          }
@@ -486,11 +484,6 @@
          return String.class;
      }
 
-     @Override
-     public boolean isCellEditable(int rowIndex, int columnIndex) {
-         return false;
-     }
-
  }
 
  class TableTableModel extends AbstractTableModel implements TableModelWithTooltip {
@@ -498,10 +491,10 @@
      protected static final int COLUMN_CREATED = 4;
 
      private final String[] columnNames = new String[]{"Table name", "Players", "Game type", "Deck type", "Created", "Status", "Games"};
-     private TableView[] tables = new TableView[0];
+     private ViewProto.TableView[] tables = new ViewProto.TableView[0];
 
-     public void loadData(Collection<TableView> tables) {
-         this.tables = tables.toArray(new TableView[0]);
+     public void loadData(Collection<ViewProto.TableView> tables) {
+         this.tables = tables.toArray(new ViewProto.TableView[0]);
          this.fireTableDataChanged();
      }
 
@@ -527,17 +520,17 @@
              case 3:
                  return tables[arg0].getDeckType();
              case COLUMN_CREATED:
-                 return tables[arg0].getCreateTime();
+                 return new Date(tables[arg0].getCreateTimeMillis());
              case 5:
                  return tables[arg0].getTableStateText();
              case 6:{
-                 if (tables[arg0].getGames().isEmpty()) {
+                 if (tables[arg0].getGamesList().isEmpty()) {
                      return "NO GAMES";
-                 } else if (tables[arg0].getGames().size() == 1) {
-                     return tables[arg0].getGames().get(0).toString();
+                 } else if (tables[arg0].getGamesList().size() == 1) {
+                     return tables[arg0].getGamesList().get(0);
                  } else {
-                     return String.format("%d games:", tables[arg0].getGames().size())
-                             + "<br>" + tables[arg0].getGames().stream().map(UUID::toString).collect(Collectors.joining("<br>"));
+                     return String.format("%d games:", tables[arg0].getGamesList().size())
+                             + "<br>" + String.join("<br>", tables[arg0].getGamesList());
                  }
              }
          }
@@ -564,12 +557,7 @@
          }
      }
 
-     @Override
-     public boolean isCellEditable(int rowIndex, int columnIndex) {
-         return false;
-     }
-
-     public TableView getTableView(int row) {
+     public ViewProto.TableView getTableView(int row) {
          if (row >= 0 && row <= this.tables.length - 1) {
              return this.tables[row];
          } else {
@@ -584,11 +572,11 @@
      }
  }
 
- class UpdateUsersTask extends SwingWorker<Void, List<UserView>> {
+ class UpdateUsersTask extends SwingWorker<Void, List<ViewProto.UserView>> {
 
      private final Session session;
      private final ConsolePanel panel;
-     private List<UserView> previousUsers;
+     private List<ViewProto.UserView> previousUsers;
 
      private static final Logger logger = Logger.getLogger(UpdateUsersTask.class);
      Map<String, String> peopleIps = new HashMap<>();
@@ -601,10 +589,10 @@
      @Override
      protected Void doInBackground() throws Exception {
          while (!isCancelled()) {
-             List<UserView> users = session.getUsers();
-             if (!panel.getjUserName().getText().equals("")) {
-                 List<UserView> users2 = new ArrayList<>();
-                 for (UserView user : users) {
+             List<ViewProto.UserView> users = session.getUsers();
+             if (!panel.getjUserName().getText().isEmpty()) {
+                 List<ViewProto.UserView> users2 = new ArrayList<>();
+                 for (ViewProto.UserView user : users) {
                      if (user.getUserName().toUpperCase(Locale.ENGLISH).matches(".*" + panel.getjUserName().getText().toUpperCase(Locale.ENGLISH) + ".*")) {
                          users2.add(user);
                      }
@@ -620,12 +608,12 @@
          return null;
      }
 
-     private void checkUserListChanged(List<UserView> usersToCheck) {
+     private void checkUserListChanged(List<ViewProto.UserView> usersToCheck) {
          if (previousUsers == null || usersToCheck == null) {
              return;
          }
 
-         for (UserView u1 : previousUsers) {
+         for (ViewProto.UserView u1 : previousUsers) {
              String s = u1.getUserName() + ',' + u1.getHost();
              if (peopleIps.get(s) == null) {
                  logger.warn("Found new user: " + u1.getUserName() + ',' + u1.getHost());
@@ -633,7 +621,7 @@
              }
          }
 
-         for (UserView u1 : usersToCheck) {
+         for (ViewProto.UserView u1 : usersToCheck) {
              String s = u1.getUserName() + ',' + u1.getHost();
              if (peopleIps.get(s) == null) {
                  logger.warn("Found new user: " + u1.getUserName() + ',' + u1.getHost());
@@ -643,7 +631,7 @@
      }
 
      @Override
-     protected void process(List<List<UserView>> view) {
+     protected void process(List<List<ViewProto.UserView>> view) {
          panel.update(view.get(0));
      }
 
@@ -664,7 +652,7 @@
      }
  }
 
- class UpdateTablesTask extends SwingWorker<Void, Collection<TableView>> {
+ class UpdateTablesTask extends SwingWorker<Void, Collection<ViewProto.TableView>> {
 
      private final Session session;
      private final UUID roomId;
@@ -681,10 +669,10 @@
      @Override
      protected Void doInBackground() throws Exception {
          while (!isCancelled()) {
-             Collection<TableView> tableViews = session.getTables(roomId);
-             if (!panel.getjUserName().getText().equals("")) {
-                 Collection<TableView> tableViews2 = new ArrayList<>();
-                 for (TableView table : tableViews) {
+             Collection<ViewProto.TableView> tableViews = session.getTables(roomId);
+             if (!panel.getjUserName().getText().isEmpty()) {
+                 Collection<ViewProto.TableView> tableViews2 = new ArrayList<>();
+                 for (ViewProto.TableView table : tableViews) {
                      if (table.getControllerName().toUpperCase(Locale.ENGLISH).matches(".*" + panel.getjUserName().getText().toUpperCase(Locale.ENGLISH) + ".*")) {
                          tableViews2.add(table);
                      }
@@ -699,7 +687,7 @@
      }
 
      @Override
-     protected void process(List<Collection<TableView>> view) {
+     protected void process(List<Collection<ViewProto.TableView>> view) {
          panel.update(view.get(0));
      }
 
@@ -707,11 +695,9 @@
      protected void done() {
          try {
              get();
-         } catch (InterruptedException ex) {
+         } catch (InterruptedException | ExecutionException ex) {
              logger.fatal("Update Tables Task error", ex);
-         } catch (ExecutionException ex) {
-             logger.fatal("Update Tables Task error", ex);
-         } catch (CancellationException ex) {
+         } catch (CancellationException ignored) {
          }
      }
  }

@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+package mage.ws.v1;
+
+option java_package = "mage.ws.v1";
+option java_outer_classname = "WsProto";
+
+import "view/view.proto";
+import "model/model.proto";
+// Strict, versioned envelopes used by the parallel Javalin WebSocket transport.
+//
+// Rules:
+// - Every ClientMessage must include protocolVersion and requestId.
+// - sessionId is required for all non-connection-class messages.
+// - Every request yields exactly one ServerMessage with matching requestId.
+
+message ClientMessage {
+  string protocolVersion = 1;
+  string requestId = 2;
+  string sessionId = 3;
+
+  oneof payload {
+    Disconnect disconnect = 10;
+    PingRequest ping = 11;
+    AuthRequest auth = 12;
+    MainRoomIdRequest main_room_id_request = 13;
+    RoomChatIdRequest room_chat_id_request = 14;
+    JoinChatRequest join_chat_request = 15;
+    LeaveChatRequest leave_chat_request = 16;
+    ServerStateRequest server_state_request = 17;
+    UserData user_data = 18;
+    PromotionMessagesRequest promotion_messages_request = 19;
+    TablesRequest table_request = 30;
+    FinishedMatchesRequest finished_matches_request = 31;
+    RoomUsersRequest room_users_request = 32;
+    LobbyInfoRequest  lobby_info_request= 33;
+  }
+}
+
+message ServerMessage {
+  string protocolVersion = 1;
+  string requestId = 2;
+  string sessionId = 3;
+
+  oneof payload {
+    Ack ack = 10;
+    Error error = 11;
+
+    AuthResponse auth = 22;
+    UUIDResponse uuid_response = 23;
+    ServerStateResponse server_state_response = 24;
+    PromotionMessagesResponse promotion_messages_response = 25;
+
+    TablesResponse lobbyGetTables = 30;
+    FinishedMatchesResponse finished_matches_response = 31;
+    RoomUsersResponse room_users_response = 32;
+    LobbyInfoResponse lobbyGetInfo = 33;
+  }
+}
+
+message Ack {
+  // Reserved for future structured ACK data.
+}
+
+message Error {
+  ErrorCode code = 1;
+  string message = 2;
+}
+
+enum ErrorCode {
+  ERROR_CODE_UNKNOWN = 0;
+  INVALID_PROTOCOL_VERSION = 1;
+  MISSING_REQUEST_ID = 2;
+  MISSING_SESSION_ID = 3;
+  UNKNOWN_MESSAGE_TYPE = 4;
+  AUTH_FAILED = 5;
+  MAGE_EXCEPTION = 6;
+  SERVER_ERROR = 7;
+}
+
+// Connection-class message, allowed without sessionId.
+message Disconnect {
+}
+
+message PingRequest {
+  string lastPingInfo = 1;
+}
+
+message AuthRequest {
+  string userName = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message TablesRequest {
+  string roomId = 1;
+}
+
+message TablesResponse {
+  repeated view.TableView tables = 1;
+}
+
+message FinishedMatchesRequest {
+  string roomId = 1;
+}
+
+message FinishedMatchesResponse {
+  repeated view.MatchView finishedMatches = 1;
+}
+
+message RoomUsersRequest {
+  string roomId = 1;
+}
+
+message RoomUsersResponse {
+  view.RoomUsersView roomUsers = 1;
+}
+
+message MainRoomIdRequest {
+}
+
+message UUIDResponse {
+  string uuid = 1;
+}
+
+message RoomChatIdRequest {
+  string roomId = 1;
+}
+
+message JoinChatRequest {
+  string chatId = 1;
+}
+
+message LeaveChatRequest {
+  string chatId = 1;
+}
+
+message ServerStateRequest {
+}
+
+message ServerStateResponse {
+  model.ServerState serverState = 1;
+}
+
+message UserData {
+  model.UserData userData = 1;
+  model.MageVersion mageVersion = 2;
+  string userIdStr = 3;
+}
+
+message LobbyInfoRequest {
+  string roomId = 1;
+  bool includeFinishedMatches = 2;
+  bool includeRoomUsers = 3;
+}
+
+message LobbyInfoResponse {
+  repeated view.TableView tables = 1;
+  repeated view.MatchView finishedMatches = 2;
+  view.RoomUsersView roomUsers = 3;
+}
+
+message PromotionMessagesRequest {
+}
+
+message PromotionMessagesResponse {
+  repeated string messages = 1;
+}

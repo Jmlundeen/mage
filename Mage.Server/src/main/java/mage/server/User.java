@@ -23,6 +23,7 @@ import mage.server.tournament.TournamentSession;
 import mage.server.util.ServerMessagesUtil;
 import mage.utils.SystemUtil;
 import mage.view.TableClientMessage;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -915,5 +916,39 @@ public class User {
     public boolean isOnlineUser() {
         return this.getUserState() != User.UserState.Offline
                 && !this.getName().equals(User.ADMIN_NAME);
+    }
+
+    public ViewProto.UserView toUserProto() {
+        return ViewProto.UserView.newBuilder()
+                .setUserIdStr(this.userId.toString())
+                .setUserName(this.userName)
+                .setUserState(this.userState.toString())
+                .setTimeConnectedInMillis(this.connectionTime.getTime())
+                .setLastActivityInMillis(this.lastActivity.getTime())
+                .setGameInfo(this.getGameInfo())
+                .build();
+    }
+
+    public ViewProto.UsersView toUsersProto() {
+        ViewProto.UsersView.Builder view = ViewProto.UsersView.newBuilder();
+        if (getUserData() == null) {
+            view.setFlagName("world");
+            view.setGeneralRating(0);
+            view.setConstructedRating(0);
+            view.setLimitedRating(0);
+        } else {
+            view.setFlagName(getUserData().getFlagName());
+            view.setGeneralRating(getUserData().getGeneralRating());
+            view.setConstructedRating(getUserData().getConstructedRating());
+            view.setLimitedRating(getUserData().getLimitedRating());
+        }
+        view.setMatchHistory(getMatchHistory() == null ? "<no match history>" : getMatchHistory());
+        view.setMatchQuitRatio(getMatchQuitRatio());
+        view.setTourneyHistory(getTourneyHistory() == null ? "<no tourney history>" : getTourneyHistory());
+        view.setTourneyQuitRatio(getTourneyQuitRatio());
+        view.setUserName(getName() == null ? "<unknown>" : getName());
+        view.setInfoGames(getGameInfo() == null ? "<no game info>" : getGameInfo());
+        view.setInfoPing(getPingInfo() == null ? "<no ping info>" : getPingInfo());
+        return view.build();
     }
 }

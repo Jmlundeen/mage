@@ -45,6 +45,7 @@ import mage.target.common.TargetDefender;
 import mage.target.targetpointer.TargetPointer;
 import mage.util.*;
 import mage.utils.SystemUtil;
+import mage.ws.v1.model.ModelProto;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
@@ -1188,8 +1189,8 @@ public class HumanPlayer extends PlayerImpl {
                     filter.add(new ControllerIdPredicate(playerId));
                     // stop skip on any/zero permanents available
                     int possibleBlockersCount = game.getBattlefield().count(filter, playerId, null, game);
-                    boolean canStopOnAny = possibleBlockersCount != 0 && getControllingPlayersUserData(game).getUserSkipPrioritySteps().isStopOnDeclareBlockersWithAnyPermanents();
-                    boolean canStopOnZero = possibleBlockersCount == 0 && getControllingPlayersUserData(game).getUserSkipPrioritySteps().isStopOnDeclareBlockersWithZeroPermanents();
+                    boolean canStopOnAny = possibleBlockersCount != 0 && getControllingPlayersUserData(game).getUserSkipPrioritySteps().getStopOnDeclareBlockersWithAnyPermanents();
+                    boolean canStopOnZero = possibleBlockersCount == 0 && getControllingPlayersUserData(game).getUserSkipPrioritySteps().getStopOnDeclareBlockersWithZeroPermanents();
                     quickStop = canStopOnAny || canStopOnZero;
                 }
             }
@@ -1245,7 +1246,7 @@ public class HumanPlayer extends PlayerImpl {
                             // it's main step
                             if (!skippedAtLeastOnce
                                     || (!playerId.equals(game.getActivePlayerId())
-                                    && !controllingUserData.getUserSkipPrioritySteps().isStopOnAllMainPhases())) {
+                                    && !controllingUserData.getUserSkipPrioritySteps().getStopOnAllMainPhases())) {
                                 skippedAtLeastOnce = true;
                                 if (passWithManaPoolCheck(game)) {
                                     return false;
@@ -1269,7 +1270,7 @@ public class HumanPlayer extends PlayerImpl {
                                     || (playerId.equals(game.getActivePlayerId())
                                     && !controllingUserData
                                     .getUserSkipPrioritySteps()
-                                    .isStopOnAllEndPhases())) {
+                                    .getStopOnAllEndPhases())) {
                                 skippedAtLeastOnce = true;
                                 if (passWithManaPoolCheck(game)) {
                                     return false;
@@ -1302,7 +1303,7 @@ public class HumanPlayer extends PlayerImpl {
                                 && (playerId.equals(game.getActivePlayerId())
                                 && controllingUserData
                                 .getUserSkipPrioritySteps()
-                                .isStopOnStackNewObjects())) {
+                                .getStopOnStackNewObjects())) {
                             // new objects on stack -- disable "pass until stack resolved"
                             passedUntilStackResolved = false;
                         } else {
@@ -1428,9 +1429,9 @@ public class HumanPlayer extends PlayerImpl {
         try {
 
             if (playerId.equals(game.getActivePlayerId())) {
-                return !controllingUserData.getUserSkipPrioritySteps().getYourTurn().isPhaseStepSet(game.getTurnStepType());
+                return isPhaseStepNotSet(controllingUserData.getUserSkipPrioritySteps().getYourTurn(), game.getTurnStepType());
             } else {
-                return !controllingUserData.getUserSkipPrioritySteps().getOpponentTurn().isPhaseStepSet(game.getTurnStepType());
+                return isPhaseStepNotSet(controllingUserData.getUserSkipPrioritySteps().getOpponentTurn(), game.getTurnStepType());
             }
         } catch (NullPointerException ex) {
             if (controllingUserData != null) {
@@ -1450,6 +1451,19 @@ public class HumanPlayer extends PlayerImpl {
             }
         }
         return false;
+    }
+
+    private boolean isPhaseStepNotSet(ModelProto.SkipPrioritySteps skipPrioritySteps, PhaseStep phaseStep) {
+        return !switch (phaseStep) {
+            case UPKEEP -> skipPrioritySteps.getUpkeep();
+            case DRAW -> skipPrioritySteps.getDraw();
+            case PRECOMBAT_MAIN -> skipPrioritySteps.getMain1();
+            case BEGIN_COMBAT -> skipPrioritySteps.getBeforeCombat();
+            case END_COMBAT -> skipPrioritySteps.getEndOfCombat();
+            case POSTCOMBAT_MAIN -> skipPrioritySteps.getMain2();
+            case END_TURN -> skipPrioritySteps.getEndOfTurn();
+            default -> true;
+        };
     }
 
     @Override
@@ -1761,7 +1775,7 @@ public class HumanPlayer extends PlayerImpl {
                     || passedUntilEndStepBeforeMyTurn
                     || (!getControllingPlayersUserData(game)
                     .getUserSkipPrioritySteps()
-                    .isStopOnDeclareAttackers()
+                    .getStopOnDeclareAttackers()
                     && (passedTurn
                     || passedTurnSkipStack
                     || passedUntilEndOfTurn
@@ -2017,7 +2031,7 @@ public class HumanPlayer extends PlayerImpl {
 
         // stop skip on any/zero permanents available
         int possibleBlockersCount = game.getBattlefield().count(filter, playerId, source, game);
-        boolean canStopOnAny = possibleBlockersCount != 0 && getControllingPlayersUserData(game).getUserSkipPrioritySteps().isStopOnDeclareBlockersWithAnyPermanents();
+        boolean canStopOnAny = possibleBlockersCount != 0 && getControllingPlayersUserData(game).getUserSkipPrioritySteps().getStopOnDeclareBlockersWithAnyPermanents();
 
         // skip declare blocker step
         // as opposed to declare attacker - it can be skipped by ANY skip button TODO: make same for declare attackers and rework skip buttons (normal and forced)

@@ -2,8 +2,6 @@ package mage.interfaces;
 
 import mage.MageException;
 import mage.cards.decks.DeckCardLists;
-import mage.cards.repository.CardInfo;
-import mage.cards.repository.ExpansionInfo;
 import mage.constants.ManaType;
 import mage.constants.PlayerAction;
 import mage.game.GameException;
@@ -12,7 +10,10 @@ import mage.game.tournament.TournamentOptions;
 import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.utils.MageVersion;
-import mage.view.*;
+import mage.view.DraftPickView;
+import mage.view.GameView;
+import mage.view.TournamentView;
+import mage.ws.v1.view.ViewProto;
 
 import java.util.List;
 import java.util.Set;
@@ -36,13 +37,13 @@ public interface MageServer {
 
     boolean connectAdmin(String password, String sessionId, MageVersion version) throws MageException;
 
-    boolean connectSetUserData(String userName, String sessionId, UserData userData, String clientVersion, String userIdStr) throws MageException;
+    boolean connectSetUserData(String sessionId, UserData userData, String clientVersion, String userIdStr) throws MageException;
 
     boolean ping(String sessionId, String pingInfo) throws MageException;
     
     void serverAddFeedbackMessage(String sessionId, String username, String title, String type, String message, String email) throws MageException;
 
-    Object serverGetPromotionMessages(String sessionId) throws MageException;
+    List<String> serverGetPromotionMessages(String sessionId) throws MageException;
 
     ServerState getServerState() throws MageException; // TODO: need stable update process, so rename it after few releases
 
@@ -50,14 +51,14 @@ public interface MageServer {
     UUID serverGetMainRoomId() throws MageException;
 
     // TODO: miss session
-    List<RoomUsersView> roomGetUsers(UUID roomId) throws MageException;
+    ViewProto.RoomUsersView roomGetUsers(UUID roomId) throws MageException;
 
     // TODO: miss session
-    List<MatchView> roomGetFinishedMatches(UUID roomId) throws MageException;
+    List<ViewProto.MatchView> roomGetFinishedMatches(UUID roomId) throws MageException;
 
-    TableView roomCreateTable(String sessionId, UUID roomId, MatchOptions matchOptions) throws MageException;
+    ViewProto.TableView roomCreateTable(String sessionId, UUID roomId, MatchOptions matchOptions) throws MageException;
 
-    TableView roomCreateTournament(String sessionId, UUID roomId, TournamentOptions tournamentOptions) throws MageException;
+    ViewProto.TableView roomCreateTournament(String sessionId, UUID roomId, TournamentOptions tournamentOptions) throws MageException;
 
     boolean roomJoinTable(String sessionId, UUID roomId, UUID tableId, String name, PlayerType playerType, int skill, DeckCardLists deckList, String password) throws MageException, GameException;
 
@@ -80,10 +81,10 @@ public interface MageServer {
     boolean tableIsOwner(String sessionId, UUID roomId, UUID tableId) throws MageException;
 
     // TODO: miss session
-    TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException;
+    ViewProto.TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException;
 
     // TODO: miss session
-    List<TableView> roomGetAllTables(UUID roomId) throws MageException;
+    List<ViewProto.TableView> roomGetAllTables(UUID roomId) throws MageException;
 
     // TODO: miss session
     void chatSendMessage(UUID chatId, String userName, String message) throws MageException;
@@ -163,7 +164,7 @@ public interface MageServer {
 
     void cheatShow(UUID gameId, String sessionId, UUID playerId) throws MageException;
 
-    List<UserView> adminGetUsers(String sessionId) throws MageException;
+    List<ViewProto.UserView> adminGetUsers(String sessionId) throws MageException;
 
     void adminDisconnectUser(String sessionId, String userSessionId) throws MageException;
 

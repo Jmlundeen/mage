@@ -20,19 +20,17 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- protobuf protocol support for new WS transport -->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.25.8</version>
-        </dependency>
-
         <dependency>
             <groupId>com.googlecode.jspf</groupId>
             <artifactId>jspf-core</artifactId>
             <version>0.9.1</version>            
         </dependency>
 
+        <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin</artifactId>
+            <version>6.7.0</version>
+        </dependency>
         <dependency>
             <groupId>org.jboss.remoting</groupId>
             <artifactId>jboss-remoting</artifactId>
@@ -73,6 +71,13 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+
+        <!-- websocket client support for new WS transport -->
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.6.0</version>
+        </dependency>
     </dependencies>
 
     <!-- to get the reference to local repository with com\\googlecode\\jspf\\jspf-core\\0.9.1\\ -->
@@ -101,56 +106,6 @@
                 </configuration>
             </plugin>
 
-            <!-- generate protobuf classes from src/main/proto -->
-            <plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.11.4</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-
-                        <configuration>
-                            <protocArtifact>com.google.protobuf:protoc:3.25.8</protocArtifact>
-                            <inputDirectories>
-                                <include>${project.basedir}/src/main/proto</include>
-                            </inputDirectories>
-                            <outputTargets>
-                                <outputTarget>
-                                    <type>java</type>
-                                    <addSources>none</addSources>
-                                    <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-                                </outputTarget>
-                            </outputTargets>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- add generated proto buffer classes into the package -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>add-classes</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${protobuf.output.directory}</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -164,6 +119,6 @@
         <root.dir>${project.basedir}/..</root.dir>
         <!-- protobuf paths -->
         <protobuf.input.directory>${project.basedir}/src/main/proto</protobuf.input.directory>
-        <protobuf.output.directory>${project.build.directory}/generated-sources</protobuf.output.directory>
+        <protobuf.output.directory>${project.build.directory}/generated-sources/protobuf/java</protobuf.output.directory>
     </properties>
 </project>

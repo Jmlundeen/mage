@@ -1,5 +1,7 @@
 package mage.constants;
 
+import mage.ws.v1.view.ViewProto;
+
 /**
  *
  * @author North
@@ -25,4 +27,30 @@ public enum TableState {
         return text;
     }
 
+    public ViewProto.TableState toProto() {
+        return switch (this) {
+            case WAITING -> ViewProto.TableState.WAITING;
+            case READY_TO_START -> ViewProto.TableState.READY_TO_START;
+            case STARTING -> ViewProto.TableState.STARTING;
+            case DRAFTING -> ViewProto.TableState.DRAFTING;
+            case CONSTRUCTING -> ViewProto.TableState.CONSTRUCTING;
+            case DUELING -> ViewProto.TableState.DUELING;
+            case SIDEBOARDING -> ViewProto.TableState.SIDEBOARDING;
+            case FINISHED -> ViewProto.TableState.FINISHED;
+        };
+    }
+
+    public static TableState fromProto(ViewProto.TableState proto) {
+        return switch (proto) {
+            case WAITING -> WAITING;
+            case READY_TO_START -> READY_TO_START;
+            case STARTING -> STARTING;
+            case DRAFTING -> DRAFTING;
+            case CONSTRUCTING -> CONSTRUCTING;
+            case DUELING -> DUELING;
+            case SIDEBOARDING -> SIDEBOARDING;
+            case FINISHED -> FINISHED;
+            default -> throw new IllegalArgumentException("Unknown TableState proto: " + proto);
+        };
+    }
 }

@@ -3,7 +3,7 @@ package mage.server.managers;
 import mage.server.AuthorizedUser;
 import mage.server.DisconnectReason;
 import mage.server.User;
-import mage.view.UserView;
+import mage.ws.v1.view.ViewProto;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +17,8 @@ public interface UserManager {
     Optional<User> getUser(UUID userId);
 
     Optional<User> getUserByName(String userName);
+
+    Optional<User> getUserBySessionId(String sessionId);
 
     Collection<User> getUsers();
 
@@ -32,7 +34,7 @@ public interface UserManager {
 
     void removeUser(UUID userId);
 
-    List<UserView> getUserInfoList();
+    List<ViewProto.UserView> getUserInfoList();
 
     void handleException(Exception ex);
 

@@ -18,6 +18,8 @@
  import java.text.DateFormat;
  import java.text.SimpleDateFormat;
  import java.util.Calendar;
+ import java.util.Date;
+ import java.util.UUID;
 
  /**
   * Game GUI: end game window
@@ -64,12 +66,13 @@
 
          // game duration
          txtDurationGame.setText(" " + Format.getDuration(gameEndView.getStartTime(), gameEndView.getEndTime()));
-         txtDurationGame.setToolTipText(new StringBuilder(df.format(gameEndView.getStartTime())).append(" - ").append(df.format(gameEndView.getEndTime())).toString());
+         txtDurationGame.setToolTipText(df.format(gameEndView.getStartTime()) + " - " + df.format(gameEndView.getEndTime()));
 
          // match duration
          Calendar cal = Calendar.getInstance();
-         txtDurationMatch.setText(" " + Format.getDuration(gameEndView.getMatchView().getStartTime(), cal.getTime()));
-         txtDurationMatch.setToolTipText(new StringBuilder(df.format(gameEndView.getMatchView().getStartTime())).append(" - ").append(df.format(cal.getTime())).toString());
+         Date gameStartTime = new Date(gameEndView.getMatchView().getStartTimeMillis());
+         txtDurationMatch.setText(" " + Format.getDuration(gameStartTime, cal.getTime()));
+         txtDurationMatch.setToolTipText(df.format(gameStartTime) + " - " + df.format(cal.getTime()));
 
          StringBuilder sb = new StringBuilder(" ");
          for (PlayerView player : gameEndView.getPlayers()) {
@@ -95,16 +98,17 @@
          }
          // get game log
          try {
-             if (gameEndView.getMatchView().getGames().size() > 0) {
-                 GamePanel gamePanel = MageFrame.getGame(gameEndView.getMatchView().getGames().get(gameEndView.getMatchView().getGames().size() - 1));
+             if (!gameEndView.getMatchView().getGamesList().isEmpty()) {
+                 int numGames = gameEndView.getMatchView().getGamesList().size();
+                 GamePanel gamePanel = MageFrame.getGame(UUID.fromString(gameEndView.getMatchView().getGamesList().get(numGames - 1)));
                  if (gamePanel != null) {
                      SimpleDateFormat sdf = new SimpleDateFormat();
                      sdf.applyPattern("yyyyMMdd_HHmmss");
-                     String fileName = new StringBuilder(dir).append(File.separator)
-                             .append(sdf.format(gameEndView.getStartTime()))
-                             .append('_').append(gameEndView.getMatchView().getGameType())
-                             .append('_').append(gameEndView.getMatchView().getGames().size())
-                             .append(".html").toString();
+                     String fileName = dir + File.separator +
+                             sdf.format(gameEndView.getStartTime()) +
+                             '_' + gameEndView.getMatchView().getGameType() +
+                             '_' + numGames +
+                             ".html";
                      PrintWriter out = new PrintWriter(fileName);
                      String log = gamePanel.getGameLog();
                      log = log.replace("<body>", "<body style=\"background-color:black\">");

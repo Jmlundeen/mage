@@ -9,9 +9,7 @@ import mage.game.match.MatchOptions;
 import mage.game.tournament.TournamentOptions;
 import mage.players.PlayerType;
 import mage.server.Room;
-import mage.view.MatchView;
-import mage.view.RoomUsersView;
-import mage.view.TableView;
+import mage.ws.v1.view.ViewProto;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,16 +21,16 @@ import java.util.UUID;
  */
 public interface GamesRoom extends Room {
 
-    List<TableView> getTables();
-    List<MatchView> getFinished();
-    List<RoomUsersView> getRoomUsersInfo();
+    List<ViewProto.TableView> getTables();
+    List<ViewProto.MatchView> getFinished();
+    ViewProto.RoomUsersView getRoomUsersInfo();
     boolean joinTable(UUID userId, UUID tableId, String name, PlayerType playerType, int skill, DeckCardLists deckList, String password) throws MageException;
     boolean joinTournamentTable(UUID userId, UUID tableId, String name, PlayerType playerType, int skill, DeckCardLists deckList, String password) throws GameException;
-    TableView createTable(UUID userId, MatchOptions options);
-    TableView createTournamentTable(UUID userId, TournamentOptions options);
+    ViewProto.TableView createTable(UUID userId, MatchOptions options);
+    ViewProto.TableView createTournamentTable(UUID userId, TournamentOptions options);
     void removeTable(UUID userId, UUID tableId);
     void removeTable(UUID tableId);
-    Optional<TableView> getTable(UUID tableId);
+    Optional<ViewProto.TableView> getTable(UUID tableId);
     void leaveTable(UUID userId, UUID tableId);
     boolean watchTable(UUID userId, UUID tableId) throws MageException;
 

@@ -1,6 +1,8 @@
 
 package mage.game.tournament;
 
+import mage.ws.v1.view.ViewProto;
+
 import java.io.Serializable;
 
 /**
@@ -78,4 +80,21 @@ public class TournamentType implements Serializable {
         return this.isJumpstart;
     }
 
+
+    public ViewProto.TournamentTypeView toProto() {
+        return ViewProto.TournamentTypeView.newBuilder()
+                .setName(this.name)
+                .setMinPlayers(this.minPlayers)
+                .setMaxPlayers(this.maxPlayers)
+                .setNumBoosters(this.numBoosters)
+                .setCubeBooster(this.cubeBooster)
+                .setDraft(this.draft)
+                .setLimited(this.limited)
+                .setElimination(this.elimination)
+                .setRandom(this.isRandom)
+                .setReshuffled(this.isReshuffled)
+                .setRichMan(this.isRichMan)
+                .setJumpstart(this.isJumpstart)
+                .build();
+    }
 } 

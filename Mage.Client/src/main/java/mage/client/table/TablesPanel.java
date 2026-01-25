@@ -19,13 +19,13 @@ import mage.components.table.TimeAgoTableCellRenderer;
 import mage.constants.*;
 import mage.game.match.MatchOptions;
 import mage.players.PlayerType;
-import mage.remote.MageRemoteException;
+import mage.remote.transport.LobbyEvent;
+import mage.remote.transport.LobbyEventBus;
+import mage.remote.transport.LobbyEventListener;
 import mage.util.DeckUtil;
 import mage.util.RandomUtil;
-import mage.view.MatchView;
-import mage.view.RoomUsersView;
-import mage.view.TableView;
 import mage.view.UserRequestMessage;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.mage.card.arcane.CardRendererUtils;
 import org.ocpsoft.prettytime.Duration;
@@ -50,9 +50,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static mage.client.dialog.PreferencesDialog.*;
 
@@ -131,7 +128,7 @@ public class TablesPanel extends javax.swing.JPanel {
                     "<b>Rating restriction</b><br>"
                             + "You need at least this rating"
                             + "<br> to be able to join the table")
-            .addColumn(14, 80, String.class, "Action", 
+            .addColumn(14, 80, String.class, "Action",
                     "<b>Actions related to this table</b><br>"
                             + "Depending on the state of the table<br>"
                             + "the possible actions you can take<br>"
@@ -139,9 +136,9 @@ public class TablesPanel extends javax.swing.JPanel {
     
     private final MatchesTableModel matchesModel;
     private UUID roomId;
-    private UpdateTablesTask updateTablesTask;
-    private UpdatePlayersTask updatePlayersTask;
-    private UpdateMatchesTask updateMatchesTask;
+
+    // Lobby event listener for server push updates
+    private final LobbyEventListener lobbyEventListener;
 
     // no needs in multiple create/join tables dialogs, it's a client side action
     private JoinTableDialog joinTableDialog;
@@ -288,6 +285,12 @@ public class TablesPanel extends javax.swing.JPanel {
         tableModel = new TablesTableModel();        
         matchesModel = new MatchesTableModel();
         gameChooser = new GameChooser();
+
+        // Initialize lobby event listener for server push updates
+        lobbyEventListener = event -> {
+            // Events arrive on WebSocket thread, so dispatch to Swing EDT
+            SwingUtilities.invokeLater(() -> handleLobbyEvent(event));
+        };
 
         initComponents();
         //  tableModel.setSession(session);
@@ -584,8 +587,17 @@ public class TablesPanel extends javax.swing.JPanel {
 
     public void cleanUp() {
         saveGuiSettings();
+
+        // Unsubscribe from lobby event bus
+        if (SessionHandler.getSession() instanceof mage.remote.WsSessionImpl) {
+            LobbyEventBus eventBus = ((mage.remote.WsSessionImpl) SessionHandler.getSession()).getLobbyEventBus();
+            if (eventBus != null) {
+                eventBus.unsubscribe(lobbyEventListener);
+                LOGGER.debug("Unsubscribed from lobby event bus in cleanUp");
+            }
+        }
+
         chatPanelMain.cleanUp();
-        stopTasks();
     }
 
     public void changeGUISize() {
@@ -696,62 +708,48 @@ public class TablesPanel extends javax.swing.JPanel {
         return components;
     }
 
-    public void updateTables(Collection<TableView> tables) {
+    public void updateTables(List<ViewProto.TableView> tables) {
         try {
             tableModel.loadData(tables);
             this.tableTables.repaint();
-        } catch (MageRemoteException ex) {
+        } catch (Exception ex) {
             hideTables();
         }
     }
 
-    public void updateMatches(Collection<MatchView> matches) {
+    public void updateMatches(List<ViewProto.MatchView> matches) {
         try {
             matchesModel.loadData(matches);
             this.tableCompleted.repaint();
-        } catch (MageRemoteException ex) {
+        } catch (Exception ex) {
             hideTables();
         }
     }
 
-    public void startUpdateTasks(boolean refreshImmediately) {
-        if (SessionHandler.getSession() != null) {
-            // active tables and server messages
-            if (updateTablesTask == null || updateTablesTask.isDone() || refreshImmediately) {
-                if (updateTablesTask != null) updateTablesTask.cancel(true);
-                updateTablesTask = new UpdateTablesTask(roomId, this);
-                updateTablesTask.execute();
+    /**
+     * Handle lobby event from server push update.
+     * This is called on the Swing EDT.
+     */
+    private void handleLobbyEvent(LobbyEvent event) {
+        try {
+            // Update tables
+            if (event.tables() != null) {
+                updateTables(event.tables());
             }
 
-            // finished tables
-            if (this.btnStateFinished.isSelected()) {
-                if (updateMatchesTask == null || updateMatchesTask.isDone() || refreshImmediately) {
-                    if (updateMatchesTask != null) updateMatchesTask.cancel(true);
-                    updateMatchesTask = new UpdateMatchesTask(roomId, this);
-                    updateMatchesTask.execute();
-                }
-            } else {
-                if (updateMatchesTask != null) updateMatchesTask.cancel(true);
+            // Update room users
+            if (event.roomUsers() != null) {
+                chatPanelMain.setRoomUserInfo(event.roomUsers());
             }
 
-            // players list
-            if (updatePlayersTask == null || updatePlayersTask.isDone() || refreshImmediately) {
-                if (updatePlayersTask != null) updatePlayersTask.cancel(true);
-                updatePlayersTask = new UpdatePlayersTask(roomId, this.chatPanelMain);
-                updatePlayersTask.execute();
+            // Update finished matches
+            if (event.finishedMatches() != null) {
+                updateMatches(event.finishedMatches());
             }
-        }
-    }
 
-    public void stopTasks() {
-        if (updateTablesTask != null) {
-            updateTablesTask.cancel(true);
-        }
-        if (updatePlayersTask != null) {
-            updatePlayersTask.cancel(true);
-        }
-        if (updateMatchesTask != null) {
-            updateMatchesTask.cancel(true);
+            LOGGER.debug("Lobby event processed successfully");
+        } catch (Exception e) {
+            LOGGER.error("Error handling lobby event", e);
         }
     }
 
@@ -779,7 +777,16 @@ public class TablesPanel extends javax.swing.JPanel {
         }
         if (chatRoomId != null) {
             this.chatPanelMain.getUserChatPanel().connect(chatRoomId);
-            startUpdateTasks(true);
+
+            // Subscribe to lobby event bus for server push updates
+            if (SessionHandler.getSession() instanceof mage.remote.WsSessionImpl) {
+                LobbyEventBus eventBus = ((mage.remote.WsSessionImpl) SessionHandler.getSession()).getLobbyEventBus();
+                if (eventBus != null) {
+                    eventBus.subscribe(lobbyEventListener);
+                    LOGGER.debug("Subscribed to lobby event bus");
+                }
+            }
+
             this.setVisible(true);
             this.repaint();
         } else {
@@ -797,11 +804,7 @@ public class TablesPanel extends javax.swing.JPanel {
         // reload server messages
         java.util.List<String> serverMessages = SessionHandler.getServerMessages();
         synchronized (this) {
-            if (serverMessages != null) {
-                this.messages = serverMessages;
-            } else {
-                this.messages = new ArrayList<>();
-            }
+            this.messages = Objects.requireNonNullElseGet(serverMessages, ArrayList::new);
 
             this.currentMessage = 0;
         }
@@ -817,12 +820,21 @@ public class TablesPanel extends javax.swing.JPanel {
 
     public void hideTables() {
         this.saveDividerLocations();
+
+        // Unsubscribe from lobby event bus
+        if (SessionHandler.getSession() instanceof mage.remote.WsSessionImpl) {
+            LobbyEventBus eventBus = ((mage.remote.WsSessionImpl) SessionHandler.getSession()).getLobbyEventBus();
+            if (eventBus != null) {
+                eventBus.unsubscribe(lobbyEventListener);
+                LOGGER.debug("Unsubscribed from lobby event bus");
+            }
+        }
+
         for (Component component : MageFrame.getDesktop().getComponents()) {
             if (component instanceof TableWaitingDialog) {
                 ((TableWaitingDialog) component).doClose();
             }
         }
-        stopTasks();
         this.chatPanelMain.cleanUp();;
 
         Component c = this.getParent();
@@ -1678,7 +1690,7 @@ public class TablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnNewTournamentActionPerformed
 
     private void createTestGame(String gameName, String gameType, boolean useMonteCarloAI) {
-        TableView table;
+        ViewProto.TableView table;
         try {
             String testDeckFile = "test.dck";
             File f = new File(testDeckFile);
@@ -1718,12 +1730,13 @@ public class TablesPanel extends javax.swing.JPanel {
             options.setBannedUsers(IgnoreList.getIgnoredUsers(serverAddress));
             table = SessionHandler.createTable(roomId, options);
 
-            SessionHandler.joinTable(roomId, table.getTableId(), "Human", PlayerType.HUMAN, 1, testDeck, "");
-            SessionHandler.joinTable(roomId, table.getTableId(), "Computer" + (multiPlayer ? " 2" : ""), aiType, 1, testDeck, "");
+            UUID tableId = UUID.fromString(table.getTableId());
+            SessionHandler.joinTable(roomId, tableId, "Human", PlayerType.HUMAN, 1, testDeck, "");
+            SessionHandler.joinTable(roomId, tableId, "Computer" + (multiPlayer ? " 2" : ""), aiType, 1, testDeck, "");
             for (int i = 2; i < numPlayers; i++) {
-                SessionHandler.joinTable(roomId, table.getTableId(), "Computer " + (i + 1), aiType, 1, testDeck, "");
+                SessionHandler.joinTable(roomId, tableId, "Computer " + (i + 1), aiType, 1, testDeck, "");
             }
-            SessionHandler.startMatch(roomId, table.getTableId());
+            SessionHandler.startMatch(roomId, tableId);
         } catch (HeadlessException ex) {
             handleError(ex);
         }
@@ -1757,7 +1770,6 @@ public class TablesPanel extends javax.swing.JPanel {
         } else {
             this.jSplitPaneTables.setDividerLocation(this.jPanelTables.getHeight());
         }
-        this.startUpdateTasks(true);
     }//GEN-LAST:event_btnStateFinishedActionPerformed
 
     private void buttonWhatsNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWhatsNewActionPerformed
@@ -1835,136 +1847,6 @@ public class TablesPanel extends javax.swing.JPanel {
     private javax.swing.JTable tableCompleted;
     private javax.swing.JTable tableTables;
     // End of variables declaration//GEN-END:variables
-
-}
-
-class UpdateTablesTask extends SwingWorker<Void, Collection<TableView>> {
-
-    private final UUID roomId;
-    private final TablesPanel panel;
-    private boolean isFirstRun = true;
-
-    private static final Logger logger = Logger.getLogger(UpdateTablesTask.class);
-
-    private int count = 0;
-
-    UpdateTablesTask(UUID roomId, TablesPanel panel) {
-
-        this.roomId = roomId;
-        this.panel = panel;
-    }
-
-    @Override
-    protected Void doInBackground() throws Exception {
-        while (!isCancelled()) {
-            Collection<TableView> tables = SessionHandler.getTables(roomId);
-            if (tables != null) {
-                this.publish(tables);
-            }
-            TimeUnit.SECONDS.sleep(TablesPanel.randomizeTimout(TablesPanel.REFRESH_ACTIVE_TABLES_SECS));
-        }
-        return null;
-    }
-
-    @Override
-    protected void process(java.util.List<Collection<TableView>> view) {
-        panel.updateTables(view.get(0));
-
-        // update server messages
-        count++;
-        if (isFirstRun || count > 60) {
-            count = 0;
-            isFirstRun = false;
-            panel.reloadServerMessages();
-        }
-    }
-
-    @Override
-    protected void done() {
-        try {
-            get();
-        } catch (InterruptedException | ExecutionException ex) {
-            logger.fatal("Update Tables Task error", ex);
-        } catch (CancellationException ex) {
-        }
-    }
-
-}
-
-class UpdatePlayersTask extends SwingWorker<Void, Collection<RoomUsersView>> {
-
-    private final UUID roomId;
-    private final PlayersChatPanel chat;
-
-    private static final Logger logger = Logger.getLogger(UpdatePlayersTask.class);
-
-    UpdatePlayersTask(UUID roomId, PlayersChatPanel chat) {
-
-        this.roomId = roomId;
-        this.chat = chat;
-    }
-
-    @Override
-    protected Void doInBackground() throws Exception {
-        while (!isCancelled()) {
-            this.publish(SessionHandler.getRoomUsers(roomId));
-            TimeUnit.SECONDS.sleep(TablesPanel.randomizeTimout(TablesPanel.REFRESH_PLAYERS_SECS));
-        }
-        return null;
-    }
-
-    @Override
-    protected void process(java.util.List<Collection<RoomUsersView>> roomUserInfo) {
-        chat.setRoomUserInfo(roomUserInfo);
-    }
-
-    @Override
-    protected void done() {
-        try {
-            get();
-        } catch (InterruptedException | ExecutionException ex) {
-            logger.fatal("Update Players Task error", ex);
-        } catch (CancellationException ex) {
-        }
-    }
-
-}
-
-class UpdateMatchesTask extends SwingWorker<Void, Collection<MatchView>> {
-
-    private final UUID roomId;
-    private final TablesPanel panel;
-
-    private static final Logger logger = Logger.getLogger(UpdateTablesTask.class);
-
-    UpdateMatchesTask(UUID roomId, TablesPanel panel) {
-        this.roomId = roomId;
-        this.panel = panel;
-    }
-
-    @Override
-    protected Void doInBackground() throws Exception {
-        while (!isCancelled()) {
-            this.publish(SessionHandler.getFinishedMatches(roomId));
-            TimeUnit.SECONDS.sleep(TablesPanel.randomizeTimout(TablesPanel.REFRESH_FINISHED_TABLES_SECS));
-        }
-        return null;
-    }
-
-    @Override
-    protected void process(java.util.List<Collection<MatchView>> view) {
-        panel.updateMatches(view.get(0));
-    }
-
-    @Override
-    protected void done() {
-        try {
-            get();
-        } catch (InterruptedException | ExecutionException ex) {
-            logger.fatal("Update Matches Task error", ex);
-        } catch (CancellationException ex) {
-        }
-    }
 
 }
 

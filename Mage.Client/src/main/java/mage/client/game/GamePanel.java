@@ -21,8 +21,8 @@ import mage.client.dialog.CardInfoWindowDialog.ShowType;
 import mage.client.game.FeedbackPanel.FeedbackMode;
 import mage.client.plugins.adapters.MageActionCallback;
 import mage.client.plugins.impl.Plugins;
-import mage.client.util.Event;
 import mage.client.util.*;
+import mage.client.util.Event;
 import mage.client.util.audio.AudioManager;
 import mage.client.util.gui.ArrowBuilder;
 import mage.client.util.gui.MageDialogState;
@@ -30,16 +30,15 @@ import mage.constants.*;
 import mage.game.events.PlayerQueryEvent;
 import mage.players.PlayableObjectStats;
 import mage.players.PlayableObjectsList;
-import mage.util.CardUtil;
 import mage.util.DebugUtil;
 import mage.util.MultiAmountMessage;
-import mage.util.StreamUtils;
 import mage.view.*;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.mage.plugins.card.utils.impl.ImageManagerImpl;
 
-import javax.swing.Timer;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -50,8 +49,8 @@ import java.awt.event.*;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -1402,10 +1401,10 @@ public final class GamePanel extends javax.swing.JPanel {
 
         private void updateExtraMode(PlayerView player) {
             this.turn.setExtraMode(false); // not used
-            this.untilEndOfTurn.setExtraMode(player.getUserData().getUserSkipPrioritySteps().isStopOnAllEndPhases());
-            this.untilNextMain.setExtraMode(player.getUserData().getUserSkipPrioritySteps().isStopOnAllMainPhases());
+            this.untilEndOfTurn.setExtraMode(player.getUserData().getUserSkipPrioritySteps().getStopOnAllEndPhases());
+            this.untilNextMain.setExtraMode(player.getUserData().getUserSkipPrioritySteps().getStopOnAllMainPhases());
             this.allTurns.setExtraMode(false); // not used
-            this.untilStackResolved.setExtraMode(player.getUserData().getUserSkipPrioritySteps().isStopOnStackNewObjects());
+            this.untilStackResolved.setExtraMode(player.getUserData().getUserSkipPrioritySteps().getStopOnStackNewObjects());
             this.untilUntilEndStepBeforeMyTurn.setExtraMode(false); // not used
         }
 
@@ -3264,7 +3263,7 @@ public final class GamePanel extends javax.swing.JPanel {
 
 }
 
-class ReplayTask extends SwingWorker<Void, Collection<MatchView>> {
+class ReplayTask extends SwingWorker<Void, Collection<ViewProto.MatchView>> {
 
     // replay without table - just single game
     private final UUID gameId;

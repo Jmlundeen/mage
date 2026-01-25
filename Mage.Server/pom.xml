@@ -246,12 +246,6 @@
             <groupId>org.unbescape</groupId>
             <artifactId>unbescape</artifactId>
         </dependency>
-        <!-- parallel WS transport (does not replace JBoss remoting yet) -->
-        <dependency>
-            <groupId>io.javalin</groupId>
-            <artifactId>javalin</artifactId>
-            <version>4.6.8</version>
-        </dependency>
     </dependencies>
 
     <build>

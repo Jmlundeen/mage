@@ -1,5 +1,7 @@
 package mage.players.net;
 
+import mage.ws.v1.model.ModelProto;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -14,7 +16,7 @@ public class UserData implements Serializable {
     protected int avatarId;
     protected boolean allowRequestShowHandCards;
     protected boolean confirmEmptyManaPool;
-    protected UserSkipPrioritySteps userSkipPrioritySteps;
+    protected ModelProto.UserSkipPrioritySteps userSkipPrioritySteps;
     protected String flagName;
     protected boolean askMoveToGraveOrder;
     protected boolean manaPoolAutomatic;
@@ -41,7 +43,7 @@ public class UserData implements Serializable {
                     int avatarId,
                     boolean allowRequestShowHandCards,
                     boolean confirmEmptyManaPool,
-                    UserSkipPrioritySteps userSkipPrioritySteps,
+                    ModelProto.UserSkipPrioritySteps userSkipPrioritySteps,
                     String flagName,
                     boolean askMoveToGraveOrder,
                     boolean manaPoolAutomatic,
@@ -97,12 +99,25 @@ public class UserData implements Serializable {
     }
 
     public static UserData getDefaultUserDataView() {
+        ModelProto.SkipPrioritySteps.Builder skipStepsBuilder = ModelProto.SkipPrioritySteps.newBuilder()
+                .setMain1(true)
+                .setMain2(true);
+        ModelProto.UserSkipPrioritySteps defaultSkipSteps = ModelProto.UserSkipPrioritySteps.newBuilder()
+                .setYourTurn(skipStepsBuilder.build())
+                .setOpponentTurn(skipStepsBuilder.build())
+                .setStopOnDeclareAttackers(true)
+                .setStopOnDeclareBlockersWithZeroPermanents(false)
+                .setStopOnDeclareBlockersWithAnyPermanents(true)
+                .setStopOnAllMainPhases(true)
+                .setStopOnAllEndPhases(true)
+                .setStopOnStackNewObjects(true)
+                .build();
         return new UserData(
                 UserGroup.DEFAULT,
                 0,
                 false,
                 true,
-                new UserSkipPrioritySteps(),
+                defaultSkipSteps,
                 getDefaultFlagName(),
                 false,
                 true,
@@ -159,11 +174,11 @@ public class UserData implements Serializable {
         this.requestedHandPlayersList.remove(gameId);
     }
 
-    public UserSkipPrioritySteps getUserSkipPrioritySteps() {
+    public ModelProto.UserSkipPrioritySteps getUserSkipPrioritySteps() {
         return userSkipPrioritySteps;
     }
 
-    public void setUserSkipPrioritySteps(UserSkipPrioritySteps userSkipPrioritySteps) {
+    public void setUserSkipPrioritySteps(ModelProto.UserSkipPrioritySteps userSkipPrioritySteps) {
         this.userSkipPrioritySteps = userSkipPrioritySteps;
     }
 
@@ -319,5 +334,91 @@ public class UserData implements Serializable {
 
     public static String getDefaultFlagName() {
         return "world.png";
+    }
+
+    public ModelProto.UserData toProto() {
+        ModelProto.UserData.Builder builder = ModelProto.UserData.newBuilder()
+                .setGroupId(this.groupId)
+                .setAvatarId(this.avatarId)
+                .setUserSkipPrioritySteps(this.userSkipPrioritySteps)
+                .setAllowRequestShowHandCards(this.allowRequestShowHandCards)
+                .setConfirmEmptyManaPool(this.confirmEmptyManaPool)
+                .setFlagName(this.flagName != null ? this.flagName : "")
+                .setAskMoveToGraveOrder(this.askMoveToGraveOrder)
+                .setManaPoolAutomatic(this.manaPoolAutomatic)
+                .setManaPoolAutomaticRestricted(this.manaPoolAutomaticRestricted)
+                .setPassPriorityCast(this.passPriorityCast)
+                .setPassPriorityActivation(this.passPriorityActivation)
+                .setAutoOrderTrigger(this.autoOrderTrigger)
+                .setAutoTargetLevel(this.autoTargetLevel)
+                .setUseSameSettingsForReplacementEffects(this.useSameSettingsForReplacementEffects)
+                .setUseFirstManaAbility(this.useFirstManaAbility)
+                .setUserIdStr(this.userIdStr != null ? this.userIdStr : "")
+                .setMatchHistory(this.matchHistory != null ? this.matchHistory : "")
+                .setMatchQuitRatio(this.matchQuitRatio)
+                .setTourneyHistory(this.tourneyHistory != null ? this.tourneyHistory : "")
+                .setTourneyQuitRatio(this.tourneyQuitRatio)
+                .setGeneralRating(this.generalRating)
+                .setConstructedRating(this.constructedRating)
+                .setLimitedRating(this.limitedRating);
+
+        // Convert requestedHandPlayersList map
+        if (this.requestedHandPlayersList != null) {
+            for (Map.Entry<UUID, Set<UUID>> entry : this.requestedHandPlayersList.entrySet()) {
+                ModelProto.PlayerIdList.Builder listBuilder = ModelProto.PlayerIdList.newBuilder();
+                for (UUID playerId : entry.getValue()) {
+                    listBuilder.addPlayerIds(playerId.toString());
+                }
+                builder.putRequestedHandPlayersList(entry.getKey().toString(), listBuilder.build());
+            }
+        }
+
+        return builder.build();
+    }
+
+    public static UserData fromProto(ModelProto.UserData proto) {
+        // Create UserSkipPrioritySteps from proto
+
+
+        // Create UserData instance
+        UserData userData = new UserData(
+                UserGroup.fromId(proto.getGroupId()),
+                proto.getAvatarId(),
+                proto.getAllowRequestShowHandCards(),
+                proto.getConfirmEmptyManaPool(),
+                proto.getUserSkipPrioritySteps(),
+                proto.getFlagName(),
+                proto.getAskMoveToGraveOrder(),
+                proto.getManaPoolAutomatic(),
+                proto.getManaPoolAutomaticRestricted(),
+                proto.getPassPriorityCast(),
+                proto.getPassPriorityActivation(),
+                proto.getAutoOrderTrigger(),
+                proto.getAutoTargetLevel(),
+                proto.getUseSameSettingsForReplacementEffects(),
+                proto.getUseFirstManaAbility(),
+                proto.getUserIdStr()
+        );
+
+        // Set additional fields
+        userData.setMatchHistory(proto.getMatchHistory());
+        userData.setMatchQuitRatio(proto.getMatchQuitRatio());
+        userData.setTourneyHistory(proto.getTourneyHistory());
+        userData.setTourneyQuitRatio(proto.getTourneyQuitRatio());
+        userData.setGeneralRating(proto.getGeneralRating());
+        userData.setConstructedRating(proto.getConstructedRating());
+        userData.setLimitedRating(proto.getLimitedRating());
+
+        // Convert requestedHandPlayersList map
+        for (Map.Entry<String, ModelProto.PlayerIdList> entry : proto.getRequestedHandPlayersListMap().entrySet()) {
+            UUID gameId = UUID.fromString(entry.getKey());
+            Set<UUID> playerIds = new HashSet<>();
+            for (String playerIdStr : entry.getValue().getPlayerIdsList()) {
+                playerIds.add(UUID.fromString(playerIdStr));
+            }
+            userData.requestedHandPlayersList.put(gameId, playerIds);
+        }
+
+        return userData;
     }
 }

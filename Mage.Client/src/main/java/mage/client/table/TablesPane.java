@@ -1,11 +1,11 @@
 package mage.client.table;
 
-import java.util.UUID;
-import javax.swing.JComponent;
-
 import mage.client.MagePane;
 import mage.client.SessionHandler;
 import mage.client.plugins.impl.Plugins;
+
+import javax.swing.*;
+import java.util.UUID;
 
 /**
  * Game GUI: lobby frame
@@ -109,14 +109,8 @@ public class TablesPane extends MagePane {
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void activated() {
-        tablesPanel.startUpdateTasks(false);
-    }
-
-    @Override
     public void deactivated() {
         super.deactivated();
-        tablesPanel.stopTasks();
     }
 
     public void setTableFilter() {

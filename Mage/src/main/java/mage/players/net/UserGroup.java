@@ -21,4 +21,13 @@ public enum UserGroup {
     public int getGroupId() {
         return this.groupId;
     }
+
+    public static UserGroup fromId(int groupId) {
+        for (UserGroup group : UserGroup.values()) {
+            if (group.groupId == groupId) {
+                return group;
+            }
+        }
+        return DEFAULT;
+    }
 }

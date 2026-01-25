@@ -32,8 +32,12 @@ import mage.server.tournament.TournamentFactory;
 import mage.server.util.ServerMessagesUtil;
 import mage.util.DebugUtil;
 import mage.utils.*;
-import mage.view.*;
+import mage.view.ChatMessage;
 import mage.view.ChatMessage.MessageColor;
+import mage.view.DraftPickView;
+import mage.view.GameView;
+import mage.view.TournamentView;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.unbescape.html.HtmlEscape;
 
@@ -174,11 +178,11 @@ public class MageServerImpl implements MageServer {
     }
 
     @Override
-    public boolean connectSetUserData(final String userName, final String sessionId, final UserData userData, final String clientVersion, final String userIdStr) throws MageException {
+    public boolean connectSetUserData(final String sessionId, final UserData userData, final String clientVersion, final String userIdStr) throws MageException {
         return executeWithResult("setUserData", sessionId, new ActionWithBooleanResult() {
             @Override
             public Boolean execute() throws MageException {
-                return managerFactory.sessionManager().setUserData(userName, sessionId, userData, clientVersion, userIdStr);
+                return managerFactory.sessionManager().setUserData(sessionId, userData, clientVersion, userIdStr);
             }
         });
     }
@@ -201,24 +205,24 @@ public class MageServerImpl implements MageServer {
     }
 
     @Override
-    public TableView roomCreateTable(final String sessionId, final UUID roomId, final MatchOptions options) throws MageException {
+    public ViewProto.TableView roomCreateTable(final String sessionId, final UUID roomId, final MatchOptions options) throws MageException {
         return executeWithResult("createTable", sessionId, new CreateTableAction(sessionId, options, roomId));
     }
 
     @Override
-    public TableView roomCreateTournament(final String sessionId, final UUID roomId, final TournamentOptions options) throws MageException {
+    public ViewProto.TableView roomCreateTournament(final String sessionId, final UUID roomId, final TournamentOptions options) throws MageException {
         return executeWithResult("createTournamentTable", sessionId, new ActionWithTableViewResult() {
             @Override
-            public TableView execute() throws MageException {
+            public ViewProto.TableView execute() throws MageException {
                 try {
                     Optional<Session> session = managerFactory.sessionManager().getSession(sessionId);
-                    if (!session.isPresent()) {
+                    if (session.isEmpty()) {
                         logger.error("Session to found : " + sessionId);
                         return null;
                     }
                     UUID userId = session.get().getUserId();
                     Optional<User> _user = managerFactory.userManager().getUser(userId);
-                    if (!_user.isPresent()) {
+                    if (_user.isEmpty()) {
                         logger.error("User for session not found. session = " + sessionId);
                         return null;
                     }
@@ -247,8 +251,8 @@ public class MageServerImpl implements MageServer {
                     // check if the user satisfies the quitRatio requirement.
                     int quitRatio = options.getQuitRatio();
                     if (quitRatio < user.getTourneyQuitRatio()) {
-                        String message = new StringBuilder("Your quit ratio ").append(user.getTourneyQuitRatio())
-                                .append("% is higher than the table requirement ").append(quitRatio).append('%').toString();
+                        String message = "Your quit ratio " + user.getTourneyQuitRatio() +
+                                "% is higher than the table requirement " + quitRatio + '%';
                         user.showUserMessage("Create tournament", message);
                         throw new MageException("No message");
                     }
@@ -262,16 +266,14 @@ public class MageServerImpl implements MageServer {
                         userRating = user.getUserData().getConstructedRating();
                     }
                     if (userRating < minimumRating) {
-                        String message = new StringBuilder("Your rating ").append(userRating)
-                                .append(" is lower than the table requirement ").append(minimumRating).toString();
+                        String message = "Your rating " + userRating +
+                                " is lower than the table requirement " + minimumRating;
                         user.showUserMessage("Create tournament", message);
                         throw new MageException("No message");
                     }
                     Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
-                    if (!room.isPresent()) {
-
-                    } else {
-                        TableView table = room.get().createTournamentTable(userId, options);
+                    if (room.isPresent()) {
+                        ViewProto.TableView table = room.get().createTournamentTable(userId, options);
                         logger.debug("Tournament table " + table.getTableId() + " created");
                         return table;
                     }
@@ -381,7 +383,7 @@ public class MageServerImpl implements MageServer {
 
     @Override
     //FIXME: why no sessionId here???
-    public List<TableView> roomGetAllTables(UUID roomId) throws MageException {
+    public List<ViewProto.TableView> roomGetAllTables(UUID roomId) throws MageException {
         try {
             Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
             if (room.isPresent()) {
@@ -397,7 +399,7 @@ public class MageServerImpl implements MageServer {
 
     @Override
     //FIXME: why no sessionId here???
-    public List<MatchView> roomGetFinishedMatches(UUID roomId) throws MageException {
+    public List<ViewProto.MatchView> roomGetFinishedMatches(UUID roomId) throws MageException {
         try {
             return managerFactory.gamesRoomManager().getRoom(roomId).map(GamesRoom::getFinished).orElse(new ArrayList<>());
         } catch (Exception ex) {
@@ -407,23 +409,19 @@ public class MageServerImpl implements MageServer {
     }
 
     @Override
-    public List<RoomUsersView> roomGetUsers(UUID roomId) throws MageException {
+    public ViewProto.RoomUsersView roomGetUsers(UUID roomId) throws MageException {
         try {
             Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
-            if (room.isPresent()) {
-                return room.get().getRoomUsersInfo();
-            } else {
-                return new ArrayList<>();
-            }
+            return room.map(GamesRoom::getRoomUsersInfo).orElse(null);
         } catch (Exception ex) {
             handleException(ex);
         }
-        return new ArrayList<>();
+        return null;
     }
 
     @Override
     //FIXME: why no sessionId here???
-    public TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException {
+    public ViewProto.TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException {
         try {
             Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
             return room.flatMap(r -> r.getTable(tableId)).orElse(null);
@@ -1033,7 +1031,7 @@ public class MageServerImpl implements MageServer {
      * @throws MageException
      */
     @Override
-    public List<UserView> adminGetUsers(String sessionId) throws MageException {
+    public List<ViewProto.UserView> adminGetUsers(String sessionId) throws MageException {
         return executeWithResult("adminGetUsers", sessionId, new GetUsersAction(), true);
     }
 
@@ -1124,7 +1122,7 @@ public class MageServerImpl implements MageServer {
     }
 
     @Override
-    public Object serverGetPromotionMessages(String sessionId) throws MageException {
+    public List<String> serverGetPromotionMessages(String sessionId) throws MageException {
         return executeWithResult("serverGetPromotionMessages", sessionId, new GetPromotionMessagesAction());
     }
 
@@ -1203,17 +1201,17 @@ public class MageServerImpl implements MageServer {
         return action.negativeResult();
     }
 
-    private static class GetPromotionMessagesAction extends ActionWithNullNegativeResult<Object> {
+    private static class GetPromotionMessagesAction extends ActionWithNullNegativeResult<List<String>> {
         @Override
-        public Object execute() throws MageException {
-            return CompressUtil.compress(ServerMessagesUtil.instance.getMessages());
+        public List<String> execute() throws MageException {
+            return ServerMessagesUtil.instance.getMessages();
         }
     }
 
-    private class GetUsersAction extends ActionWithNullNegativeResult<List<UserView>> {
+    private class GetUsersAction extends ActionWithNullNegativeResult<List<ViewProto.UserView>> {
 
         @Override
-        public List<UserView> execute() throws MageException {
+        public List<ViewProto.UserView> execute() throws MageException {
             return managerFactory.userManager().getUserInfoList();
         }
     }
@@ -1304,7 +1302,7 @@ public class MageServerImpl implements MageServer {
         }
 
         @Override
-        public TableView execute() throws MageException {
+        public ViewProto.TableView execute() throws MageException {
             Session session = managerFactory.sessionManager().getSession(sessionId).orElse(null);
             if (session == null) {
                 return null;
@@ -1338,7 +1336,7 @@ public class MageServerImpl implements MageServer {
                 userRating = user.getUserData().getConstructedRating();
             }
             if (userRating < minimumRating) {
-                String message = new StringBuilder("Your rating ").append(userRating).append(" is lower than the table requirement ").append(minimumRating).toString();
+                String message = "Your rating " + userRating + " is lower than the table requirement " + minimumRating;
                 user.showUserMessage("Create table", message);
                 throw new MageException("User " + user.getName() + " can't create table: incompatible rating");
             }

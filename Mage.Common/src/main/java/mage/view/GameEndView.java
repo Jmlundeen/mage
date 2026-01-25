@@ -1,17 +1,19 @@
 
 package mage.view;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 import mage.game.Game;
 import mage.game.GameState;
 import mage.game.Table;
 import mage.game.match.Match;
 import mage.game.match.MatchPlayer;
 import mage.players.Player;
+import mage.ws.v1.view.ViewProto;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author LevelX2
@@ -26,7 +28,7 @@ public class GameEndView implements Serializable {
     private final String matchInfo;
     private final String additionalInfo;
     private boolean won;
-    private final MatchView matchView;
+    private final ViewProto.MatchView matchView;
     private int wins;
     private int loses;
     private final int winsNeeded;
@@ -59,7 +61,7 @@ public class GameEndView implements Serializable {
                 gameInfo = "Game is a draw on Turn " + game.getTurnNum() + ".";
             }
         }
-        matchView = new MatchView(table);
+        matchView = table.getMatchView();
 
         Match match = table.getMatch();
         MatchPlayer matchWinner = null;
@@ -97,10 +99,10 @@ public class GameEndView implements Serializable {
             if (matchWinner.getPlayer().equals(you)) {
                 matchInfo = "You won the match!";
             } else {
-                matchInfo = new StringBuilder(matchWinner.getName()).append(" won the match!").toString();
+                matchInfo = matchWinner.getName() + " won the match!";
             }
         } else {
-            matchInfo = new StringBuilder("You need ").append(winsNeeded - wins == 1 ? "one more win " : winsNeeded - wins + " more wins ").append("to win the match.").toString();
+            matchInfo = "You need " + (winsNeeded - wins == 1 ? "one more win " : winsNeeded - wins + " more wins ") + "to win the match.";
         }
         additionalInfo = additonalText.toString();
 
@@ -134,7 +136,7 @@ public class GameEndView implements Serializable {
         return won;
     }
 
-    public MatchView getMatchView() {
+    public ViewProto.MatchView getMatchView() {
         return matchView;
     }
 

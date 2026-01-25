@@ -22,4 +22,9 @@ public final class WsFrameLogger {
         double sizeKb = sizeBytes / 1024.0;
         logger.warn(String.format("WS protobuf frame > 50KB: dir=%s sessionId=%s payload=%s size=%.1fKB", direction, sessionId, payloadType, sizeKb));
     }
+
+    public static void log(Logger logger, String direction, String sessionId, String payloadType, int sizeBytes) {
+        double sizeKb = sizeBytes / 1024.0;
+        logger.info(String.format("WS protobuf frame: dir=%s sessionId=%s payload=%s size=%.1fKB", direction, sessionId, payloadType, sizeKb));
+    }
 }

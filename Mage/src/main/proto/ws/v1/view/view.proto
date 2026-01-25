@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package mage.ws.v1.view;
+option java_package = "mage.ws.v1.view";
+option java_outer_classname = "ViewProto";
+
+// Mirrors mage.view.TableView (fields actually used by lobby UI)
+message TableView {
+  string tableId = 1;
+  string gameType = 2;
+  string deckType = 3;
+  string tableName = 4;
+  string controllerName = 5;
+  string additionalInfoShort = 6;
+  string additionalInfoFull = 7;
+  int64 createTimeMillis = 8;
+  TableState tableState = 9;
+  SkillLevel skillLevel = 10;
+  string tableStateText = 11;
+  string seatsInfo = 12;
+  bool isTournament = 13;
+  repeated SeatView seats = 14;
+  repeated string games = 15;
+  string quitRatio = 16;
+  string minimumRating = 17;
+  bool limited = 18;
+  bool rated = 19;
+  bool isPasswordProtected = 20;
+  bool spectatorsAllowed = 21;
+}
+
+// Mirrors mage.view.MatchView (fields actually used by lobby UI)
+message MatchView {
+  string tableId = 1;
+  string matchId = 2;
+  string matchName = 3;
+  string gameType = 4;
+  string deckType = 5;
+  repeated string games = 6;
+  string result = 7;
+  string players = 8;
+  int64 startTimeMillis = 9;
+  int64 endTimeMillis = 10;
+  bool replayAvailable = 11;
+  bool isTournament = 12;
+  bool rated = 13;
+}
+
+// Mirrors mage.view.RoomUsersView
+message RoomUsersView {
+  int32 numberActiveGames = 1;
+  int32 numberGameThreads = 2;
+  int32 numberMaxGames = 3;
+  repeated UsersView usersView = 4;
+}
+
+// Mirrors mage.view.UsersView
+message UsersView {
+  string flagName = 1;
+  string userName = 2;
+  string matchHistory = 3;
+  int32 matchQuitRatio = 4;
+  string tourneyHistory = 5;
+  int32 tourneyQuitRatio = 6;
+  string infoGames = 7;
+  string infoPing = 8;
+  int32 generalRating = 9;
+  int32 constructedRating = 10;
+  int32 limitedRating = 11;
+}
+
+// Mirrors mage.view.UserView
+message UserView {
+  string userName = 1;
+  string host = 2;
+  string sessionId = 3;
+  int64 timeConnectedInMillis = 4;
+  int64 lastActivityInMillis = 5;
+  string gameInfo = 6;
+  string userState = 7;
+  int64 muteChatUntilInMillis = 8;
+  string clientVersion = 9;
+  string email = 10;
+  string userIdStr = 11;
+}
+
+message SeatView {
+  string flagName = 1;
+  string playerId = 2;
+  string playerName = 3;
+  string playerType = 4;
+  string history = 5;
+  int32 generalRating = 6;
+  int32 constructedRating = 7;
+  int32 limitedRating = 8;
+}
+
+message GameTypeView {
+  string name = 1;
+  int32 minPlayers = 2;
+  int32 maxPlayers = 3;
+  int32 numTeams = 4;
+  int32 playersPerTeam = 5;
+  bool useRange = 6;
+  bool useAttackOption = 7;
+}
+
+message TournamentTypeView {
+  string name = 1;
+  int32 minPlayers = 2;
+  int32 maxPlayers = 3;
+  int32 numBoosters = 4;
+  bool draft = 5;
+  bool limited = 6;
+  bool cubeBooster = 7;
+  bool elimination = 8;
+  bool random = 9;
+  bool reshuffled = 10;
+  bool richMan = 11;
+  bool jumpstart = 12;
+}
+
+enum TableState {
+  LOBBY_TABLE_STATE_UNKNOWN = 0;
+  WAITING = 1;
+  READY_TO_START = 2;
+  STARTING = 3;
+  DRAFTING = 4;
+  CONSTRUCTING = 5;
+  DUELING = 6;
+  SIDEBOARDING = 7;
+  FINISHED = 8;
+}
+
+enum SkillLevel {
+  LOBBY_SKILL_LEVEL_UNKNOWN = 0;
+  BEGINNER = 1;
+  CASUAL = 2;
+  SERIOUS = 3;
+}

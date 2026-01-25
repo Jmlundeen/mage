@@ -1,0 +1,108 @@
+syntax="proto3";
+
+package mage.ws.v1.model;
+option java_package="mage.ws.v1.model";
+option java_outer_classname="ModelProto";
+
+import "view/view.proto";
+
+// Represents the Mage server version information.
+// @author BetaSteward_at_googlemail.com
+message MageVersion {
+  int32 major = 1;
+  int32 minor = 2;
+  int32 release = 3;
+  string releaseInfo = 4;
+  string buildTime = 5;
+}
+
+// Represents the state of the server.
+// @author BetaSteward_at_googlemail.com
+message ServerState {
+  repeated view.GameTypeView gameTypes = 1;
+  repeated view.TournamentTypeView tournamentTypes = 2;
+  repeated string playerTypes = 3;
+  repeated string deckTypes = 4;
+  repeated string draftCubes = 5;
+  bool testMode = 6;
+  MageVersion mageVersion = 9;
+  int64 cardsContentVersion = 7;
+  int64 expansionsContentVersion = 8;
+}
+
+// User data that is passed during connection to the server.
+message UserData {
+  int32 group_id = 1;
+  int32 avatar_id = 2;
+  bool allow_request_show_hand_cards = 3;
+  bool confirm_empty_mana_pool = 4;
+  UserSkipPrioritySteps user_skip_priority_steps = 5;
+  string flag_name = 6;
+  bool ask_move_to_grave_order = 7;
+  bool mana_pool_automatic = 8;
+  bool mana_pool_automatic_restricted = 9;
+  bool pass_priority_cast = 10;
+  bool pass_priority_activation = 11;
+  bool auto_order_trigger = 12;
+  int32 auto_target_level = 13;
+  bool use_same_settings_for_replacement_effects = 14;
+  bool use_first_mana_ability = 15;
+  string user_id_str = 16;
+
+  // map: game UUID (string) -> list of player UUIDs (string)
+  map<string, PlayerIdList> requested_hand_players_list = 17;
+
+  string match_history = 18;
+  int32 match_quit_ratio = 19;
+  string tourney_history = 20;
+  int32 tourney_quit_ratio = 21;
+
+  int32 general_rating = 22;
+  int32 constructed_rating = 23;
+  int32 limited_rating = 24;
+}
+
+// Wrapper for a set/list of player UUIDs (proto has no set type)
+message PlayerIdList {
+  repeated string player_ids = 1;
+}
+
+// @author LevelX2
+message UserSkipPrioritySteps {
+  // final SkipPrioritySteps yourTurn;
+  SkipPrioritySteps your_turn = 1;
+
+  // final SkipPrioritySteps opponentTurn;
+  SkipPrioritySteps opponent_turn = 2;
+
+  bool stop_on_declare_attackers = 3;
+  bool stop_on_declare_blockers_with_zero_permanents = 4;
+  bool stop_on_declare_blockers_with_any_permanents = 5;
+  bool stop_on_all_main_phases = 6;
+  bool stop_on_all_end_phases = 7;
+  bool stop_on_stack_new_objects = 8;
+}
+
+// @author LevelX2
+message SkipPrioritySteps {
+  // boolean upkeep = false;
+  bool upkeep = 1;
+
+  // boolean draw = false;
+  bool draw = 2;
+
+  // boolean main1 = true;
+  bool main1 = 3;
+
+  // boolean beforeCombat = false;
+  bool before_combat = 4;
+
+  // boolean endOfCombat = false;
+  bool end_of_combat = 5;
+
+  // boolean main2 = true;
+  bool main2 = 6;
+
+  // boolean endOfTurn = false;
+  bool end_of_turn = 7;
+}

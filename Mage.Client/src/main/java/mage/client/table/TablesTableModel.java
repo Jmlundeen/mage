@@ -4,12 +4,13 @@ import mage.client.SessionHandler;
 import mage.components.table.TableModelWithTooltip;
 import mage.constants.SkillLevel;
 import mage.remote.MageRemoteException;
-import mage.view.TableView;
+import mage.ws.v1.view.ViewProto;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.Collection;
 import java.util.Date;
+import java.util.UUID;
 
 public class TablesTableModel extends AbstractTableModel implements TableModelWithTooltip {
 
@@ -50,18 +51,20 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
 
     private final String[] columnNames = new String[]{"M/T", "Deck Type", "Name", "Seats", "Owner / Players", "Game Type", "Info", "Status", "Password", "Created / Started", "Skill Level", "Rated", "Quit %", "Min Rating", "Action"};
 
-    private TableView[] tables = new TableView[0];
+    private ViewProto.TableView[] tables = new ViewProto.TableView[0];
 
     TablesTableModel() {
     }
 
-    public void loadData(Collection<TableView> tables) throws MageRemoteException {
-        this.tables = tables.toArray(new TableView[0]);
+    public void loadData(Collection<ViewProto.TableView> tables) throws MageRemoteException {
+        this.tables = tables.toArray(new ViewProto.TableView[0]);
         this.fireTableDataChanged();
     }
 
     public String getTableAndGameInfo(int row) {
-        return this.tables[row].getTableId().toString() + ";" + (!tables[row].getGames().isEmpty() ? tables[row].getGames().get(0).toString() : "null");
+        String tableId = tables[row].getTableId();
+        String gameId = (tables[row].getGamesCount() > 0 ? tables[row].getGames(0) : "null");
+        return tableId + ";" + (gameId.isEmpty() ? "null" : gameId);
     }
 
     public String findTableAndGameInfoByRow(int row) {
@@ -74,7 +77,7 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
 
     public int findRowByTableAndGameInfo(String tableAndGame) {
         for (int i = 0; i < this.tables.length; i++) {
-            String rowID = this.tables[i].getTableId().toString() + ";" + (!this.tables[i].getGames().isEmpty() ? this.tables[i].getGames().get(0).toString() : "null");
+            String rowID = this.tables[i].getTableId() + ";" + (this.tables[i].getGamesCount() > 0 ? this.tables[i].getGames(0) : "null");
             if (tableAndGame.equals(rowID)) {
                 return i;
             }
@@ -119,58 +122,58 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
+        ViewProto.TableView table = tables[rowIndex];
         switch (columnIndex) {
             case 0:
-                return tables[rowIndex].isTournament() ? tourneyIcon : matchIcon;
+                return table.getIsTournament() ? tourneyIcon : matchIcon;
             case 1:
-                return tables[rowIndex].getDeckType();
+                return table.getDeckType();
             case 2:
-                return tables[rowIndex].getTableName();
+                return table.getTableName();
             case 3:
-                return tables[rowIndex].getSeatsInfo();
+                return table.getSeatsInfo();
             case 4:
-                return tables[rowIndex].getControllerName();
+                return table.getControllerName();
             case 5:
-                return tables[rowIndex].getGameType();
+                return table.getGameType();
             case 6:
-                return tables[rowIndex].getAdditionalInfoShort();
+                return table.getAdditionalInfoShort();
             case 7:
-                return tables[rowIndex].getTableStateText();
+                return table.getTableStateText();
             case 8:
-                return tables[rowIndex].isPassworded() ? PASSWORD_VALUE_YES : "";
+                return table.getIsPasswordProtected() ? PASSWORD_VALUE_YES : "";
             case 9:
-                return tables[rowIndex].getCreateTime(); // use cell render, not format here
+                return table.getCreateTimeMillis() > 0 ? new Date(table.getCreateTimeMillis()) : null;
             case 10:
-                return this.getSkillLevelAsCode(tables[rowIndex].getSkillLevel(), false);
+                return table.getSkillLevel();
             case 11:
-                return tables[rowIndex].isRated() ? RATED_VALUE_YES : RATED_VALUE_NO;
+                return table.getRated() ? RATED_VALUE_YES : RATED_VALUE_NO;
             case 12:
-                return tables[rowIndex].getQuitRatio();
+                return table.getQuitRatio();
             case 13:
-                return tables[rowIndex].getMinimumRating();
+                return table.getMinimumRating();
             case 14:
-                switch (tables[rowIndex].getTableState()) {
-
+                switch (table.getTableState()) {
                     case WAITING:
-                        String owner = tables[rowIndex].getControllerName();
-                        if (SessionHandler.getSession() != null && owner.equals(SessionHandler.getUserName())) {
+                        String ownerWaiting = table.getControllerName();
+                        if (SessionHandler.getSession() != null && ownerWaiting.equals(SessionHandler.getUserName())) {
                             return "";
                         }
                         return "Join";
                     case CONSTRUCTING:
                     case DRAFTING:
-                        if (tables[rowIndex].isTournament()) {
+                        if (table.getIsTournament()) {
                             return "Show";
                         }
                     case DUELING:
-                        if (tables[rowIndex].isTournament()) {
+                        if (table.getIsTournament()) {
                             return "Show";
                         } else {
-                            owner = tables[rowIndex].getControllerName();
-                            if (SessionHandler.getSession() != null && owner.equals(SessionHandler.getUserName())) {
+                            String ownerDueling = table.getControllerName();
+                            if (SessionHandler.getSession() != null && ownerDueling.equals(SessionHandler.getUserName())) {
                                 return "";
                             }
-                            if (tables[rowIndex].getSpectatorsAllowed()) {
+                            if (table.getSpectatorsAllowed()) {
                                 return "Watch";
                             }
                             return "";
@@ -179,14 +182,20 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
                         return "";
                 }
             case 15:
-                return tables[rowIndex].isTournament();
+                return table.getIsTournament();
             case 16:
-                if (!tables[rowIndex].getGames().isEmpty()) {
-                    return tables[rowIndex].getGames().get(0);
+                if (table.getGamesCount() > 0) {
+                    String gid = table.getGames(0);
+                    if (!gid.isEmpty()) {
+                        return UUID.fromString(gid);
+                    }
                 }
                 return null;
             case 17:
-                return tables[rowIndex].getTableId();
+                if (!table.getTableId().isEmpty()) {
+                    return UUID.fromString(table.getTableId());
+                }
+                return null;
         }
         return "";
     }

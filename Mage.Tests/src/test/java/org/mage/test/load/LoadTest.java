@@ -11,11 +11,14 @@ import mage.players.PlayerType;
 import mage.remote.Connection;
 import mage.remote.MageRemoteException;
 import mage.remote.Session;
-import mage.remote.SessionImpl;
+import mage.remote.WsSessionImpl;
 import mage.util.RandomUtil;
 import mage.util.ThreadUtils;
 import mage.util.XmageThreadFactory;
-import mage.view.*;
+import mage.view.CardView;
+import mage.view.GameView;
+import mage.view.PlayerView;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -168,14 +171,14 @@ public class LoadTest {
         LoadPlayer player2 = new LoadPlayer("user2", "p2");
 
         // game by user 1
-        GameTypeView gameType = prepareGameType(player1.session);
+        ViewProto.GameTypeView gameType = prepareGameType(player1.session);
         MatchOptions gameOptions = createSimpleGameOptionsForBots(gameType, player1.session);
-        TableView game = player1.session.createTable(player1.roomID, gameOptions);
-        UUID tableId = game.getTableId();
+        ViewProto.TableView game = player1.session.createTable(player1.roomID, gameOptions);
+        UUID tableId = UUID.fromString(game.getTableId());
         Assert.assertEquals(player1.userName, game.getControllerName());
 
         DeckCardLists deckList = loadGameDeck(1, TEST_AI_RANDOM_DECK_COLORS_FOR_EMPTY_GAME, true, TEST_AI_RANDOM_DECK_SETS);
-        Optional<TableView> checkGame;
+        Optional<ViewProto.TableView> checkGame;
 
         /*
         for(DeckCardInfo info: deckList.getCards()) {
@@ -184,25 +187,25 @@ public class LoadTest {
         // before connect
         checkGame = monitor.getTable(tableId);
         Assert.assertTrue(checkGame.isPresent());
-        Assert.assertEquals(2, checkGame.get().getSeats().size());
-        Assert.assertEquals("", checkGame.get().getSeats().get(0).getPlayerName());
-        Assert.assertEquals("", checkGame.get().getSeats().get(1).getPlayerName());
+        Assert.assertEquals(2, checkGame.get().getSeatsList().size());
+        Assert.assertEquals("", checkGame.get().getSeatsList().get(0).getPlayerName());
+        Assert.assertEquals("", checkGame.get().getSeatsList().get(1).getPlayerName());
 
         // connect user 1
         Assert.assertTrue(player1.session.joinTable(player1.roomID, tableId, player1.userName, PlayerType.HUMAN, 1, deckList, ""));
         checkGame = monitor.getTable(tableId);
         Assert.assertTrue(checkGame.isPresent());
-        Assert.assertEquals(2, checkGame.get().getSeats().size());
-        Assert.assertEquals(player1.userName, checkGame.get().getSeats().get(0).getPlayerName());
-        Assert.assertEquals("", checkGame.get().getSeats().get(1).getPlayerName());
+        Assert.assertEquals(2, checkGame.get().getSeatsList().size());
+        Assert.assertEquals(player1.userName, checkGame.get().getSeatsList().get(0).getPlayerName());
+        Assert.assertEquals("", checkGame.get().getSeatsList().get(1).getPlayerName());
 
         // connect user 2
         Assert.assertTrue(player2.session.joinTable(player2.roomID, tableId, player2.userName, PlayerType.HUMAN, 1, deckList, ""));
         checkGame = monitor.getTable(tableId);
         Assert.assertTrue(checkGame.isPresent());
-        Assert.assertEquals(2, checkGame.get().getSeats().size());
-        Assert.assertEquals(player1.userName, checkGame.get().getSeats().get(0).getPlayerName());
-        Assert.assertEquals(player2.userName, checkGame.get().getSeats().get(1).getPlayerName());
+        Assert.assertEquals(2, checkGame.get().getSeatsList().size());
+        Assert.assertEquals(player1.userName, checkGame.get().getSeatsList().get(0).getPlayerName());
+        Assert.assertEquals(player2.userName, checkGame.get().getSeatsList().get(1).getPlayerName());
 
         // match start
         Assert.assertTrue(player1.session.startMatch(player1.roomID, tableId));
@@ -230,10 +233,10 @@ public class LoadTest {
         LoadPlayer monitor = new LoadPlayer("mon", true, gameName + ", mon");
 
         // game by monitor
-        GameTypeView gameType = prepareGameType(monitor.session);
+        ViewProto.GameTypeView gameType = prepareGameType(monitor.session);
         MatchOptions gameOptions = createSimpleGameOptionsForAI(gameType, monitor.session, gameName);
-        TableView game = monitor.session.createTable(monitor.roomID, gameOptions);
-        UUID tableId = game.getTableId();
+        ViewProto.TableView game = monitor.session.createTable(monitor.roomID, gameOptions);
+        UUID tableId = UUID.fromString(game.getTableId());
 
         // deck load
         RandomUtil.setSeed(randomSeed);
@@ -254,8 +257,8 @@ public class LoadTest {
         while (true) {
             GameView gameView = monitor.client.getLastGameView();
 
-            TableView checkGame = monitor.getTable(tableId).orElse(null);
-            TableState state = (checkGame == null ? null : checkGame.getTableState());
+            ViewProto.TableView checkGame = monitor.getTable(tableId).orElse(null);
+            TableState state = (checkGame == null ? null : TableState.fromProto(checkGame.getTableState()));
 
             String finishInfo = "";
             if (state == TableState.FINISHED) {
@@ -291,7 +294,7 @@ public class LoadTest {
             }
 
             if (!startToWatching && state == TableState.DUELING) {
-                Assert.assertTrue(monitor.session.watchGame(checkGame.getGames().iterator().next()));
+                Assert.assertTrue(monitor.session.watchGame(UUID.fromString(checkGame.getGamesList().iterator().next())));
                 startToWatching = true;
             }
 
@@ -619,7 +622,7 @@ public class LoadTest {
         return con;
     }
 
-    private MatchOptions createSimpleGameOptions(String gameName, GameTypeView gameTypeView, Session session, PlayerType playersType) {
+    private MatchOptions createSimpleGameOptions(String gameName, ViewProto.GameTypeView gameTypeView, Session session, PlayerType playersType) {
         MatchOptions options = new MatchOptions(gameName, gameTypeView.getName(), true);
 
         options.getPlayerTypes().add(playersType);
@@ -636,11 +639,11 @@ public class LoadTest {
         return options;
     }
 
-    private MatchOptions createSimpleGameOptionsForBots(GameTypeView gameTypeView, Session session) {
+    private MatchOptions createSimpleGameOptionsForBots(ViewProto.GameTypeView gameTypeView, Session session) {
         return createSimpleGameOptions("Bots test game", gameTypeView, session, PlayerType.HUMAN);
     }
 
-    private MatchOptions createSimpleGameOptionsForAI(GameTypeView gameTypeView, Session session, String gameName) {
+    private MatchOptions createSimpleGameOptionsForAI(ViewProto.GameTypeView gameTypeView, Session session, String gameName) {
         return createSimpleGameOptions(gameName, gameTypeView, session, PlayerType.COMPUTER_MAD);
     }
 
@@ -709,7 +712,7 @@ public class LoadTest {
             this.userName = TEST_USER_NAME_GLOBAL_PREFIX + userPrefix + "_" + RandomUtil.nextInt(10000);
             this.connection = createSimpleConnection(this.userName);
             this.client = new SimpleMageClient(joinGameChat, logsPrefix, TEST_SHOW_GAME_LOGS_AS_HTML);
-            this.session = new SessionImpl(this.client);
+            this.session = new WsSessionImpl(this.client);
 
             this.session.connectStart(this.connection);
             this.client.setSession(this.session);
@@ -719,11 +722,12 @@ public class LoadTest {
             Assert.assertTrue("client must get server data", this.session.isServerReady());
         }
 
-        public ArrayList<UsersView> getAllRoomUsers() {
-            ArrayList<UsersView> res = new ArrayList<>();
+        public ArrayList<ViewProto.UsersView> getAllRoomUsers() {
+            ArrayList<ViewProto.UsersView> res = new ArrayList<>();
             try {
-                for (RoomUsersView roomUsers : this.session.getRoomUsers(this.roomID)) {
-                    res.addAll(roomUsers.getUsersView());
+                ViewProto.RoomUsersView roomUsersView = this.session.getRoomUsers(this.roomID);
+                if (roomUsersView != null) {
+                    res.addAll(roomUsersView.getUsersViewList());
                 }
             } catch (MageRemoteException e) {
                 logger.error(e);
@@ -731,8 +735,8 @@ public class LoadTest {
             return res;
         }
 
-        public UsersView findUser(String userName) {
-            for (UsersView user : this.getAllRoomUsers()) {
+        public ViewProto.UsersView findUser(String userName) {
+            for (ViewProto.UsersView user : this.getAllRoomUsers()) {
                 if (user.getUserName().equals(userName)) {
                     return user;
                 }
@@ -740,15 +744,15 @@ public class LoadTest {
             return null;
         }
 
-        public Optional<TableView> getTable(UUID tableID) {
+        public Optional<ViewProto.TableView> getTable(UUID tableID) {
             return this.session.getTable(this.roomID, tableID);
         }
 
         public UUID createNewTable() {
-            GameTypeView gameType = prepareGameType(this.session);
+            ViewProto.GameTypeView gameType = prepareGameType(this.session);
             MatchOptions gameOptions = createSimpleGameOptionsForBots(gameType, this.session);
-            TableView game = this.session.createTable(this.roomID, gameOptions);
-            this.createdTableID = game.getTableId();
+            ViewProto.TableView game = this.session.createTable(this.roomID, gameOptions);
+            this.createdTableID = UUID.fromString(game.getTableId());
             Assert.assertEquals(this.userName, game.getControllerName());
 
             connectToTable(this.createdTableID);
@@ -1089,8 +1093,8 @@ public class LoadTest {
         }
     }
 
-    private GameTypeView prepareGameType(Session session) {
-        GameTypeView gameType = session.getGameTypes()
+    private ViewProto.GameTypeView prepareGameType(Session session) {
+        ViewProto.GameTypeView gameType = session.getGameTypes()
                 .stream()
                 .filter(m -> m.getName().equals(TEST_AI_GAME_MODE))
                 .findFirst()

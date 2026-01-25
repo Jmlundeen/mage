@@ -103,9 +103,11 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     @Override
-    public boolean setUserData(String userName, String sessionId, UserData userData, String clientVersion, String userIdStr) throws MageException {
+    public boolean setUserData(String sessionId, UserData userData, String clientVersion, String userIdStr) throws MageException {
+        User user = managerFactory.userManager().getUserBySessionId(sessionId).orElse(null);
+        assert user != null : "User not found by session id: " + sessionId;
         return getSession(sessionId)
-                .map(session -> session.setUserData(userName, userData, clientVersion, userIdStr))
+                .map(session -> session.setUserData(user.getName(), userData, clientVersion, userIdStr))
                 .orElse(false);
 
     }

@@ -6,8 +6,8 @@ import mage.game.match.MatchOptions;
 import mage.game.tournament.TournamentOptions;
 import mage.players.PlayerType;
 import mage.remote.MageRemoteException;
-import mage.view.TableView;
 import mage.view.TournamentView;
+import mage.ws.v1.view.ViewProto;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,9 +17,9 @@ import java.util.UUID;
  */
 public interface PlayerActions {
 
-    TableView createTable(UUID roomId, MatchOptions matchOptions);
+    ViewProto.TableView createTable(UUID roomId, MatchOptions matchOptions);
 
-    TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions);
+    ViewProto.TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions);
 
     boolean removeTable(UUID roomId, UUID tableId);
 
@@ -47,7 +47,7 @@ public interface PlayerActions {
 
     boolean joinTable(UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password);
 
-    Optional<TableView> getTable(UUID roomId, UUID tableId);
+    Optional<ViewProto.TableView> getTable(UUID roomId, UUID tableId);
 
     TournamentView getTournament(UUID tournamentId) throws MageRemoteException;
 

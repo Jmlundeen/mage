@@ -25,6 +25,7 @@ import mage.server.util.PluginClassLoader;
 import mage.server.util.ServerMessagesUtil;
 import mage.server.util.config.GamePlugin;
 import mage.server.util.config.Plugin;
+import mage.server.ws.WsServerMain;
 import mage.utils.MageVersion;
 import mage.utils.SystemUtil;
 import org.apache.log4j.Logger;
@@ -82,6 +83,9 @@ public final class Main {
 
     public static final PluginClassLoader classLoader = new PluginClassLoader();
     private static TransporterServer server;
+
+    // Start WS server together with remoting server.
+    private static WsServerMain wsServer;
 
     // Special test mode:
     // - fast game buttons;
@@ -286,25 +290,42 @@ public final class Main {
         Connection connection = new Connection("&maxPoolSize=" + config.getMaxPoolSize());
         connection.setHost(config.getServerAddress());
         connection.setPort(config.getPort());
-        final ManagerFactory managerFactory = new MainManagerFactory(config);
+        final MainManagerFactory managerFactory = new MainManagerFactory(config);
         try {
             // Parameter: serializationtype => jboss
             InvokerLocator serverLocator = new InvokerLocator(connection.getURI());
             if (!isAlreadyRunning(config, serverLocator)) {
+                MageServerImpl mageServer = new MageServerImpl(managerFactory, adminPassword, testMode, detailsMode);
+
                 server = new MageTransporterServer(
                         managerFactory,
                         serverLocator,
-                        new MageServerImpl(managerFactory, adminPassword, testMode, detailsMode),
+                        mageServer,
                         MageServer.class.getName(),
                         new MageServerInvocationHandler(managerFactory)
                 );
                 server.start();
                 logger.info("Started MAGE server - listening on " + connection.toString());
 
+                // Start WS transport in the same process.
+                try {
+                    wsServer = new WsServerMain();
+                    wsServer.start(config, managerFactory, mageServer, detailsMode);
+                } catch (Exception e) {
+                    logger.error("Failed to start WS server", e);
+                }
+
                 if (testMode) {
                     logger.info("MAGE server running in test mode");
                 }
                 initStatistics();
+
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    if (wsServer != null) {
+                        wsServer.stop();
+                        wsServer = null;
+                    }
+                }));
             } else {
                 logger.fatal("Unable to start MAGE server - another server is already started");
             }
