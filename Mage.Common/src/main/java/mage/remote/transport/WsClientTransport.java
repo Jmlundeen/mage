@@ -1,9 +1,12 @@
 package mage.remote.transport;
 
 import mage.MageException;
+import mage.cards.decks.DeckCardLists;
 import mage.game.match.MatchOptions;
+import mage.game.tournament.TournamentOptions;
 import mage.interfaces.ServerState;
 import mage.interfaces.callback.ClientCallback;
+import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.remote.Connection;
 import mage.remote.WsSessionImpl;
@@ -18,6 +21,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -475,6 +479,146 @@ public class WsClientTransport implements ClientTransport {
                 throw new IllegalStateException("Unexpected response type");
             }
             return res.getTableViewResponse().getTableView();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public ViewProto.TableView createTournamentTable(String sessionId, UUID roomId, TournamentOptions tournamentOptions) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setCreateTournamentRequest(WsProto.CreateTournamentTableRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTournamentOptions(tournamentOptions.toProto())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasTableViewResponse()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+            return res.getTableViewResponse().getTableView();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Boolean joinTable(String sessionId, UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setJoinTableRequest(WsProto.JoinTableRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .setPlayerName(playerName == null ? "" : playerName)
+                        .setPlayerType(playerType.toString())
+                        .setAiSkill(skill)
+                        .setDeckCardLists(deckList.toProto())
+                        .setPassword(password == null ? "" : password)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasAck()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+            return true;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Boolean removeTable(String sessionId, UUID roomId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setRemoveTableRequest(WsProto.RemoveTableRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasAck()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+            return true;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Optional<UUID> getTableChatId(String sessionId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setTableChatIdRequest(WsProto.TableChatIdRequest.newBuilder()
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasUuidResponse()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+
+            String chatIdStr = res.getUuidResponse().getUuid();
+            return chatIdStr.isEmpty() ? Optional.empty() : Optional.of(UUID.fromString(chatIdStr));
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean isTableOwner(String sessionId, UUID roomId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setIsTableOwnerRequest(WsProto.IsTableOwnerRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasBoolean()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+            return res.getBoolean();
 
         } catch (Exception e) {
             throw new RuntimeException(e);

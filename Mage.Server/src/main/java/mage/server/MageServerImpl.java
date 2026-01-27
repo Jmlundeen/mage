@@ -301,21 +301,32 @@ public class MageServerImpl implements MageServer {
             @Override
             public Boolean execute() throws MageException {
                 Optional<Session> session = managerFactory.sessionManager().getSession(sessionId);
-                if (!session.isPresent()) {
+                if (session.isEmpty()) {
                     return false;
                 }
                 UUID userId = session.get().getUserId();
-                logger.debug(name + " joins tableId: " + tableId);
                 if (userId == null) {
                     logger.fatal("Got no userId from sessionId" + sessionId + " tableId" + tableId);
                     return false;
                 }
-                Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
-                if (!room.isPresent()) {
+                User user = managerFactory.userManager().getUser(userId).orElse(null);
+                if (user == null && playerType == PlayerType.HUMAN) {
+                    logger.fatal("Got no user from userId" + userId + " sessionId" + sessionId + " tableId" + tableId);
                     return false;
                 }
-                return room.get().joinTable(userId, tableId, name, playerType, skill, deckList, password);
-
+                String username = name;
+                if (user != null && playerType == PlayerType.HUMAN) {
+                    // check if user provided name matches server name
+                    if (!user.getName().equals(username)) {
+                        username = user.getName();
+                    }
+                }
+                logger.debug(username + " joins tableId: " + tableId);
+                Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
+                if (room.isEmpty()) {
+                    return false;
+                }
+                return room.get().joinTable(userId, tableId, username, playerType, skill, deckList, password);
             }
         });
     }

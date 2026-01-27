@@ -192,7 +192,7 @@ public class LoadTest {
         Assert.assertEquals("", checkGame.get().getSeatsList().get(1).getPlayerName());
 
         // connect user 1
-        Assert.assertTrue(player1.session.joinTable(player1.roomID, tableId, player1.userName, PlayerType.HUMAN, 1, deckList, ""));
+        Assert.assertTrue(player1.session.joinTable(player1.roomID, tableId, , PlayerType.HUMAN, 1, deckList, ""));
         checkGame = monitor.getTable(tableId);
         Assert.assertTrue(checkGame.isPresent());
         Assert.assertEquals(2, checkGame.get().getSeatsList().size());
@@ -200,7 +200,7 @@ public class LoadTest {
         Assert.assertEquals("", checkGame.get().getSeatsList().get(1).getPlayerName());
 
         // connect user 2
-        Assert.assertTrue(player2.session.joinTable(player2.roomID, tableId, player2.userName, PlayerType.HUMAN, 1, deckList, ""));
+        Assert.assertTrue(player2.session.joinTable(player2.roomID, tableId, , PlayerType.HUMAN, 1, deckList, ""));
         checkGame = monitor.getTable(tableId);
         Assert.assertTrue(checkGame.isPresent());
         Assert.assertEquals(2, checkGame.get().getSeatsList().size());
@@ -244,8 +244,8 @@ public class LoadTest {
         DeckCardLists deckList2 = loadGameDeck(2, deckColors, deckAllowedSets.equals("PELP"), deckAllowedSets);
 
         // join AI
-        Assert.assertTrue(monitor.session.joinTable(monitor.roomID, tableId, "ai_1", PlayerType.COMPUTER_MAD, 5, deckList1, ""));
-        Assert.assertTrue(monitor.session.joinTable(monitor.roomID, tableId, "ai_2", PlayerType.COMPUTER_MAD, 5, deckList2, ""));
+        Assert.assertTrue(monitor.session.joinTable(monitor.roomID, tableId, , PlayerType.COMPUTER_MAD, 5, deckList1, ""));
+        Assert.assertTrue(monitor.session.joinTable(monitor.roomID, tableId, , PlayerType.COMPUTER_MAD, 5, deckList2, ""));
 
         // match start
         Assert.assertTrue(monitor.session.startMatch(monitor.roomID, tableId));
@@ -761,7 +761,7 @@ public class LoadTest {
         }
 
         public void connectToTable(UUID tableID) {
-            Assert.assertTrue(this.session.joinTable(this.roomID, tableID, this.userName, PlayerType.HUMAN, 1, this.deckList, ""));
+            Assert.assertTrue(this.session.joinTable(this.roomID, tableID, , PlayerType.HUMAN, 1, this.deckList, ""));
             this.connectedTableID = tableID;
         }
 

@@ -206,10 +206,11 @@ message CreateTournamentTableRequest {
 message JoinTableRequest {
   string roomId = 1;
   string tableId = 2;
-  string playerType = 3;
-  int32 aiSkill = 4;
-  model.DeckCardLists deckCardLists = 5;
-  string password = 6;
+  string playerName = 3;
+  string playerType = 4;
+  int32 aiSkill = 5;
+  model.DeckCardLists deckCardLists = 6;
+  string password = 7;
 }
 
 message RemoveTableRequest {

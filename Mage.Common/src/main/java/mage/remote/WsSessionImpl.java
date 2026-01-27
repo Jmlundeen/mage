@@ -527,8 +527,7 @@ public class WsSessionImpl implements Session {
 
     @Override
     public Optional<UUID> getTableChatId(UUID tableId) {
-        warnUnsupported("getTableChatId");
-        return Optional.empty();
+        return transport.getTableChatId(sessionId, tableId);
     }
 
     @Override
@@ -716,14 +715,12 @@ public class WsSessionImpl implements Session {
 
     @Override
     public ViewProto.TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions) {
-        warnUnsupported("createTournamentTable");
-        return null;
+        return executeTransportMethodSafe(() -> transport.createTournamentTable(sessionId, roomId, tournamentOptions), null);
     }
 
     @Override
     public boolean removeTable(UUID roomId, UUID tableId) {
-        warnUnsupported("removeTable");
-        return false;
+        return executeTransportMethodSafe(() -> transport.removeTable(sessionId, roomId, tableId), false);
     }
 
     @Override
@@ -854,8 +851,7 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean joinTable(UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password) {
-        warnUnsupported("joinTable");
-        return false;
+        return executeTransportMethodSafe(() -> transport.joinTable(sessionId, roomId, tableId, playerName, playerType, skill, deckList, password), false);
     }
 
     @Override

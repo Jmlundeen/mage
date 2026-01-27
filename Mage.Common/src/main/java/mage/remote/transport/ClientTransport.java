@@ -1,13 +1,17 @@
 package mage.remote.transport;
 
+import mage.cards.decks.DeckCardLists;
 import mage.game.match.MatchOptions;
+import mage.game.tournament.TournamentOptions;
 import mage.interfaces.ServerState;
+import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.remote.Connection;
 import mage.utils.MageVersion;
 import mage.ws.v1.view.ViewProto;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -48,4 +52,14 @@ public interface ClientTransport {
     UUID getRoomChatId(String sessionId, UUID roomId) throws Exception;
 
     ViewProto.TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions);
+
+    ViewProto.TableView createTournamentTable(String sessionId, UUID roomId, TournamentOptions tournamentOptions);
+
+    Boolean joinTable(String sessionId, UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password);
+
+    Boolean removeTable(String sessionId, UUID roomId, UUID tableId);
+
+    Optional<UUID> getTableChatId(String sessionId, UUID tableId);
+
+    boolean isTableOwner(String sessionId, UUID roomId, UUID tableId);
 }

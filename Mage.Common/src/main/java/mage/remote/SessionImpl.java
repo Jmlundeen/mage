@@ -820,7 +820,7 @@ public class SessionImpl implements Session {
                     deckList.setCardLayout(null);
                     deckList.setSideboardLayout(null);
                 }
-                return server.roomJoinTable(sessionId, roomId, tableId, playerName, playerType, skill, deckList, password);
+                return server.roomJoinTable(sessionId, roomId, tableId, playerType, skill, deckList, password);
             }
         } catch (GameException ex) {
             handleGameException(ex);

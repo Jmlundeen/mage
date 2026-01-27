@@ -1,8 +1,11 @@
 package mage.server.ws;
 
 import mage.MageException;
+import mage.cards.decks.DeckCardLists;
 import mage.game.match.MatchOptions;
+import mage.game.tournament.TournamentOptions;
 import mage.interfaces.MageServer;
+import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.remote.SessionImpl;
 import mage.server.DisconnectReason;
@@ -84,6 +87,11 @@ public class WsMessageDispatcher {
                 case LOBBY_INFO_REQUEST -> getLobbyInfo(requestId, sessionId, msg.getLobbyInfoRequest());
                 case PROMOTION_MESSAGES_REQUEST -> getPromotionMessages(requestId, sessionId);
                 case CREATE_TABLE_REQUEST -> createTable(requestId, sessionId, msg.getCreateTableRequest());
+                case CREATE_TOURNAMENT_REQUEST -> createTournamentTable(requestId, sessionId, msg.getCreateTournamentRequest());
+                case JOIN_TABLE_REQUEST -> joinTable(requestId, sessionId, msg.getJoinTableRequest());
+                case REMOVE_TABLE_REQUEST -> removeTable(requestId, sessionId, msg.getRemoveTableRequest());
+                case TABLE_CHAT_ID_REQUEST -> getTableChatId(requestId, sessionId, msg.getTableChatIdRequest());
+                case IS_TABLE_OWNER_REQUEST -> getIsTableOwner(requestId, sessionId, msg.getIsTableOwnerRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -289,8 +297,8 @@ public class WsMessageDispatcher {
 
     private WsProto.ServerMessage leaveChat(String requestId, String sessionId, WsProto.LeaveChatRequest leaveChatRequest) {
         requireSession(sessionId);
-        UUID chatId = UUID.fromString(leaveChatRequest.getChatId());
         try {
+            UUID chatId = UUID.fromString(leaveChatRequest.getChatId());
             mageServer.chatLeave(chatId, sessionId);
             return WsProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
@@ -359,6 +367,96 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not create table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage createTournamentTable(String requestId, String sessionId, WsProto.CreateTournamentTableRequest createTournamentTableRequest) {
+        requireSession(sessionId);
+        try {
+            ViewProto.TableView resultView = mageServer.roomCreateTournament(sessionId, UUID.fromString(createTournamentTableRequest.getRoomId()), TournamentOptions.fromProto(createTournamentTableRequest.getTournamentOptions()));
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
+                            .setTableView(resultView)
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not create tournament table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage joinTable(String requestId, String sessionId, WsProto.JoinTableRequest joinTableRequest) {
+        requireSession(sessionId);
+        try {
+            boolean result = mageServer.roomJoinTable(sessionId,
+                    UUID.fromString(joinTableRequest.getRoomId()),
+                    UUID.fromString(joinTableRequest.getTableId()),
+                    joinTableRequest.getPlayerName(),
+                    PlayerType.getByDescription(joinTableRequest.getPlayerType()),
+                    joinTableRequest.getAiSkill(),
+                    DeckCardLists.fromProto(joinTableRequest.getDeckCardLists()),
+                    joinTableRequest.getPassword()
+            );
+            if (!result) {
+                return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not join table");
+            }
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not join table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage removeTable(String requestId, String sessionId, WsProto.RemoveTableRequest removeTableRequest) {
+        requireSession(sessionId);
+        try {
+            mageServer.tableRemove(sessionId, UUID.fromString(removeTableRequest.getRoomId()), UUID.fromString(removeTableRequest.getTableId()));
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not remove table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage getTableChatId(String requestId, String sessionId, WsProto.TableChatIdRequest tableChatIdRequest) {
+        requireSession(sessionId);
+        try {
+            UUID chatId = mageServer.chatFindByTable(UUID.fromString(tableChatIdRequest.getTableId()));
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                            .setUuid(chatId.toString())
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get table chat ID: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage getIsTableOwner(String requestId, String sessionId, WsProto.IsTableOwnerRequest isTableOwnerRequest) {
+        requireSession(sessionId);
+        try {
+            boolean isOwner = mageServer.tableIsOwner(sessionId, UUID.fromString(isTableOwnerRequest.getRoomId()), UUID.fromString(isTableOwnerRequest.getTableId()));
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setBoolean(isOwner)
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not determine table owner status: " + e.getMessage());
         }
     }
 
