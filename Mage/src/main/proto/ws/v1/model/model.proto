@@ -4,7 +4,7 @@ package mage.ws.v1.model;
 option java_package="mage.ws.v1.model";
 option java_outer_classname="ModelProto";
 
-import "view/view.proto";
+import "ws/v1/view/view.proto";
 
 // Represents the Mage server version information.
 // @author BetaSteward_at_googlemail.com

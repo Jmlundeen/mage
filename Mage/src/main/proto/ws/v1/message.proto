@@ -5,8 +5,9 @@ package mage.ws.v1;
 option java_package = "mage.ws.v1";
 option java_outer_classname = "WsProto";
 
-import "view/view.proto";
-import "model/model.proto";
+import "ws/v1/view/view.proto";
+import "ws/v1/model/model.proto";
+import "result.proto";
 // Strict, versioned envelopes used by the parallel Javalin WebSocket transport.
 //
 // Rules:
@@ -30,6 +31,7 @@ message ClientMessage {
     ServerStateRequest server_state_request = 17;
     UserData user_data = 18;
     PromotionMessagesRequest promotion_messages_request = 19;
+    CreateTableRequest create_table_request = 20;
     TablesRequest table_request = 30;
     FinishedMatchesRequest finished_matches_request = 31;
     RoomUsersRequest room_users_request = 32;
@@ -51,6 +53,7 @@ message ServerMessage {
     ServerStateResponse server_state_response = 24;
     PromotionMessagesResponse promotion_messages_response = 25;
     ClientCallback client_callback = 26;
+    TableViewResponse table_view_response = 27;
 
     TablesResponse lobbyGetTables = 30;
     FinishedMatchesResponse finished_matches_response = 31;
@@ -178,4 +181,13 @@ message ClientCallback {
   int32 message_id = 3;
   bytes data = 4;
   string data_type = 5;
+}
+
+message CreateTableRequest {
+  string roomId = 1;
+  mage.game.result.MatchOptionsProto matchOptions = 2;
+}
+
+message TableViewResponse {
+  view.TableView tableView = 1;
 }

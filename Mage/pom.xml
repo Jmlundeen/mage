@@ -67,7 +67,7 @@
                                 <include>${project.basedir}/src/main/proto</include>
                             </inputDirectories>
                             <includeDirectories>
-                                <include>${project.basedir}/src/main/proto/ws/v1</include>
+                                <include>${project.basedir}/src/main/proto</include>
                             </includeDirectories>
                             <outputTargets>
                                 <outputTarget>
