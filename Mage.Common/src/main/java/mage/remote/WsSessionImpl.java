@@ -94,6 +94,49 @@ public class WsSessionImpl implements Session {
         lastError = error == null ? "" : error;
     }
 
+    /**
+     * Helper to execute a transport method with exception handling and connection check.
+     * Throws MageRemoteException on error.
+     */
+    private <T> T executeTransportMethod(TransportMethod<T> method) throws MageRemoteException {
+        try {
+            if (!isConnected() || transport == null) {
+                throw new MageException("Not connected");
+            }
+            return method.execute();
+        } catch (MageException e) {
+            handleMageException(e);
+            throw new MageRemoteException();
+        } catch (Exception e) {
+            handleThrowable(e);
+            throw new MageRemoteException();
+        }
+    }
+
+    /**
+     * Helper to execute a transport method with exception handling and connection check.
+     * Returns default value on error instead of throwing exception.
+     */
+    private <T> T executeTransportMethodSafe(TransportMethod<T> method, T defaultValue) {
+        try {
+            if (!isConnected() || transport == null) {
+                return defaultValue;
+            }
+            return method.execute();
+        } catch (Exception e) {
+            logger.debug("Transport method call failed", e);
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Functional interface for transport method calls
+     */
+    @FunctionalInterface
+    private interface TransportMethod<T> {
+        T execute() throws Exception;
+    }
+
     // --- Connect
 
     @Override
@@ -405,8 +448,7 @@ public class WsSessionImpl implements Session {
 
     @Override
     public PlayerType[] getPlayerTypes() {
-        warnUnsupported("getPlayerTypes");
-        return new PlayerType[0];
+        return serverState.getPlayerTypes();
     }
 
     @Override
@@ -421,20 +463,17 @@ public class WsSessionImpl implements Session {
 
     @Override
     public String[] getDeckTypes() {
-        warnUnsupported("getDeckTypes");
-        return new String[0];
+        return serverState.getDeckTypes();
     }
 
     @Override
     public String[] getDraftCubes() {
-        warnUnsupported("getDraftCubes");
-        return new String[0];
+        return serverState.getDraftCubes();
     }
 
     @Override
     public List<ViewProto.TournamentTypeView> getTournamentTypes() {
-        warnUnsupported("getTournamentTypes");
-        return new ArrayList<>();
+        return serverState.getTournamentTypes();
     }
 
     @Override
@@ -828,60 +867,22 @@ public class WsSessionImpl implements Session {
 
     @Override
     public Collection<ViewProto.TableView> getTables(UUID roomId) throws MageRemoteException {
-        try {
-            if (!isConnected() || transport == null) {
-                throw new MageException("Not connected");
-            }
-            return transport.lobbyGetTables(sessionId, roomId);
-        } catch (MageException e) {
-            handleMageException(e);
-            throw new MageRemoteException();
-        } catch (Exception e) {
-            handleThrowable(e);
-            throw new MageRemoteException();
-        }
+        return executeTransportMethod(() -> transport.lobbyGetTables(sessionId, roomId));
     }
 
     @Override
     public Collection<ViewProto.MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException {
-        try {
-            if (!isConnected() || transport == null) {
-                throw new MageException("Not connected");
-            }
-            return transport.getFinishedMatches(sessionId, roomId);
-        } catch (MageException e) {
-            handleMageException(e);
-            throw new MageRemoteException();
-        } catch (Exception e) {
-            handleThrowable(e);
-            throw new MageRemoteException();
-        }
+        return executeTransportMethod(() -> transport.getFinishedMatches(sessionId, roomId));
     }
 
     @Override
     public ViewProto.RoomUsersView getRoomUsers(UUID roomId) throws MageRemoteException {
-        try {
-            if (!isConnected() || transport == null) {
-                throw new MageException("Not connected");
-            }
-            return transport.getRoomUsers(sessionId, roomId);
-        } catch (MageException e) {
-            handleMageException(e);
-            throw new MageRemoteException();
-        } catch (Exception e) {
-            handleThrowable(e);
-            throw new MageRemoteException();
-        }
+        return executeTransportMethod(() -> transport.getRoomUsers(sessionId, roomId));
     }
 
     @Override
     public List<String> getServerMessages() {
-        try {
-            return transport.getServerMessages(sessionId);
-        } catch (Exception e) {
-            handleMageException(new MageException("Failed to get server messages: " + e.getMessage()));
-            return Collections.emptyList();
-        }
+        return executeTransportMethodSafe(() -> transport.getServerMessages(sessionId), Collections.emptyList());
     }
 
     @Override
@@ -944,39 +945,15 @@ public class WsSessionImpl implements Session {
     }
 
     public List<ViewProto.TableView> lobbyGetTables(UUID roomId) {
-        try {
-            if (!isConnected() || transport == null) {
-                return Collections.emptyList();
-            }
-            return transport.lobbyGetTables(sessionId, roomId);
-        } catch (Exception e) {
-            logger.debug("WS lobbyGetTables failed", e);
-            return Collections.emptyList();
-        }
+        return executeTransportMethodSafe(() -> transport.lobbyGetTables(sessionId, roomId), Collections.emptyList());
     }
 
     public List<ViewProto.MatchView> lobbyGetFinishedMatches(UUID roomId) {
-        try {
-            if (!isConnected() || transport == null) {
-                return Collections.emptyList();
-            }
-            return transport.getFinishedMatches(sessionId, roomId);
-        } catch (Exception e) {
-            logger.debug("WS lobbyGetFinishedMatches failed", e);
-            return Collections.emptyList();
-        }
+        return executeTransportMethodSafe(() -> transport.getFinishedMatches(sessionId, roomId), Collections.emptyList());
     }
 
     public ViewProto.RoomUsersView lobbyGetRoomUsers(UUID roomId) {
-        try {
-            if (!isConnected() || transport == null) {
-                return null;
-            }
-            return transport.getRoomUsers(sessionId, roomId);
-        } catch (Exception e) {
-            logger.debug("WS lobbyGetRoomUsers failed", e);
-            return null;
-        }
+        return executeTransportMethodSafe(() -> transport.getRoomUsers(sessionId, roomId), null);
     }
 
     private void handleThrowable(Throwable t) {
@@ -1012,15 +989,10 @@ public class WsSessionImpl implements Session {
     }
 
     public GetLobbyInfoResult lobbyGetInfo(UUID roomId, boolean includeFinishedMatches, boolean includeRoomUsers) {
-        try {
-            if (!isConnected() || transport == null) {
-                return new GetLobbyInfoResult(Collections.emptyList(), ViewProto.RoomUsersView.getDefaultInstance(), Collections.emptyList());
-            }
-            return transport.lobbyGetInfo(sessionId, roomId, includeFinishedMatches, includeRoomUsers);
-        } catch (Exception e) {
-            logger.debug("WS lobbyGetInfo failed", e);
-            return new GetLobbyInfoResult(Collections.emptyList(), ViewProto.RoomUsersView.getDefaultInstance(), Collections.emptyList());
-        }
+        return executeTransportMethodSafe(
+                () -> transport.lobbyGetInfo(sessionId, roomId, includeFinishedMatches, includeRoomUsers),
+                new GetLobbyInfoResult(Collections.emptyList(), ViewProto.RoomUsersView.getDefaultInstance(), Collections.emptyList())
+        );
     }
 
     @Override
