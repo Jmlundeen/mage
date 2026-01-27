@@ -32,6 +32,11 @@ message ClientMessage {
     UserData user_data = 18;
     PromotionMessagesRequest promotion_messages_request = 19;
     CreateTableRequest create_table_request = 20;
+    CreateTournamentTableRequest create_tournament_request = 21;
+    JoinTableRequest join_table_request = 22;
+    RemoveTableRequest remove_table_request = 23;
+    TableChatIdRequest table_chat_id_request = 24;
+    IsTableOwnerRequest is_table_owner_request = 25;
     TablesRequest table_request = 30;
     FinishedMatchesRequest finished_matches_request = 31;
     RoomUsersRequest room_users_request = 32;
@@ -54,6 +59,7 @@ message ServerMessage {
     PromotionMessagesResponse promotion_messages_response = 25;
     ClientCallback client_callback = 26;
     TableViewResponse table_view_response = 27;
+    bool boolean = 28;
 
     TablesResponse lobbyGetTables = 30;
     FinishedMatchesResponse finished_matches_response = 31;
@@ -190,4 +196,32 @@ message CreateTableRequest {
 
 message TableViewResponse {
   view.TableView tableView = 1;
+}
+
+message CreateTournamentTableRequest {
+  string roomId = 1;
+  model.TournamentOptions tournamentOptions = 2;
+}
+
+message JoinTableRequest {
+  string roomId = 1;
+  string tableId = 2;
+  string playerType = 3;
+  int32 aiSkill = 4;
+  model.DeckCardLists deckCardLists = 5;
+  string password = 6;
+}
+
+message RemoveTableRequest {
+  string roomId = 1;
+  string tableId = 2;
+}
+
+message TableChatIdRequest {
+  string tableId = 1;
+}
+
+message IsTableOwnerRequest {
+  string roomId = 1;
+  string tableId = 2;
 }

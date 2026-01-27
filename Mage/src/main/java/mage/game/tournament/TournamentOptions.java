@@ -3,6 +3,7 @@ package mage.game.tournament;
 
 import mage.game.match.MatchOptions;
 import mage.players.PlayerType;
+import mage.ws.v1.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -103,4 +104,58 @@ public class TournamentOptions implements Serializable {
     public int getMinimumRating() { return minimumRating; }
 
     public void setMinimumRating(int minimumRating) { this.minimumRating = minimumRating; }
+
+    public ModelProto.TournamentOptions toProto() {
+        ModelProto.TournamentOptions.Builder builder = ModelProto.TournamentOptions.newBuilder()
+                .setName(this.name)
+                .setTournamentType(this.tournamentType != null ? this.tournamentType : "")
+                .setMatchOptionsName(this.matchOptions.getName())
+                .setMatchOptionsGameType(this.matchOptions.getGameType())
+                .setMatchOptionsMultiPlayer(this.matchOptions.isSingleGameTourney())
+                .setWatchingAllowed(this.watchingAllowed)
+                .setPlaneChase(this.planeChase)
+                .setNumberRounds(this.numberRounds)
+                .setPassword(this.password != null ? this.password : "")
+                .setQuitRatio(this.quitRatio)
+                .setMinimumRating(this.minimumRating);
+
+        // Add player types as strings
+        for (PlayerType playerType : this.playerTypes) {
+            builder.addPlayerTypes(playerType.toString());
+        }
+
+        // Add limited options if available
+        if (this.limitedOptions != null) {
+            builder.setLimitedOptions(this.limitedOptions.toProto());
+        }
+
+        return builder.build();
+    }
+
+    public static TournamentOptions fromProto(ModelProto.TournamentOptions proto) {
+        TournamentOptions options = new TournamentOptions(
+                proto.getName(),
+                proto.getMatchOptionsGameType(),
+                proto.getMatchOptionsMultiPlayer()
+        );
+        options.tournamentType = proto.getTournamentType().isEmpty() ? null : proto.getTournamentType();
+        options.watchingAllowed = proto.getWatchingAllowed();
+        options.planeChase = proto.getPlaneChase();
+        options.numberRounds = proto.getNumberRounds();
+        options.password = proto.getPassword().isEmpty() ? null : proto.getPassword();
+        options.quitRatio = proto.getQuitRatio();
+        options.minimumRating = proto.getMinimumRating();
+
+        // Convert player type strings back to PlayerType enum
+        for (String playerTypeStr : proto.getPlayerTypesList()) {
+            options.playerTypes.add(PlayerType.getByDescription(playerTypeStr));
+        }
+
+        // Convert limited options if present
+        if (proto.hasLimitedOptions()) {
+            options.limitedOptions = LimitedOptions.fromProto(proto.getLimitedOptions());
+        }
+
+        return options;
+    }
 }

@@ -32,6 +32,80 @@ message MatchOptionsProto {
   optional bool rated = 3;
   optional SkillLevel skill_level = 4;
   optional int32 wins_needed = 5;
+  optional string game_type = 6;
+  optional string deck_type = 7;
+  optional bool multi_player = 8;
+  optional string password = 9;
+  optional MultiplayerAttackOption attack_option = 10;
+  optional RangeOfInfluence range = 11;
+  optional int32 free_mulligans = 12;
+  optional bool custom_start_life_enabled = 13;
+  optional int32 custom_start_life = 14;
+  optional bool custom_start_hand_size_enabled = 15;
+  optional int32 custom_start_hand_size = 16;
+  optional bool rollback_turns_allowed = 17;
+  optional bool spectators_allowed = 18;
+  optional bool plane_chase = 19;
+  optional int32 quit_ratio = 20;
+  optional int32 minimum_rating = 21;
+  optional int32 edh_power_level = 22;
+  repeated string banned_users = 23;
+  optional MatchTimeLimit match_time_limit = 24;
+  optional MatchBufferTime match_buffer_time = 25;
+  optional MulliganType mulligan_type = 26;
+  repeated string player_types = 27;
+}
+
+enum MultiplayerAttackOption {
+  ATTACK_MULTIPLE = 0;
+  ATTACK_LEFT = 1;
+  ATTACK_RIGHT = 2;
+}
+
+enum RangeOfInfluence {
+  RANGE_ONE = 0;
+  RANGE_TWO = 1;
+  RANGE_ALL = 2;
+}
+
+enum MatchTimeLimit {
+  TIME_NONE = 0;
+  TIME_MIN_5 = 1;
+  TIME_MIN_10 = 2;
+  TIME_MIN_15 = 3;
+  TIME_MIN_20 = 4;
+  TIME_MIN_25 = 5;
+  TIME_MIN_30 = 6;
+  TIME_MIN_35 = 7;
+  TIME_MIN_40 = 8;
+  TIME_MIN_45 = 9;
+  TIME_MIN_50 = 10;
+  TIME_MIN_55 = 11;
+  TIME_MIN_60 = 12;
+  TIME_MIN_90 = 13;
+  TIME_MIN_120 = 14;
+}
+
+enum MatchBufferTime {
+  BUFFER_NONE = 0;
+  BUFFER_SEC_1 = 1;
+  BUFFER_SEC_2 = 2;
+  BUFFER_SEC_3 = 3;
+  BUFFER_SEC_5 = 4;
+  BUFFER_SEC_10 = 5;
+  BUFFER_SEC_15 = 6;
+  BUFFER_SEC_20 = 7;
+  BUFFER_SEC_25 = 8;
+  BUFFER_SEC_30 = 9;
+}
+
+enum MulliganType {
+  MULLIGAN_GAME_DEFAULT = 0;
+  MULLIGAN_VANCOUVER = 1;
+  MULLIGAN_PARIS = 2;
+  MULLIGAN_LONDON = 3;
+  MULLIGAN_SMOOTHED_LONDON = 4;
+  MULLIGAN_CANADIAN_HIGHLANDER = 5;
 }
 
 enum SkillLevel {

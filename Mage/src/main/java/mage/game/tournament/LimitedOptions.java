@@ -1,10 +1,12 @@
 package mage.game.tournament;
 
+import mage.cards.decks.Deck;
+import mage.game.draft.DraftCube;
+import mage.ws.v1.model.ModelProto;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import mage.cards.decks.Deck;
-import mage.game.draft.DraftCube;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -118,6 +120,34 @@ public class LimitedOptions implements Serializable {
 
     public boolean getIsJumpstart() {
         return this.isJumpstart;
+    }
+
+    public ModelProto.LimitedOptions toProto() {
+        ModelProto.LimitedOptions.Builder builder = ModelProto.LimitedOptions.newBuilder()
+                .addAllSetCodes(this.sets)
+                .setConstructionTime(this.constructionTime)
+                .setDraftCubeName(this.draftCubeName != null ? this.draftCubeName : "")
+                .setNumberBoosters(this.numberBoosters)
+                .setIsRandom(this.isRandom)
+                .setIsReshuffled(this.isReshuffled)
+                .setIsRichMan(this.isRichMan)
+                .setJumpstartPacks(this.jumpstartPacks != null ? this.jumpstartPacks : "")
+                .setIsJumpstart(this.isJumpstart);
+        return builder.build();
+    }
+
+    public static LimitedOptions fromProto(ModelProto.LimitedOptions proto) {
+        LimitedOptions options = new LimitedOptions();
+        options.sets = new ArrayList<>(proto.getSetCodesList());
+        options.constructionTime = proto.getConstructionTime();
+        options.draftCubeName = proto.getDraftCubeName().isEmpty() ? null : proto.getDraftCubeName();
+        options.numberBoosters = proto.getNumberBoosters();
+        options.isRandom = proto.getIsRandom();
+        options.isReshuffled = proto.getIsReshuffled();
+        options.isRichMan = proto.getIsRichMan();
+        options.jumpstartPacks = proto.getJumpstartPacks().isEmpty() ? null : proto.getJumpstartPacks();
+        options.isJumpstart = proto.getIsJumpstart();
+        return options;
     }
 
 }

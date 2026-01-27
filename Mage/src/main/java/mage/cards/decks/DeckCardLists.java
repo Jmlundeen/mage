@@ -2,6 +2,7 @@ package mage.cards.decks;
 
 import mage.util.CardUtil;
 import mage.util.Copyable;
+import mage.ws.v1.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -103,5 +104,65 @@ public class DeckCardLists implements Serializable, Copyable<DeckCardLists> {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public ModelProto.DeckCardLists toProto() {
+        ModelProto.DeckCardLists.Builder builder = ModelProto.DeckCardLists.newBuilder()
+                .setName(this.name != null ? this.name : "")
+                .setAuthor(this.author != null ? this.author : "");
+
+        // Add main deck cards
+        for (DeckCardInfo card : this.cards) {
+            builder.addCards(card.toProto());
+        }
+
+        // Add sideboard cards
+        for (DeckCardInfo card : this.sideboard) {
+            builder.addSideboard(card.toProto());
+        }
+
+        // Add card layout if present
+        if (this.cardLayout != null) {
+            builder.setCardLayout(this.cardLayout.toProto());
+        }
+
+        // Add sideboard layout if present
+        if (this.sideboardLayout != null) {
+            builder.setSideboardLayout(this.sideboardLayout.toProto());
+        }
+
+        return builder.build();
+    }
+
+    public static DeckCardLists fromProto(ModelProto.DeckCardLists proto) {
+        DeckCardLists deckCardLists = new DeckCardLists();
+        deckCardLists.name = proto.getName().isEmpty() ? null : proto.getName();
+        deckCardLists.author = proto.getAuthor().isEmpty() ? null : proto.getAuthor();
+
+        // Convert main deck cards
+        List<DeckCardInfo> cards = new ArrayList<>();
+        for (ModelProto.DeckCardInfo cardProto : proto.getCardsList()) {
+            cards.add(DeckCardInfo.fromProto(cardProto));
+        }
+        deckCardLists.cards = cards;
+
+        // Convert sideboard cards
+        List<DeckCardInfo> sideboard = new ArrayList<>();
+        for (ModelProto.DeckCardInfo cardProto : proto.getSideboardList()) {
+            sideboard.add(DeckCardInfo.fromProto(cardProto));
+        }
+        deckCardLists.sideboard = sideboard;
+
+        // Convert card layout if present
+        if (proto.hasCardLayout()) {
+            deckCardLists.cardLayout = DeckCardLayout.fromProto(proto.getCardLayout());
+        }
+
+        // Convert sideboard layout if present
+        if (proto.hasSideboardLayout()) {
+            deckCardLists.sideboardLayout = DeckCardLayout.fromProto(proto.getSideboardLayout());
+        }
+
+        return deckCardLists;
     }
 }

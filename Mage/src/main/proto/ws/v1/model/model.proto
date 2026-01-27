@@ -106,3 +106,69 @@ message SkipPrioritySteps {
   // boolean endOfTurn = false;
   bool end_of_turn = 7;
 }
+
+// @author BetaSteward_at_googlemail.com
+message TournamentOptions {
+  string name = 1;
+  string tournament_type = 2;
+  repeated string player_types = 3;
+  string match_options_name = 4;
+  string match_options_game_type = 5;
+  bool match_options_multi_player = 6;
+  LimitedOptions limited_options = 7;
+  bool watching_allowed = 8;
+  bool plane_chase = 9;
+  int32 number_rounds = 10;
+  string password = 11;
+  int32 quit_ratio = 12;
+  int32 minimum_rating = 13;
+}
+
+// @author BetaSteward_at_googlemail.com
+message LimitedOptions {
+  repeated string set_codes = 1;
+  int32 construction_time = 2;
+  string draft_cube_name = 3;
+  int32 number_boosters = 4;
+  bool is_random = 5;
+  bool is_reshuffled = 6;
+  bool is_rich_man = 7;
+  string jumpstart_packs = 8;
+  bool is_jumpstart = 9;
+}
+
+// @author LevelX2
+message DeckCardInfo {
+  string card_name = 1;
+  string set_code = 2;
+  string card_number = 3;
+  int32 amount = 4;
+}
+
+// @author stravant@gmail.com
+message DeckCardLayout {
+  // Nested structure: List<List<List<DeckCardInfo>>>
+  // Represented as repeated CardLayoutLayer
+  repeated CardLayoutLayer layers = 1;
+  string settings = 2;
+}
+
+// Helper message for nested list structure
+message CardLayoutLayer {
+  repeated CardLayoutGroup groups = 1;
+}
+
+message CardLayoutGroup {
+  repeated DeckCardInfo cards = 1;
+}
+
+// @author BetaSteward_at_googlemail.com, JayDi85
+message DeckCardLists {
+  string name = 1;
+  string author = 2;
+  repeated DeckCardInfo cards = 3;
+  repeated DeckCardInfo sideboard = 4;
+  DeckCardLayout card_layout = 5;
+  DeckCardLayout sideboard_layout = 6;
+}
+

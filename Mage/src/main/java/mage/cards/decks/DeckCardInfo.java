@@ -1,6 +1,7 @@
 package mage.cards.decks;
 
 import mage.util.Copyable;
+import mage.ws.v1.model.ModelProto;
 
 import java.io.Serializable;
 
@@ -73,5 +74,23 @@ public class DeckCardInfo implements Serializable, Copyable<DeckCardInfo> {
     @Override
     public DeckCardInfo copy() {
         return new DeckCardInfo(this);
+    }
+
+    public ModelProto.DeckCardInfo toProto() {
+        return ModelProto.DeckCardInfo.newBuilder()
+                .setCardName(this.cardName != null ? this.cardName : "")
+                .setSetCode(this.setCode != null ? this.setCode : "")
+                .setCardNumber(this.cardNumber != null ? this.cardNumber : "")
+                .setAmount(this.amount)
+                .build();
+    }
+
+    public static DeckCardInfo fromProto(ModelProto.DeckCardInfo proto) {
+        return new DeckCardInfo(
+                proto.getCardName().isEmpty() ? null : proto.getCardName(),
+                proto.getCardNumber().isEmpty() ? null : proto.getCardNumber(),
+                proto.getSetCode().isEmpty() ? null : proto.getSetCode(),
+                proto.getAmount()
+        );
     }
 }
