@@ -1,5 +1,6 @@
 package mage.remote.transport;
 
+import mage.game.match.MatchOptions;
 import mage.interfaces.ServerState;
 import mage.players.net.UserData;
 import mage.remote.Connection;
@@ -45,4 +46,6 @@ public interface ClientTransport {
     List<String> getServerMessages(String sessionId) throws Exception;
 
     UUID getRoomChatId(String sessionId, UUID roomId) throws Exception;
+
+    ViewProto.TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions);
 }

@@ -1,6 +1,7 @@
 package mage.remote.transport;
 
 import mage.MageException;
+import mage.game.match.MatchOptions;
 import mage.interfaces.ServerState;
 import mage.interfaces.callback.ClientCallback;
 import mage.players.net.UserData;
@@ -451,6 +452,33 @@ public class WsClientTransport implements ClientTransport {
 
         String chatIdStr = res.getUuidResponse().getUuid();
         return chatIdStr.isEmpty() ? null : UUID.fromString(chatIdStr);
+    }
+
+    @Override
+    public ViewProto.TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setCreateTableRequest(WsProto.CreateTableRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setMatchOptions(matchOptions.toProto())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasTableViewResponse()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+            return res.getTableViewResponse().getTableView();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {

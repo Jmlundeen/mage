@@ -1,6 +1,7 @@
 package mage.server.ws;
 
 import mage.MageException;
+import mage.game.match.MatchOptions;
 import mage.interfaces.MageServer;
 import mage.players.net.UserData;
 import mage.remote.SessionImpl;
@@ -12,6 +13,7 @@ import mage.utils.MageVersion;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
 import mage.ws.v1.model.ModelProto;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
@@ -81,6 +83,7 @@ public class WsMessageDispatcher {
                 case ROOM_USERS_REQUEST -> getRoomUsers(requestId, sessionId, msg.getRoomUsersRequest());
                 case LOBBY_INFO_REQUEST -> getLobbyInfo(requestId, sessionId, msg.getLobbyInfoRequest());
                 case PROMOTION_MESSAGES_REQUEST -> getPromotionMessages(requestId, sessionId);
+                case CREATE_TABLE_REQUEST -> createTable(requestId, sessionId, msg.getCreateTableRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -340,6 +343,23 @@ public class WsMessageDispatcher {
                 .setSessionId(sessionId)
                 .setPromotionMessagesResponse(builder.build())
                 .build();
+    }
+
+    private WsProto.ServerMessage createTable(String requestId, String sessionId, WsProto.CreateTableRequest createTableRequest) {
+        requireSession(sessionId);
+        try {
+            ViewProto.TableView resultView = mageServer.roomCreateTable(sessionId, UUID.fromString(createTableRequest.getRoomId()), MatchOptions.fromProto(createTableRequest.getMatchOptions()));
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
+                            .setTableView(resultView)
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not create table: " + e.getMessage());
+        }
     }
 
     private static WsProto.ServerMessage error(String requestId, String sessionId, WsProto.ErrorCode code, String message) {

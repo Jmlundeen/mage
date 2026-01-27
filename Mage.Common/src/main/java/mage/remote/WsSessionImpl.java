@@ -711,8 +711,7 @@ public class WsSessionImpl implements Session {
 
     @Override
     public ViewProto.TableView createTable(UUID roomId, MatchOptions matchOptions) {
-        warnUnsupported("createTable");
-        return null;
+       return executeTransportMethodSafe(() -> transport.createTable(sessionId, roomId, matchOptions), null);
     }
 
     @Override

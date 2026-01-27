@@ -1,11 +1,7 @@
 package mage.game.match;
 
 import mage.cards.decks.DeckCardInfo;
-import mage.constants.MatchBufferTime;
-import mage.constants.MatchTimeLimit;
-import mage.constants.MultiplayerAttackOption;
-import mage.constants.RangeOfInfluence;
-import mage.constants.SkillLevel;
+import mage.constants.*;
 import mage.game.mulligan.MulliganType;
 import mage.game.result.ResultProtos;
 import mage.players.PlayerType;
@@ -260,22 +256,30 @@ public class MatchOptions implements Serializable {
                 .setRated(this.isRated())
                 .setWinsNeeded(this.getWinsNeeded());
 
-        ResultProtos.SkillLevel skillLevel;
-        switch (this.getSkillLevel()) {
-            case BEGINNER:
-            default:
-                skillLevel = ResultProtos.SkillLevel.BEGINNER;
-                break;
-            case CASUAL:
-                skillLevel = ResultProtos.SkillLevel.CASUAL;
-                break;
-            case SERIOUS:
-                skillLevel = ResultProtos.SkillLevel.SERIOUS;
-                break;
-        }
+        ResultProtos.SkillLevel skillLevel = switch (this.getSkillLevel()) {
+            case CASUAL -> ResultProtos.SkillLevel.CASUAL;
+            case SERIOUS -> ResultProtos.SkillLevel.SERIOUS;
+            default -> ResultProtos.SkillLevel.BEGINNER;
+        };
         builder.setSkillLevel(skillLevel);
 
         return builder.build();
+    }
+
+    public static MatchOptions fromProto(ResultProtos.MatchOptionsProto proto) {
+        MatchOptions options = new MatchOptions(proto.getName(), "", false);
+        options.setLimited(proto.getLimited());
+        options.setRated(proto.getRated());
+        options.setWinsNeeded(proto.getWinsNeeded());
+
+        SkillLevel skillLevel = switch (proto.getSkillLevel()) {
+            case CASUAL -> SkillLevel.CASUAL;
+            case SERIOUS -> SkillLevel.SERIOUS;
+            default -> SkillLevel.BEGINNER;
+        };
+        options.setSkillLevel(skillLevel);
+
+        return options;
     }
 
     public void setMullgianType(MulliganType mulliganType) {
