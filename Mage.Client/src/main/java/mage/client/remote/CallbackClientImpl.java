@@ -28,8 +28,8 @@ import org.mage.card.arcane.ManaSymbols;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Client side implementation (process commands from a server)
@@ -200,6 +200,8 @@ public class CallbackClientImpl implements CallbackClient {
                                 panel.receiveMessage(message.getUsername(), message.getMessage(), message.getTime(), message.getTurnInfo(), message.getMessageType(), message.getColor());
                             }
 
+                        } else {
+                            logger.debug("chat panel not found for id: " + callback.getObjectId());
                         }
                         break;
                     }

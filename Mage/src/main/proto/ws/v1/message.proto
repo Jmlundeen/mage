@@ -50,6 +50,7 @@ message ServerMessage {
     UUIDResponse uuid_response = 23;
     ServerStateResponse server_state_response = 24;
     PromotionMessagesResponse promotion_messages_response = 25;
+    ClientCallback client_callback = 26;
 
     TablesResponse lobbyGetTables = 30;
     FinishedMatchesResponse finished_matches_response = 31;
@@ -169,4 +170,12 @@ message PromotionMessagesRequest {
 
 message PromotionMessagesResponse {
   repeated string messages = 1;
+}
+
+message ClientCallback {
+  string method = 1;
+  string object_id = 2;
+  int32 message_id = 3;
+  bytes data = 4;
+  string data_type = 5;
 }

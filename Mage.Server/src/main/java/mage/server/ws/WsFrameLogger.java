@@ -14,17 +14,17 @@ public final class WsFrameLogger {
     private WsFrameLogger() {
     }
 
-    public static void logIfLarge(Logger logger, String direction, String sessionId, String payloadType, int sizeBytes) {
+    public static void logIfLarge(Logger logger, String direction, String sessionId, String requestId, String payloadType, int sizeBytes) {
         if (sizeBytes <= LOG_THRESHOLD_BYTES) {
             return;
         }
 
         double sizeKb = sizeBytes / 1024.0;
-        logger.warn(String.format("WS protobuf frame > 50KB: dir=%s sessionId=%s payload=%s size=%.1fKB", direction, sessionId, payloadType, sizeKb));
+        logger.warn(String.format("WS protobuf frame > 50KB: dir=%s sessionId=%s requestId=%s payload=%s size=%.1fKB", direction, sessionId, requestId, payloadType, sizeKb));
     }
 
-    public static void log(Logger logger, String direction, String sessionId, String payloadType, int sizeBytes) {
+    public static void log(Logger logger, String direction, String sessionId, String requestId, String payloadType, int sizeBytes) {
         double sizeKb = sizeBytes / 1024.0;
-        logger.info(String.format("WS protobuf frame: dir=%s sessionId=%s payload=%s size=%.1fKB", direction, sessionId, payloadType, sizeKb));
+        logger.info(String.format("WS protobuf frame: dir=%s sessionId=%s requestId=%s payload=%s size=%.1fKB", direction, sessionId, requestId, payloadType, sizeKb));
     }
 }

@@ -1,5 +1,6 @@
 package mage.remote.transport;
 
+import mage.remote.WsSessionImpl;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -14,6 +15,13 @@ public class LobbyEventBus {
     private static final Logger logger = Logger.getLogger(LobbyEventBus.class);
 
     private final List<LobbyEventListener> listeners = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<LobbyEvent> eventQueue = new CopyOnWriteArrayList<>();
+    WsSessionImpl wsSession;
+
+
+    public LobbyEventBus(WsSessionImpl wsSession) {
+        this.wsSession = wsSession;
+    }
 
     /**
      * Subscribe a listener to receive lobby events.
@@ -24,6 +32,12 @@ public class LobbyEventBus {
         if (listener != null && !listeners.contains(listener)) {
             listeners.add(listener);
             logger.debug("Lobby event listener subscribed: " + listener.getClass().getSimpleName());
+            // Dispatch queued events to the newly subscribed listener
+            List<LobbyEvent> queuedEvents = List.copyOf(eventQueue);
+            for (LobbyEvent event : eventQueue) {
+                sendEvent(event, listener);
+            }
+            eventQueue.removeAll(queuedEvents);
         }
     }
 
@@ -48,15 +62,23 @@ public class LobbyEventBus {
         if (event == null) {
             return;
         }
+        if (listeners.isEmpty()) {
+            eventQueue.add(event);
+            return;
+        }
 
         logger.debug("Publishing lobby event to " + listeners.size() + " listener(s)");
 
         for (LobbyEventListener listener : listeners) {
-            try {
-                listener.onLobbyEvent(event);
-            } catch (Exception e) {
-                logger.error("Error notifying lobby event listener: " + listener.getClass().getSimpleName(), e);
-            }
+            sendEvent(event, listener);
+        }
+    }
+
+    private static void sendEvent(LobbyEvent event, LobbyEventListener listener) {
+        try {
+            listener.onLobbyEvent(event);
+        } catch (Exception e) {
+            logger.error("Error notifying lobby event listener: " + listener.getClass().getSimpleName(), e);
         }
     }
 

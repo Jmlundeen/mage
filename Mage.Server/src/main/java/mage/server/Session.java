@@ -9,6 +9,7 @@ import mage.players.net.UserGroup;
 import mage.server.game.GamesRoom;
 import mage.server.managers.ConfigSettings;
 import mage.server.managers.ManagerFactory;
+import mage.server.ws.WebSocketCallbackHandler;
 import mage.util.RandomUtil;
 import mage.util.ThreadUtils;
 import mage.utils.SystemUtil;
@@ -69,7 +70,9 @@ public class Session {
     private final Date timeConnected;
     private boolean isAdmin = false;
     private final AsynchInvokerCallbackHandler callbackHandler;
+    private WebSocketCallbackHandler webSocketCallbackHandler;
     private boolean valid = true;
+    private boolean isReconnection = false;
 
     private final ReentrantLock lock;
     private final ReentrantLock callBackLock;
@@ -270,7 +273,6 @@ public class Session {
         }
 
         // create new user instance (auth or anon)
-        boolean isReconnection = false;
         User newUser = managerFactory.userManager().createUser(userName, host, authorizedUser).orElse(null);
 
         // if user instance already exists then keep only one instance
@@ -335,6 +337,15 @@ public class Session {
             return "Error link user " + userName + " with session " + sessionId;
         }
 
+        // all fine
+        newUser.setUserState(User.UserState.Connected);
+        newUser.setRestoreSessionId(newUser.getSessionId());
+
+
+        return null;
+    }
+
+    public void joinChat(String sessionId) {
         // connect to lobby (other chats must be joined from a client side on table panel creating process)
         GamesRoom lobby = managerFactory.gamesRoomManager().getRoom(managerFactory.gamesRoomManager().getMainRoomId()).orElse(null);
         if (lobby != null) {
@@ -344,23 +355,19 @@ public class Session {
             logger.warn("main room not found"); // after server restart users try to use old rooms on reconnect for some reason
         }
 
-        // all fine
-        newUser.setUserState(User.UserState.Connected);
-        newUser.setRestoreSessionId(newUser.getSessionId());
-
         // restore all active tables
         // run in diff thread, so user will be connected anyway (e.g. on some errors in onReconnect)
-        final User reconnectUser = newUser;
+        final User user = managerFactory.userManager().getUser(this.userId).orElse(null);
+        assert user != null;
         if (isReconnection) {
-            managerFactory.threadExecutor().getCallExecutor().execute(reconnectUser::onReconnect);
+            managerFactory.threadExecutor().getCallExecutor().execute(user::onReconnect);
         }
 
         // inform about reconnection
         if (isReconnection) {
             managerFactory.chatManager().sendReconnectMessage(this.userId);
         }
-
-        return null;
+        isReconnection = false;
     }
 
     public void connectAdmin() {
@@ -436,10 +443,20 @@ public class Session {
                 lastCallbackInfo = call.getInfo();
                 call.setMessageId(messageId.incrementAndGet());
                 lockSet = true;
-                Callback callback = new Callback(call);
-                boolean sendAsync = SUPER_DUPER_BUGGY_AND_FASTEST_ASYNC_CONNECTION
-                        && call.getMethod().getType().canComeInAnyOrder();
-                callbackHandler.handleCallbackOneway(callback, sendAsync);
+
+                // Try WebSocket first, fall back to JBoss if not available
+                if (webSocketCallbackHandler != null && webSocketCallbackHandler.isConnected()) {
+                    // Send via WebSocket (synchronous, non-blocking)
+                    webSocketCallbackHandler.sendCallback(call);
+                } else if (callbackHandler != null) {
+                    // Fall back to JBoss remoting
+                    Callback callback = new Callback(call);
+                    boolean sendAsync = SUPER_DUPER_BUGGY_AND_FASTEST_ASYNC_CONNECTION
+                            && call.getMethod().getType().canComeInAnyOrder();
+                    callbackHandler.handleCallbackOneway(callback, sendAsync);
+                } else {
+                    logger.warn("No callback handler available for session " + sessionId);
+                }
             }
         } catch (InterruptedException ex) {
             // already sending another command (connection problem?)
@@ -492,6 +509,28 @@ public class Session {
 
     public void setHost(String hostAddress) {
         this.host = hostAddress;
+    }
+
+    /**
+     * Set the WebSocket callback handler for this session.
+     * This should be called when a WebSocket connection is established.
+     *
+     * @param handler the WebSocket callback handler
+     */
+    public void setWebSocketCallbackHandler(WebSocketCallbackHandler handler) {
+        this.webSocketCallbackHandler = handler;
+        if (handler != null) {
+            logger.info("WebSocket callback handler assigned for session " + sessionId);
+        }
+    }
+
+    /**
+     * Get the WebSocket callback handler for this session.
+     *
+     * @return the WebSocket callback handler, or null if not set
+     */
+    public WebSocketCallbackHandler getWebSocketCallbackHandler() {
+        return webSocketCallbackHandler;
     }
 
     public void sendErrorMessageToClient(String message) {

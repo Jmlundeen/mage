@@ -102,7 +102,8 @@ public class HttpLoginHandler {
             // Generate new session ID
             String sessionId = UUID.randomUUID().toString();
 
-            // Create session in SessionManager
+            // Create session in SessionManager with noop callback handler
+            // The WebSocket callback handler will be assigned when the WebSocket connection is established
             sessionManager.createSession(sessionId, noopCallbackHandler);
 
             // Set host information

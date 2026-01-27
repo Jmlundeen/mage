@@ -1332,6 +1332,7 @@ public class MageFrame extends javax.swing.JFrame implements MageClient {
         }
 
         updateSwitchPanelsButton();
+        SessionHandler.getSession().setClientReady(true);
     }
 
     public void hideGames() {

@@ -2,8 +2,10 @@ package mage.remote.transport;
 
 import mage.MageException;
 import mage.interfaces.ServerState;
+import mage.interfaces.callback.ClientCallback;
 import mage.players.net.UserData;
 import mage.remote.Connection;
+import mage.remote.WsSessionImpl;
 import mage.utils.MageVersion;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
@@ -32,20 +34,30 @@ public class WsClientTransport implements ClientTransport {
     private static final int CONNECT_TIMEOUT_SECS = 10;
     private static final int REQUEST_TIMEOUT_SECS = 15;
 
-    private WebSocketClient client;
+    private WebSocketClient webSocketClient;
+    private final WsSessionImpl wsSession;
     private final ConcurrentHashMap<String, CompletableFuture<WsProto.ServerMessage>> pending = new ConcurrentHashMap<>();
-    private final LobbyEventBus lobbyEventBus = new LobbyEventBus();
+    private final LobbyEventBus lobbyEventBus;
 
-    private String sessionId;
+    public WsClientTransport(WsSessionImpl wsSession) {
+        this.wsSession = wsSession;
+        this.lobbyEventBus = new LobbyEventBus(wsSession);
+    }
 
     @Override
-    public void connect(Connection connection) throws Exception {
-        disconnect();
+    public void connect(Connection connection, String sessionId) throws Exception {
+        disconnect(sessionId);
 
         int wsPort = connection.getPort() + 500;
-        URI uri = new URI("ws://" + connection.getHost() + ':' + wsPort + "/ws");
 
-        client = new WebSocketClient(uri) {
+        // Build WebSocket URL with sessionId query parameter if available
+        String wsUrl = "ws://" + connection.getHost() + ':' + wsPort + "/ws";
+        if (sessionId != null && !sessionId.isEmpty()) {
+            wsUrl += "?sessionId=" + sessionId;
+        }
+        URI uri = new URI(wsUrl);
+
+        webSocketClient = new WebSocketClient(uri) {
 
             @Override
             public void onOpen(ServerHandshake handshakedata) {
@@ -75,8 +87,10 @@ public class WsClientTransport implements ClientTransport {
                                     payload.getFinishedMatchesList()
                             );
                             lobbyEventBus.publish(event);
+                        } else if(msg.hasClientCallback()) {
+                            wsSession.handleCallback(ClientCallback.fromProto(msg.getClientCallback()));
                         } else {
-                            logger.debug("WS push message ignored: unknown type");
+                            logger.debug("WS push message ignored: unknown type - " + msg.getPayloadCase());
                         }
                         return;
                     }
@@ -85,7 +99,7 @@ public class WsClientTransport implements ClientTransport {
                     if (future != null) {
                         future.complete(msg);
                     } else {
-                        logger.debug("WS message for unknown requestId=" + requestId);
+                        logger.debug("WS message for unknown requestId=" + requestId + ", message=" + msg.getPayloadCase());
                     }
                 } catch (Exception e) {
                     logger.error("WS binary message parse error", e);
@@ -112,7 +126,7 @@ public class WsClientTransport implements ClientTransport {
         });
 
         try {
-            Future<Boolean> future = executor.submit(() -> client.connectBlocking());
+            Future<Boolean> future = executor.submit(() -> webSocketClient.connectBlocking());
             Boolean connected;
             try {
                 connected = future.get(CONNECT_TIMEOUT_SECS, TimeUnit.SECONDS);
@@ -132,9 +146,9 @@ public class WsClientTransport implements ClientTransport {
     }
 
     @Override
-    public void disconnect() {
+    public void disconnect(String sessionId) {
         try {
-            if (client != null) {
+            if (webSocketClient != null) {
                 try {
                     WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                             .setProtocolVersion(ProtocolVersion.getVersion())
@@ -143,7 +157,7 @@ public class WsClientTransport implements ClientTransport {
                             .setDisconnect(WsProto.Disconnect.getDefaultInstance())
                             .build();
                     sendMessage(req);
-                    client.closeBlocking();
+                    webSocketClient.closeBlocking();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
@@ -151,14 +165,14 @@ public class WsClientTransport implements ClientTransport {
                 }
             }
         } finally {
-            client = null;
+            webSocketClient = null;
             pending.clear();
         }
     }
 
     @Override
     public boolean isConnected() {
-        return client != null && client.isOpen();
+        return webSocketClient != null && webSocketClient.isOpen();
     }
 
     @Override
@@ -316,7 +330,7 @@ public class WsClientTransport implements ClientTransport {
             throw new IllegalStateException("Unexpected response type");
         }
 
-        String roomIdStr =  res.getUuidResponse().getUuid();
+        String roomIdStr = res.getUuidResponse().getUuid();
         return roomIdStr.isEmpty() ? null : UUID.fromString(roomIdStr);
     }
 
@@ -435,7 +449,7 @@ public class WsClientTransport implements ClientTransport {
             throw new IllegalStateException("Unexpected response type");
         }
 
-        String chatIdStr =  res.getUuidResponse().getUuid();
+        String chatIdStr = res.getUuidResponse().getUuid();
         return chatIdStr.isEmpty() ? null : UUID.fromString(chatIdStr);
     }
 
@@ -448,7 +462,7 @@ public class WsClientTransport implements ClientTransport {
         pending.put(req.getRequestId(), future);
 
         try {
-            client.send(ByteBuffer.wrap(req.toByteArray()));
+            webSocketClient.send(ByteBuffer.wrap(req.toByteArray()));
             WsProto.ServerMessage res = future.get(REQUEST_TIMEOUT_SECS, TimeUnit.SECONDS);
             if (res.getPayloadCase() == WsProto.ServerMessage.PayloadCase.ERROR) {
                 if (res.getError().getCode().equals(WsProto.ErrorCode.MAGE_EXCEPTION)) {
@@ -467,7 +481,7 @@ public class WsClientTransport implements ClientTransport {
             if (!isConnected()) {
                 throw new IllegalStateException("Not connected");
             }
-            client.send(ByteBuffer.wrap(msg.toByteArray()));
+            webSocketClient.send(ByteBuffer.wrap(msg.toByteArray()));
         } catch (IllegalStateException e) {
             throw new RuntimeException(e);
         }
@@ -484,14 +498,5 @@ public class WsClientTransport implements ClientTransport {
      */
     public LobbyEventBus getLobbyEventBus() {
         return lobbyEventBus;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public WsClientTransport setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-        return this;
     }
 }

@@ -1,9 +1,13 @@
 package mage.interfaces.callback;
 
+import com.google.protobuf.ByteString;
 import mage.remote.traffic.ZippedObject;
-import mage.utils.CompressUtil;
 import mage.util.ThreadUtils;
+import mage.utils.CompressUtil;
+import mage.ws.v1.WsProto;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -101,5 +105,56 @@ public class ClientCallback implements Serializable {
 
     public String getInfo() {
         return String.format("message %d - %s - %s", this.getMessageId(), this.getMethod().getType(), this.getMethod());
+    }
+
+    /**
+     * Convert this ClientCallback to a protobuf message for WebSocket transmission.
+     *
+     * @return the protobuf ClientCallback message
+     */
+    public WsProto.ClientCallback toProto() {
+        WsProto.ClientCallback.Builder builder = WsProto.ClientCallback.newBuilder()
+                .setMethod(method.name())
+                .setMessageId(messageId);
+
+        if (objectId != null) {
+            builder.setObjectId(objectId.toString());
+        }
+
+        if (data != null) {
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos.writeObject(data);
+                oos.flush();
+                builder.setData(ByteString.copyFrom(baos.toByteArray()));
+                builder.setDataType(data.getClass().getName());
+            } catch (Exception e) {
+                // If serialization fails, just log and skip the data
+                // The callback will still have method and objectId
+            }
+        }
+
+        return builder.build();
+    }
+
+    public static ClientCallback fromProto(WsProto.ClientCallback proto) {
+        ClientCallbackMethod method = ClientCallbackMethod.valueOf(proto.getMethod());
+        proto.getObjectId();
+        UUID objectId = UUID.fromString(proto.getObjectId());
+        Object data = null;
+
+        try {
+            byte[] dataBytes = proto.getData().toByteArray();
+            java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(dataBytes);
+            java.io.ObjectInputStream ois = new java.io.ObjectInputStream(bais);
+            data = ois.readObject();
+        } catch (Exception e) {
+            // If deserialization fails, just log and keep data as null
+        }
+
+        ClientCallback callback = new ClientCallback(method, objectId, data, false);
+        callback.setMessageId(proto.getMessageId());
+        return callback;
     }
 }

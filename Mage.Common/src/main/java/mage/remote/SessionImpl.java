@@ -643,6 +643,21 @@ public class SessionImpl implements Session {
         }
     }
 
+    @Override
+    public void setClientReady(boolean ready) {
+
+    }
+
+    @Override
+    public boolean isClientReady() {
+        return false;
+    }
+
+    @Override
+    public void handleCallback(ClientCallback callback) {
+
+    }
+
     /**
      * Network, client side: connection monitoring and error processing
      */

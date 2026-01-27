@@ -14,9 +14,9 @@ import java.util.UUID;
  */
 public interface ClientTransport {
 
-    void connect(Connection connection) throws Exception;
+    void connect(Connection connection, String sessionId) throws Exception;
 
-    void disconnect();
+    void disconnect(String sessionId);
 
     boolean isConnected();
 

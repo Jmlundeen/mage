@@ -103,7 +103,45 @@ public final class WsServerMain {
     }
 
     private static void onConnect(WsConnectContext ctx) {
-        logger.info("WS connect: " + ctx.attribute("sessionId"));
+        // Get sessionId from query parameter (e.g., ws://server/ws?sessionId=xxx)
+        String sessionId = ctx.queryParam("sessionId");
+
+        if (sessionId == null || sessionId.isEmpty()) {
+            logger.warn("WS connect: no sessionId provided in query parameter");
+            try {
+                ctx.session.close(1008, "Missing sessionId query parameter");
+            } catch (Exception e) {
+                logger.debug("Error closing WebSocket session", e);
+            }
+            return;
+        }
+
+        // Store sessionId as attribute for logging and later use
+        ctx.attribute("sessionId", sessionId);
+        logger.info("WS connect: sessionId=" + sessionId);
+
+        // Create connection wrapper
+        WsConnectionRegistry.CloseableConnection connection = createConnection(ctx);
+        connections.onSessionIdentified(sessionId, connection);
+
+        // Assign WebSocket callback handler to the session immediately
+        if (managerFactory != null) {
+            managerFactory.sessionManager().getSession(sessionId).ifPresentOrElse(
+                session -> {
+                    WebSocketCallbackHandler wsHandler = new WebSocketCallbackHandlerImpl(connection, sessionId);
+                    session.setWebSocketCallbackHandler(wsHandler);
+                    session.joinChat(sessionId);
+                },
+                () -> {
+                    logger.warn("WS connect: session not found for sessionId=" + sessionId);
+                    try {
+                        ctx.session.close(1008, "Session not found");
+                    } catch (Exception e) {
+                        logger.debug("Error closing WebSocket session", e);
+                    }
+                }
+            );
+        }
     }
 
     private static void onClose(WsCloseContext ctx) {
@@ -182,13 +220,25 @@ public final class WsServerMain {
         WsProto.ServerMessage out;
         try {
             WsProto.ClientMessage in = WsProto.ClientMessage.parseFrom(bytes);
-            WsFrameLogger.log(logger, "IN", in.getSessionId(), "Client Message." + in.getPayloadCase(), bytes.length);
+            WsFrameLogger.log(logger, "IN", in.getSessionId(), in.getRequestId(), "Client Message." + in.getPayloadCase(), bytes.length);
 
-            // If the client sends a sessionId, and it's the first time we see it on this socket,
-            // just stash it as an attribute to help with logging.
-            if (ctx.attribute("sessionId") == null && !in.getSessionId().isEmpty()) {
-                ctx.attribute("sessionId", in.getSessionId());
-                connections.onSessionIdentified(in.getSessionId(), createConnection(ctx));
+            // If the client sends a sessionId in the message, verify it matches the connection sessionId
+            String ctxSessionId = ctx.attribute("sessionId");
+            if (!in.getSessionId().isEmpty() && !in.getSessionId().equals(ctxSessionId)) {
+                logger.warn("WS message sessionId mismatch: connection=" + ctxSessionId + ", message=" + in.getSessionId());
+                out = WsProto.ServerMessage.newBuilder()
+                        .setProtocolVersion(ProtocolVersion.getVersion())
+                        .setRequestId(in.getRequestId())
+                        .setSessionId(in.getSessionId())
+                        .setError(WsProto.Error.newBuilder()
+                                .setCode(WsProto.ErrorCode.INVALID_PROTOCOL_VERSION)
+                                .setMessage("SessionId mismatch")
+                                .build())
+                        .build();
+                byte[] outBytes = out.toByteArray();
+                WsFrameLogger.logIfLarge(logger, "OUT", ctxSessionId, out.getRequestId(), out.getPayloadCase().name(), outBytes.length);
+                ctx.send(ByteBuffer.wrap(outBytes));
+                return;
             }
 
             out = dispatcher.handle(in);
@@ -209,7 +259,7 @@ public final class WsServerMain {
         }
         byte[] outBytes = out.toByteArray();
         String sessionId = ctx.attribute("sessionId");
-        WsFrameLogger.logIfLarge(logger, "OUT", sessionId == null ? "" : sessionId, out.getPayloadCase().name(), outBytes.length);
+        WsFrameLogger.logIfLarge(logger, "OUT", sessionId == null ? "" : sessionId, out.getRequestId(), out.getPayloadCase().name(), outBytes.length);
         ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
         ctx.send(outBuffer);
     }

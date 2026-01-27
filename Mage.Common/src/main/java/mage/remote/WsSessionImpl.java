@@ -12,6 +12,7 @@ import mage.game.match.MatchOptions;
 import mage.game.tournament.TournamentOptions;
 import mage.interfaces.MageClient;
 import mage.interfaces.ServerState;
+import mage.interfaces.callback.ClientCallback;
 import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.remote.transport.GetLobbyInfoResult;
@@ -29,6 +30,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -51,18 +55,28 @@ public class WsSessionImpl implements Session {
     private String restoreSessionId = "";
     private String lastError = "";
     private String lastPingInfo = "";
-    private LinkedList<Long> pingTimes = new LinkedList<>();
+    private final LinkedList<Long> pingTimes = new LinkedList<>();
+    private boolean jsonLogActive = false;
+    private boolean isClientReady = false;
+
+    final CopyOnWriteArrayList<ClientCallback> waitingCallbacks = new CopyOnWriteArrayList<>();
 
     private WsClientTransport transport;
 
     private ServerState serverState;
     private SessionState sessionState = SessionState.DISCONNECTED;
+    private final ExecutorService callbackExecutor;
 
     // One-time warnings for unsupported calls.
     private final Set<String> warned = Collections.synchronizedSet(new HashSet<>());
 
     public WsSessionImpl(MageClient client) {
         this.client = client;
+        this.callbackExecutor = Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r, "WS-Callback-Handler");
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     // --- helpers
@@ -138,7 +152,6 @@ public class WsSessionImpl implements Session {
 
             logger.info("WS Connect: success");
 
-            serverState = getServerState();
             if (serverState == null) {
                 handleMageException(new MageException("Failed to get server state after WebSocket connection"));
             }
@@ -230,11 +243,11 @@ public class WsSessionImpl implements Session {
         try {
             // Create new transport
             if (transport == null) {
-                transport = new WsClientTransport();
+                transport = new WsClientTransport(this);
             }
 
             // Connect WebSocket
-            transport.connect(connection);
+            transport.connect(connection, sessionId);
 
             serverState = transport.getServerState(sessionId);
             if (serverState == null) {
@@ -290,7 +303,8 @@ public class WsSessionImpl implements Session {
 
     @Override
     public synchronized void connectStop(boolean askForReconnect, boolean keepMySessionActive) {
-        if (isConnected()) {
+        if (isConnected() || isClientReady) {
+            // if not connected, but client is ready, then something went wrong with the connection
             logger.info("Disconnecting...");
             sessionState = SessionState.DISCONNECTING;
         }
@@ -300,7 +314,7 @@ public class WsSessionImpl implements Session {
 
         try {
             if (transport != null && transport.isConnected()) {
-                transport.disconnect();
+                transport.disconnect(sessionId);
             }
         } catch (Throwable ex) {
             logger.fatal("WS disconnect FAIL", ex);
@@ -312,6 +326,7 @@ public class WsSessionImpl implements Session {
             if (askForReconnect) {
                 client.showError("Network error. Can't connect to " + connection.getHost());
             }
+            isClientReady = false;
             client.disconnected(askForReconnect, keepMySessionActive);
             pingTimes.clear();
         }
@@ -329,13 +344,19 @@ public class WsSessionImpl implements Session {
     @Override
     public void ping() {
         try {
-            if (!isConnected() || transport == null) {
+            if (!isClientReady || serverState == null) {
+                return;
+            }
+            if (!isConnected()) {
+                logger.error("Ping failed: not connected: " + this.getUserName() + " Session: " + sessionId + " to MAGE server at " + connection.getHost() + ":" + connection.getPort());
+                connectStop(true, true);
                 return;
             }
             long startTime = System.nanoTime();
             if (!transport.ping(sessionId, lastPingInfo)) {
                 logger.error("Ping failed: " + this.getUserName() + " Session: " + sessionId + " to MAGE server at " + connection.getHost() + ":" + connection.getPort());
-                throw new MageException("Ping failed");
+                connectStop(true, true);
+                return;
             }
             pingTimes.add(System.nanoTime() - startTime);
             long milliseconds = TimeUnit.MILLISECONDS.convert(pingTimes.getLast(), TimeUnit.NANOSECONDS);
@@ -542,13 +563,12 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean isJsonLogActive() {
-        warnUnsupported("isJsonLogActive");
-        return false;
+        return jsonLogActive;
     }
 
     @Override
     public void setJsonLogActive(boolean jsonLogActive) {
-        warnUnsupported("setJsonLogActive");
+        this.jsonLogActive = jsonLogActive;
     }
 
     @Override
@@ -1001,6 +1021,50 @@ public class WsSessionImpl implements Session {
             logger.debug("WS lobbyGetInfo failed", e);
             return new GetLobbyInfoResult(Collections.emptyList(), ViewProto.RoomUsersView.getDefaultInstance(), Collections.emptyList());
         }
+    }
+
+    @Override
+    public void setClientReady(boolean clientReady) {
+        isClientReady = clientReady;
+    }
+
+    @Override
+    public boolean isClientReady() {
+        return isClientReady;
+    }
+
+    @Override
+    public void handleCallback(ClientCallback callback) {
+        // keep callbacks
+        waitingCallbacks.add(callback);
+
+        // execute callback processing on its own thread
+        callbackExecutor.execute(() -> {
+            // wait for client ready
+            // on connection client will receive all waiting callbacks from a server, e.g. started table, draft pick, etc
+            // but it's require to get server settings first (server state), e.g. for test mode
+            while (!isClientReady) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+
+            // process all waiting callbacks
+            if (!waitingCallbacks.isEmpty()) {
+                List<ClientCallback> executingCallbacks = new ArrayList<>(waitingCallbacks);
+                executingCallbacks.sort(Comparator.comparingInt(ClientCallback::getMessageId));
+                waitingCallbacks.clear();
+
+                try {
+                    executingCallbacks.forEach(client::onCallback);
+                } catch (Exception ex) {
+                    logger.error("handleCallback error", ex);
+                }
+            }
+        });
     }
 
     /**
