@@ -54,6 +54,7 @@ message ClientMessage {
     SetBoosterLoadedRequest set_booster_loaded_request = 40;
     SendCardPickRequest send_card_pick_request = 41;
     SendCardMarkRequest send_card_mark_request = 42;
+    SendPlayerActionRequest send_player_action_request = 43;
   }
 }
 
@@ -259,6 +260,17 @@ message SendCardMarkRequest {
 
 message DraftPickViewResponse {
   view.DraftPickView draftPickView = 1;
+}
+
+message SendPlayerActionRequest {
+  string playerAction = 1;
+  string gameId = 2;
+  oneof data {
+    int32 integerData = 3;
+    string uuidData = 4;
+    string stringData = 5;
+    // If none set, data is null
+  }
 }
 
 message TableChatIdRequest {

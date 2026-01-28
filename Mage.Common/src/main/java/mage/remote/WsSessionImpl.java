@@ -700,8 +700,10 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean sendPlayerAction(PlayerAction passPriorityAction, UUID gameId, Object data) {
-        warnUnsupported("sendPlayerAction");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.sendPlayerAction(sessionId, passPriorityAction, gameId, data);
+            return true;
+        }, false);
     }
 
     @Override

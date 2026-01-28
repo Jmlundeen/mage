@@ -109,6 +109,7 @@ public class WsMessageDispatcher {
                 case SET_BOOSTER_LOADED_REQUEST -> setBoosterLoaded(requestId, sessionId, msg.getSetBoosterLoadedRequest());
                 case SEND_CARD_PICK_REQUEST -> sendCardPick(requestId, sessionId, msg.getSendCardPickRequest());
                 case SEND_CARD_MARK_REQUEST -> sendCardMark(requestId, sessionId, msg.getSendCardMarkRequest());
+                case SEND_PLAYER_ACTION_REQUEST -> sendPlayerAction(requestId, sessionId, msg.getSendPlayerActionRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -753,6 +754,50 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send card mark: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage sendPlayerAction(String requestId, String sessionId, WsProto.SendPlayerActionRequest sendPlayerActionRequest) {
+        requireSession(sessionId);
+        try {
+            String playerActionStr = sendPlayerActionRequest.getPlayerAction();
+            UUID gameId = UUID.fromString(sendPlayerActionRequest.getGameId());
+
+            // Convert string to PlayerAction enum
+            mage.constants.PlayerAction playerAction = mage.constants.PlayerAction.valueOf(playerActionStr);
+
+            // Extract typed data from oneof field
+            Object data = null;
+            switch (sendPlayerActionRequest.getDataCase()) {
+                case INTEGERDATA:
+                    data = sendPlayerActionRequest.getIntegerData();
+                    break;
+                case UUIDDATA:
+                    String uuidStr = sendPlayerActionRequest.getUuidData();
+                    if (!uuidStr.isEmpty()) {
+                        data = UUID.fromString(uuidStr);
+                    }
+                    break;
+                case STRINGDATA:
+                    data = sendPlayerActionRequest.getStringData();
+                    break;
+                case DATA_NOT_SET:
+                    // data remains null
+                    break;
+            }
+
+            mageServer.sendPlayerAction(playerAction, gameId, sessionId, data);
+
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send player action: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Invalid player action: " + e.getMessage());
         }
     }
 

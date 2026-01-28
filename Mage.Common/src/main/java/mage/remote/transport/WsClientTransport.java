@@ -3,6 +3,7 @@ package mage.remote.transport;
 import mage.MageException;
 import mage.cards.decks.DeckCardLists;
 import mage.constants.ManaType;
+import mage.constants.PlayerAction;
 import mage.game.match.MatchOptions;
 import mage.game.tournament.TournamentOptions;
 import mage.interfaces.ServerState;
@@ -1006,6 +1007,43 @@ public class WsClientTransport implements ClientTransport {
                         .setDraftId(draftId == null ? "" : draftId.toString())
                         .setCardId(cardId == null ? "" : cardId.toString())
                         .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendPlayerAction(String sessionId, PlayerAction playerAction, UUID gameId, Object data) {
+        WsProto.SendPlayerActionRequest.Builder requestBuilder = WsProto.SendPlayerActionRequest.newBuilder()
+                .setPlayerAction(playerAction.toString())
+                .setGameId(gameId == null ? "" : gameId.toString());
+
+        // Handle different data types with oneof
+        if (data != null) {
+            switch (data) {
+                case Integer i -> requestBuilder.setIntegerData(i);
+                case UUID uuid -> requestBuilder.setUuidData(uuid.toString());
+                case String s -> requestBuilder.setStringData(s);
+                default -> {
+                    // Fallback: convert to string
+                    logger.warn("sendPlayerAction: Unhandled data type " + data.getClass() + ", converting to string");
+                    requestBuilder.setStringData(data.toString());
+                }
+            }
+        }
+        // If data is null, leave oneof unset
+
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendPlayerActionRequest(requestBuilder.build())
                 .build();
 
         try {
