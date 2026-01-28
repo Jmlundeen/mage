@@ -114,6 +114,8 @@ public class WsMessageDispatcher {
                 case ADMIN_REMOVE_TABLE_REQUEST -> adminRemoveTable(requestId, sessionId, msg.getAdminRemoveTableRequest());
                 case JOIN_DRAFT_REQUEST -> joinDraft(requestId, sessionId, msg.getJoinDraftRequest());
                 case JOIN_TOURNAMENT_REQUEST -> joinTournament(requestId, sessionId, msg.getJoinTournamentRequest());
+                case LEAVE_TABLE_REQUEST -> leaveTable(requestId, sessionId, msg.getLeaveTableRequest());
+                case SWAP_SEATS_REQUEST -> swapSeats(requestId, sessionId, msg.getSwapSeatsRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -866,6 +868,42 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join tournament: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage leaveTable(String requestId, String sessionId, WsProto.LeaveTableRequest leaveTableRequest) {
+        requireSession(sessionId);
+        try {
+            UUID roomId = UUID.fromString(leaveTableRequest.getRoomId());
+            UUID tableId = UUID.fromString(leaveTableRequest.getTableId());
+            boolean result = mageServer.roomLeaveTableOrTournament(sessionId, roomId, tableId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setBoolean(result)
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not leave table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage swapSeats(String requestId, String sessionId, WsProto.SwapSeatsRequest swapSeatsRequest) {
+        requireSession(sessionId);
+        try {
+            UUID roomId = UUID.fromString(swapSeatsRequest.getRoomId());
+            UUID tableId = UUID.fromString(swapSeatsRequest.getTableId());
+            int seatNum1 = swapSeatsRequest.getSeatNum1();
+            int seatNum2 = swapSeatsRequest.getSeatNum2();
+            mageServer.tableSwapSeats(sessionId, roomId, tableId, seatNum1, seatNum2);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not swap seats: " + e.getMessage());
         }
     }
 

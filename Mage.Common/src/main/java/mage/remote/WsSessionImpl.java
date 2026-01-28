@@ -755,14 +755,15 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean leaveTable(UUID roomId, UUID tableId) {
-        warnUnsupported("leaveTable");
-        return false;
+        return executeTransportMethodSafe(() -> transport.leaveTable(sessionId, roomId, tableId), false);
     }
 
     @Override
     public boolean swapSeats(UUID roomId, UUID tableId, int seatNum1, int seatNum2) {
-        warnUnsupported("swapSeats");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.swapSeats(sessionId, roomId, tableId, seatNum1, seatNum2);
+            return true;
+        }, false);
     }
 
     @Override
