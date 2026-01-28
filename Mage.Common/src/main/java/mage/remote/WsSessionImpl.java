@@ -859,8 +859,7 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean watchTournamentTable(UUID tableId) {
-        warnUnsupported("watchTournamentTable");
-        return false;
+        return executeTransportMethodSafe(() -> transport.watchTournamentTable(sessionId, tableId), false);
     }
 
     @Override
@@ -870,8 +869,14 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean joinTournamentTable(UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password) {
-        warnUnsupported("joinTournamentTable");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            // Workaround to fix Can't join table problem
+            if (deckList != null) {
+                deckList.setCardLayout(null);
+                deckList.setSideboardLayout(null);
+            }
+            return transport.joinTournamentTable(sessionId, roomId, tableId, playerName, playerType, skill, deckList, password);
+        }, false);
     }
 
     @Override

@@ -753,6 +753,59 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public boolean watchTournamentTable(String sessionId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setWatchTournamentTableRequest(WsProto.WatchTournamentTableRequest.newBuilder()
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasBoolean() && res.getBoolean();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Boolean joinTournamentTable(String sessionId, UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setJoinTournamentTableRequest(WsProto.JoinTournamentTableRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .setPlayerName(playerName == null ? "" : playerName)
+                        .setPlayerType(playerType.toString())
+                        .setAiSkill(skill)
+                        .setDeckCardLists(deckList.toProto())
+                        .setPassword(password == null ? "" : password)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasAck()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+            return true;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void sendChatMessage(String sessionId, UUID chatId, String userName, String message) {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())

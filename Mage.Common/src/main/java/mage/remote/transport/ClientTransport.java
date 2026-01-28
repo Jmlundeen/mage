@@ -68,4 +68,8 @@ public interface ClientTransport {
     boolean isTableOwner(String sessionId, UUID roomId, UUID tableId);
 
     boolean watchTable(String sessionId, UUID roomId, UUID tableId);
+
+    boolean watchTournamentTable(String sessionId, UUID tableId);
+
+    Boolean joinTournamentTable(String sessionId, UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password);
 }
