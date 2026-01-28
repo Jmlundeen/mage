@@ -968,8 +968,95 @@ public class WsSessionImpl implements Session {
 
     @Override
     public synchronized boolean sendAuthRegister(Connection connection) {
-        warnUnsupported("sendAuthRegister");
-        return false;
+        try {
+            // Calculate HTTP port (WS server port = main port + 500)
+            int httpPort = connection.getPort() + 500;
+            String registerUrl = "http://" + connection.getHost() + ":" + httpPort + "/register";
+
+            logger.info("HTTP Register: attempting registration for user=" + connection.getUsername() + ", email=" + connection.getEmail());
+
+            // Create Basic Auth header (username and password for authentication)
+            String credentials = connection.getUsername() + ":" + (connection.getPassword() != null ? connection.getPassword() : "");
+            String base64Credentials = java.util.Base64.getEncoder().encodeToString(credentials.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            String authHeader = "Basic " + base64Credentials;
+
+            // Create request body with email and password
+            String requestBody = "{\"email\":\"" + connection.getEmail() + "\",\"password\":\"" + connection.getPassword() + "\"}";
+
+            // Make HTTP POST request
+            java.net.URL url = new java.net.URL(registerUrl);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", authHeader);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            // Send request body
+            try (java.io.OutputStream os = conn.getOutputStream()) {
+                byte[] input = requestBody.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int responseCode = conn.getResponseCode();
+
+            // Read response (success or error)
+            java.io.InputStream inputStream;
+            if (responseCode >= 200 && responseCode < 300) {
+                inputStream = conn.getInputStream();
+            } else {
+                inputStream = conn.getErrorStream();
+            }
+
+            String response = "";
+            if (inputStream != null) {
+                response = readStream(inputStream);
+            }
+
+            // Parse response JSON
+            if (!response.isEmpty()) {
+                try {
+                    com.google.gson.JsonObject json = gson.fromJson(response, com.google.gson.JsonObject.class);
+                    String message = json.has("message") ? json.get("message").getAsString() : "Unknown response";
+
+                    if (responseCode == 200) {
+                        // Success
+                        logger.info("HTTP Register: SUCCESS - " + message);
+                        client.showMessage(message);
+                        return true;
+                    } else if (responseCode == 429) {
+                        // Too Many Requests (spam protection)
+                        logger.warn("HTTP Register: REJECTED (spam protection) - " + message);
+                        setLastError(message);
+                        client.showError("Registration rejected: " + message);
+                        return false;
+                    } else {
+                        // Other error
+                        logger.warn("HTTP Register: FAILED (code " + responseCode + ") - " + message);
+                        setLastError(message);
+                        client.showError("Registration failed: " + message);
+                        return false;
+                    }
+                } catch (Exception e) {
+                    logger.error("HTTP Register: failed to parse response", e);
+                    setLastError("Invalid server response");
+                    client.showError("Registration failed: Invalid server response");
+                    return false;
+                }
+            } else {
+                logger.error("HTTP Register: empty response (code " + responseCode + ")");
+                setLastError("Empty server response");
+                client.showError("Registration failed: Empty server response");
+                return false;
+            }
+
+        } catch (Exception e) {
+            logger.error("HTTP Register: error", e);
+            setLastError("Registration error: " + e.getMessage());
+            client.showError("Registration error: " + e.getMessage());
+            return false;
+        }
     }
 
     @Override

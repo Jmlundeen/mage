@@ -42,7 +42,15 @@ public final class WsServerMain {
         // Store manager factory for disconnect handling
         WsServerMain.managerFactory = managerFactory;
 
-        logger.info("Starting MAGE WS SERVER protocolVersion=" + ProtocolVersion.getVersion());
+        // Check if server is in test mode
+        boolean testMode = false;
+        try {
+            testMode = mageServer.getServerState().isTestMode();
+        } catch (Exception e) {
+            logger.warn("Could not determine test mode status", e);
+        }
+
+        logger.info("Starting MAGE WS SERVER protocolVersion=" + ProtocolVersion.getVersion() + (testMode ? " (TEST MODE)" : ""));
 
         // Keep WS always active and run it in parallel with JBoss remoting.
         // Port is derived deterministically from the main server port.
@@ -50,6 +58,7 @@ public final class WsServerMain {
 
         WsMessageDispatcher dispatcher = new WsMessageDispatcher(managerFactory, mageServer, detailsMode);
         HttpLoginHandler loginHandler = new HttpLoginHandler(managerFactory, detailsMode);
+        HttpRegisterHandler registerHandler = new HttpRegisterHandler(managerFactory, testMode);
 
         Gson gson = new GsonBuilder().create();
         JsonMapper gsonMapper = new JsonMapper() {
@@ -75,6 +84,9 @@ public final class WsServerMain {
         // HTTP endpoint for Basic Auth login
         app.post("/login", loginHandler::handleLogin);
 
+        // HTTP endpoint for user registration
+        app.post("/register", registerHandler::handleRegister);
+
         // WebSocket endpoint for game communication (requires prior login)
         app.ws("/ws", ws -> {
             ws.onConnect(WsServerMain::onConnect);
@@ -86,6 +98,7 @@ public final class WsServerMain {
         app.start(config.getServerAddress(), wsPort);
         logger.info("HTTP/WS server listening on " + config.getServerAddress() + ':' + wsPort);
         logger.info("  - HTTP login: POST http://" + config.getServerAddress() + ':' + wsPort + "/login");
+        logger.info("  - HTTP register: POST http://" + config.getServerAddress() + ':' + wsPort + "/register");
         logger.info("  - WebSocket: ws://" + config.getServerAddress() + ':' + wsPort + "/ws");
     }
 
