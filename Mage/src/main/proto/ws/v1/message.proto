@@ -76,6 +76,12 @@ message ClientMessage {
     WatchTableRequest watch_table_request = 63;
     WatchTournamentTableRequest watch_tournament_table_request = 64;
     JoinTournamentTableRequest join_tournament_table_request = 65;
+    AdminDisconnectUserRequest admin_disconnect_user_request = 66;
+    AdminEndUserSessionRequest admin_end_user_session_request = 67;
+    AdminMuteUserRequest admin_mute_user_request = 68;
+    AdminActivateUserRequest admin_activate_user_request = 69;
+    AdminToggleActivateUserRequest admin_toggle_activate_user_request = 70;
+    AdminLockUserRequest admin_lock_user_request = 71;
   }
 }
 
@@ -309,6 +315,33 @@ message JoinDraftRequest {
 
 message TournamentViewResponse {
   view.TournamentView tournament_view = 1;
+}
+
+message AdminDisconnectUserRequest {
+  string userSessionId = 1;
+}
+
+message AdminEndUserSessionRequest {
+  string userSessionId = 1;
+}
+
+message AdminMuteUserRequest {
+  string userName = 1;
+  int64 durationMinutes = 2;
+}
+
+message AdminActivateUserRequest {
+  string userName = 1;
+  bool active = 2;
+}
+
+message AdminToggleActivateUserRequest {
+  string userName = 1;
+}
+
+message AdminLockUserRequest {
+  string userName = 1;
+  int64 durationMinutes = 2;
 }
 
 message JoinTournamentRequest {

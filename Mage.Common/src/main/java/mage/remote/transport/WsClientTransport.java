@@ -1510,6 +1510,129 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public void adminDisconnectUser(String sessionId, String userSessionId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setAdminDisconnectUserRequest(WsProto.AdminDisconnectUserRequest.newBuilder()
+                        .setUserSessionId(userSessionId == null ? "" : userSessionId)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void adminEndUserSession(String sessionId, String userSessionId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setAdminEndUserSessionRequest(WsProto.AdminEndUserSessionRequest.newBuilder()
+                        .setUserSessionId(userSessionId == null ? "" : userSessionId)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void adminMuteUser(String sessionId, String userName, long durationMinutes) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setAdminMuteUserRequest(WsProto.AdminMuteUserRequest.newBuilder()
+                        .setUserName(userName == null ? "" : userName)
+                        .setDurationMinutes(durationMinutes)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void adminActivateUser(String sessionId, String userName, boolean active) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setAdminActivateUserRequest(WsProto.AdminActivateUserRequest.newBuilder()
+                        .setUserName(userName == null ? "" : userName)
+                        .setActive(active)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void adminToggleActivateUser(String sessionId, String userName) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setAdminToggleActivateUserRequest(WsProto.AdminToggleActivateUserRequest.newBuilder()
+                        .setUserName(userName == null ? "" : userName)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void adminLockUser(String sessionId, String userName, long durationMinutes) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setAdminLockUserRequest(WsProto.AdminLockUserRequest.newBuilder()
+                        .setUserName(userName == null ? "" : userName)
+                        .setDurationMinutes(durationMinutes)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");

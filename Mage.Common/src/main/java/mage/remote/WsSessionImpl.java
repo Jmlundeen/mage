@@ -901,38 +901,50 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean sendAdminDisconnectUser(String userSessionId) {
-        warnUnsupported("sendAdminDisconnectUser");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.adminDisconnectUser(sessionId, userSessionId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendAdminEndUserSession(String userSessionId) {
-        warnUnsupported("sendAdminEndUserSession");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.adminEndUserSession(sessionId, userSessionId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendAdminMuteUserChat(String userName, long durationMinute) {
-        warnUnsupported("sendAdminMuteUserChat");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.adminMuteUser(sessionId, userName, durationMinute);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendAdminActivateUser(String userName, boolean active) {
-        warnUnsupported("sendAdminActivateUser");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.adminActivateUser(sessionId, userName, active);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendAdminToggleActivateUser(String userName) {
-        warnUnsupported("sendAdminToggleActivateUser");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.adminToggleActivateUser(sessionId, userName);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendAdminLockUser(String userName, long durationMinute) {
-        warnUnsupported("sendAdminLockUser");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.adminLockUser(sessionId, userName, durationMinute);
+            return true;
+        }, false);
     }
 
     @Override

@@ -132,6 +132,12 @@ public class WsMessageDispatcher {
                 case WATCH_TABLE_REQUEST -> watchTable(requestId, sessionId, msg.getWatchTableRequest());
                 case WATCH_TOURNAMENT_TABLE_REQUEST -> watchTournamentTable(requestId, sessionId, msg.getWatchTournamentTableRequest());
                 case JOIN_TOURNAMENT_TABLE_REQUEST -> joinTournamentTable(requestId, sessionId, msg.getJoinTournamentTableRequest());
+                case ADMIN_DISCONNECT_USER_REQUEST -> adminDisconnectUser(requestId, sessionId, msg.getAdminDisconnectUserRequest());
+                case ADMIN_END_USER_SESSION_REQUEST -> adminEndUserSession(requestId, sessionId, msg.getAdminEndUserSessionRequest());
+                case ADMIN_MUTE_USER_REQUEST -> adminMuteUser(requestId, sessionId, msg.getAdminMuteUserRequest());
+                case ADMIN_ACTIVATE_USER_REQUEST -> adminActivateUser(requestId, sessionId, msg.getAdminActivateUserRequest());
+                case ADMIN_TOGGLE_ACTIVATE_USER_REQUEST -> adminToggleActivateUser(requestId, sessionId, msg.getAdminToggleActivateUserRequest());
+                case ADMIN_LOCK_USER_REQUEST -> adminLockUser(requestId, sessionId, msg.getAdminLockUserRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -1185,6 +1191,105 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join tournament table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage adminDisconnectUser(String requestId, String sessionId, WsProto.AdminDisconnectUserRequest adminDisconnectUserRequest) {
+        requireSession(sessionId);
+        try {
+            String userSessionId = adminDisconnectUserRequest.getUserSessionId();
+            mageServer.adminDisconnectUser(sessionId, userSessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not disconnect user: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage adminEndUserSession(String requestId, String sessionId, WsProto.AdminEndUserSessionRequest adminEndUserSessionRequest) {
+        requireSession(sessionId);
+        try {
+            String userSessionId = adminEndUserSessionRequest.getUserSessionId();
+            mageServer.adminEndUserSession(sessionId, userSessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not end user session: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage adminMuteUser(String requestId, String sessionId, WsProto.AdminMuteUserRequest adminMuteUserRequest) {
+        requireSession(sessionId);
+        try {
+            String userName = adminMuteUserRequest.getUserName();
+            long durationMinutes = adminMuteUserRequest.getDurationMinutes();
+            mageServer.adminMuteUser(sessionId, userName, durationMinutes);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not mute user: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage adminActivateUser(String requestId, String sessionId, WsProto.AdminActivateUserRequest adminActivateUserRequest) {
+        requireSession(sessionId);
+        try {
+            String userName = adminActivateUserRequest.getUserName();
+            boolean active = adminActivateUserRequest.getActive();
+            mageServer.adminActivateUser(sessionId, userName, active);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not activate user: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage adminToggleActivateUser(String requestId, String sessionId, WsProto.AdminToggleActivateUserRequest adminToggleActivateUserRequest) {
+        requireSession(sessionId);
+        try {
+            String userName = adminToggleActivateUserRequest.getUserName();
+            mageServer.adminToggleActivateUser(sessionId, userName);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not toggle activate user: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage adminLockUser(String requestId, String sessionId, WsProto.AdminLockUserRequest adminLockUserRequest) {
+        requireSession(sessionId);
+        try {
+            String userName = adminLockUserRequest.getUserName();
+            long durationMinutes = adminLockUserRequest.getDurationMinutes();
+            mageServer.adminLockUser(sessionId, userName, durationMinutes);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not lock user: " + e.getMessage());
         }
     }
 
