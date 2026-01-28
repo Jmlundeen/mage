@@ -61,6 +61,8 @@ message ClientMessage {
     JoinTournamentRequest join_tournament_request = 47;
     LeaveTableRequest leave_table_request = 48;
     SwapSeatsRequest swap_seats_request = 49;
+    StartMatchRequest start_match_request = 50;
+    StartTournamentRequest start_tournament_request = 51;
   }
 }
 
@@ -305,6 +307,16 @@ message SwapSeatsRequest {
   string tableId = 2;
   int32 seatNum1 = 3;
   int32 seatNum2 = 4;
+}
+
+message StartMatchRequest {
+  string roomId = 1;
+  string tableId = 2;
+}
+
+message StartTournamentRequest {
+  string roomId = 1;
+  string tableId = 2;
 }
 
 message TableChatIdRequest {

@@ -1181,6 +1181,50 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public boolean startMatch(String sessionId, UUID roomId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setStartMatchRequest(WsProto.StartMatchRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasBoolean() && res.getBoolean();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean startTournament(String sessionId, UUID roomId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setStartTournamentRequest(WsProto.StartTournamentRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasBoolean() && res.getBoolean();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");

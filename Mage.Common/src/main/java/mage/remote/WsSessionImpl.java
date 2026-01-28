@@ -768,14 +768,12 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean startTournament(UUID roomId, UUID tableId) {
-        warnUnsupported("startTournament");
-        return false;
+        return executeTransportMethodSafe(() -> transport.startTournament(sessionId, roomId, tableId), false);
     }
 
     @Override
     public boolean startMatch(UUID roomId, UUID tableId) {
-        warnUnsupported("startMatch");
-        return false;
+        return executeTransportMethodSafe(() -> transport.startMatch(sessionId, roomId, tableId), false);
     }
 
     @Override

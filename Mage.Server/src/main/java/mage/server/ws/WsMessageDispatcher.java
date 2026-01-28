@@ -116,6 +116,8 @@ public class WsMessageDispatcher {
                 case JOIN_TOURNAMENT_REQUEST -> joinTournament(requestId, sessionId, msg.getJoinTournamentRequest());
                 case LEAVE_TABLE_REQUEST -> leaveTable(requestId, sessionId, msg.getLeaveTableRequest());
                 case SWAP_SEATS_REQUEST -> swapSeats(requestId, sessionId, msg.getSwapSeatsRequest());
+                case START_MATCH_REQUEST -> startMatch(requestId, sessionId, msg.getStartMatchRequest());
+                case START_TOURNAMENT_REQUEST -> startTournament(requestId, sessionId, msg.getStartTournamentRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -904,6 +906,40 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not swap seats: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage startMatch(String requestId, String sessionId, WsProto.StartMatchRequest startMatchRequest) {
+        requireSession(sessionId);
+        try {
+            UUID roomId = UUID.fromString(startMatchRequest.getRoomId());
+            UUID tableId = UUID.fromString(startMatchRequest.getTableId());
+            boolean result = mageServer.matchStart(sessionId, roomId, tableId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setBoolean(result)
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not start match: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage startTournament(String requestId, String sessionId, WsProto.StartTournamentRequest startTournamentRequest) {
+        requireSession(sessionId);
+        try {
+            UUID roomId = UUID.fromString(startTournamentRequest.getRoomId());
+            UUID tableId = UUID.fromString(startTournamentRequest.getTableId());
+            boolean result = mageServer.tournamentStart(sessionId, roomId, tableId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setBoolean(result)
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not start tournament: " + e.getMessage());
         }
     }
 
