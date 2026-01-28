@@ -39,6 +39,8 @@ message ClientMessage {
     IsTableOwnerRequest is_table_owner_request = 25;
     GameChatIdRequest game_chat_id_request = 26;
     TournamentChatIdRequest tournament_chat_id_request = 27;
+    SendChatMessageRequest send_chat_message_request = 28;
+    SendBroadcastMessageRequest send_broadcast_message_request = 29;
     TablesRequest table_request = 30;
     FinishedMatchesRequest finished_matches_request = 31;
     RoomUsersRequest room_users_request = 32;
@@ -230,6 +232,15 @@ message GameChatIdRequest {
 
 message TournamentChatIdRequest {
   string tournamentId = 1;
+}
+
+message SendChatMessageRequest {
+  string chatId = 1;
+  string message = 2;
+}
+
+message SendBroadcastMessageRequest {
+  string message = 1;
 }
 
 message IsTableOwnerRequest {

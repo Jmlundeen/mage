@@ -535,14 +535,30 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean sendChatMessage(UUID chatId, String message) {
-        warnUnsupported("sendChatMessage");
-        return false;
+        try {
+            if (!isConnected() || transport == null) {
+                return false;
+            }
+            transport.sendChatMessage(sessionId, chatId, connection.getUsername(), message);
+            return true;
+        } catch (Exception e) {
+            logger.debug("Failed to send chat message", e);
+            return false;
+        }
     }
 
     @Override
     public boolean sendBroadcastMessage(String message) {
-        warnUnsupported("sendBroadcastMessage");
-        return false;
+        try {
+            if (!isConnected() || transport == null) {
+                return false;
+            }
+            transport.sendBroadcastMessage(sessionId, message);
+            return true;
+        } catch (Exception e) {
+            logger.debug("Failed to send broadcast message", e);
+            return false;
+        }
     }
 
     // --- ClientData

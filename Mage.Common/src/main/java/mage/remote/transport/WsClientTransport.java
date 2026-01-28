@@ -679,6 +679,47 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public void sendChatMessage(String sessionId, UUID chatId, String userName, String message) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendChatMessageRequest(WsProto.SendChatMessageRequest.newBuilder()
+                        .setChatId(chatId == null ? "" : chatId.toString())
+                        .setMessage(message != null ? message : "")
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendBroadcastMessage(String sessionId, String message) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendBroadcastMessageRequest(WsProto.SendBroadcastMessageRequest.newBuilder()
+                        .setMessage(message != null ? message : "")
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");

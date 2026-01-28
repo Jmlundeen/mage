@@ -93,6 +93,8 @@ public class WsMessageDispatcher {
                 case TABLE_CHAT_ID_REQUEST -> getTableChatId(requestId, sessionId, msg.getTableChatIdRequest());
                 case GAME_CHAT_ID_REQUEST -> getGameChatId(requestId, sessionId, msg.getGameChatIdRequest());
                 case TOURNAMENT_CHAT_ID_REQUEST -> getTournamentChatId(requestId, sessionId, msg.getTournamentChatIdRequest());
+                case SEND_CHAT_MESSAGE_REQUEST -> sendChatMessage(requestId, sessionId, msg.getSendChatMessageRequest());
+                case SEND_BROADCAST_MESSAGE_REQUEST -> sendBroadcastMessage(requestId, sessionId, msg.getSendBroadcastMessageRequest());
                 case IS_TABLE_OWNER_REQUEST -> getIsTableOwner(requestId, sessionId, msg.getIsTableOwnerRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
@@ -478,6 +480,46 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get tournament chat ID: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage sendChatMessage(String requestId, String sessionId, WsProto.SendChatMessageRequest sendChatMessageRequest) {
+        requireSession(sessionId);
+        try {
+            UUID chatId = UUID.fromString(sendChatMessageRequest.getChatId());
+            String message = sendChatMessageRequest.getMessage();
+
+            // Get username from session
+            User user = managerFactory.userManager().getUserBySessionId(sessionId).orElse(null);
+            if (user == null) {
+                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "User not found for session");
+            }
+
+            mageServer.chatSendMessage(chatId, user.getName(), message);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send chat message: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage sendBroadcastMessage(String requestId, String sessionId, WsProto.SendBroadcastMessageRequest sendBroadcastMessageRequest) {
+        requireSession(sessionId);
+        try {
+            String message = sendBroadcastMessageRequest.getMessage();
+            mageServer.adminSendBroadcastMessage(sessionId, message);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send broadcast message: " + e.getMessage());
         }
     }
 
