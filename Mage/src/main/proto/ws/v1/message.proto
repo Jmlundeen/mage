@@ -55,6 +55,8 @@ message ClientMessage {
     SendCardPickRequest send_card_pick_request = 41;
     SendCardMarkRequest send_card_mark_request = 42;
     SendPlayerActionRequest send_player_action_request = 43;
+    JoinGameRequest join_game_request = 44;
+    AdminRemoveTableRequest admin_remove_table_request = 45;
   }
 }
 
@@ -271,6 +273,14 @@ message SendPlayerActionRequest {
     string stringData = 5;
     // If none set, data is null
   }
+}
+
+message JoinGameRequest {
+  string gameId = 1;
+}
+
+message AdminRemoveTableRequest {
+  string tableId = 1;
 }
 
 message TableChatIdRequest {

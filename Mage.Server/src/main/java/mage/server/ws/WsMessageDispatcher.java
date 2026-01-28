@@ -110,6 +110,8 @@ public class WsMessageDispatcher {
                 case SEND_CARD_PICK_REQUEST -> sendCardPick(requestId, sessionId, msg.getSendCardPickRequest());
                 case SEND_CARD_MARK_REQUEST -> sendCardMark(requestId, sessionId, msg.getSendCardMarkRequest());
                 case SEND_PLAYER_ACTION_REQUEST -> sendPlayerAction(requestId, sessionId, msg.getSendPlayerActionRequest());
+                case JOIN_GAME_REQUEST -> joinGame(requestId, sessionId, msg.getJoinGameRequest());
+                case ADMIN_REMOVE_TABLE_REQUEST -> adminRemoveTable(requestId, sessionId, msg.getAdminRemoveTableRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -798,6 +800,38 @@ public class WsMessageDispatcher {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send player action: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Invalid player action: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage joinGame(String requestId, String sessionId, WsProto.JoinGameRequest joinGameRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(joinGameRequest.getGameId());
+            mageServer.gameJoin(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join game: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage adminRemoveTable(String requestId, String sessionId, WsProto.AdminRemoveTableRequest adminRemoveTableRequest) {
+        requireSession(sessionId);
+        try {
+            UUID tableId = UUID.fromString(adminRemoveTableRequest.getTableId());
+            mageServer.adminTableRemove(sessionId, tableId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not remove table: " + e.getMessage());
         }
     }
 

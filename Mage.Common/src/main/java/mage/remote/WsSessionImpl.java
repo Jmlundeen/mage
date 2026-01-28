@@ -723,14 +723,18 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean removeTable(UUID tableId) {
-        warnUnsupported("removeTable");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.adminRemoveTable(sessionId, tableId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean joinGame(UUID gameId) {
-        warnUnsupported("joinGame");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.joinGame(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
