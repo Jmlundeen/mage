@@ -2,6 +2,7 @@ package mage.remote.transport;
 
 import mage.MageException;
 import mage.cards.decks.DeckCardLists;
+import mage.constants.ManaType;
 import mage.game.match.MatchOptions;
 import mage.game.tournament.TournamentOptions;
 import mage.interfaces.ServerState;
@@ -791,6 +792,88 @@ public class WsClientTransport implements ClientTransport {
                 .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .setStringData(data != null ? data : "")
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendPlayerManaType(String sessionId, UUID gameId, UUID playerId, ManaType data) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .setPlayerId(playerId == null ? "" : playerId.toString())
+                        .setManaTypeData(data != null ? data.toString() : "")
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void quitMatch(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setQuitMatchRequest(WsProto.QuitMatchRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void quitTournament(String sessionId, UUID tournamentId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setQuitTournamentRequest(WsProto.QuitTournamentRequest.newBuilder()
+                        .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void quitDraft(String sessionId, UUID draftId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setQuitDraftRequest(WsProto.QuitDraftRequest.newBuilder()
+                        .setDraftId(draftId == null ? "" : draftId.toString())
                         .build())
                 .build();
 

@@ -2,6 +2,7 @@ package mage.server.ws;
 
 import mage.MageException;
 import mage.cards.decks.DeckCardLists;
+import mage.constants.ManaType;
 import mage.game.match.MatchOptions;
 import mage.game.tournament.TournamentOptions;
 import mage.interfaces.MageServer;
@@ -96,6 +97,9 @@ public class WsMessageDispatcher {
                 case SEND_CHAT_MESSAGE_REQUEST -> sendChatMessage(requestId, sessionId, msg.getSendChatMessageRequest());
                 case SEND_BROADCAST_MESSAGE_REQUEST -> sendBroadcastMessage(requestId, sessionId, msg.getSendBroadcastMessageRequest());
                 case SEND_PLAYER_DATA_REQUEST -> sendPlayerData(requestId, sessionId, msg.getSendPlayerDataRequest());
+                case QUIT_MATCH_REQUEST -> quitMatch(requestId, sessionId, msg.getQuitMatchRequest());
+                case QUIT_TOURNAMENT_REQUEST -> quitTournament(requestId, sessionId, msg.getQuitTournamentRequest());
+                case QUIT_DRAFT_REQUEST -> quitDraft(requestId, sessionId, msg.getQuitDraftRequest());
                 case IS_TABLE_OWNER_REQUEST -> getIsTableOwner(requestId, sessionId, msg.getIsTableOwnerRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
@@ -551,6 +555,12 @@ public class WsMessageDispatcher {
                     mageServer.sendPlayerString(gameId, sessionId, stringData);
                     break;
 
+                case MANA_TYPE_DATA:
+                    UUID playerId = sendPlayerDataRequest.getPlayerId().isEmpty() ? null : UUID.fromString(sendPlayerDataRequest.getPlayerId());
+                    ManaType manaType = ManaType.valueOf(sendPlayerDataRequest.getManaTypeData());
+                    mageServer.sendPlayerManaType(gameId, playerId, sessionId, manaType);
+                    break;
+
                 case DATA_NOT_SET:
                     return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "No player data provided");
             }
@@ -563,6 +573,54 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send player data: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage quitMatch(String requestId, String sessionId, WsProto.QuitMatchRequest quitMatchRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(quitMatchRequest.getGameId());
+            mageServer.matchQuit(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not quit match: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage quitTournament(String requestId, String sessionId, WsProto.QuitTournamentRequest quitTournamentRequest) {
+        requireSession(sessionId);
+        try {
+            UUID tournamentId = UUID.fromString(quitTournamentRequest.getTournamentId());
+            mageServer.tournamentQuit(tournamentId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not quit tournament: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage quitDraft(String requestId, String sessionId, WsProto.QuitDraftRequest quitDraftRequest) {
+        requireSession(sessionId);
+        try {
+            UUID draftId = UUID.fromString(quitDraftRequest.getDraftId());
+            mageServer.draftQuit(draftId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not quit draft: " + e.getMessage());
         }
     }
 

@@ -42,10 +42,13 @@ message ClientMessage {
     SendChatMessageRequest send_chat_message_request = 28;
     SendBroadcastMessageRequest send_broadcast_message_request = 29;
     TablesRequest table_request = 30;
-    SendPlayerDataRequest send_player_data_request = 34;
     FinishedMatchesRequest finished_matches_request = 31;
     RoomUsersRequest room_users_request = 32;
     LobbyInfoRequest  lobby_info_request= 33;
+    SendPlayerDataRequest send_player_data_request = 34;
+    QuitMatchRequest quit_match_request = 35;
+    QuitTournamentRequest quit_tournament_request = 36;
+    QuitDraftRequest quit_draft_request = 37;
   }
 }
 
@@ -246,12 +249,26 @@ message SendBroadcastMessageRequest {
 
 message SendPlayerDataRequest {
   string gameId = 1;
+  string playerId = 6;  // only used for mana_type_data
   oneof data {
     string uuid_data = 2;
     bool boolean_data = 3;
     int32 integer_data = 4;
     string string_data = 5;
+    string mana_type_data = 7;  // ManaType as string (BLACK, BLUE, GREEN, RED, WHITE, GENERIC, COLORLESS)
   }
+}
+
+message QuitMatchRequest {
+  string gameId = 1;
+}
+
+message QuitTournamentRequest {
+  string tournamentId = 1;
+}
+
+message QuitDraftRequest {
+  string draftId = 1;
 }
 
 message IsTableOwnerRequest {

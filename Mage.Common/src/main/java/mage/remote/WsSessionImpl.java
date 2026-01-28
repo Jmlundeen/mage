@@ -639,26 +639,34 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean sendPlayerManaType(UUID gameId, UUID playerId, ManaType data) {
-        warnUnsupported("sendPlayerManaType");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.sendPlayerManaType(sessionId, gameId, playerId, data);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean quitMatch(UUID gameId) {
-        warnUnsupported("quitMatch");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.quitMatch(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean quitTournament(UUID tournamentId) {
-        warnUnsupported("quitTournament");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.quitTournament(sessionId, tournamentId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean quitDraft(UUID draftId) {
-        warnUnsupported("quitDraft");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.quitDraft(sessionId, draftId);
+            return true;
+        }, false);
     }
 
     @Override
