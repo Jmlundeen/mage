@@ -887,6 +887,82 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public boolean submitDeck(String sessionId, UUID tableId, DeckCardLists deckCardLists) {
+        // Workaround to fix Can't join table problem
+        if (deckCardLists != null) {
+            deckCardLists.setCardLayout(null);
+            deckCardLists.setSideboardLayout(null);
+        }
+
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSubmitDeckRequest(WsProto.SubmitDeckRequest.newBuilder()
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .setDeckCardLists(deckCardLists != null ? deckCardLists.toProto() : mage.ws.v1.model.ModelProto.DeckCardLists.getDefaultInstance())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasAck();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean updateDeck(String sessionId, UUID tableId, DeckCardLists deckCardLists) {
+        if (deckCardLists != null) {
+            deckCardLists.setCardLayout(null);
+            deckCardLists.setSideboardLayout(null);
+        }
+
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setUpdateDeckRequest(WsProto.UpdateDeckRequest.newBuilder()
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .setDeckCardLists(deckCardLists != null ? deckCardLists.toProto() : mage.ws.v1.model.ModelProto.DeckCardLists.getDefaultInstance())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasAck();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean setBoosterLoaded(String sessionId, UUID draftId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSetBoosterLoadedRequest(WsProto.SetBoosterLoadedRequest.newBuilder()
+                        .setDraftId(draftId == null ? "" : draftId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasAck();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");

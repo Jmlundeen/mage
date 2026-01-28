@@ -101,6 +101,9 @@ public class WsMessageDispatcher {
                 case QUIT_TOURNAMENT_REQUEST -> quitTournament(requestId, sessionId, msg.getQuitTournamentRequest());
                 case QUIT_DRAFT_REQUEST -> quitDraft(requestId, sessionId, msg.getQuitDraftRequest());
                 case IS_TABLE_OWNER_REQUEST -> getIsTableOwner(requestId, sessionId, msg.getIsTableOwnerRequest());
+                case SUBMIT_DECK_REQUEST -> submitDeck(requestId, sessionId, msg.getSubmitDeckRequest());
+                case UPDATE_DECK_REQUEST -> updateDeck(requestId, sessionId, msg.getUpdateDeckRequest());
+                case SET_BOOSTER_LOADED_REQUEST -> setBoosterLoaded(requestId, sessionId, msg.getSetBoosterLoadedRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -636,6 +639,59 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not determine table owner status: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage submitDeck(String requestId, String sessionId, WsProto.SubmitDeckRequest submitDeckRequest) {
+        requireSession(sessionId);
+        try {
+            UUID tableId = UUID.fromString(submitDeckRequest.getTableId());
+            DeckCardLists deckCardLists = DeckCardLists.fromProto(submitDeckRequest.getDeckCardLists());
+            boolean result = mageServer.deckSubmit(sessionId, tableId, deckCardLists);
+            if (!result) {
+                return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not submit deck");
+            }
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not submit deck: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage updateDeck(String requestId, String sessionId, WsProto.UpdateDeckRequest updateDeckRequest) {
+        requireSession(sessionId);
+        try {
+            UUID tableId = UUID.fromString(updateDeckRequest.getTableId());
+            DeckCardLists deckCardLists = DeckCardLists.fromProto(updateDeckRequest.getDeckCardLists());
+            mageServer.deckSave(sessionId, tableId, deckCardLists);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not update deck: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage setBoosterLoaded(String requestId, String sessionId, WsProto.SetBoosterLoadedRequest setBoosterLoadedRequest) {
+        requireSession(sessionId);
+        try {
+            UUID draftId = UUID.fromString(setBoosterLoadedRequest.getDraftId());
+            mageServer.draftSetBoosterLoaded(draftId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not set booster loaded: " + e.getMessage());
         }
     }
 

@@ -671,20 +671,17 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean submitDeck(UUID tableId, DeckCardLists deck) {
-        warnUnsupported("submitDeck");
-        return false;
+        return executeTransportMethodSafe(() -> transport.submitDeck(sessionId, tableId, deck), false);
     }
 
     @Override
     public boolean updateDeck(UUID tableId, DeckCardLists deck) {
-        warnUnsupported("updateDeck");
-        return false;
+        return executeTransportMethodSafe(() -> transport.updateDeck(sessionId, tableId, deck), false);
     }
 
     @Override
     public boolean setBoosterLoaded(UUID draftId) {
-        warnUnsupported("setBoosterLoaded");
-        return false;
+        return executeTransportMethodSafe(() -> transport.setBoosterLoaded(sessionId, draftId), false);
     }
 
     @Override

@@ -49,6 +49,9 @@ message ClientMessage {
     QuitMatchRequest quit_match_request = 35;
     QuitTournamentRequest quit_tournament_request = 36;
     QuitDraftRequest quit_draft_request = 37;
+    SubmitDeckRequest submit_deck_request = 38;
+    UpdateDeckRequest update_deck_request = 39;
+    SetBoosterLoadedRequest set_booster_loaded_request = 40;
   }
 }
 
@@ -224,6 +227,20 @@ message JoinTableRequest {
 message RemoveTableRequest {
   string roomId = 1;
   string tableId = 2;
+}
+
+message SubmitDeckRequest {
+  string tableId = 1;
+  model.DeckCardLists deckCardLists = 2;
+}
+
+message UpdateDeckRequest {
+  string tableId = 1;
+  model.DeckCardLists deckCardLists = 2;
+}
+
+message SetBoosterLoadedRequest {
+  string draftId = 1;
 }
 
 message TableChatIdRequest {
