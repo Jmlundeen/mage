@@ -949,7 +949,21 @@ public class WsSessionImpl implements Session {
 
     @Override
     public void appendJsonLog(ActionData actionData) {
-        warnUnsupported("appendJsonLog");
+        if (isJsonLogActive()) {
+            String dir = "gamelogsJson";
+            java.io.File saveDir = new java.io.File(dir);
+            // Existence check
+            if (!saveDir.exists()) {
+                saveDir.mkdirs();
+            }
+            actionData.sessionId = getSessionId();
+            String logFileName = dir + java.io.File.separator + "game-" + actionData.gameId + ".json";
+            try (java.io.PrintWriter out = new java.io.PrintWriter(new java.io.BufferedWriter(new java.io.FileWriter(logFileName, true)))) {
+                out.println(actionData.toJson());
+            } catch (java.io.IOException e) {
+                logger.error("Can't write JSON game log file - " + logFileName, e);
+            }
+        }
     }
 
     @Override
