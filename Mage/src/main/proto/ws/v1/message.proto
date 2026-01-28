@@ -42,6 +42,7 @@ message ClientMessage {
     SendChatMessageRequest send_chat_message_request = 28;
     SendBroadcastMessageRequest send_broadcast_message_request = 29;
     TablesRequest table_request = 30;
+    SendPlayerDataRequest send_player_data_request = 34;
     FinishedMatchesRequest finished_matches_request = 31;
     RoomUsersRequest room_users_request = 32;
     LobbyInfoRequest  lobby_info_request= 33;
@@ -241,6 +242,16 @@ message SendChatMessageRequest {
 
 message SendBroadcastMessageRequest {
   string message = 1;
+}
+
+message SendPlayerDataRequest {
+  string gameId = 1;
+  oneof data {
+    string uuid_data = 2;
+    bool boolean_data = 3;
+    int32 integer_data = 4;
+    string string_data = 5;
+  }
 }
 
 message IsTableOwnerRequest {

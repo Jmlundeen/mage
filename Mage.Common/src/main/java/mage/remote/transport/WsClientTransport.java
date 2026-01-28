@@ -720,6 +720,90 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public void sendPlayerUUID(String sessionId, UUID gameId, UUID data) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .setUuidData(data == null ? "" : data.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendPlayerBoolean(String sessionId, UUID gameId, Boolean data) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .setBooleanData(data != null ? data : false)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendPlayerInteger(String sessionId, UUID gameId, Integer data) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .setIntegerData(data != null ? data : 0)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendPlayerString(String sessionId, UUID gameId, String data) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .setStringData(data != null ? data : "")
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");

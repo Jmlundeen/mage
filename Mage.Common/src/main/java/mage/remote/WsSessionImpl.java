@@ -607,26 +607,34 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean sendPlayerUUID(UUID gameId, UUID data) {
-        warnUnsupported("sendPlayerUUID");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.sendPlayerUUID(sessionId, gameId, data);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendPlayerBoolean(UUID gameId, boolean data) {
-        warnUnsupported("sendPlayerBoolean");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.sendPlayerBoolean(sessionId, gameId, data);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendPlayerInteger(UUID gameId, int data) {
-        warnUnsupported("sendPlayerInteger");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.sendPlayerInteger(sessionId, gameId, data);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean sendPlayerString(UUID gameId, String data) {
-        warnUnsupported("sendPlayerString");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.sendPlayerString(sessionId, gameId, data);
+            return true;
+        }, false);
     }
 
     @Override

@@ -95,6 +95,7 @@ public class WsMessageDispatcher {
                 case TOURNAMENT_CHAT_ID_REQUEST -> getTournamentChatId(requestId, sessionId, msg.getTournamentChatIdRequest());
                 case SEND_CHAT_MESSAGE_REQUEST -> sendChatMessage(requestId, sessionId, msg.getSendChatMessageRequest());
                 case SEND_BROADCAST_MESSAGE_REQUEST -> sendBroadcastMessage(requestId, sessionId, msg.getSendBroadcastMessageRequest());
+                case SEND_PLAYER_DATA_REQUEST -> sendPlayerData(requestId, sessionId, msg.getSendPlayerDataRequest());
                 case IS_TABLE_OWNER_REQUEST -> getIsTableOwner(requestId, sessionId, msg.getIsTableOwnerRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
@@ -520,6 +521,48 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send broadcast message: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage sendPlayerData(String requestId, String sessionId, WsProto.SendPlayerDataRequest sendPlayerDataRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(sendPlayerDataRequest.getGameId());
+
+            // Handle different data types using oneof
+            switch (sendPlayerDataRequest.getDataCase()) {
+                case UUID_DATA:
+                    UUID uuidData = sendPlayerDataRequest.getUuidData().isEmpty() ? null : UUID.fromString(sendPlayerDataRequest.getUuidData());
+                    mageServer.sendPlayerUUID(gameId, sessionId, uuidData);
+                    break;
+
+                case BOOLEAN_DATA:
+                    Boolean booleanData = sendPlayerDataRequest.getBooleanData();
+                    mageServer.sendPlayerBoolean(gameId, sessionId, booleanData);
+                    break;
+
+                case INTEGER_DATA:
+                    Integer integerData = sendPlayerDataRequest.getIntegerData();
+                    mageServer.sendPlayerInteger(gameId, sessionId, integerData);
+                    break;
+
+                case STRING_DATA:
+                    String stringData = sendPlayerDataRequest.getStringData();
+                    mageServer.sendPlayerString(gameId, sessionId, stringData);
+                    break;
+
+                case DATA_NOT_SET:
+                    return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "No player data provided");
+            }
+
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send player data: " + e.getMessage());
         }
     }
 
