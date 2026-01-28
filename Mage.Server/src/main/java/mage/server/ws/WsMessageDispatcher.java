@@ -15,6 +15,7 @@ import mage.server.SessionManagerImpl;
 import mage.server.User;
 import mage.utils.MageVersion;
 import mage.view.DraftPickView;
+import mage.view.TournamentView;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
 import mage.ws.v1.model.ModelProto;
@@ -126,6 +127,9 @@ public class WsMessageDispatcher {
                 case NEXT_PLAY_REQUEST -> nextPlay(requestId, sessionId, msg.getNextPlayRequest());
                 case PREVIOUS_PLAY_REQUEST -> previousPlay(requestId, sessionId, msg.getPreviousPlayRequest());
                 case SKIP_FORWARD_REQUEST -> skipForward(requestId, sessionId, msg.getSkipForwardRequest());
+                case GET_TABLE_REQUEST -> getTable(requestId, sessionId, msg.getGetTableRequest());
+                case GET_TOURNAMENT_REQUEST -> getTournament(requestId, sessionId, msg.getGetTournamentRequest());
+                case WATCH_TABLE_REQUEST -> watchTable(requestId, sessionId, msg.getWatchTableRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -1077,6 +1081,66 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not skip forward: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage getTable(String requestId, String sessionId, WsProto.GetTableRequest getTableRequest) {
+        requireSession(sessionId);
+        try {
+            UUID roomId = UUID.fromString(getTableRequest.getRoomId());
+            UUID tableId = UUID.fromString(getTableRequest.getTableId());
+            ViewProto.TableView tableView = mageServer.roomGetTableById(roomId, tableId);
+            if (tableView == null) {
+                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Table not found");
+            }
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
+                            .setTableView(tableView)
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not get table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage getTournament(String requestId, String sessionId, WsProto.GetTournamentRequest getTournamentRequest) {
+        requireSession(sessionId);
+        try {
+            UUID tournamentId = UUID.fromString(getTournamentRequest.getTournamentId());
+            TournamentView tournamentView = mageServer.tournamentFindById(tournamentId);
+            if (tournamentView == null) {
+                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Tournament not found");
+            }
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setTournamentViewResponse(WsProto.TournamentViewResponse.newBuilder()
+                            .setTournamentView(tournamentView.toProto())
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not get tournament: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage watchTable(String requestId, String sessionId, WsProto.WatchTableRequest watchTableRequest) {
+        requireSession(sessionId);
+        try {
+            UUID roomId = UUID.fromString(watchTableRequest.getRoomId());
+            UUID tableId = UUID.fromString(watchTableRequest.getTableId());
+            boolean result = mageServer.roomWatchTable(sessionId, roomId, tableId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setBoolean(result)
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not watch table: " + e.getMessage());
         }
     }
 

@@ -1,13 +1,14 @@
 
-
 package mage.view;
+
+import mage.game.Game;
+import mage.game.tournament.TournamentPairing;
+import mage.util.DateFormat;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
-import mage.game.Game;
-import mage.game.tournament.TournamentPairing;
-import mage.util.DateFormat;
 
 /**
  *
@@ -86,6 +87,33 @@ public class TournamentGameView implements Serializable {
 
     public UUID getTableId() {
         return tableId;
+    }
+
+    public ViewProto.TournamentGameView toProto() {
+        return ViewProto.TournamentGameView.newBuilder()
+                .setRoundNum(roundNum)
+                .setMatchId(matchId != null ? matchId.toString() : "")
+                .setGameId(gameId != null ? gameId.toString() : "")
+                .setState(state != null ? state : "")
+                .setResult(result != null ? result : "")
+                .setPlayers(players != null ? players : "")
+                .setTableId(tableId != null ? tableId.toString() : "")
+                .build();
+    }
+
+    public static TournamentGameView fromProto(ViewProto.TournamentGameView proto) {
+        return new TournamentGameView(proto);
+    }
+
+    // Private constructor for fromProto
+    private TournamentGameView(ViewProto.TournamentGameView proto) {
+        this.roundNum = proto.getRoundNum();
+        this.matchId = proto.getMatchId().isEmpty() ? null : UUID.fromString(proto.getMatchId());
+        this.gameId = proto.getGameId().isEmpty() ? null : UUID.fromString(proto.getGameId());
+        this.state = proto.getState();
+        this.result = proto.getResult();
+        this.players = proto.getPlayers();
+        this.tableId = proto.getTableId().isEmpty() ? null : UUID.fromString(proto.getTableId());
     }
 
 }

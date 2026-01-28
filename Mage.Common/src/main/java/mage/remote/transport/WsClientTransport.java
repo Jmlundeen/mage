@@ -657,6 +657,57 @@ public class WsClientTransport implements ClientTransport {
     }
 
     @Override
+    public Optional<ViewProto.TableView> getTable(String sessionId, UUID roomId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setGetTableRequest(WsProto.GetTableRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (res.hasTableViewResponse()) {
+                return Optional.of(res.getTableViewResponse().getTableView());
+            }
+            return Optional.empty();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public ViewProto.TournamentView getTournament(String sessionId, UUID tournamentId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setGetTournamentRequest(WsProto.GetTournamentRequest.newBuilder()
+                        .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (res.hasTournamentViewResponse()) {
+                return res.getTournamentViewResponse().getTournamentView();
+            }
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public boolean isTableOwner(String sessionId, UUID roomId, UUID tableId) {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
@@ -673,11 +724,30 @@ public class WsClientTransport implements ClientTransport {
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
-            if (!res.hasBoolean()) {
-                throw new IllegalStateException("Unexpected response type");
-            }
-            return res.getBoolean();
+            return res.hasBoolean() && res.getBoolean();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    @Override
+    public boolean watchTable(String sessionId, UUID roomId, UUID tableId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setWatchTableRequest(WsProto.WatchTableRequest.newBuilder()
+                        .setRoomId(roomId == null ? "" : roomId.toString())
+                        .setTableId(tableId == null ? "" : tableId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasBoolean() && res.getBoolean();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

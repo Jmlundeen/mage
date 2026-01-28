@@ -1,15 +1,15 @@
-
-
 package mage.view;
+
+import mage.game.tournament.Round;
+import mage.game.tournament.Tournament;
+import mage.game.tournament.TournamentPlayer;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import mage.game.tournament.Round;
-import mage.game.tournament.Tournament;
-import mage.game.tournament.TournamentPlayer;
 
 /**
  *
@@ -118,5 +118,67 @@ public class TournamentView implements Serializable {
     public String getRunningInfo() {
         return runningInfo;
     }
-    
+
+    public ViewProto.TournamentView toProto() {
+        ViewProto.TournamentView.Builder builder = ViewProto.TournamentView.newBuilder()
+                .setTournamentName(tournamentName)
+                .setTournamentType(tournamentType)
+                .setTournamentState(tournamentState)
+                .setConstructionTime(constructionTime)
+                .setWatchingAllowed(watchingAllowed)
+                .setRunningInfo(runningInfo);
+
+        if (startTime != null) {
+            builder.setStartTimeMillis(startTime.getTime());
+        }
+        if (endTime != null) {
+            builder.setEndTimeMillis(endTime.getTime());
+        }
+        if (stepStartTime != null) {
+            builder.setStepStartTimeMillis(stepStartTime.getTime());
+        }
+        if (serverTime != null) {
+            builder.setServerTimeMillis(serverTime.getTime());
+        }
+
+        for (RoundView round : rounds) {
+            builder.addRounds(round.toProto());
+        }
+
+        for (TournamentPlayerView player : players) {
+            builder.addPlayers(player.toProto());
+        }
+
+        return builder.build();
+    }
+
+    public static TournamentView fromProto(ViewProto.TournamentView proto) {
+        // Create a TournamentView from protobuf data (for client-side use)
+        return new TournamentView(proto);
+    }
+
+    // Private constructor for fromProto
+    private TournamentView(ViewProto.TournamentView proto) {
+        this.tournamentName = proto.getTournamentName();
+        this.tournamentType = proto.getTournamentType();
+        this.tournamentState = proto.getTournamentState();
+        this.startTime = proto.getStartTimeMillis() > 0 ? new Date(proto.getStartTimeMillis()) : null;
+        this.endTime = proto.getEndTimeMillis() > 0 ? new Date(proto.getEndTimeMillis()) : null;
+        this.stepStartTime = proto.getStepStartTimeMillis() > 0 ? new Date(proto.getStepStartTimeMillis()) : null;
+        this.serverTime = proto.getServerTimeMillis() > 0 ? new Date(proto.getServerTimeMillis()) : null;
+        this.constructionTime = proto.getConstructionTime();
+        this.watchingAllowed = proto.getWatchingAllowed();
+        this.runningInfo = proto.getRunningInfo();
+
+        // Reconstruct players
+        for (ViewProto.TournamentPlayerView playerProto : proto.getPlayersList()) {
+            this.players.add(TournamentPlayerView.fromProto(playerProto));
+        }
+
+        // Reconstruct rounds
+        for (ViewProto.RoundView roundProto : proto.getRoundsList()) {
+            this.rounds.add(RoundView.fromProto(roundProto));
+        }
+    }
+
 }

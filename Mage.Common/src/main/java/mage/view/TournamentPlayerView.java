@@ -1,8 +1,10 @@
 
 package mage.view;
 
-import java.io.Serializable;
 import mage.game.tournament.TournamentPlayer;
+import mage.ws.v1.view.ViewProto;
+
+import java.io.Serializable;
 
 /**
  *
@@ -67,6 +69,33 @@ public class TournamentPlayerView implements Serializable, Comparable {
 
     public String getHistory() {
         return history;
+    }
+
+    public ViewProto.TournamentPlayerView toProto() {
+        return ViewProto.TournamentPlayerView.newBuilder()
+                .setFlagName(flagName != null ? flagName : "")
+                .setName(name != null ? name : "")
+                .setState(state != null ? state : "")
+                .setResults(results != null ? results : "")
+                .setHistory(history != null ? history : "")
+                .setPoints(points)
+                .setQuit(quit)
+                .build();
+    }
+
+    public static TournamentPlayerView fromProto(ViewProto.TournamentPlayerView proto) {
+        return new TournamentPlayerView(proto);
+    }
+
+    // Private constructor for fromProto
+    private TournamentPlayerView(ViewProto.TournamentPlayerView proto) {
+        this.flagName = proto.getFlagName();
+        this.name = proto.getName();
+        this.state = proto.getState();
+        this.results = proto.getResults();
+        this.history = proto.getHistory();
+        this.points = proto.getPoints();
+        this.quit = proto.getQuit();
     }
 
 }

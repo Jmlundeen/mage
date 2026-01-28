@@ -71,6 +71,9 @@ message ClientMessage {
     NextPlayRequest next_play_request = 57;
     PreviousPlayRequest previous_play_request = 58;
     SkipForwardRequest skip_forward_request = 59;
+    GetTableRequest get_table_request = 60;
+    GetTournamentRequest get_tournament_request = 61;
+    WatchTableRequest watch_table_request = 63;
   }
 }
 
@@ -96,6 +99,7 @@ message ServerMessage {
     RoomUsersResponse room_users_response = 32;
     LobbyInfoResponse lobbyGetInfo = 33;
     DraftPickViewResponse draft_pick_view_response = 34;
+    TournamentViewResponse tournament_view_response = 35;
   }
 }
 
@@ -301,6 +305,10 @@ message JoinDraftRequest {
   string draftId = 1;
 }
 
+message TournamentViewResponse {
+  view.TournamentView tournament_view = 1;
+}
+
 message JoinTournamentRequest {
   string tournamentId = 1;
 }
@@ -360,6 +368,25 @@ message SkipForwardRequest {
   int32 moves = 2;
 }
 
+message GetTableRequest {
+  string roomId = 1;
+  string tableId = 2;
+}
+
+message GetTournamentRequest {
+  string tournamentId = 1;
+}
+
+message IsTableOwnerRequest {
+  string roomId = 1;
+  string tableId = 2;
+}
+
+message WatchTableRequest {
+  string roomId = 1;
+  string tableId = 2;
+}
+
 message TableChatIdRequest {
   string tableId = 1;
 }
@@ -403,9 +430,4 @@ message QuitTournamentRequest {
 
 message QuitDraftRequest {
   string draftId = 1;
-}
-
-message IsTableOwnerRequest {
-  string roomId = 1;
-  string tableId = 2;
 }

@@ -61,5 +61,11 @@ public interface ClientTransport {
 
     Optional<UUID> getTableChatId(String sessionId, UUID tableId);
 
+    Optional<ViewProto.TableView> getTable(String sessionId, UUID roomId, UUID tableId);
+
+    ViewProto.TournamentView getTournament(String sessionId, UUID tournamentId);
+
     boolean isTableOwner(String sessionId, UUID roomId, UUID tableId);
+
+    boolean watchTable(String sessionId, UUID roomId, UUID tableId);
 }

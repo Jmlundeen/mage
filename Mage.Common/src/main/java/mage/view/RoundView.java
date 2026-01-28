@@ -2,14 +2,15 @@
 
 package mage.view;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import mage.game.Game;
 import mage.game.GameInfo;
 import mage.game.tournament.Round;
 import mage.game.tournament.TournamentPairing;
+import mage.ws.v1.view.ViewProto;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -49,6 +50,25 @@ public class RoundView implements Serializable {
 
     public List<TournamentGameView> getGames() {
         return games;
+    }
+
+    public ViewProto.RoundView toProto() {
+        ViewProto.RoundView.Builder builder = ViewProto.RoundView.newBuilder();
+        for (TournamentGameView game : games) {
+            builder.addGames(game.toProto());
+        }
+        return builder.build();
+    }
+
+    public static RoundView fromProto(ViewProto.RoundView proto) {
+        return new RoundView(proto);
+    }
+
+    // Private constructor for fromProto
+    private RoundView(ViewProto.RoundView proto) {
+        for (ViewProto.TournamentGameView gameProto : proto.getGamesList()) {
+            this.games.add(TournamentGameView.fromProto(gameProto));
+        }
     }
 
 }

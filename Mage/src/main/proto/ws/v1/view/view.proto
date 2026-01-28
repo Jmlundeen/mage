@@ -164,3 +164,46 @@ message DraftPickView {
   int32 timeout = 4;
 }
 
+// Mirrors mage.view.TournamentView
+message TournamentView {
+  string tournamentName = 1;
+  string tournamentType = 2;
+  string tournamentState = 3;
+  int64 startTimeMillis = 4;
+  int64 endTimeMillis = 5;
+  int64 stepStartTimeMillis = 6;
+  int64 serverTimeMillis = 7;
+  int32 constructionTime = 8;
+  bool watchingAllowed = 9;
+  repeated RoundView rounds = 10;
+  repeated TournamentPlayerView players = 11;
+  string runningInfo = 12;
+}
+
+// Mirrors mage.view.TournamentPlayerView
+message TournamentPlayerView {
+  string flagName = 1;
+  string name = 2;
+  string state = 3;
+  string results = 4;
+  string history = 5;
+  int32 points = 6;
+  bool quit = 7;
+}
+
+// Mirrors mage.view.RoundView
+message RoundView {
+  repeated TournamentGameView games = 1;
+}
+
+// Mirrors mage.view.TournamentGameView
+message TournamentGameView {
+  int32 roundNum = 1;
+  string matchId = 2;
+  string gameId = 3;
+  string state = 4;
+  string result = 5;
+  string players = 6;
+  string tableId = 7;
+}
+

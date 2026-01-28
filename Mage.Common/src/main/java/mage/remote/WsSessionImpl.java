@@ -839,26 +839,22 @@ public class WsSessionImpl implements Session {
 
     @Override
     public Optional<ViewProto.TableView> getTable(UUID roomId, UUID tableId) {
-        warnUnsupported("getTable");
-        return Optional.empty();
+        return executeTransportMethodSafe(() -> transport.getTable(sessionId, roomId, tableId), Optional.empty());
     }
 
     @Override
     public TournamentView getTournament(UUID tournamentId) throws MageRemoteException {
-        warnUnsupported("getTournament");
-        return null;
+        return executeTransportMethod(() -> TournamentView.fromProto(transport.getTournament(sessionId, tournamentId)));
     }
 
     @Override
     public boolean isTableOwner(UUID roomId, UUID tableId) {
-        warnUnsupported("isTableOwner");
-        return false;
+        return executeTransportMethodSafe(() -> transport.isTableOwner(sessionId, roomId, tableId), false);
     }
 
     @Override
     public boolean watchTable(UUID roomId, UUID tableId) {
-        warnUnsupported("watchTable");
-        return false;
+        return executeTransportMethodSafe(() -> transport.watchTable(sessionId, roomId, tableId), false);
     }
 
     @Override
