@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -229,7 +230,7 @@ public class WsSessionImpl implements Session {
 
             // Create Basic Auth header
             String credentials = connection.getUsername() + ":" + connection.getPassword();
-            String base64Credentials = java.util.Base64.getEncoder().encodeToString(credentials.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            String base64Credentials = java.util.Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
             String authHeader = "Basic " + base64Credentials;
 
             // Make HTTP POST request
@@ -977,15 +978,15 @@ public class WsSessionImpl implements Session {
 
             // Create Basic Auth header (username and password for authentication)
             String credentials = connection.getUsername() + ":" + (connection.getPassword() != null ? connection.getPassword() : "");
-            String base64Credentials = java.util.Base64.getEncoder().encodeToString(credentials.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            String base64Credentials = java.util.Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
             String authHeader = "Basic " + base64Credentials;
 
-            // Create request body with email and password
-            String requestBody = "{\"email\":\"" + connection.getEmail() + "\",\"password\":\"" + connection.getPassword() + "\"}";
+            // Create request body with email
+            String requestBody = "{\"email\":\"" + connection.getEmail() + "\"}";
 
             // Make HTTP POST request
-            java.net.URL url = new java.net.URL(registerUrl);
-            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            URL url = new URL(registerUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Authorization", authHeader);
             conn.setRequestProperty("Content-Type", "application/json");
@@ -994,15 +995,15 @@ public class WsSessionImpl implements Session {
             conn.setReadTimeout(10000);
 
             // Send request body
-            try (java.io.OutputStream os = conn.getOutputStream()) {
-                byte[] input = requestBody.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
                 os.write(input, 0, input.length);
             }
 
             int responseCode = conn.getResponseCode();
 
             // Read response (success or error)
-            java.io.InputStream inputStream;
+            InputStream inputStream;
             if (responseCode >= 200 && responseCode < 300) {
                 inputStream = conn.getInputStream();
             } else {
@@ -1017,7 +1018,7 @@ public class WsSessionImpl implements Session {
             // Parse response JSON
             if (!response.isEmpty()) {
                 try {
-                    com.google.gson.JsonObject json = gson.fromJson(response, com.google.gson.JsonObject.class);
+                    JsonObject json = gson.fromJson(response, JsonObject.class);
                     String message = json.has("message") ? json.get("message").getAsString() : "Unknown response";
 
                     if (responseCode == 200) {
@@ -1055,6 +1056,105 @@ public class WsSessionImpl implements Session {
             logger.error("HTTP Register: error", e);
             setLastError("Registration error: " + e.getMessage());
             client.showError("Registration error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public synchronized boolean sendAuthValidateRegistration(final Connection connection) {
+        try {
+            // Calculate HTTP port (WS server port = main port + 500)
+            int httpPort = connection.getPort() + 500;
+            String registerUrl = "http://" + connection.getHost() + ":" + httpPort + "/register";
+
+            logger.info("HTTP Register Confirm: attempting to validate registration for user=" + connection.getUsername());
+
+            // Create Basic Auth header
+            String credentials = connection.getUsername() + ":" + (connection.getPassword() != null ? connection.getPassword() : "");
+            String base64Credentials = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+            String authHeader = "Basic " + base64Credentials;
+
+            // Create request body with auth token (step 2 - no email/password needed)
+            String requestBody = "{\"authToken\":\"" + connection.getAuthToken() + "\"}";
+
+            // Make HTTP POST request
+            URL url = new URL(registerUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", authHeader);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            // Send request body
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int responseCode = conn.getResponseCode();
+
+            // Read response (success or error)
+            InputStream inputStream;
+            if (responseCode >= 200 && responseCode < 300) {
+                inputStream = conn.getInputStream();
+            } else {
+                inputStream = conn.getErrorStream();
+            }
+
+            String response = "";
+            if (inputStream != null) {
+                response = readStream(inputStream);
+            }
+
+            // Parse response JSON
+            if (!response.isEmpty()) {
+                try {
+                    com.google.gson.JsonObject json = gson.fromJson(response, com.google.gson.JsonObject.class);
+                    String message = json.has("message") ? json.get("message").getAsString() : "Unknown response";
+
+                    if (responseCode == 200) {
+                        // Success - registration completed
+                        logger.info("HTTP Register Confirm: SUCCESS - " + message);
+                        client.showMessage(message);
+                        return true;
+                    } else if (responseCode == 401) {
+                        // Unauthorized - invalid auth token
+                        logger.warn("HTTP Register Confirm: INVALID TOKEN - " + message);
+                        setLastError(message);
+                        client.showError("Invalid auth token: " + message);
+                        return false;
+                    } else if (responseCode == 400) {
+                        // Bad Request - no pending registration found
+                        logger.warn("HTTP Register Confirm: BAD REQUEST - " + message);
+                        setLastError(message);
+                        client.showError("Validation failed: " + message);
+                        return false;
+                    } else {
+                        // Other error
+                        logger.warn("HTTP Register Confirm: FAILED (code " + responseCode + ") - " + message);
+                        setLastError(message);
+                        client.showError("Registration validation failed: " + message);
+                        return false;
+                    }
+                } catch (Exception e) {
+                    logger.error("HTTP Register Confirm: failed to parse response", e);
+                    setLastError("Invalid server response");
+                    client.showError("Registration validation failed: Invalid server response");
+                    return false;
+                }
+            } else {
+                logger.error("HTTP Register Confirm: empty response (code " + responseCode + ")");
+                setLastError("Empty server response");
+                client.showError("Registration validation failed: Empty server response");
+                return false;
+            }
+
+        } catch (Exception e) {
+            logger.error("HTTP Register Confirm: error", e);
+            setLastError("Registration validation error: " + e.getMessage());
+            client.showError("Registration validation error: " + e.getMessage());
             return false;
         }
     }

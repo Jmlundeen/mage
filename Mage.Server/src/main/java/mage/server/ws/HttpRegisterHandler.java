@@ -104,6 +104,7 @@ public class HttpRegisterHandler {
             }
 
             String username = parts[0];
+            String password = parts[1]; // Extract password from Authorization header
 
             // Get client IP address for spam protection
             String clientIp = ctx.ip();
@@ -118,7 +119,7 @@ public class HttpRegisterHandler {
             } catch (Exception e) {
                 logger.warn("HTTP Register: invalid request body", e);
                 ctx.status(HttpStatus.BAD_REQUEST)
-                   .json(new RegisterResponse(false, "Invalid request body - expected JSON with 'email', 'password', and optionally 'authToken'"));
+                   .json(new RegisterResponse(false, "Invalid request body - expected JSON with 'email' and optionally 'authToken'"));
                 return;
             }
 
@@ -129,7 +130,7 @@ public class HttpRegisterHandler {
             }
 
             // Step 1: Initial registration request - send auth token
-            handleInitialRegistration(ctx, username, request.email, request.password, clientIp);
+            handleInitialRegistration(ctx, username, request.email, password, clientIp);
 
         } catch (Exception e) {
             logger.error("HTTP Register: unexpected error", e);
@@ -407,10 +408,10 @@ public class HttpRegisterHandler {
 
     /**
      * Request body for registration endpoint.
+     * Password is sent via Authorization header (Basic Auth), not in the body.
      */
     public static class RegisterRequest {
         public String email;
-        public String password;
         public String authToken; // Optional - for step 2 confirmation
     }
 

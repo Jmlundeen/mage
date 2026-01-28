@@ -367,12 +367,16 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public boolean leaveChat(String sessionId, UUID chatId) {
+        if (chatId == null) {
+            logger.warn("leaveChat called with null chatId");
+            return false;
+        }
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
                 .setLeaveChatRequest(WsProto.LeaveChatRequest.newBuilder()
-                        .setChatId(chatId == null ? "" : chatId.toString())
+                        .setChatId(chatId.toString())
                         .build())
                 .build();
         try {

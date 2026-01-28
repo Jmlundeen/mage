@@ -19,6 +19,8 @@ public interface Connect {
 
     boolean sendAuthRegister(Connection connection);
 
+    boolean sendAuthValidateRegistration(Connection connection);
+
     boolean sendAuthSendTokenToEmail(Connection connection);
 
     boolean sendAuthResetPassword(Connection connection);

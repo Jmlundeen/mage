@@ -231,6 +231,11 @@ public class SessionImpl implements Session {
     }
 
     @Override
+    public boolean sendAuthValidateRegistration(Connection connection) {
+        return false;
+    }
+
+    @Override
     public synchronized boolean sendAuthSendTokenToEmail(final Connection connection) {
         return doRemoteConnection(connection) && doRemoteWorkAndHandleErrors(true, true, new RemotingTask() {
             @Override

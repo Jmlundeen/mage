@@ -409,4 +409,8 @@ public final class SessionHandler {
     public static boolean register(Connection connection) {
         return session.sendAuthRegister(connection);
     }
+
+    public static boolean validateRegistration(Connection connection) {
+        return session.sendAuthValidateRegistration(connection);
+    }
 }
