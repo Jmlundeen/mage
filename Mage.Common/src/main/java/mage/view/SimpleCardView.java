@@ -2,6 +2,7 @@ package mage.view;
 
 import com.google.gson.annotations.Expose;
 import mage.players.PlayableObjectStats;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -100,5 +101,28 @@ public class SimpleCardView implements Serializable, SelectableObjectView {
     @Override
     public void setSelected(boolean isSelected) {
         this.isSelected = isSelected;
+    }
+
+    public ViewProto.SimpleCardView toProto() {
+        return ViewProto.SimpleCardView.newBuilder()
+                .setId(id == null ? "" : id.toString())
+                .setExpansionSetCode(expansionSetCode != null ? expansionSetCode : "")
+                .setCardNumber(cardNumber != null ? cardNumber : "")
+                .setUsesVariousArt(usesVariousArt)
+                .setGameObject(gameObject)
+                .setIsChoosable(isChoosable)
+                .setIsSelected(isSelected)
+                .build();
+    }
+
+    public static SimpleCardView fromProto(ViewProto.SimpleCardView proto) {
+        UUID id = proto.getId().isEmpty() ? null : UUID.fromString(proto.getId());
+        String expansionSetCode = proto.getExpansionSetCode().isEmpty() ? null : proto.getExpansionSetCode();
+        String cardNumber = proto.getCardNumber().isEmpty() ? null : proto.getCardNumber();
+
+        SimpleCardView view = new SimpleCardView(id, expansionSetCode, cardNumber, proto.getUsesVariousArt(), proto.getGameObject());
+        view.isChoosable = proto.getIsChoosable();
+        view.isSelected = proto.getIsSelected();
+        return view;
     }
 }

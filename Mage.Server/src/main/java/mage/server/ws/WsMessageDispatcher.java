@@ -14,6 +14,7 @@ import mage.server.MainManagerFactory;
 import mage.server.SessionManagerImpl;
 import mage.server.User;
 import mage.utils.MageVersion;
+import mage.view.DraftPickView;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
 import mage.ws.v1.model.ModelProto;
@@ -21,6 +22,8 @@ import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -104,6 +107,8 @@ public class WsMessageDispatcher {
                 case SUBMIT_DECK_REQUEST -> submitDeck(requestId, sessionId, msg.getSubmitDeckRequest());
                 case UPDATE_DECK_REQUEST -> updateDeck(requestId, sessionId, msg.getUpdateDeckRequest());
                 case SET_BOOSTER_LOADED_REQUEST -> setBoosterLoaded(requestId, sessionId, msg.getSetBoosterLoadedRequest());
+                case SEND_CARD_PICK_REQUEST -> sendCardPick(requestId, sessionId, msg.getSendCardPickRequest());
+                case SEND_CARD_MARK_REQUEST -> sendCardMark(requestId, sessionId, msg.getSendCardMarkRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -692,6 +697,62 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not set booster loaded: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage sendCardPick(String requestId, String sessionId, WsProto.SendCardPickRequest sendCardPickRequest) {
+        requireSession(sessionId);
+        try {
+            UUID draftId = UUID.fromString(sendCardPickRequest.getDraftId());
+            UUID cardId = UUID.fromString(sendCardPickRequest.getCardId());
+
+            // Convert hiddenCards from list of strings to Set<UUID>
+            Set<UUID> hiddenCards = new HashSet<>();
+            for (String hiddenCardStr : sendCardPickRequest.getHiddenCardsList()) {
+                if (!hiddenCardStr.isEmpty()) {
+                    hiddenCards.add(UUID.fromString(hiddenCardStr));
+                }
+            }
+
+            DraftPickView draftPickView = mageServer.sendDraftCardPick(draftId, sessionId, cardId, hiddenCards);
+
+            if (draftPickView == null) {
+                return WsProto.ServerMessage.newBuilder()
+                        .setProtocolVersion(ProtocolVersion.getVersion())
+                        .setRequestId(requestId)
+                        .setSessionId(sessionId)
+                        .setDraftPickViewResponse(WsProto.DraftPickViewResponse.newBuilder()
+                                .build())
+                        .build();
+            }
+
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setDraftPickViewResponse(WsProto.DraftPickViewResponse.newBuilder()
+                            .setDraftPickView(draftPickView.toProto())
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send card pick: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage sendCardMark(String requestId, String sessionId, WsProto.SendCardMarkRequest sendCardMarkRequest) {
+        requireSession(sessionId);
+        try {
+            UUID draftId = UUID.fromString(sendCardMarkRequest.getDraftId());
+            UUID cardId = UUID.fromString(sendCardMarkRequest.getCardId());
+            mageServer.sendDraftCardMark(draftId, sessionId, cardId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send card mark: " + e.getMessage());
         }
     }
 

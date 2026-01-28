@@ -52,6 +52,8 @@ message ClientMessage {
     SubmitDeckRequest submit_deck_request = 38;
     UpdateDeckRequest update_deck_request = 39;
     SetBoosterLoadedRequest set_booster_loaded_request = 40;
+    SendCardPickRequest send_card_pick_request = 41;
+    SendCardMarkRequest send_card_mark_request = 42;
   }
 }
 
@@ -76,6 +78,7 @@ message ServerMessage {
     FinishedMatchesResponse finished_matches_response = 31;
     RoomUsersResponse room_users_response = 32;
     LobbyInfoResponse lobbyGetInfo = 33;
+    DraftPickViewResponse draft_pick_view_response = 34;
   }
 }
 
@@ -241,6 +244,21 @@ message UpdateDeckRequest {
 
 message SetBoosterLoadedRequest {
   string draftId = 1;
+}
+
+message SendCardPickRequest {
+  string draftId = 1;
+  string cardId = 2;
+  repeated string hiddenCards = 3;
+}
+
+message SendCardMarkRequest {
+  string draftId = 1;
+  string cardId = 2;
+}
+
+message DraftPickViewResponse {
+  view.DraftPickView draftPickView = 1;
 }
 
 message TableChatIdRequest {

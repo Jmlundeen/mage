@@ -2,8 +2,10 @@
 
 package mage.view;
 
-import java.io.Serializable;
 import mage.game.draft.DraftPlayer;
+import mage.ws.v1.view.ViewProto;
+
+import java.io.Serializable;
 
 /**
  *
@@ -38,5 +40,27 @@ public class DraftPickView implements Serializable {
 
     public int getTimeout() {
         return timeout;
+    }
+
+    public ViewProto.DraftPickView toProto() {
+        return ViewProto.DraftPickView.newBuilder()
+                .setBooster(booster != null ? booster.toProto() : ViewProto.SimpleCardsView.getDefaultInstance())
+                .setPicks(picks != null ? picks.toProto() : ViewProto.SimpleCardsView.getDefaultInstance())
+                .setPicking(picking)
+                .setTimeout(timeout)
+                .build();
+    }
+
+    public static DraftPickView fromProto(ViewProto.DraftPickView proto) {
+        DraftPickView view = new DraftPickView();
+        view.booster = proto.hasBooster() ? SimpleCardsView.fromProto(proto.getBooster()) : new SimpleCardsView();
+        view.picks = proto.hasPicks() ? SimpleCardsView.fromProto(proto.getPicks()) : new SimpleCardsView();
+        view.picking = proto.getPicking();
+        view.timeout = proto.getTimeout();
+        return view;
+    }
+
+    // Add default constructor for fromProto
+    private DraftPickView() {
     }
 }

@@ -138,3 +138,29 @@ enum SkillLevel {
   CASUAL = 2;
   SERIOUS = 3;
 }
+
+// Mirrors mage.view.SimpleCardsView
+message SimpleCardsView {
+  repeated SimpleCardView cards = 1;
+}
+
+// Mirrors mage.view.SimpleCardView
+message SimpleCardView {
+  string id = 1;
+  string expansionSetCode = 2;
+  string cardNumber = 3;
+  bool usesVariousArt = 4;
+  bool gameObject = 5;
+  bool isChoosable = 6;
+  bool isSelected = 7;
+  // PlayableObjectStats is filled on client side from GameView, not serialized
+}
+
+// Mirrors mage.view.DraftPickView
+message DraftPickView {
+  SimpleCardsView booster = 1;
+  SimpleCardsView picks = 2;
+  bool picking = 3;
+  int32 timeout = 4;
+}
+

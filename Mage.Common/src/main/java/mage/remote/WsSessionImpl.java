@@ -686,13 +686,15 @@ public class WsSessionImpl implements Session {
 
     @Override
     public DraftPickView sendCardPick(UUID draftId, UUID cardId, Set<UUID> hiddenCards) {
-        warnUnsupported("sendCardPick");
-        return null;
+        return executeTransportMethodSafe(() -> transport.sendCardPick(sessionId, draftId, cardId, hiddenCards), null);
     }
 
     @Override
     public DraftPickView sendCardMark(UUID draftId, UUID cardId) {
-        warnUnsupported("sendCardMark");
+        executeTransportMethodSafe(() -> {
+            transport.sendCardMark(sessionId, draftId, cardId);
+            return null;
+        }, null);
         return null;
     }
 

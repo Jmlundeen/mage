@@ -12,6 +12,7 @@ import mage.players.net.UserData;
 import mage.remote.Connection;
 import mage.remote.WsSessionImpl;
 import mage.utils.MageVersion;
+import mage.view.DraftPickView;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
 import mage.ws.v1.view.ViewProto;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -958,6 +960,59 @@ public class WsClientTransport implements ClientTransport {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
             return res.hasAck();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public DraftPickView sendCardPick(String sessionId, UUID draftId, UUID cardId, Set<UUID> hiddenCards) {
+        WsProto.ClientMessage.Builder reqBuilder = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId);
+
+        WsProto.SendCardPickRequest.Builder pickBuilder = WsProto.SendCardPickRequest.newBuilder()
+                .setDraftId(draftId == null ? "" : draftId.toString())
+                .setCardId(cardId == null ? "" : cardId.toString());
+
+        if (hiddenCards != null) {
+            for (UUID hiddenCard : hiddenCards) {
+                pickBuilder.addHiddenCards(hiddenCard.toString());
+            }
+        }
+
+        reqBuilder.setSendCardPickRequest(pickBuilder.build());
+
+        try {
+            WsProto.ServerMessage res = roundTrip(reqBuilder.build());
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (res.hasDraftPickViewResponse()) {
+                return DraftPickView.fromProto(res.getDraftPickViewResponse().getDraftPickView());
+            }
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendCardMark(String sessionId, UUID draftId, UUID cardId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSendCardMarkRequest(WsProto.SendCardMarkRequest.newBuilder()
+                        .setDraftId(draftId == null ? "" : draftId.toString())
+                        .setCardId(cardId == null ? "" : cardId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
