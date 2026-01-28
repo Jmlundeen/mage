@@ -493,16 +493,7 @@ public class WsSessionImpl implements Session {
 
     @Override
     public UUID getMainRoomId() {
-        try {
-            if (!isConnected() || transport == null) {
-                throw new MageException("Not connected");
-            }
-            return transport.getMainRoomId(sessionId);
-        } catch (Exception e) {
-            logger.debug("WS getMainRoomId failed", e);
-            client.showError("Failed to get main room ID: " + e.getMessage());
-            return null;
-        }
+        return executeTransportMethodSafe(() -> transport.getMainRoomId(sessionId), null);
     }
 
     @Override
@@ -514,58 +505,32 @@ public class WsSessionImpl implements Session {
 
     @Override
     public Optional<UUID> getRoomChatId(UUID roomId) {
-        try {
-            if (!isConnected()) {
-                return Optional.empty();
-            }
-            return Optional.of(transport.getRoomChatId(sessionId, roomId));
-        } catch (Exception e) {
-            handleThrowable(e);
-            return Optional.empty();
-        }
+        return executeTransportMethodSafe(() -> Optional.of(transport.getRoomChatId(sessionId, roomId)), Optional.empty());
     }
 
     @Override
     public Optional<UUID> getTableChatId(UUID tableId) {
-        return transport.getTableChatId(sessionId, tableId);
+        return executeTransportMethodSafe(() -> transport.getTableChatId(sessionId, tableId), Optional.empty());
     }
 
     @Override
     public Optional<UUID> getGameChatId(UUID gameId) {
-        warnUnsupported("getGameChatId");
-        return Optional.empty();
+        return executeTransportMethodSafe(() -> transport.getGameChatId(sessionId, gameId), Optional.empty());
     }
 
     @Override
     public Optional<UUID> getTournamentChatId(UUID tournamentId) {
-        warnUnsupported("getTournamentChatId");
-        return Optional.empty();
+        return executeTransportMethodSafe(() -> transport.getTournamentChatId(sessionId, tournamentId), Optional.empty());
     }
 
     @Override
     public boolean joinChat(UUID chatId) {
-        try {
-            if (!isConnected()) {
-                return false;
-            }
-            return transport.joinChat(sessionId, chatId);
-        } catch (Exception e) {
-            handleThrowable(e);
-        }
-        return false;
+        return executeTransportMethodSafe(() -> transport.joinChat(sessionId, chatId), false);
     }
 
     @Override
     public boolean leaveChat(UUID chatId) {
-        try {
-            if (!isConnected()) {
-                return false;
-            }
-            return transport.leaveChat(sessionId, chatId);
-        } catch (Exception e) {
-            handleThrowable(e);
-        }
-        return false;
+        return executeTransportMethodSafe(() -> transport.leaveChat(sessionId, chatId), false);
     }
 
     @Override

@@ -37,6 +37,8 @@ message ClientMessage {
     RemoveTableRequest remove_table_request = 23;
     TableChatIdRequest table_chat_id_request = 24;
     IsTableOwnerRequest is_table_owner_request = 25;
+    GameChatIdRequest game_chat_id_request = 26;
+    TournamentChatIdRequest tournament_chat_id_request = 27;
     TablesRequest table_request = 30;
     FinishedMatchesRequest finished_matches_request = 31;
     RoomUsersRequest room_users_request = 32;
@@ -220,6 +222,14 @@ message RemoveTableRequest {
 
 message TableChatIdRequest {
   string tableId = 1;
+}
+
+message GameChatIdRequest {
+  string gameId = 1;
+}
+
+message TournamentChatIdRequest {
+  string tournamentId = 1;
 }
 
 message IsTableOwnerRequest {

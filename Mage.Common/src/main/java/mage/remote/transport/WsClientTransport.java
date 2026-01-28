@@ -598,6 +598,60 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public Optional<UUID> getGameChatId(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setGameChatIdRequest(WsProto.GameChatIdRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasUuidResponse()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+
+            String chatIdStr = res.getUuidResponse().getUuid();
+            return chatIdStr.isEmpty() ? Optional.empty() : Optional.of(UUID.fromString(chatIdStr));
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Optional<UUID> getTournamentChatId(String sessionId, UUID tournamentId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setTournamentChatIdRequest(WsProto.TournamentChatIdRequest.newBuilder()
+                        .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            if (!res.hasUuidResponse()) {
+                throw new IllegalStateException("Unexpected response type");
+            }
+
+            String chatIdStr = res.getUuidResponse().getUuid();
+            return chatIdStr.isEmpty() ? Optional.empty() : Optional.of(UUID.fromString(chatIdStr));
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public boolean isTableOwner(String sessionId, UUID roomId, UUID tableId) {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()

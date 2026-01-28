@@ -91,6 +91,8 @@ public class WsMessageDispatcher {
                 case JOIN_TABLE_REQUEST -> joinTable(requestId, sessionId, msg.getJoinTableRequest());
                 case REMOVE_TABLE_REQUEST -> removeTable(requestId, sessionId, msg.getRemoveTableRequest());
                 case TABLE_CHAT_ID_REQUEST -> getTableChatId(requestId, sessionId, msg.getTableChatIdRequest());
+                case GAME_CHAT_ID_REQUEST -> getGameChatId(requestId, sessionId, msg.getGameChatIdRequest());
+                case TOURNAMENT_CHAT_ID_REQUEST -> getTournamentChatId(requestId, sessionId, msg.getTournamentChatIdRequest());
                 case IS_TABLE_OWNER_REQUEST -> getIsTableOwner(requestId, sessionId, msg.getIsTableOwnerRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
@@ -442,6 +444,40 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get table chat ID: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage getGameChatId(String requestId, String sessionId, WsProto.GameChatIdRequest gameChatIdRequest) {
+        requireSession(sessionId);
+        try {
+            UUID chatId = mageServer.chatFindByGame(UUID.fromString(gameChatIdRequest.getGameId()));
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                            .setUuid(chatId == null ? "" : chatId.toString())
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get game chat ID: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage getTournamentChatId(String requestId, String sessionId, WsProto.TournamentChatIdRequest tournamentChatIdRequest) {
+        requireSession(sessionId);
+        try {
+            UUID chatId = mageServer.chatFindByTournament(UUID.fromString(tournamentChatIdRequest.getTournamentId()));
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                            .setUuid(chatId == null ? "" : chatId.toString())
+                            .build())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get tournament chat ID: " + e.getMessage());
         }
     }
 
