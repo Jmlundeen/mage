@@ -1096,6 +1096,46 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public void joinDraft(String sessionId, UUID draftId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setJoinDraftRequest(WsProto.JoinDraftRequest.newBuilder()
+                        .setDraftId(draftId == null ? "" : draftId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void joinTournament(String sessionId, UUID tournamentId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setJoinTournamentRequest(WsProto.JoinTournamentRequest.newBuilder()
+                        .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");

@@ -112,6 +112,8 @@ public class WsMessageDispatcher {
                 case SEND_PLAYER_ACTION_REQUEST -> sendPlayerAction(requestId, sessionId, msg.getSendPlayerActionRequest());
                 case JOIN_GAME_REQUEST -> joinGame(requestId, sessionId, msg.getJoinGameRequest());
                 case ADMIN_REMOVE_TABLE_REQUEST -> adminRemoveTable(requestId, sessionId, msg.getAdminRemoveTableRequest());
+                case JOIN_DRAFT_REQUEST -> joinDraft(requestId, sessionId, msg.getJoinDraftRequest());
+                case JOIN_TOURNAMENT_REQUEST -> joinTournament(requestId, sessionId, msg.getJoinTournamentRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -832,6 +834,38 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not remove table: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage joinDraft(String requestId, String sessionId, WsProto.JoinDraftRequest joinDraftRequest) {
+        requireSession(sessionId);
+        try {
+            UUID draftId = UUID.fromString(joinDraftRequest.getDraftId());
+            mageServer.draftJoin(draftId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join draft: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage joinTournament(String requestId, String sessionId, WsProto.JoinTournamentRequest joinTournamentRequest) {
+        requireSession(sessionId);
+        try {
+            UUID tournamentId = UUID.fromString(joinTournamentRequest.getTournamentId());
+            mageServer.tournamentJoin(tournamentId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join tournament: " + e.getMessage());
         }
     }
 

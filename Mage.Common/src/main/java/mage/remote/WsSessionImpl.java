@@ -739,14 +739,18 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean joinDraft(UUID draftId) {
-        warnUnsupported("joinDraft");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.joinDraft(sessionId, draftId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean joinTournament(UUID tournamentId) {
-        warnUnsupported("joinTournament");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.joinTournament(sessionId, tournamentId);
+            return true;
+        }, false);
     }
 
     @Override

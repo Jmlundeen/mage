@@ -57,6 +57,8 @@ message ClientMessage {
     SendPlayerActionRequest send_player_action_request = 43;
     JoinGameRequest join_game_request = 44;
     AdminRemoveTableRequest admin_remove_table_request = 45;
+    JoinDraftRequest join_draft_request = 46;
+    JoinTournamentRequest join_tournament_request = 47;
   }
 }
 
@@ -281,6 +283,14 @@ message JoinGameRequest {
 
 message AdminRemoveTableRequest {
   string tableId = 1;
+}
+
+message JoinDraftRequest {
+  string draftId = 1;
+}
+
+message JoinTournamentRequest {
+  string tournamentId = 1;
 }
 
 message TableChatIdRequest {
