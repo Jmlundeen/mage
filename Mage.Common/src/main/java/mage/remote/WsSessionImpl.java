@@ -778,50 +778,63 @@ public class WsSessionImpl implements Session {
 
     @Override
     public boolean watchGame(UUID gameId) {
-        warnUnsupported("watchGame");
-        return false;
+        return executeTransportMethodSafe(() -> transport.watchGame(sessionId, gameId), false);
     }
 
     @Override
     public boolean replayGame(UUID gameId) {
-        warnUnsupported("replayGame");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.replayGame(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean stopWatching(UUID gameId) {
-        warnUnsupported("stopWatching");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.stopWatching(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean startReplay(UUID gameId) {
-        warnUnsupported("startReplay");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.startReplay(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean stopReplay(UUID gameId) {
-        warnUnsupported("stopReplay");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.stopReplay(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean nextPlay(UUID gameId) {
-        warnUnsupported("nextPlay");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.nextPlay(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean previousPlay(UUID gameId) {
-        warnUnsupported("previousPlay");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.previousPlay(sessionId, gameId);
+            return true;
+        }, false);
     }
 
     @Override
     public boolean skipForward(UUID gameId, int moves) {
-        warnUnsupported("skipForward");
-        return false;
+        return executeTransportMethodSafe(() -> {
+            transport.skipForward(sessionId, gameId, moves);
+            return true;
+        }, false);
     }
 
     @Override

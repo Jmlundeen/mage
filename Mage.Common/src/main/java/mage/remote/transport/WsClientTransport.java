@@ -1225,6 +1225,168 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
+    public boolean watchGame(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setWatchGameRequest(WsProto.WatchGameRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+            return res.hasBoolean() && res.getBoolean();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stopWatching(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setStopWatchingRequest(WsProto.StopWatchingRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void replayGame(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setReplayGameRequest(WsProto.ReplayGameRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void startReplay(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setStartReplayRequest(WsProto.StartReplayRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stopReplay(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setStopReplayRequest(WsProto.StopReplayRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void nextPlay(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setNextPlayRequest(WsProto.NextPlayRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void previousPlay(String sessionId, UUID gameId) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setPreviousPlayRequest(WsProto.PreviousPlayRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void skipForward(String sessionId, UUID gameId, int moves) {
+        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                .setProtocolVersion(ProtocolVersion.getVersion())
+                .setRequestId(newRequestId())
+                .setSessionId(sessionId)
+                .setSkipForwardRequest(WsProto.SkipForwardRequest.newBuilder()
+                        .setGameId(gameId == null ? "" : gameId.toString())
+                        .setMoves(moves)
+                        .build())
+                .build();
+
+        try {
+            WsProto.ServerMessage res = roundTrip(req);
+            if (res.hasError()) {
+                throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");

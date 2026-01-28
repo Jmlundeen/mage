@@ -63,6 +63,14 @@ message ClientMessage {
     SwapSeatsRequest swap_seats_request = 49;
     StartMatchRequest start_match_request = 50;
     StartTournamentRequest start_tournament_request = 51;
+    WatchGameRequest watch_game_request = 52;
+    StopWatchingRequest stop_watching_request = 53;
+    ReplayGameRequest replay_game_request = 54;
+    StartReplayRequest start_replay_request = 55;
+    StopReplayRequest stop_replay_request = 56;
+    NextPlayRequest next_play_request = 57;
+    PreviousPlayRequest previous_play_request = 58;
+    SkipForwardRequest skip_forward_request = 59;
   }
 }
 
@@ -317,6 +325,39 @@ message StartMatchRequest {
 message StartTournamentRequest {
   string roomId = 1;
   string tableId = 2;
+}
+
+message WatchGameRequest {
+  string gameId = 1;
+}
+
+message StopWatchingRequest {
+  string gameId = 1;
+}
+
+message ReplayGameRequest {
+  string gameId = 1;
+}
+
+message StartReplayRequest {
+  string gameId = 1;
+}
+
+message StopReplayRequest {
+  string gameId = 1;
+}
+
+message NextPlayRequest {
+  string gameId = 1;
+}
+
+message PreviousPlayRequest {
+  string gameId = 1;
+}
+
+message SkipForwardRequest {
+  string gameId = 1;
+  int32 moves = 2;
 }
 
 message TableChatIdRequest {

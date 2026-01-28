@@ -118,6 +118,14 @@ public class WsMessageDispatcher {
                 case SWAP_SEATS_REQUEST -> swapSeats(requestId, sessionId, msg.getSwapSeatsRequest());
                 case START_MATCH_REQUEST -> startMatch(requestId, sessionId, msg.getStartMatchRequest());
                 case START_TOURNAMENT_REQUEST -> startTournament(requestId, sessionId, msg.getStartTournamentRequest());
+                case WATCH_GAME_REQUEST -> watchGame(requestId, sessionId, msg.getWatchGameRequest());
+                case STOP_WATCHING_REQUEST -> stopWatching(requestId, sessionId, msg.getStopWatchingRequest());
+                case REPLAY_GAME_REQUEST -> replayGame(requestId, sessionId, msg.getReplayGameRequest());
+                case START_REPLAY_REQUEST -> startReplay(requestId, sessionId, msg.getStartReplayRequest());
+                case STOP_REPLAY_REQUEST -> stopReplay(requestId, sessionId, msg.getStopReplayRequest());
+                case NEXT_PLAY_REQUEST -> nextPlay(requestId, sessionId, msg.getNextPlayRequest());
+                case PREVIOUS_PLAY_REQUEST -> previousPlay(requestId, sessionId, msg.getPreviousPlayRequest());
+                case SKIP_FORWARD_REQUEST -> skipForward(requestId, sessionId, msg.getSkipForwardRequest());
                 default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
@@ -940,6 +948,135 @@ public class WsMessageDispatcher {
                     .build();
         } catch (MageException e) {
             return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not start tournament: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage watchGame(String requestId, String sessionId, WsProto.WatchGameRequest watchGameRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(watchGameRequest.getGameId());
+            boolean result = mageServer.gameWatchStart(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setBoolean(result)
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not watch game: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage stopWatching(String requestId, String sessionId, WsProto.StopWatchingRequest stopWatchingRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(stopWatchingRequest.getGameId());
+            mageServer.gameWatchStop(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not stop watching: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage replayGame(String requestId, String sessionId, WsProto.ReplayGameRequest replayGameRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(replayGameRequest.getGameId());
+            mageServer.replayInit(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not replay game: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage startReplay(String requestId, String sessionId, WsProto.StartReplayRequest startReplayRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(startReplayRequest.getGameId());
+            mageServer.replayStart(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not start replay: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage stopReplay(String requestId, String sessionId, WsProto.StopReplayRequest stopReplayRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(stopReplayRequest.getGameId());
+            mageServer.replayStop(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not stop replay: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage nextPlay(String requestId, String sessionId, WsProto.NextPlayRequest nextPlayRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(nextPlayRequest.getGameId());
+            mageServer.replayNext(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not move to next play: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage previousPlay(String requestId, String sessionId, WsProto.PreviousPlayRequest previousPlayRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(previousPlayRequest.getGameId());
+            mageServer.replayPrevious(gameId, sessionId);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not move to previous play: " + e.getMessage());
+        }
+    }
+
+    private WsProto.ServerMessage skipForward(String requestId, String sessionId, WsProto.SkipForwardRequest skipForwardRequest) {
+        requireSession(sessionId);
+        try {
+            UUID gameId = UUID.fromString(skipForwardRequest.getGameId());
+            int moves = skipForwardRequest.getMoves();
+            mageServer.replaySkipForward(gameId, sessionId, moves);
+            return WsProto.ServerMessage.newBuilder()
+                    .setProtocolVersion(ProtocolVersion.getVersion())
+                    .setRequestId(requestId)
+                    .setSessionId(sessionId)
+                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .build();
+        } catch (MageException e) {
+            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not skip forward: " + e.getMessage());
         }
     }
 
