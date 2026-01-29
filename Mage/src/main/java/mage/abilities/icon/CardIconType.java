@@ -1,5 +1,7 @@
 package mage.abilities.icon;
 
+import mage.ws.v1.model.ModelProto;
+
 /**
  * Icons for GUI card panel
  *
@@ -63,6 +65,17 @@ public enum CardIconType {
 
     public int getSortOrder() {
         return sortOrder;
+    }
+
+    public ModelProto.CardIconType toProto() {
+        return ModelProto.CardIconType.valueOf(this.name());
+    }
+
+    public static CardIconType fromProto(ModelProto.CardIconType proto) {
+        if (proto == null || proto == ModelProto.CardIconType.CARD_ICON_TYPE_UNKNOWN || proto == ModelProto.CardIconType.UNRECOGNIZED) {
+            return null; // or a default value? for CardIcon maybe null is better if unknown
+        }
+        return CardIconType.valueOf(proto.name());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package mage.view;
 
 import mage.counters.Counter;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
 
@@ -12,6 +13,11 @@ public class CounterView implements Serializable {
 
     private String name;
     private int count;
+
+    public CounterView(String name, int count) {
+        this.name = name;
+        this.count = count;
+    }
 
     public CounterView(Counter counter) {
         this.name = counter.getName();
@@ -29,6 +35,17 @@ public class CounterView implements Serializable {
 
     public int getCount() {
         return count;
+    }
+
+    public ViewProto.CounterView toProto() {
+        return ViewProto.CounterView.newBuilder()
+                .setName(name)
+                .setCount(count)
+                .build();
+    }
+
+    public static CounterView fromProto(ViewProto.CounterView proto) {
+        return new CounterView(proto.getName(), proto.getCount());
     }
 
     @Override

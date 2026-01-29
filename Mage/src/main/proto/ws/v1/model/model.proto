@@ -194,3 +194,51 @@ message TournamentTypeView {
   bool richMan = 11;
   bool jumpstart = 12;
 }
+
+message ObjectColor {
+  bool white = 1;
+  bool blue = 2;
+  bool black = 3;
+  bool red = 4;
+  bool green = 5;
+}
+
+enum ArtRect {
+  ART_RECT_UNKNOWN = 0;
+  NORMAL = 1;
+  RETRO = 2;
+  AFTERMATH_TOP = 3;
+  AFTERMATH_BOTTOM = 4;
+  SPLIT_LEFT = 5;
+  SPLIT_RIGHT = 6;
+  SPLIT_FUSED = 7;
+  FULL_LENGTH_LEFT = 8;
+  FULL_LENGTH_RIGHT = 9;
+}
+
+enum CardIconType {
+  CARD_ICON_TYPE_UNKNOWN = 0;
+  PLAYABLE_COUNT = 1;
+  ABILITY_FLYING = 2;
+  ABILITY_DEFENDER = 3;
+  ABILITY_DEATHTOUCH = 4;
+  ABILITY_LIFELINK = 5;
+  ABILITY_DOUBLE_STRIKE = 6;
+  ABILITY_FIRST_STRIKE = 7;
+  ABILITY_CREW = 8;
+  ABILITY_TRAMPLE = 9;
+  ABILITY_HEXPROOF = 10;
+  ABILITY_INFECT = 11;
+  ABILITY_INDESTRUCTIBLE = 12;
+  ABILITY_VIGILANCE = 13;
+  ABILITY_CLASS_LEVEL = 14;
+  ABILITY_REACH = 15;
+  OTHER_FACEDOWN = 16;
+  OTHER_COST_X = 17;
+  OTHER_HAS_RESTRICTIONS = 18;
+  OTHER_HAS_TARGETS = 19;
+  RINGBEARER = 20;
+  COMMANDER = 21;
+  SYSTEM_COMBINED = 22;
+  SYSTEM_DEBUG = 23;
+}

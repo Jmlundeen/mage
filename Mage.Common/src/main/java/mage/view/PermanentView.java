@@ -9,10 +9,12 @@ import mage.game.permanent.PermanentToken;
 import mage.game.permanent.token.Token;
 import mage.players.Player;
 import mage.util.CardUtil;
+import mage.ws.v1.view.ViewProto;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -22,24 +24,28 @@ public class PermanentView extends CardView {
     private static final long serialVersionUID = 1L;
 
     private boolean tapped;
-    private final boolean flipped;
-    private final boolean phasedIn;
-    private final boolean summoningSickness;
-    private final int damage;
+    private boolean flipped;
+    private boolean phasedIn;
+    private boolean summoningSickness;
+    private int damage;
     private List<UUID> attachments;
-    private final CardView original; // original card before transforms and modifications (null for opponents face down cards)
-    private final boolean copy;
-    private final String nameOwner; // only filled if != controller
-    private final String nameController;
-    private final boolean controlled;
-    private final UUID attachedTo;
-    private final boolean morphed;
-    private final boolean disguised;
-    private final boolean manifested;
-    private final boolean cloaked;
-    private final boolean attachedToPermanent;
+    private CardView original; // original card before transforms and modifications (null for opponents face down cards)
+    private boolean copy;
+    private String nameOwner; // only filled if != controller
+    private String nameController;
+    private boolean controlled;
+    private UUID attachedTo;
+    private boolean morphed;
+    private boolean disguised;
+    private boolean manifested;
+    private boolean cloaked;
+    private boolean attachedToPermanent;
     // If this card is attached to a permanent which is controlled by a player other than the one which controls this permanent
-    private final boolean attachedControllerDiffers;
+    private boolean attachedControllerDiffers;
+
+    protected PermanentView() {
+        super();
+    }
 
     public PermanentView(Permanent permanent, Card card, UUID createdForPlayerId, Game game) {
         super(permanent, game, CardUtil.canShowAsControlled(permanent, createdForPlayerId));
@@ -240,5 +246,136 @@ public class PermanentView extends CardView {
 
     public boolean isCloaked() {
         return cloaked;
+    }
+
+    public ViewProto.PermanentView toPermanentViewProto() {
+        ViewProto.PermanentView.Builder builder = ViewProto.PermanentView.newBuilder()
+                .setCardView(this.toCardViewProto())
+                .setTapped(tapped)
+                .setFlipped(flipped)
+                .setPhasedIn(phasedIn)
+                .setSummoningSickness(summoningSickness)
+                .setDamage(damage)
+                .addAllAttachments(attachments != null ? attachments.stream().map(UUID::toString).collect(Collectors.toList()) : new ArrayList<>())
+                .setCopy(copy)
+                .setNameOwner(nameOwner != null ? nameOwner : "")
+                .setNameController(nameController != null ? nameController : "")
+                .setControlled(controlled)
+                .setAttachedTo(attachedTo == null ? "" : attachedTo.toString())
+                .setMorphed(morphed)
+                .setDisguised(disguised)
+                .setManifested(manifested)
+                .setCloaked(cloaked)
+                .setAttachedToPermanent(attachedToPermanent)
+                .setAttachedControllerDiffers(attachedControllerDiffers);
+
+        if (original != null) {
+            builder.setOriginal(original.toCardViewProto());
+        }
+
+        return builder.build();
+    }
+
+    public static PermanentView fromProto(ViewProto.PermanentView proto) {
+        PermanentView view = new PermanentView();
+        // fill CardView fields
+        CardView cardView = CardView.fromProto(proto.getCardView());
+        view.id = cardView.id;
+        view.expansionSetCode = cardView.expansionSetCode;
+        view.cardNumber = cardView.cardNumber;
+        view.usesVariousArt = cardView.usesVariousArt;
+        view.gameObject = cardView.gameObject;
+        view.isChoosable = cardView.isChoosable;
+        view.isSelected = cardView.isSelected;
+        view.playableStats = cardView.playableStats;
+
+        view.parentId = cardView.parentId;
+        view.name = cardView.name;
+        view.displayName = cardView.displayName;
+        view.displayFullName = cardView.displayFullName;
+        view.rules = cardView.rules;
+        view.power = cardView.power;
+        view.toughness = cardView.toughness;
+        view.loyalty = cardView.loyalty;
+        view.defense = cardView.defense;
+        view.startingLoyalty = cardView.startingLoyalty;
+        view.startingDefense = cardView.startingDefense;
+        view.cardTypes = cardView.cardTypes;
+        view.subTypes = cardView.subTypes;
+        view.superTypes = cardView.superTypes;
+        view.color = cardView.color;
+        view.frameColor = cardView.frameColor;
+        view.frameStyle = cardView.frameStyle;
+        view.manaCostLeftStr = cardView.manaCostLeftStr;
+        view.manaCostRightStr = cardView.manaCostRightStr;
+        view.manaValue = cardView.manaValue;
+        view.rarity = cardView.rarity;
+        view.mageObjectType = cardView.mageObjectType;
+        view.isAbility = cardView.isAbility;
+        view.abilityType = cardView.abilityType;
+        view.isToken = cardView.isToken;
+        view.ability = cardView.ability;
+        view.imageFileName = cardView.imageFileName;
+        view.imageNumber = cardView.imageNumber;
+        view.extraDeckCard = cardView.extraDeckCard;
+        view.transformable = cardView.transformable;
+        view.secondCardFace = cardView.secondCardFace;
+        view.transformed = cardView.transformed;
+        view.flipCard = cardView.flipCard;
+        view.faceDown = cardView.faceDown;
+        view.alternateName = cardView.alternateName;
+        view.alternateNumber = cardView.alternateNumber;
+        view.isSplitCard = cardView.isSplitCard;
+        view.leftSplitName = cardView.leftSplitName;
+        view.leftSplitCostsStr = cardView.leftSplitCostsStr;
+        view.leftSplitRules = cardView.leftSplitRules;
+        view.leftSplitTypeLine = cardView.leftSplitTypeLine;
+        view.rightSplitName = cardView.rightSplitName;
+        view.rightSplitCostsStr = cardView.rightSplitCostsStr;
+        view.rightSplitRules = cardView.rightSplitRules;
+        view.rightSplitTypeLine = cardView.rightSplitTypeLine;
+        view.isDoubleFacedCard = cardView.isDoubleFacedCard;
+        view.artRect = cardView.artRect;
+        view.targets = cardView.targets;
+        view.pairedCard = cardView.pairedCard;
+        view.bandedCards = cardView.bandedCards;
+        view.paid = cardView.paid;
+        view.counters = cardView.counters;
+        view.controlledByOwner = cardView.controlledByOwner;
+        view.zone = cardView.zone;
+        view.rotate = cardView.rotate;
+        view.hideInfo = cardView.hideInfo;
+        view.canAttack = cardView.canAttack;
+        view.canBlock = cardView.canBlock;
+        view.inViewerOnly = cardView.inViewerOnly;
+        view.cardIcons = cardView.cardIcons;
+        view.originalPower = cardView.originalPower;
+        view.originalToughness = cardView.originalToughness;
+        view.originalColorIdentity = cardView.originalColorIdentity;
+        view.originalIsCopy = cardView.originalIsCopy;
+
+        // fill PermanentView fields
+        view.tapped = proto.getTapped();
+        view.flipped = proto.getFlipped();
+        view.phasedIn = proto.getPhasedIn();
+        view.summoningSickness = proto.getSummoningSickness();
+        view.damage = proto.getDamage();
+        view.attachments = proto.getAttachmentsList().stream().map(UUID::fromString).collect(Collectors.toList());
+        if (proto.hasOriginal()) {
+            view.original = CardView.fromProto(proto.getOriginal());
+        }
+        view.copy = proto.getCopy();
+        view.nameOwner = proto.getNameOwner();
+        view.nameController = proto.getNameController();
+        view.controlled = proto.getControlled();
+        view.attachedTo = proto.getAttachedTo().isEmpty() ? null : UUID.fromString(proto.getAttachedTo());
+        view.morphed = proto.getMorphed();
+        view.disguised = proto.getDisguised();
+        view.manifested = proto.getManifested();
+        view.cloaked = proto.getCloaked();
+        view.attachedToPermanent = proto.getAttachedToPermanent();
+        view.attachedControllerDiffers = proto.getAttachedControllerDiffers();
+
+        return view;
     }
 }

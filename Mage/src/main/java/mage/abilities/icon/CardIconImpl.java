@@ -1,5 +1,8 @@
 package mage.abilities.icon;
 
+import mage.ws.v1.model.ModelProto;
+import mage.ws.v1.view.ViewProto;
+
 import java.io.Serializable;
 
 /**
@@ -72,6 +75,27 @@ public class CardIconImpl implements CardIcon, Serializable {
     @Override
     public CardIcon copy() {
         return new CardIconImpl(this);
+    }
+
+    @Override
+    public ViewProto.CardIconView toProto() {
+        return ViewProto.CardIconView.newBuilder()
+                .setIconType(ModelProto.CardIconType.valueOf(cardIconType.name()))
+                .setText(text)
+                .setHint(hint)
+                .build();
+    }
+
+    public static CardIcon fromProto(ViewProto.CardIconView proto) {
+        CardIconType type = CardIconType.fromProto(proto.getIconType());
+        if (type == null) {
+            return null;
+        }
+        return new CardIconImpl(
+                type,
+                proto.getHint(),
+                proto.getText()
+        );
     }
 
     public static CardIconImpl variableCost(int costX) {

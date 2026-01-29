@@ -47,4 +47,13 @@ public enum Rarity {
     public int getSorting() {
         return sorting;
     }
+
+    public static Rarity fromString(String value) {
+        for (Rarity rarity : values()) {
+            if (rarity.text.equalsIgnoreCase(value) || rarity.code.equalsIgnoreCase(value)) {
+                return rarity;
+            }
+        }
+        return null;
+    }
 }

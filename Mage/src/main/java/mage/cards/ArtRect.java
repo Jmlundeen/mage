@@ -1,5 +1,7 @@
 package mage.cards;
 
+import mage.ws.v1.model.ModelProto;
+
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -20,5 +22,16 @@ public enum ArtRect {
 
     ArtRect(Rectangle2D.Double rect) {
         this.rect = rect;
+    }
+
+    public ModelProto.ArtRect toProto() {
+        return ModelProto.ArtRect.valueOf(this.name());
+    }
+
+    public static ArtRect fromProto(ModelProto.ArtRect proto) {
+        if (proto == null || proto == ModelProto.ArtRect.ART_RECT_UNKNOWN || proto == ModelProto.ArtRect.UNRECOGNIZED) {
+            return NORMAL;
+        }
+        return ArtRect.valueOf(proto.name());
     }
 }

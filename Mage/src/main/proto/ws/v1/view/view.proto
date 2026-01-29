@@ -144,6 +144,136 @@ message SimpleCardView {
   // PlayableObjectStats is filled on client side from GameView, not serialized
 }
 
+// Mirrors mage.view.CardView
+message CardView {
+  // embed simple card as a base
+  SimpleCardView simple = 1;
+
+  string parent_id = 2;
+  string name = 3; // TODO: remove duplicated field name/displayName???
+  string display_name = 4;
+  string display_full_name = 5;
+  repeated string rules = 6;
+
+  string power = 7;
+  string toughness = 8;
+  string loyalty = 9;
+  string starting_loyalty = 10;
+  string defense = 11;
+  string starting_defense = 12;
+
+  // card types and sub/supertypes as strings to avoid coupling to game enums
+  repeated string card_types = 13;
+  repeated string sub_types = 14;
+  repeated string super_types = 15;
+
+  // colors/frame/style/rarity as strings for simplicity
+  model.ObjectColor color = 16;
+  model.ObjectColor frame_color = 17;
+  string frame_style = 18;
+
+  repeated string mana_cost_left = 19;
+  repeated string mana_cost_right = 20;
+  int32 mana_value = 21;
+  string rarity = 22;
+
+  string mage_object_type = 23;
+  bool is_ability = 24;
+  string ability_type = 25;
+  bool is_token = 26;
+
+  // ability and second face use recursive CardView references
+  CardView ability = 27;
+
+  string image_file_name = 28;
+  int32 image_number = 29;
+
+  bool extra_deck_card = 30;
+  bool transformable = 31;
+  CardView second_card_face = 32;
+  bool transformed = 33;
+
+  bool flip_card = 34;
+  bool face_down = 35;
+
+  string alternate_name = 36;
+  string alternate_number = 37;
+
+  bool is_split_card = 38;
+  string left_split_name = 39;
+  string left_split_costs_str = 40;
+  repeated string left_split_rules = 41;
+  string left_split_type_line = 42;
+  string right_split_name = 43;
+  string right_split_costs_str = 44;
+  repeated string right_split_rules = 45;
+  string right_split_type_line = 46;
+
+  bool is_double_faced_card = 47;
+  model.ArtRect art_rect = 48;
+
+  // targets/linked cards as string UUIDs
+  repeated string targets = 49;
+  string paired_card = 50;
+  repeated string banded_cards = 51;
+
+  bool paid = 52;
+  // Counters on a card (name + count)
+  repeated CounterView counters = 53;
+
+  bool controlled_by_owner = 54;
+  string zone = 55;
+
+  bool rotate = 56;
+  bool hide_info = 57;
+  bool can_attack = 58;
+  bool can_block = 59;
+  bool in_viewer_only = 60;
+
+  repeated CardIconView card_icons = 61;
+
+  string original_power = 62;
+  string original_toughness = 63;
+  string original_color_identity = 64;
+  bool original_is_copy = 65;
+}
+
+// Mirrors mage.view.PermanentView
+message PermanentView {
+  CardView card_view = 1;
+
+  bool tapped = 2;
+  bool flipped = 3;
+  bool phased_in = 4;
+  bool summoning_sickness = 5;
+  int32 damage = 6;
+  repeated string attachments = 7;
+  CardView original = 8;
+  bool copy = 9;
+  string name_owner = 10;
+  string name_controller = 11;
+  bool controlled = 12;
+  string attached_to = 13;
+  bool morphed = 14;
+  bool disguised = 15;
+  bool manifested = 16;
+  bool cloaked = 17;
+  bool attached_to_permanent = 18;
+  bool attached_controller_differs = 19;
+}
+
+// CounterView mirrors mage.view.CounterView
+message CounterView {
+  string name = 1;
+  int32 count = 2;
+}
+
+message CardIconView {
+  model.CardIconType icon_type = 1;
+  string text = 2;
+  string hint = 3;
+}
+
 // Mirrors mage.view.DraftPickView
 message DraftPickView {
   SimpleCardsView booster = 1;
@@ -194,4 +324,3 @@ message TournamentGameView {
   string players = 6;
   string tableId = 7;
 }
-

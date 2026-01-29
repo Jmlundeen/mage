@@ -86,4 +86,12 @@ public enum MageObjectType {
         return useTokensRepository;
     }
 
+    public static MageObjectType getFromString(String text) {
+        for (MageObjectType type : MageObjectType.values()) {
+            if (type.text.equalsIgnoreCase(text)) {
+                return type;
+            }
+        }
+        return null;
+    }
 }

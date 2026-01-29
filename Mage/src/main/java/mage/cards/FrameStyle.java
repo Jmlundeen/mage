@@ -91,4 +91,17 @@ public enum FrameStyle {
         this.borderType = borderType;
         this.isFullArt = isFullArt;
     }
+
+    public String toString() {
+        return this.name();
+    }
+
+    public static FrameStyle fromString(String text) {
+        for (FrameStyle style : FrameStyle.values()) {
+            if (style.name().equalsIgnoreCase(text)) {
+                return style;
+            }
+        }
+        return M15_NORMAL;
+    }
 }

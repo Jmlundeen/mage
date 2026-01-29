@@ -41,6 +41,8 @@ import mage.target.Targets;
 import mage.util.CardUtil;
 import mage.util.ManaUtil;
 import mage.util.SubTypes;
+import mage.ws.v1.model.ModelProto;
+import mage.ws.v1.view.ViewProto;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1582,5 +1584,194 @@ public class CardView extends SimpleCardView {
 
     public String getIdName() {
         return getName() + " [" + getId().toString().substring(0, 3) + ']';
+    }
+
+    public ViewProto.CardView toCardViewProto() {
+        ViewProto.CardView.Builder builder = ViewProto.CardView.newBuilder()
+                .setSimple(super.toProto())
+                .setParentId(parentId == null ? "" : parentId.toString())
+                .setName(name != null ? name : "")
+                .setDisplayName(displayName != null ? displayName : "")
+                .setDisplayFullName(displayFullName != null ? displayFullName : "")
+                .addAllRules(rules != null ? rules : Collections.emptyList())
+                .setPower(power != null ? power : "")
+                .setToughness(toughness != null ? toughness : "")
+                .setLoyalty(loyalty != null ? loyalty : "")
+                .setStartingLoyalty(startingLoyalty != null ? startingLoyalty : "")
+                .setDefense(defense != null ? defense : "")
+                .setStartingDefense(startingDefense != null ? startingDefense : "")
+                .addAllCardTypes(cardTypes != null ? cardTypes.stream().map(CardType::name).collect(Collectors.toList()) : Collections.emptyList())
+                .addAllSubTypes(subTypes != null ? subTypes.stream().map(SubType::name).collect(Collectors.toList()) : Collections.emptyList())
+                .addAllSuperTypes(superTypes != null ? superTypes.stream().map(SuperType::name).collect(Collectors.toList()) : Collections.emptyList())
+                .setColor(color != null ? color.toProto() : ModelProto.ObjectColor.getDefaultInstance())
+                .setFrameColor(frameColor != null ? frameColor.toProto() : ModelProto.ObjectColor.getDefaultInstance())
+                .setFrameStyle(frameStyle != null ? frameStyle.name() : "")
+                .addAllManaCostLeft(manaCostLeftStr != null ? manaCostLeftStr : Collections.emptyList())
+                .addAllManaCostRight(manaCostRightStr != null ? manaCostRightStr : Collections.emptyList())
+                .setManaValue(manaValue)
+                .setRarity(rarity != null ? rarity.name() : "")
+                .setMageObjectType(mageObjectType != null ? mageObjectType.name() : "")
+                .setIsAbility(isAbility)
+                .setAbilityType(abilityType != null ? abilityType.name() : "")
+                .setIsToken(isToken)
+                .setImageFileName(imageFileName != null ? imageFileName : "")
+                .setImageNumber(imageNumber)
+                .setExtraDeckCard(extraDeckCard)
+                .setTransformable(transformable)
+                .setTransformed(transformed)
+                .setFlipCard(flipCard)
+                .setFaceDown(faceDown)
+                .setAlternateName(alternateName != null ? alternateName : "")
+                .setAlternateNumber(alternateNumber != null ? alternateNumber : "")
+                .setIsSplitCard(isSplitCard)
+                .setLeftSplitName(leftSplitName != null ? leftSplitName : "")
+                .setLeftSplitCostsStr(leftSplitCostsStr != null ? leftSplitCostsStr : "")
+                .addAllLeftSplitRules(leftSplitRules != null ? leftSplitRules : Collections.emptyList())
+                .setLeftSplitTypeLine(leftSplitTypeLine != null ? leftSplitTypeLine : "")
+                .setRightSplitName(rightSplitName != null ? rightSplitName : "")
+                .setRightSplitCostsStr(rightSplitCostsStr != null ? rightSplitCostsStr : "")
+                .addAllRightSplitRules(rightSplitRules != null ? rightSplitRules : Collections.emptyList())
+                .setRightSplitTypeLine(rightSplitTypeLine != null ? rightSplitTypeLine : "")
+                .setIsDoubleFacedCard(isDoubleFacedCard)
+                .setArtRect(artRect != null ? artRect.toProto() : ModelProto.ArtRect.NORMAL)
+                .addAllTargets(targets != null ? targets.stream().map(UUID::toString).collect(Collectors.toList()) : Collections.emptyList())
+                .setPairedCard(pairedCard == null ? "" : pairedCard.toString())
+                .addAllBandedCards(bandedCards != null ? bandedCards.stream().map(UUID::toString).collect(Collectors.toList()) : Collections.emptyList())
+                .setPaid(paid)
+                .setControlledByOwner(controlledByOwner)
+                .setZone(zone != null ? zone.name() : "")
+                .setRotate(rotate)
+                .setHideInfo(hideInfo)
+                .setCanAttack(canAttack)
+                .setCanBlock(canBlock)
+                .setInViewerOnly(inViewerOnly)
+                .setOriginalPower(originalPower != null ? originalPower.toString() : "")
+                .setOriginalToughness(originalToughness != null ? originalToughness.toString() : "")
+                .setOriginalColorIdentity(originalColorIdentity != null ? originalColorIdentity : "")
+                .setOriginalIsCopy(originalIsCopy);
+
+        if (ability != null) {
+            builder.setAbility(ability.toCardViewProto());
+        }
+        if (secondCardFace != null) {
+            builder.setSecondCardFace(secondCardFace.toCardViewProto());
+        }
+        if (counters != null) {
+            for (CounterView counter : counters) {
+                builder.addCounters(counter.toProto());
+            }
+        }
+        if (cardIcons != null) {
+            for (CardIcon icon : cardIcons) {
+                builder.addCardIcons(icon.toProto());
+            }
+        }
+
+        return builder.build();
+    }
+
+    public static CardView fromProto(ViewProto.CardView proto) {
+        CardView view = new CardView();
+        // fill simple part
+        ViewProto.SimpleCardView simple = proto.getSimple();
+        view.id = simple.getId().isEmpty() ? null : UUID.fromString(simple.getId());
+        view.expansionSetCode = simple.getExpansionSetCode().isEmpty() ? null : simple.getExpansionSetCode();
+        view.cardNumber = simple.getCardNumber().isEmpty() ? null : simple.getCardNumber();
+        view.usesVariousArt = simple.getUsesVariousArt();
+        view.gameObject = simple.getGameObject();
+        view.isChoosable = simple.getIsChoosable();
+        view.isSelected = simple.getIsSelected();
+
+        view.parentId = proto.getParentId().isEmpty() ? null : UUID.fromString(proto.getParentId());
+        view.name = proto.getName();
+        view.displayName = proto.getDisplayName();
+        view.displayFullName = proto.getDisplayFullName();
+        view.rules = new ArrayList<>(proto.getRulesList());
+        view.power = proto.getPower();
+        view.toughness = proto.getToughness();
+        view.loyalty = proto.getLoyalty();
+        view.startingLoyalty = proto.getStartingLoyalty();
+        view.defense = proto.getDefense();
+        view.startingDefense = proto.getStartingDefense();
+
+        view.cardTypes = proto.getCardTypesList().stream().map(CardType::valueOf).collect(Collectors.toList());
+        view.subTypes = new SubTypes();
+        for (String st : proto.getSubTypesList()) {
+            view.subTypes.add(SubType.valueOf(st));
+        }
+        view.superTypes = proto.getSuperTypesList().stream().map(SuperType::valueOf).collect(Collectors.toList());
+
+        view.color = ObjectColor.fromProto(proto.getColor());
+        view.frameColor = ObjectColor.fromProto(proto.getFrameColor());
+        view.frameStyle = proto.getFrameStyle().isEmpty() ? null : FrameStyle.valueOf(proto.getFrameStyle());
+
+        view.manaCostLeftStr = new ArrayList<>(proto.getManaCostLeftList());
+        view.manaCostRightStr = new ArrayList<>(proto.getManaCostRightList());
+        view.manaValue = proto.getManaValue();
+        view.rarity = proto.getRarity().isEmpty() ? null : Rarity.valueOf(proto.getRarity());
+
+        view.mageObjectType = proto.getMageObjectType().isEmpty() ? MageObjectType.NULL : MageObjectType.valueOf(proto.getMageObjectType());
+        view.isAbility = proto.getIsAbility();
+        view.abilityType = proto.getAbilityType().isEmpty() ? null : AbilityType.valueOf(proto.getAbilityType());
+        view.isToken = proto.getIsToken();
+
+        if (proto.hasAbility()) {
+            view.ability = CardView.fromProto(proto.getAbility());
+        }
+        view.imageFileName = proto.getImageFileName();
+        view.imageNumber = proto.getImageNumber();
+        view.extraDeckCard = proto.getExtraDeckCard();
+        view.transformable = proto.getTransformable();
+        if (proto.hasSecondCardFace()) {
+            view.secondCardFace = CardView.fromProto(proto.getSecondCardFace());
+        }
+        view.transformed = proto.getTransformed();
+        view.flipCard = proto.getFlipCard();
+        view.faceDown = proto.getFaceDown();
+        view.alternateName = proto.getAlternateName();
+        view.alternateNumber = proto.getAlternateNumber();
+
+        view.isSplitCard = proto.getIsSplitCard();
+        view.leftSplitName = proto.getLeftSplitName();
+        view.leftSplitCostsStr = proto.getLeftSplitCostsStr();
+        view.leftSplitRules = new ArrayList<>(proto.getLeftSplitRulesList());
+        view.leftSplitTypeLine = proto.getLeftSplitTypeLine();
+        view.rightSplitName = proto.getRightSplitName();
+        view.rightSplitCostsStr = proto.getRightSplitCostsStr();
+        view.rightSplitRules = new ArrayList<>(proto.getRightSplitRulesList());
+        view.rightSplitTypeLine = proto.getRightSplitTypeLine();
+
+        view.isDoubleFacedCard = proto.getIsDoubleFacedCard();
+        view.artRect = ArtRect.fromProto(proto.getArtRect());
+
+        view.targets = proto.getTargetsList().stream().map(UUID::fromString).collect(Collectors.toList());
+        view.pairedCard = proto.getPairedCard().isEmpty() ? null : UUID.fromString(proto.getPairedCard());
+        view.bandedCards = proto.getBandedCardsList().stream().map(UUID::fromString).collect(Collectors.toList());
+        view.paid = proto.getPaid();
+
+        view.counters = new ArrayList<>();
+        for (ViewProto.CounterView cv : proto.getCountersList()) {
+            view.counters.add(CounterView.fromProto(cv));
+        }
+
+        view.controlledByOwner = proto.getControlledByOwner();
+        view.zone = proto.getZone().isEmpty() ? null : Zone.valueOf(proto.getZone());
+        view.rotate = proto.getRotate();
+        view.hideInfo = proto.getHideInfo();
+        view.canAttack = proto.getCanAttack();
+        view.canBlock = proto.getCanBlock();
+        view.inViewerOnly = proto.getInViewerOnly();
+
+        view.cardIcons = new ArrayList<>();
+        for (ViewProto.CardIconView civ : proto.getCardIconsList()) {
+            view.cardIcons.add(CardIconImpl.fromProto(civ));
+        }
+
+        view.originalPower = !proto.getOriginalPower().isEmpty() ? new MageInt(Integer.parseInt(proto.getOriginalPower())) : null;
+        view.originalToughness = !proto.getOriginalToughness().isEmpty() ? new MageInt(Integer.parseInt(proto.getOriginalToughness())) : null;
+        view.originalColorIdentity = proto.getOriginalColorIdentity();
+        view.originalIsCopy = proto.getOriginalIsCopy();
+
+        return view;
     }
 }

@@ -1,6 +1,7 @@
 package mage.abilities.icon;
 
 import mage.util.Copyable;
+import mage.ws.v1.view.ViewProto;
 
 /**
  * @author JayDi85
@@ -38,4 +39,6 @@ public interface CardIcon extends Copyable<CardIcon> {
         }
         return res;
     }
+
+    ViewProto.CardIconView toProto();
 }

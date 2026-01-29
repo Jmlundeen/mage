@@ -3,6 +3,7 @@ package mage;
 
 import mage.constants.ColoredManaSymbol;
 import mage.util.Copyable;
+import mage.ws.v1.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.*;
@@ -438,5 +439,25 @@ public class ObjectColor implements Serializable, Copyable<ObjectColor>, Compara
 
     public static List<ObjectColor> getAllColors() {
         return allColors;
+    }
+
+    public ModelProto.ObjectColor toProto() {
+        ModelProto.ObjectColor.Builder builder = ModelProto.ObjectColor.newBuilder();
+        builder.setWhite(this.isWhite());
+        builder.setBlue(this.isBlue());
+        builder.setBlack(this.isBlack());
+        builder.setRed(this.isRed());
+        builder.setGreen(this.isGreen());
+        return builder.build();
+    }
+
+    public static ObjectColor fromProto(ModelProto.ObjectColor proto) {
+        ObjectColor color = new ObjectColor();
+        color.setWhite(proto.getWhite());
+        color.setBlue(proto.getBlue());
+        color.setBlack(proto.getBlack());
+        color.setRed(proto.getRed());
+        color.setGreen(proto.getGreen());
+        return color;
     }
 }
