@@ -1,6 +1,6 @@
 package mage.client.table;
 
-import mage.ws.v1.view.ViewProto;
+import mage.view.MatchView;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.Date;
@@ -15,10 +15,10 @@ public class MatchesTableModel extends AbstractTableModel {
     public static final int COLUMN_END = 7;
     public static final int COLUMN_ACTION = 8; // column the action is located (starting with 0)
 
-    private ViewProto.MatchView[] matches = new ViewProto.MatchView[0];
+    private MatchView[] matches = new MatchView[0];
 
-    public void loadData(List<ViewProto.MatchView> matches) {
-        this.matches = matches.toArray(new ViewProto.MatchView[0]);
+    public void loadData(List<MatchView> matches) {
+        this.matches = matches.toArray(new MatchView[0]);
         this.fireTableDataChanged();
     }
 
@@ -27,7 +27,7 @@ public class MatchesTableModel extends AbstractTableModel {
 
 
     public String getTableAndGameInfo(int row) {
-        return this.matches[row].getTableId() + ";" + (!matches[row].getGamesList().isEmpty() ? this.matches[row].getGamesList().get(0) : "null");
+        return this.matches[row].getTableId().toString() + ";" + (!matches[row].getGames().isEmpty() ? matches[row].getGames().getFirst().toString() : "null");
     }
 
     public String findTableAndGameInfoByRow(int row) {
@@ -40,7 +40,7 @@ public class MatchesTableModel extends AbstractTableModel {
 
     public int findRowByTableAndGameInfo(String tableAndGame) {
         for (int i = 0; i < this.matches.length; i++) {
-            String rowID = this.matches[i].getTableId() + ";" + (!this.matches[i].getGamesList().isEmpty() ? this.matches[i].getGamesList().get(0) : "null");
+            String rowID = this.matches[i].getTableId().toString() + ";" + (!this.matches[i].getGames().isEmpty() ? this.matches[i].getGames().getFirst().toString() : "null");
             if (tableAndGame.equals(rowID)) {
                 return i;
             }
@@ -60,7 +60,7 @@ public class MatchesTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int arg0, int arg1) {
-        ViewProto.MatchView match = this.matches[arg0];
+        MatchView match = this.matches[arg0];
         switch (arg1) {
             case 0:
                 return match.getDeckType();
@@ -69,56 +69,48 @@ public class MatchesTableModel extends AbstractTableModel {
             case 2:
                 return match.getGameType();
             case 3:
-                return match.getRated() ? TablesTableModel.RATED_VALUE_YES : TablesTableModel.RATED_VALUE_NO;
+                return match.isRated() ? TablesTableModel.RATED_VALUE_YES : TablesTableModel.RATED_VALUE_NO;
             case 4:
                 return match.getResult();
             case 5:
-                if (match.getEndTimeMillis() > 0 && match.getStartTimeMillis() > 0) {
-                    return match.getEndTimeMillis() - match.getStartTimeMillis() + new Date().getTime();
+                if (match.getEndTime() != null) {
+                    return match.getEndTime().getTime() - match.getStartTime().getTime() + new Date().getTime();
                 } else {
                     return 0L;
                 }
             case 6:
-                return match.getStartTimeMillis() > 0 ? new Date(match.getStartTimeMillis()) : null;
+                return match.getStartTime();
             case 7:
-                return match.getEndTimeMillis() > 0 ? new Date(match.getEndTimeMillis()) : null;
+                return match.getEndTime();
             case 8:
-                if (match.getIsTournament()) {
+                if (match.isTournament()) {
                     return "Show";
-                } else if (match.getReplayAvailable()) {
+                } else if (match.isReplayAvailable()) {
                     return "Replay";
                 } else {
                     return "None";
                 }
             case 9:
-                return match.getGamesList();
+                return match.getGames();
             default:
                 return "";
         }
     }
 
     public java.util.List<UUID> getListofGames(int row) {
-        java.util.List<UUID> res = new java.util.ArrayList<>();
-        for (String gid : matches[row].getGamesList()) {
-            if (gid != null && !gid.isEmpty()) {
-                res.add(UUID.fromString(gid));
-            }
-        }
-        return res;
+        return matches[row].getGames();
     }
 
     public boolean isTournament(int row) {
-        return matches[row].getIsTournament();
+        return matches[row].isTournament();
     }
 
     public UUID getMatchId(int row) {
-        String id = matches[row].getMatchId();
-        return id.isEmpty() ? null : UUID.fromString(id);
+        return matches[row].getMatchId();
     }
 
     public UUID getTableId(int row) {
-        String id = matches[row].getTableId();
-        return id.isEmpty() ? null : UUID.fromString(id);
+        return matches[row].getTableId();
     }
 
     @Override
@@ -134,16 +126,11 @@ public class MatchesTableModel extends AbstractTableModel {
 
     @Override
     public Class getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case COLUMN_DURATION:
-                return Long.class;
-            case COLUMN_START:
-                return Date.class;
-            case COLUMN_END:
-                return Date.class;
-            default:
-                return String.class;
-        }
+        return switch (columnIndex) {
+            case COLUMN_DURATION -> Long.class;
+            case COLUMN_START, COLUMN_END -> Date.class;
+            default -> String.class;
+        };
     }
 
     @Override

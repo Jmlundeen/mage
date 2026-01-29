@@ -11,7 +11,8 @@ import mage.client.util.Listener;
 import mage.constants.*;
 import mage.game.match.MatchOptions;
 import mage.players.PlayerType;
-import mage.ws.v1.view.ViewProto;
+import mage.view.GameTypeView;
+import mage.view.TableView;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -37,7 +38,7 @@ public class NewTableDialog extends MageDialog {
     public static final String PLAYER_DATA_DELIMETER_NEW = "@@@";
 
     private final CustomOptionsDialog customOptions;
-    private ViewProto.TableView table;
+    private TableView table;
     private UUID playerId;
     private UUID roomId;
     private String lastSessionId;
@@ -512,9 +513,9 @@ public class NewTableDialog extends MageDialog {
             // join AI
             for (TablePlayerPanel player : players) {
                 if (player.getPlayerType() != PlayerType.HUMAN) {
-                    if (!player.joinTable(roomId, UUID.fromString(table.getTableId()))) {
+                    if (!player.joinTable(roomId, table.getTableId())) {
                         // error message must be sent by a server
-                        SessionHandler.removeTable(roomId, UUID.fromString(table.getTableId()));
+                        SessionHandler.removeTable(roomId, table.getTableId());
                         table = null;
                         return;
                     }
@@ -524,7 +525,7 @@ public class NewTableDialog extends MageDialog {
             // join itself
             if (SessionHandler.joinTable(
                     roomId,
-                    UUID.fromString(table.getTableId()),
+                    table.getTableId(),
                     this.player1Panel.getPlayerName(),
                     PlayerType.HUMAN, 1,
                     DeckImporter.importDeckFromFile(this.player1Panel.getDeckFile(), true),
@@ -537,7 +538,7 @@ public class NewTableDialog extends MageDialog {
             handleError(ex);
         }
         // JOptionPane.showMessageDialog(MageFrame.getDesktop(), "Error joining table.", "Error", JOptionPane.ERROR_MESSAGE);
-        SessionHandler.removeTable(roomId, UUID.fromString(table.getTableId()));
+        SessionHandler.removeTable(roomId, table.getTableId());
         table = null;
     }//GEN-LAST:event_btnOKActionPerformed
 
@@ -588,7 +589,7 @@ public class NewTableDialog extends MageDialog {
 
     private MatchOptions getMatchOptions() {
         // current settings
-        ViewProto.GameTypeView gameType = (ViewProto.GameTypeView) cbGameType.getSelectedItem();
+        GameTypeView gameType = (GameTypeView) cbGameType.getSelectedItem();
         MatchOptions options = new MatchOptions(this.txtName.getText(), gameType.getName(), false);
         options.getPlayerTypes().add(PlayerType.HUMAN);
         for (TablePlayerPanel player : players) {
@@ -732,16 +733,15 @@ public class NewTableDialog extends MageDialog {
     }
 
     private void setGameOptions() {
-        ViewProto.GameTypeView gameType = (ViewProto.GameTypeView) cbGameType.getSelectedItem();
-        assert gameType != null;
+        GameTypeView gameType = (GameTypeView) cbGameType.getSelectedItem();
         int oldValue = (Integer) this.spnNumPlayers.getValue();
         this.spnNumPlayers.setModel(new SpinnerNumberModel(gameType.getMinPlayers(), gameType.getMinPlayers(), gameType.getMaxPlayers(), 1));
         this.spnNumPlayers.setEnabled(gameType.getMinPlayers() != gameType.getMaxPlayers());
         if (oldValue >= gameType.getMinPlayers() && oldValue <= gameType.getMaxPlayers()) {
             this.spnNumPlayers.setValue(oldValue);
         }
-        this.cbAttackOption.setEnabled(gameType.getUseAttackOption());
-        this.cbRange.setEnabled(gameType.getUseRange());
+        this.cbAttackOption.setEnabled(gameType.isUseAttackOption());
+        this.cbRange.setEnabled(gameType.isUseRange());
         // hide multiplayer options row if none are editable, otherwise show it
         JComponent[] multiplayerOptions = {
                 lblNumPlayers,
@@ -851,7 +851,7 @@ public class NewTableDialog extends MageDialog {
         this.setVisible(true);
     }
 
-    public ViewProto.TableView getTable() {
+    public TableView getTable() {
         return table;
     }
 
@@ -911,7 +911,7 @@ public class NewTableDialog extends MageDialog {
         this.spnNumPlayers.setValue(Integer.parseInt(PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TABLE_NUMBER_PLAYERS + versionStr, "2")));
 
         String gameTypeName = PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TABLE_GAME_TYPE + versionStr, "Two Player Duel");
-        for (ViewProto.GameTypeView gtv : SessionHandler.getGameTypes()) {
+        for (GameTypeView gtv : SessionHandler.getGameTypes()) {
             if (gtv.getName().equals(gameTypeName)) {
                 cbGameType.setSelectedItem(gtv);
                 break;

@@ -423,7 +423,7 @@ public final class Main {
             connector.addInvocationHandler("callback", serverInvocationHandler); // commands processing
 
             // connection monitoring and errors processing
-            boolean isTestMode = ((MageServerImpl) target).getServerState().isTestMode();
+            boolean isTestMode = ((MageServerImpl) target).getServerState().testMode();
             connector.setLeasePeriod(isTestMode ? 3600 * 1000 : managerFactory.configSettings().getLeasePeriod());
             connector.addConnectionListener(new MageServerConnectionListener(managerFactory));
         }

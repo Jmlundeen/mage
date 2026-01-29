@@ -45,7 +45,7 @@ public final class WsServerMain {
         // Check if server is in test mode
         boolean testMode = false;
         try {
-            testMode = mageServer.getServerState().isTestMode();
+            testMode = mageServer.getServerState().testMode();
         } catch (Exception e) {
             logger.warn("Could not determine test mode status", e);
         }

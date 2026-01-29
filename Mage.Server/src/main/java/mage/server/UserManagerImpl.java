@@ -7,7 +7,7 @@ import mage.server.record.UserStatsRepository;
 import mage.server.util.ServerMessagesUtil;
 import mage.util.ThreadUtils;
 import mage.util.XmageThreadFactory;
-import mage.ws.v1.view.ViewProto;
+import mage.view.UserView;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -40,7 +40,7 @@ public class UserManagerImpl implements UserManager {
             new XmageThreadFactory(ThreadUtils.THREAD_PREFIX_SERVICE_USERS_LIST_REFRESH)
     );
 
-    private List<ViewProto.UserView> userInfoList = new ArrayList<>(); // all users list for main room/chat
+    private List<UserView> userInfoList = new ArrayList<>(); // all users list for main room/chat
     private int maxUsersOnline = 0;
     private final ManagerFactory managerFactory;
 
@@ -305,10 +305,22 @@ public class UserManagerImpl implements UserManager {
      */
     private void updateUserInfoList() {
         try {
-            List<ViewProto.UserView> newUserInfoList = new ArrayList<>();
+            List<UserView> newUserInfoList = new ArrayList<>();
             int currentOnlineCount = 0;
             for (User user : getUsers()) {
-                newUserInfoList.add(user.toUserProto());
+                newUserInfoList.add(new UserView(
+                        user.getName(),
+                        user.getHost(),
+                        user.getSessionId(),
+                        user.getConnectionTime(),
+                        user.getLastActivity(),
+                        user.getGameInfo(),
+                        user.getUserState().toString(),
+                        user.getChatLockedUntil(),
+                        user.getClientVersion(),
+                        user.getEmail(),
+                        user.getUserIdStr()
+                ));
 
                 if (user.isOnlineUser()) {
                     currentOnlineCount++;
@@ -329,7 +341,7 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
-    public List<ViewProto.UserView> getUserInfoList() {
+    public List<UserView> getUserInfoList() {
         return userInfoList;
     }
 

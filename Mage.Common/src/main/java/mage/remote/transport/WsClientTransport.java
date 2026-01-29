@@ -14,6 +14,9 @@ import mage.remote.Connection;
 import mage.remote.WsSessionImpl;
 import mage.utils.MageVersion;
 import mage.view.DraftPickView;
+import mage.view.MatchView;
+import mage.view.RoomUsersView;
+import mage.view.TableView;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
 import mage.ws.v1.view.ViewProto;
@@ -91,9 +94,13 @@ public class WsClientTransport implements ClientTransport {
                         if (msg.hasLobbyGetInfo()) {
                             WsProto.LobbyInfoResponse payload = msg.getLobbyGetInfo();
                             LobbyEvent event = new LobbyEvent(
-                                    payload.getTablesList(),
-                                    payload.getRoomUsers(),
-                                    payload.getFinishedMatchesList()
+                                    payload.getTablesList().stream()
+                                            .map(TableView::fromProto)
+                                            .toList(),
+                                    RoomUsersView.fromProto(payload.getRoomUsers()),
+                                    payload.getFinishedMatchesList().stream()
+                                            .map(MatchView::fromProto)
+                                            .toList()
                             );
                             lobbyEventBus.publish(event);
                         } else if(msg.hasClientCallback()) {
@@ -231,7 +238,7 @@ public class WsClientTransport implements ClientTransport {
     }
 
     @Override
-    public List<ViewProto.TableView> lobbyGetTables(String sessionId, UUID roomId) throws Exception {
+    public List<TableView> lobbyGetTables(String sessionId, UUID roomId) throws Exception {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
@@ -248,11 +255,13 @@ public class WsClientTransport implements ClientTransport {
         if (!res.hasLobbyGetTables()) {
             throw new IllegalStateException("Unexpected response type");
         }
-        return res.getLobbyGetTables().getTablesList();
+        return res.getLobbyGetTables().getTablesList().stream()
+                .map(TableView::fromProto)
+                .toList();
     }
 
     @Override
-    public List<ViewProto.MatchView> getFinishedMatches(String sessionId, UUID roomId) throws Exception {
+    public List<MatchView> getFinishedMatches(String sessionId, UUID roomId) throws Exception {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
@@ -269,11 +278,13 @@ public class WsClientTransport implements ClientTransport {
         if (!res.hasFinishedMatchesResponse()) {
             throw new IllegalStateException("Unexpected response type");
         }
-        return res.getFinishedMatchesResponse().getFinishedMatchesList();
+        return res.getFinishedMatchesResponse().getFinishedMatchesList().stream()
+                .map(MatchView::fromProto)
+                .toList();
     }
 
     @Override
-    public ViewProto.RoomUsersView getRoomUsers(String sessionId, UUID roomId) throws Exception {
+    public RoomUsersView getRoomUsers(String sessionId, UUID roomId) throws Exception {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
@@ -290,7 +301,7 @@ public class WsClientTransport implements ClientTransport {
         if (!res.hasRoomUsersResponse()) {
             throw new IllegalStateException("Unexpected response type");
         }
-        return res.getRoomUsersResponse().getRoomUsers();
+        return RoomUsersView.fromProto(res.getRoomUsersResponse().getRoomUsers());
     }
 
     @Override
@@ -316,9 +327,13 @@ public class WsClientTransport implements ClientTransport {
 
         WsProto.LobbyInfoResponse payload = res.getLobbyGetInfo();
         return new GetLobbyInfoResult(
-                payload.getTablesList(),
-                payload.getRoomUsers(),
-                payload.getFinishedMatchesList()
+                payload.getTablesList().stream()
+                        .map(TableView::fromProto)
+                        .toList(),
+                RoomUsersView.fromProto(payload.getRoomUsers()),
+                payload.getFinishedMatchesList().stream()
+                        .map(MatchView::fromProto)
+                        .toList()
         );
     }
 
@@ -467,7 +482,7 @@ public class WsClientTransport implements ClientTransport {
     }
 
     @Override
-    public ViewProto.TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions) {
+    public TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions) {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
@@ -486,7 +501,7 @@ public class WsClientTransport implements ClientTransport {
             if (!res.hasTableViewResponse()) {
                 throw new IllegalStateException("Unexpected response type");
             }
-            return res.getTableViewResponse().getTableView();
+            return TableView.fromProto(res.getTableViewResponse().getTableView());
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -494,7 +509,7 @@ public class WsClientTransport implements ClientTransport {
     }
 
     @Override
-    public ViewProto.TableView createTournamentTable(String sessionId, UUID roomId, TournamentOptions tournamentOptions) {
+    public TableView createTournamentTable(String sessionId, UUID roomId, TournamentOptions tournamentOptions) {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
@@ -513,7 +528,7 @@ public class WsClientTransport implements ClientTransport {
             if (!res.hasTableViewResponse()) {
                 throw new IllegalStateException("Unexpected response type");
             }
-            return res.getTableViewResponse().getTableView();
+            return TableView.fromProto(res.getTableViewResponse().getTableView());
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -661,7 +676,7 @@ public class WsClientTransport implements ClientTransport {
     }
 
     @Override
-    public Optional<ViewProto.TableView> getTable(String sessionId, UUID roomId, UUID tableId) {
+    public Optional<TableView> getTable(String sessionId, UUID roomId, UUID tableId) {
         WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
@@ -678,7 +693,7 @@ public class WsClientTransport implements ClientTransport {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
             if (res.hasTableViewResponse()) {
-                return Optional.of(res.getTableViewResponse().getTableView());
+                return Optional.of(TableView.fromProto(res.getTableViewResponse().getTableView()));
             }
             return Optional.empty();
         } catch (Exception e) {

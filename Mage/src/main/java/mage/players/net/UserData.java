@@ -16,7 +16,7 @@ public class UserData implements Serializable {
     protected int avatarId;
     protected boolean allowRequestShowHandCards;
     protected boolean confirmEmptyManaPool;
-    protected ModelProto.UserSkipPrioritySteps userSkipPrioritySteps;
+    protected UserSkipPrioritySteps userSkipPrioritySteps;
     protected String flagName;
     protected boolean askMoveToGraveOrder;
     protected boolean manaPoolAutomatic;
@@ -43,7 +43,7 @@ public class UserData implements Serializable {
                     int avatarId,
                     boolean allowRequestShowHandCards,
                     boolean confirmEmptyManaPool,
-                    ModelProto.UserSkipPrioritySteps userSkipPrioritySteps,
+                    UserSkipPrioritySteps userSkipPrioritySteps,
                     String flagName,
                     boolean askMoveToGraveOrder,
                     boolean manaPoolAutomatic,
@@ -99,25 +99,12 @@ public class UserData implements Serializable {
     }
 
     public static UserData getDefaultUserDataView() {
-        ModelProto.SkipPrioritySteps.Builder skipStepsBuilder = ModelProto.SkipPrioritySteps.newBuilder()
-                .setMain1(true)
-                .setMain2(true);
-        ModelProto.UserSkipPrioritySteps defaultSkipSteps = ModelProto.UserSkipPrioritySteps.newBuilder()
-                .setYourTurn(skipStepsBuilder.build())
-                .setOpponentTurn(skipStepsBuilder.build())
-                .setStopOnDeclareAttackers(true)
-                .setStopOnDeclareBlockersWithZeroPermanents(false)
-                .setStopOnDeclareBlockersWithAnyPermanents(true)
-                .setStopOnAllMainPhases(true)
-                .setStopOnAllEndPhases(true)
-                .setStopOnStackNewObjects(true)
-                .build();
         return new UserData(
                 UserGroup.DEFAULT,
                 0,
                 false,
                 true,
-                defaultSkipSteps,
+                new UserSkipPrioritySteps(),
                 getDefaultFlagName(),
                 false,
                 true,
@@ -174,11 +161,11 @@ public class UserData implements Serializable {
         this.requestedHandPlayersList.remove(gameId);
     }
 
-    public ModelProto.UserSkipPrioritySteps getUserSkipPrioritySteps() {
+    public UserSkipPrioritySteps getUserSkipPrioritySteps() {
         return userSkipPrioritySteps;
     }
 
-    public void setUserSkipPrioritySteps(ModelProto.UserSkipPrioritySteps userSkipPrioritySteps) {
+    public void setUserSkipPrioritySteps(UserSkipPrioritySteps userSkipPrioritySteps) {
         this.userSkipPrioritySteps = userSkipPrioritySteps;
     }
 
@@ -340,7 +327,7 @@ public class UserData implements Serializable {
         ModelProto.UserData.Builder builder = ModelProto.UserData.newBuilder()
                 .setGroupId(this.groupId)
                 .setAvatarId(this.avatarId)
-                .setUserSkipPrioritySteps(this.userSkipPrioritySteps)
+                .setUserSkipPrioritySteps(this.userSkipPrioritySteps.toProto())
                 .setAllowRequestShowHandCards(this.allowRequestShowHandCards)
                 .setConfirmEmptyManaPool(this.confirmEmptyManaPool)
                 .setFlagName(this.flagName != null ? this.flagName : "")
@@ -386,7 +373,7 @@ public class UserData implements Serializable {
                 proto.getAvatarId(),
                 proto.getAllowRequestShowHandCards(),
                 proto.getConfirmEmptyManaPool(),
-                proto.getUserSkipPrioritySteps(),
+                UserSkipPrioritySteps.fromProto(proto.getUserSkipPrioritySteps()),
                 proto.getFlagName(),
                 proto.getAskMoveToGraveOrder(),
                 proto.getManaPoolAutomatic(),

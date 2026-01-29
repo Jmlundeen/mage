@@ -10,10 +10,7 @@ import mage.game.tournament.TournamentOptions;
 import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.utils.MageVersion;
-import mage.view.DraftPickView;
-import mage.view.GameView;
-import mage.view.TournamentView;
-import mage.ws.v1.view.ViewProto;
+import mage.view.*;
 
 import java.util.List;
 import java.util.Set;
@@ -51,14 +48,14 @@ public interface MageServer {
     UUID serverGetMainRoomId() throws MageException;
 
     // TODO: miss session
-    ViewProto.RoomUsersView roomGetUsers(UUID roomId) throws MageException;
+    RoomUsersView roomGetUsers(UUID roomId) throws MageException;
 
     // TODO: miss session
-    List<ViewProto.MatchView> roomGetFinishedMatches(UUID roomId) throws MageException;
+    List<MatchView> roomGetFinishedMatches(UUID roomId) throws MageException;
 
-    ViewProto.TableView roomCreateTable(String sessionId, UUID roomId, MatchOptions matchOptions) throws MageException;
+    TableView roomCreateTable(String sessionId, UUID roomId, MatchOptions matchOptions) throws MageException;
 
-    ViewProto.TableView roomCreateTournament(String sessionId, UUID roomId, TournamentOptions tournamentOptions) throws MageException;
+    TableView roomCreateTournament(String sessionId, UUID roomId, TournamentOptions tournamentOptions) throws MageException;
 
     boolean roomJoinTable(String sessionId, UUID roomId, UUID tableId, String name, PlayerType playerType, int skill, DeckCardLists deckList, String password) throws MageException, GameException;
 
@@ -81,10 +78,10 @@ public interface MageServer {
     boolean tableIsOwner(String sessionId, UUID roomId, UUID tableId) throws MageException;
 
     // TODO: miss session
-    ViewProto.TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException;
+    TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException;
 
     // TODO: miss session
-    List<ViewProto.TableView> roomGetAllTables(UUID roomId) throws MageException;
+    List<TableView> roomGetAllTables(UUID roomId) throws MageException;
 
     // TODO: miss session
     void chatSendMessage(UUID chatId, String userName, String message) throws MageException;
@@ -164,7 +161,7 @@ public interface MageServer {
 
     void cheatShow(UUID gameId, String sessionId, UUID playerId) throws MageException;
 
-    List<ViewProto.UserView> adminGetUsers(String sessionId) throws MageException;
+    List<UserView> adminGetUsers(String sessionId) throws MageException;
 
     void adminDisconnectUser(String sessionId, String userSessionId) throws MageException;
 

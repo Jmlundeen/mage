@@ -15,9 +15,7 @@ import mage.remote.Connection;
 import mage.remote.MageRemoteException;
 import mage.remote.Session;
 import mage.remote.WsSessionImpl;
-import mage.view.DraftPickView;
-import mage.view.TournamentView;
-import mage.ws.v1.view.ViewProto;
+import mage.view.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -256,7 +254,7 @@ public final class SessionHandler {
         return session.getSessionId();
     }
 
-    public static List<ViewProto.TournamentTypeView> getTournamentTypes() {
+    public static List<TournamentTypeView> getTournamentTypes() {
         return session.getTournamentTypes();
     }
 
@@ -291,15 +289,15 @@ public final class SessionHandler {
         return session.getDraftCubes();
     }
 
-    public static List<ViewProto.GameTypeView> getTournamentGameTypes() {
+    public static List<GameTypeView> getTournamentGameTypes() {
         return session.getTournamentGameTypes();
     }
 
-    public static ViewProto.TableView createTournamentTable(UUID roomId, TournamentOptions tOptions) {
+    public static TableView createTournamentTable(UUID roomId, TournamentOptions tOptions) {
         return session.createTournamentTable(roomId, tOptions);
     }
 
-    public static ViewProto.TableView createTable(UUID roomId, MatchOptions options) {
+    public static TableView createTable(UUID roomId, MatchOptions options) {
         return session.createTable(roomId, options);
     }
 
@@ -307,7 +305,7 @@ public final class SessionHandler {
         return session.joinTable(roomId, tableId, playerName, human, skill, deckCardLists, text);
     }
 
-    public static List<ViewProto.GameTypeView> getGameTypes() {
+    public static List<GameTypeView> getGameTypes() {
         return session.getGameTypes();
     }
 
@@ -331,16 +329,16 @@ public final class SessionHandler {
         return session.getRoomChatId(roomId);
     }
 
-    public static ViewProto.RoomUsersView getRoomUsers(UUID roomId) {
+    public static RoomUsersView getRoomUsers(UUID roomId) {
         try {
             return session.getRoomUsers(roomId);
         } catch (MageRemoteException e) {
             logger.info(e);
-            return ViewProto.RoomUsersView.getDefaultInstance();
+            return null;
         }
     }
 
-    public static Collection<ViewProto.MatchView> getFinishedMatches(UUID roomId) {
+    public static Collection<MatchView> getFinishedMatches(UUID roomId) {
         try {
             return session.getFinishedMatches(roomId);
         } catch (MageRemoteException e) {
@@ -357,7 +355,7 @@ public final class SessionHandler {
         session.watchTable(roomId, tableId);
     }
 
-    public static Collection<ViewProto.TableView> getTables(UUID roomId) {
+    public static Collection<TableView> getTables(UUID roomId) {
         try {
             return session.getTables(roomId);
         } catch (MageRemoteException e) {
@@ -390,7 +388,7 @@ public final class SessionHandler {
         return session.sendPlayerManaType(gameId, playerId, data);
     }
 
-    public static Optional<ViewProto.TableView> getTable(UUID roomId, UUID tableId) {
+    public static Optional<TableView> getTable(UUID roomId, UUID tableId) {
         return session.getTable(roomId, tableId);
     }
 

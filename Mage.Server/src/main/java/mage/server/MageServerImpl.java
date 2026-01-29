@@ -32,12 +32,8 @@ import mage.server.tournament.TournamentFactory;
 import mage.server.util.ServerMessagesUtil;
 import mage.util.DebugUtil;
 import mage.utils.*;
-import mage.view.ChatMessage;
+import mage.view.*;
 import mage.view.ChatMessage.MessageColor;
-import mage.view.DraftPickView;
-import mage.view.GameView;
-import mage.view.TournamentView;
-import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.unbescape.html.HtmlEscape;
 
@@ -205,15 +201,15 @@ public class MageServerImpl implements MageServer {
     }
 
     @Override
-    public ViewProto.TableView roomCreateTable(final String sessionId, final UUID roomId, final MatchOptions options) throws MageException {
+    public TableView roomCreateTable(final String sessionId, final UUID roomId, final MatchOptions options) throws MageException {
         return executeWithResult("createTable", sessionId, new CreateTableAction(sessionId, options, roomId));
     }
 
     @Override
-    public ViewProto.TableView roomCreateTournament(final String sessionId, final UUID roomId, final TournamentOptions options) throws MageException {
+    public TableView roomCreateTournament(final String sessionId, final UUID roomId, final TournamentOptions options) throws MageException {
         return executeWithResult("createTournamentTable", sessionId, new ActionWithTableViewResult() {
             @Override
-            public ViewProto.TableView execute() throws MageException {
+            public TableView execute() throws MageException {
                 try {
                     Optional<Session> session = managerFactory.sessionManager().getSession(sessionId);
                     if (session.isEmpty()) {
@@ -273,7 +269,7 @@ public class MageServerImpl implements MageServer {
                     }
                     Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
                     if (room.isPresent()) {
-                        ViewProto.TableView table = room.get().createTournamentTable(userId, options);
+                        TableView table = room.get().createTournamentTable(userId, options);
                         logger.debug("Tournament table " + table.getTableId() + " created");
                         return table;
                     }
@@ -394,7 +390,7 @@ public class MageServerImpl implements MageServer {
 
     @Override
     //FIXME: why no sessionId here???
-    public List<ViewProto.TableView> roomGetAllTables(UUID roomId) throws MageException {
+    public List<TableView> roomGetAllTables(UUID roomId) throws MageException {
         try {
             Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
             if (room.isPresent()) {
@@ -410,7 +406,7 @@ public class MageServerImpl implements MageServer {
 
     @Override
     //FIXME: why no sessionId here???
-    public List<ViewProto.MatchView> roomGetFinishedMatches(UUID roomId) throws MageException {
+    public List<MatchView> roomGetFinishedMatches(UUID roomId) throws MageException {
         try {
             return managerFactory.gamesRoomManager().getRoom(roomId).map(GamesRoom::getFinished).orElse(new ArrayList<>());
         } catch (Exception ex) {
@@ -420,7 +416,7 @@ public class MageServerImpl implements MageServer {
     }
 
     @Override
-    public ViewProto.RoomUsersView roomGetUsers(UUID roomId) throws MageException {
+    public RoomUsersView roomGetUsers(UUID roomId) throws MageException {
         try {
             Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
             return room.map(GamesRoom::getRoomUsersInfo).orElse(null);
@@ -432,7 +428,7 @@ public class MageServerImpl implements MageServer {
 
     @Override
     //FIXME: why no sessionId here???
-    public ViewProto.TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException {
+    public TableView roomGetTableById(UUID roomId, UUID tableId) throws MageException {
         try {
             Optional<GamesRoom> room = managerFactory.gamesRoomManager().getRoom(roomId);
             return room.flatMap(r -> r.getTable(tableId)).orElse(null);
@@ -1042,7 +1038,7 @@ public class MageServerImpl implements MageServer {
      * @throws MageException
      */
     @Override
-    public List<ViewProto.UserView> adminGetUsers(String sessionId) throws MageException {
+    public List<UserView> adminGetUsers(String sessionId) throws MageException {
         return executeWithResult("adminGetUsers", sessionId, new GetUsersAction(), true);
     }
 
@@ -1219,10 +1215,10 @@ public class MageServerImpl implements MageServer {
         }
     }
 
-    private class GetUsersAction extends ActionWithNullNegativeResult<List<ViewProto.UserView>> {
+    private class GetUsersAction extends ActionWithNullNegativeResult<List<UserView>> {
 
         @Override
-        public List<ViewProto.UserView> execute() throws MageException {
+        public List<UserView> execute() throws MageException {
             return managerFactory.userManager().getUserInfoList();
         }
     }
@@ -1313,7 +1309,7 @@ public class MageServerImpl implements MageServer {
         }
 
         @Override
-        public ViewProto.TableView execute() throws MageException {
+        public TableView execute() throws MageException {
             Session session = managerFactory.sessionManager().getSession(sessionId).orElse(null);
             if (session == null) {
                 return null;

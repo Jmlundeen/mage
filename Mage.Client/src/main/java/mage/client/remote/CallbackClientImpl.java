@@ -72,6 +72,10 @@ public class CallbackClientImpl implements CallbackClient {
             firstGameData.putIfAbsent(callback.getObjectId(), (GameClientMessage) callback.getData());
         }
 
+        logger.debug("Received callback: " + callback.getMethod() + " for objectId: " + callback.getObjectId() + " messageId: " + callback.getMessageId());
+        logger.debug("Callback info: " + callback.getInfo());
+        logger.debug("Callback data: " + callback.getData());
+
         // all GUI related code must be executed in swing thread
         SwingUtilities.invokeLater(() -> {
             try {

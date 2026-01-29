@@ -5,7 +5,7 @@ package mage.server.game;
 import mage.game.match.Match;
 import mage.game.match.MatchOptions;
 import mage.game.match.MatchType;
-import mage.ws.v1.view.ViewProto;
+import mage.view.GameTypeView;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Constructor;
@@ -25,7 +25,7 @@ public enum GameFactory {
 
     private final Map<String, Class<Match>> games = new HashMap<>();
     private final Map<String, MatchType> gameTypes = new HashMap<>();
-    private final List<ViewProto.GameTypeView> gameTypeViews = new ArrayList<>();
+    private final List<GameTypeView> gameTypeViews = new ArrayList<>();
 
 
 
@@ -46,7 +46,7 @@ public enum GameFactory {
         return match;
     }
 
-    public List<ViewProto.GameTypeView> getGameTypes() {
+    public List<GameTypeView> getGameTypes() {
         return gameTypeViews;
     }
 
@@ -54,7 +54,7 @@ public enum GameFactory {
         if (matchType != null && game != null) {
             this.games.put(name, game);
             this.gameTypes.put(name, matchType);
-            this.gameTypeViews.add(matchType.getGameTypeView());
+            this.gameTypeViews.add(new GameTypeView(matchType));
         }
     }
 

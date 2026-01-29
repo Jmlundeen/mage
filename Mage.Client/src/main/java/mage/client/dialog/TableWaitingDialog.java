@@ -11,7 +11,8 @@ import mage.client.util.gui.GuiDisplayUtil;
 import mage.client.util.gui.TableUtil;
 import mage.client.util.gui.countryBox.CountryCellRenderer;
 import mage.players.PlayerType;
-import mage.ws.v1.view.ViewProto;
+import mage.view.SeatView;
+import mage.view.TableView;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -82,7 +83,7 @@ public class TableWaitingDialog extends MageDialog {
         jScrollPane1.getHorizontalScrollBar().setPreferredSize(new Dimension(0, GUISizeHelper.scrollBarSize));
     }
 
-    public void update(ViewProto.TableView table) {
+    public void update(TableView table) {
         try {
             if (table != null) {
                 switch (table.getTableState()) {
@@ -296,13 +297,13 @@ public class TableWaitingDialog extends MageDialog {
 class TableWaitModel extends AbstractTableModel {
 
     private final String[] columnNames = new String[]{"Seat", "Loc", "Player Name", "Rating", "Player Type", "History"};
-    private ViewProto.SeatView[] seats = new ViewProto.SeatView[0];
+    private SeatView[] seats = new SeatView[0];
     private boolean limited;
 
-    public void loadData(ViewProto.TableView table) {
-        seats = table.getSeatsList().toArray(new ViewProto.SeatView[0]);
-        if (limited != table.getLimited()) {
-            limited = table.getLimited();
+    public void loadData(TableView table) {
+        seats = table.getSeats().toArray(new SeatView[0]);
+        if (limited != table.isLimited()) {
+            limited = table.isLimited();
         }
         this.fireTableDataChanged();
     }
@@ -319,16 +320,27 @@ class TableWaitModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int arg0, int arg1) {
-        seats[arg0].getPlayerId();
-        return switch (arg1) {
-            case 0 -> Integer.toString(arg0 + 1);
-            case 1 -> seats[arg0].getFlagName();
-            case 2 -> seats[arg0].getPlayerName();
-            case 3 -> limited ? seats[arg0].getLimitedRating() : seats[arg0].getConstructedRating();
-            case 4 -> seats[arg0].getPlayerType();
-            case 5 -> seats[arg0].getHistory();
-            default -> "";
-        };
+        if (seats[arg0].getPlayerId() == null) {
+            if (arg1 == 0) {
+                return Integer.toString(arg0 + 1);
+            }
+        } else {
+            switch (arg1) {
+                case 0:
+                    return Integer.toString(arg0 + 1);
+                case 1:
+                    return seats[arg0].getFlagName();
+                case 2:
+                    return seats[arg0].getPlayerName();
+                case 3:
+                    return limited ? seats[arg0].getLimitedRating() : seats[arg0].getConstructedRating();
+                case 4:
+                    return seats[arg0].getPlayerType();
+                case 5:
+                    return seats[arg0].getHistory();
+            }
+        }
+        return "";
     }
 
     @Override
@@ -353,14 +365,14 @@ class TableWaitModel extends AbstractTableModel {
 
 }
 
-class UpdateSeatsTask extends SwingWorker<Void, ViewProto.TableView> {
+class UpdateSeatsTask extends SwingWorker<Void, TableView> {
 
     private final UUID roomId;
     private final UUID tableId;
     private final TableWaitingDialog dialog;
     private int count = 0;
 
-    private static final Logger logger = Logger.getLogger(TableWaitingDialog.class);
+    private static final Logger logger = Logger.getLogger(UpdateSeatsTask.class);
 
     UpdateSeatsTask(UUID roomId, UUID tableId, TableWaitingDialog dialog) {
         this.roomId = roomId;
@@ -371,7 +383,7 @@ class UpdateSeatsTask extends SwingWorker<Void, ViewProto.TableView> {
     @Override
     protected Void doInBackground() throws Exception {
         while (!isCancelled()) {
-            Optional<ViewProto.TableView> tableView = SessionHandler.getTable(roomId, tableId);
+            Optional<TableView> tableView = SessionHandler.getTable(roomId, tableId);
             if (tableView.isPresent()) {
                 tableView.ifPresent(this::publish);
             } else {
@@ -383,15 +395,15 @@ class UpdateSeatsTask extends SwingWorker<Void, ViewProto.TableView> {
     }
 
     @Override
-    protected void process(List<ViewProto.TableView> view) {
-        ViewProto.TableView tableView = view.get(0);
+    protected void process(List<TableView> view) {
+        TableView tableView = view.getFirst();
         if (count == 0) {
             count = getPlayersCount(tableView);
         } else {
             int current = getPlayersCount(tableView);
             if (current != count) {
                 if (count > 0) {
-                    if (current == tableView.getSeatsList().size()) {
+                    if (current == tableView.getSeats().size()) {
                         MageTray.instance.displayMessage("The game can start.");
                         AudioManager.playGameCanStart();
                     } else if (current > count) {
@@ -409,12 +421,11 @@ class UpdateSeatsTask extends SwingWorker<Void, ViewProto.TableView> {
         dialog.update(tableView);
     }
 
-    private int getPlayersCount(ViewProto.TableView tableView) {
+    private int getPlayersCount(TableView tableView) {
         int playerCount = 0;
         if (tableView != null) {
-            for (ViewProto.SeatView seatView : tableView.getSeatsList()) {
-                seatView.getPlayerId();
-                if (PlayerType.getByDescription(seatView.getPlayerType()) == PlayerType.HUMAN) {
+            for (SeatView seatView : tableView.getSeats()) {
+                if (seatView.getPlayerId() != null && seatView.getPlayerType() == PlayerType.HUMAN) {
                     playerCount++;
                 }
             }

@@ -4,16 +4,17 @@ import mage.client.SessionHandler;
 import mage.components.table.TableModelWithTooltip;
 import mage.constants.SkillLevel;
 import mage.remote.MageRemoteException;
-import mage.ws.v1.view.ViewProto;
+import mage.view.TableView;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.Collection;
 import java.util.Date;
-import java.util.UUID;
 
 public class TablesTableModel extends AbstractTableModel implements TableModelWithTooltip {
 
+    static final Logger logger = Logger.getLogger(TablesTableModel.class);
     // icons with tostring for tables hints
     final ImageIcon tourneyIcon = new ImageIcon(getClass().getResource("/tables/tourney_icon.png")) {
         @Override
@@ -51,20 +52,21 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
 
     private final String[] columnNames = new String[]{"M/T", "Deck Type", "Name", "Seats", "Owner / Players", "Game Type", "Info", "Status", "Password", "Created / Started", "Skill Level", "Rated", "Quit %", "Min Rating", "Action"};
 
-    private ViewProto.TableView[] tables = new ViewProto.TableView[0];
+    private TableView[] tables = new TableView[0];
 
     TablesTableModel() {
     }
 
-    public void loadData(Collection<ViewProto.TableView> tables) throws MageRemoteException {
-        this.tables = tables.toArray(new ViewProto.TableView[0]);
+    public void loadData(Collection<TableView> tables) throws MageRemoteException {
+        this.tables = tables.toArray(new TableView[0]);
+        logger.debug("Tables loaded: " + this.tables.length);
         this.fireTableDataChanged();
     }
 
     public String getTableAndGameInfo(int row) {
-        String tableId = tables[row].getTableId();
-        String gameId = (tables[row].getGamesCount() > 0 ? tables[row].getGames(0) : "null");
-        return tableId + ";" + (gameId.isEmpty() ? "null" : gameId);
+        String tableAndGame = this.tables[row].getTableId().toString() + ";" + (!tables[row].getGames().isEmpty() ? tables[row].getGames().getFirst().toString() : "null");
+        logger.debug("getTableAndGameInfo: " + tableAndGame);
+        return tableAndGame;
     }
 
     public String findTableAndGameInfoByRow(int row) {
@@ -77,7 +79,7 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
 
     public int findRowByTableAndGameInfo(String tableAndGame) {
         for (int i = 0; i < this.tables.length; i++) {
-            String rowID = this.tables[i].getTableId() + ";" + (this.tables[i].getGamesCount() > 0 ? this.tables[i].getGames(0) : "null");
+            String rowID = this.tables[i].getTableId().toString() + ";" + (!this.tables[i].getGames().isEmpty() ? this.tables[i].getGames().getFirst().toString() : "null");
             if (tableAndGame.equals(rowID)) {
                 return i;
             }
@@ -86,21 +88,11 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
     }
 
     public String getSkillLevelAsCode(SkillLevel skill, boolean asRegExp) {
-        String res;
-        switch (skill) {
-            case BEGINNER:
-                res = "*";
-                break;
-            case CASUAL:
-                res = "**";
-                break;
-            case SERIOUS:
-                res = "***";
-                break;
-            default:
-                res = "";
-                break;
-        }
+        String res = switch (skill) {
+            case BEGINNER -> "*";
+            case CASUAL -> "**";
+            case SERIOUS -> "***";
+        };
 
         // regexp format for search table rows
         if (asRegExp) {
@@ -122,10 +114,10 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        ViewProto.TableView table = tables[rowIndex];
+        TableView table = tables[rowIndex];
         switch (columnIndex) {
             case 0:
-                return table.getIsTournament() ? tourneyIcon : matchIcon;
+                return table.isTournament() ? tourneyIcon : matchIcon;
             case 1:
                 return table.getDeckType();
             case 2:
@@ -141,13 +133,13 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
             case 7:
                 return table.getTableStateText();
             case 8:
-                return table.getIsPasswordProtected() ? PASSWORD_VALUE_YES : "";
+                return table.isPassworded() ? PASSWORD_VALUE_YES : "";
             case 9:
-                return table.getCreateTimeMillis() > 0 ? new Date(table.getCreateTimeMillis()) : null;
+                return table.getCreateTime(); // use cell render, not format here
             case 10:
-                return table.getSkillLevel();
+                return this.getSkillLevelAsCode(table.getSkillLevel(), false);
             case 11:
-                return table.getRated() ? RATED_VALUE_YES : RATED_VALUE_NO;
+                return table.isRated() ? RATED_VALUE_YES : RATED_VALUE_NO;
             case 12:
                 return table.getQuitRatio();
             case 13:
@@ -162,11 +154,11 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
                         return "Join";
                     case CONSTRUCTING:
                     case DRAFTING:
-                        if (table.getIsTournament()) {
+                        if (table.isTournament()) {
                             return "Show";
                         }
                     case DUELING:
-                        if (table.getIsTournament()) {
+                        if (table.isTournament()) {
                             return "Show";
                         } else {
                             String ownerDueling = table.getControllerName();
@@ -182,20 +174,14 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
                         return "";
                 }
             case 15:
-                return table.getIsTournament();
+                return table.isTournament();
             case 16:
-                if (table.getGamesCount() > 0) {
-                    String gid = table.getGames(0);
-                    if (!gid.isEmpty()) {
-                        return UUID.fromString(gid);
-                    }
+                if (!table.getGames().isEmpty()) {
+                    return table.getGames().getFirst();
                 }
                 return null;
             case 17:
-                if (!table.getTableId().isEmpty()) {
-                    return UUID.fromString(table.getTableId());
-                }
-                return null;
+                return table.getTableId();
         }
         return "";
     }
@@ -203,13 +189,10 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
     @Override
     public String getTooltipAt(int rowIndex, int columnIndex) {
         Object res;
-        switch (columnIndex) {
-            case COLUMN_INFO:
-                res = tables[rowIndex].getAdditionalInfoFull();
-                break;
-            default:
-                res = this.getValueAt(rowIndex, columnIndex);
-                break;
+        if (columnIndex == COLUMN_INFO) {
+            res = tables[rowIndex].getAdditionalInfoFull();
+        } else {
+            res = this.getValueAt(rowIndex, columnIndex);
         }
         return res.toString();
     }
@@ -227,16 +210,12 @@ public class TablesTableModel extends AbstractTableModel implements TableModelWi
 
     @Override
     public Class getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case COLUMN_ICON:
-                return Icon.class;
-            case COLUMN_SKILL:
-                return SkillLevel.class;
-            case COLUMN_CREATED:
-                return Date.class;
-            default:
-                return String.class;
-        }
+        return switch (columnIndex) {
+            case COLUMN_ICON -> Icon.class;
+            case COLUMN_SKILL -> SkillLevel.class;
+            case COLUMN_CREATED -> Date.class;
+            default -> String.class;
+        };
     }
 
     @Override

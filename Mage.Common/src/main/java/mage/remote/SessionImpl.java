@@ -15,9 +15,7 @@ import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.util.ThreadUtils;
 import mage.utils.CompressUtil;
-import mage.view.DraftPickView;
-import mage.view.TournamentView;
-import mage.ws.v1.view.ViewProto;
+import mage.view.*;
 import org.apache.log4j.Logger;
 import org.jboss.remoting.*;
 import org.jboss.remoting.callback.Callback;
@@ -286,8 +284,8 @@ public class SessionImpl implements Session {
                     }
 
                     // client side check for incompatible versions
-                    if (client.getVersion().compareTo(serverState.getVersion()) != 0) {
-                        throw new MageVersionException(client.getVersion(), serverState.getVersion());
+                    if (client.getVersion().compareTo(serverState.version()) != 0) {
+                        throw new MageVersionException(client.getVersion(), serverState.version());
                     }
 
                     if (!connection.getUsername().equals(ADMIN_NAME)) {
@@ -689,43 +687,43 @@ public class SessionImpl implements Session {
         // Is server works fine, possible use cases:
         // - client connected by network, but can't process register/login process due errors like wrong username
         // - client connected to broken server that has a wrong config or broken/miss libraries
-        return isConnected() && serverState != null && !serverState.getGameTypes().isEmpty();
+        return isConnected() && serverState != null && !serverState.gameTypes().isEmpty();
     }
 
     @Override
     public PlayerType[] getPlayerTypes() {
-        return serverState.getPlayerTypes();
+        return serverState.playerTypes();
     }
 
     @Override
-    public List<ViewProto.GameTypeView> getGameTypes() {
-        return serverState.getGameTypes();
+    public List<GameTypeView> getGameTypes() {
+        return serverState.gameTypes();
     }
 
     @Override
-    public List<ViewProto.GameTypeView> getTournamentGameTypes() {
+    public List<GameTypeView> getTournamentGameTypes() {
         return serverState.getTournamentGameTypes();
     }
 
     @Override
     public String[] getDeckTypes() {
-        return serverState.getDeckTypes();
+        return serverState.deckTypes();
     }
 
     @Override
     public String[] getDraftCubes() {
-        return serverState.getDraftCubes();
+        return serverState.draftCubes();
     }
 
     @Override
-    public List<ViewProto.TournamentTypeView> getTournamentTypes() {
-        return serverState.getTournamentTypes();
+    public List<TournamentTypeView> getTournamentTypes() {
+        return serverState.tournamentTypes();
     }
 
     @Override
     public boolean isTestMode() {
         if (serverState != null) {
-            return serverState.isTestMode();
+            return serverState.testMode();
         }
         return false;
     }
@@ -781,7 +779,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public Optional<ViewProto.TableView> getTable(UUID roomId, UUID tableId) {
+    public Optional<TableView> getTable(UUID roomId, UUID tableId) {
 
         return Optional.empty();
     }
@@ -859,7 +857,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public Collection<ViewProto.TableView> getTables(UUID roomId) throws MageRemoteException {
+    public Collection<TableView> getTables(UUID roomId) throws MageRemoteException {
         try {
             if (isConnected()) {
                 return server.roomGetAllTables(roomId);
@@ -874,7 +872,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public Collection<ViewProto.MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException {
+    public Collection<MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException {
         try {
             if (isConnected()) {
                 return server.roomGetFinishedMatches(roomId);
@@ -889,7 +887,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public ViewProto.RoomUsersView getRoomUsers(UUID roomId) throws MageRemoteException {
+    public RoomUsersView getRoomUsers(UUID roomId) throws MageRemoteException {
         try {
             if (isConnected()) {
                 return server.roomGetUsers(roomId);
@@ -900,7 +898,7 @@ public class SessionImpl implements Session {
         } catch (Throwable t) {
             handleThrowable(t);
         }
-        return ViewProto.RoomUsersView.getDefaultInstance();
+        return null;
     }
 
     @Override
@@ -1224,7 +1222,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public ViewProto.TableView createTable(UUID roomId, MatchOptions matchOptions) {
+    public TableView createTable(UUID roomId, MatchOptions matchOptions) {
         try {
             if (isConnected()) {
                 return server.roomCreateTable(sessionId, roomId, matchOptions);
@@ -1238,7 +1236,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public ViewProto.TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions) {
+    public TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions) {
         try {
             if (isConnected()) {
                 return server.roomCreateTournament(sessionId, roomId, tournamentOptions);
@@ -1568,7 +1566,7 @@ public class SessionImpl implements Session {
     }
 
     @Override
-    public List<ViewProto.UserView> getUsers() {
+    public List<UserView> getUsers() {
         try {
             if (isConnected()) {
                 return server.adminGetUsers(sessionId);
@@ -1791,7 +1789,7 @@ public class SessionImpl implements Session {
     @Override
     public String getVersionInfo() {
         if (serverState != null) {
-            return serverState.getVersion().toString();
+            return serverState.version().toString();
         } else {
             return "<no server state>";
         }

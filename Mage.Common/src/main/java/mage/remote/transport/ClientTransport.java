@@ -8,6 +8,9 @@ import mage.players.PlayerType;
 import mage.players.net.UserData;
 import mage.remote.Connection;
 import mage.utils.MageVersion;
+import mage.view.MatchView;
+import mage.view.RoomUsersView;
+import mage.view.TableView;
 import mage.ws.v1.view.ViewProto;
 
 import java.util.List;
@@ -29,11 +32,11 @@ public interface ClientTransport {
 
     boolean ping(String sessionId, String clientTimeMillis) throws Exception;
 
-    List<ViewProto.TableView> lobbyGetTables(String sessionId, UUID roomId) throws Exception;
+    List<TableView> lobbyGetTables(String sessionId, UUID roomId) throws Exception;
 
-    List<ViewProto.MatchView> getFinishedMatches(String sessionId, UUID roomId) throws Exception;
+    List<MatchView> getFinishedMatches(String sessionId, UUID roomId) throws Exception;
 
-    ViewProto.RoomUsersView getRoomUsers(String sessionId, UUID roomId) throws Exception;
+    RoomUsersView getRoomUsers(String sessionId, UUID roomId) throws Exception;
 
     GetLobbyInfoResult lobbyGetInfo(String sessionId, UUID roomId, boolean includeFinishedMatches, boolean includeRoomUsers) throws Exception;
 
@@ -51,9 +54,9 @@ public interface ClientTransport {
 
     UUID getRoomChatId(String sessionId, UUID roomId) throws Exception;
 
-    ViewProto.TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions);
+    TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions);
 
-    ViewProto.TableView createTournamentTable(String sessionId, UUID roomId, TournamentOptions tournamentOptions);
+    TableView createTournamentTable(String sessionId, UUID roomId, TournamentOptions tournamentOptions);
 
     Boolean joinTable(String sessionId, UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password);
 
@@ -61,7 +64,7 @@ public interface ClientTransport {
 
     Optional<UUID> getTableChatId(String sessionId, UUID tableId);
 
-    Optional<ViewProto.TableView> getTable(String sessionId, UUID roomId, UUID tableId);
+    Optional<TableView> getTable(String sessionId, UUID roomId, UUID tableId);
 
     ViewProto.TournamentView getTournament(String sessionId, UUID tournamentId);
 

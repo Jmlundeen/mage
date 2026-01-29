@@ -4,6 +4,8 @@ package mage.ws.v1.view;
 option java_package = "mage.ws.v1.view";
 option java_outer_classname = "ViewProto";
 
+import "ws/v1/model/model.proto";
+
 // Mirrors mage.view.TableView (fields actually used by lobby UI)
 message TableView {
   string tableId = 1;
@@ -84,6 +86,16 @@ message UserView {
   string userIdStr = 11;
 }
 
+// Mirrors mage.view.UserDataView
+message UserDataView {
+  int32 avatarId = 1;
+  int32 userGroup = 2;
+  bool confirmEmptyManaPool = 3;
+  string flagName = 4;
+  bool askMoveToGraveOrder = 5;
+  model.UserSkipPrioritySteps skipPrioritySteps = 6;
+}
+
 message SeatView {
   string flagName = 1;
   string playerId = 2;
@@ -95,30 +107,6 @@ message SeatView {
   int32 limitedRating = 8;
 }
 
-message GameTypeView {
-  string name = 1;
-  int32 minPlayers = 2;
-  int32 maxPlayers = 3;
-  int32 numTeams = 4;
-  int32 playersPerTeam = 5;
-  bool useRange = 6;
-  bool useAttackOption = 7;
-}
-
-message TournamentTypeView {
-  string name = 1;
-  int32 minPlayers = 2;
-  int32 maxPlayers = 3;
-  int32 numBoosters = 4;
-  bool draft = 5;
-  bool limited = 6;
-  bool cubeBooster = 7;
-  bool elimination = 8;
-  bool random = 9;
-  bool reshuffled = 10;
-  bool richMan = 11;
-  bool jumpstart = 12;
-}
 
 enum TableState {
   LOBBY_TABLE_STATE_UNKNOWN = 0;

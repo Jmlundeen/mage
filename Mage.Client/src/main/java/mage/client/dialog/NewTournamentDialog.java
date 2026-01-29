@@ -17,7 +17,9 @@ import mage.game.draft.DraftOptions.TimingOption;
 import mage.game.tournament.LimitedOptions;
 import mage.game.tournament.TournamentOptions;
 import mage.players.PlayerType;
-import mage.ws.v1.view.ViewProto;
+import mage.view.GameTypeView;
+import mage.view.TableView;
+import mage.view.TournamentTypeView;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -48,7 +50,7 @@ public class NewTournamentDialog extends MageDialog {
     private final List<PlayerType> prefPlayerTypes = new ArrayList<>();
     private final List<Integer> prefPlayerSkills = new ArrayList<>();
 
-    private ViewProto.TableView table;
+    private TableView table;
     // private UUID playerId;
     private UUID roomId;
     private String lastSessionId;
@@ -676,10 +678,9 @@ public class NewTournamentDialog extends MageDialog {
         TournamentOptions tOptions = getTournamentOptions();
 
         // CHECKS
-        ViewProto.TournamentTypeView tournamentType = (ViewProto.TournamentTypeView) cbTournamentType.getSelectedItem();
-        assert tournamentType != null : "Tournament type is null";
-        if (tournamentType.getRandom() || tournamentType.getRichMan() || tournamentType.getReshuffled()) {
-            if (tOptions.getLimitedOptions().getSetCodes().isEmpty()) {
+        TournamentTypeView tournamentType = (TournamentTypeView) cbTournamentType.getSelectedItem();
+        if (tournamentType.isRandom() || tournamentType.isRichMan() || tournamentType.isReshuffled()) {
+            if (tOptions.getLimitedOptions().getSetCodes().size() < 1) {
                 JOptionPane.showMessageDialog(
                         MageFrame.getDesktop(),
                         "Warning, you must select at least one set for the pool",
@@ -689,7 +690,8 @@ public class NewTournamentDialog extends MageDialog {
                 return;
             }
         }
-        if (tournamentType.getDraft() && tOptions.getLimitedOptions() instanceof DraftOptions draftOptions) {
+        if (tournamentType.isDraft() && tOptions.getLimitedOptions() instanceof DraftOptions) {
+            DraftOptions draftOptions = (DraftOptions) tOptions.getLimitedOptions();
             if (draftOptions.getTiming() == TimingOption.NONE) {
                 JOptionPane.showMessageDialog(MageFrame.getDesktop(), "Warning, you must select draft timing option", "Warning", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -714,7 +716,7 @@ public class NewTournamentDialog extends MageDialog {
         }
 
         // cube from deck uses weird choose logic from combobox select, so players can forget or cancel it
-        if (tournamentType.getDraft()
+        if (tournamentType.isDraft()
                 && tOptions.getLimitedOptions().getDraftCubeName() != null
                 && tOptions.getLimitedOptions().getDraftCubeName().contains(CUBE_FROM_DECK_NAME)) {
             if (tOptions.getLimitedOptions().getCubeFromDeck() == null || tOptions.getLimitedOptions().getCubeFromDeck().getCards().isEmpty()) {
@@ -742,9 +744,9 @@ public class NewTournamentDialog extends MageDialog {
         for (TournamentPlayerPanel player : players) {
             if (player.getPlayerType().getSelectedItem() != PlayerType.HUMAN) {
                 // TODO: add support of multiple deck files per each computer player (can be implemented after combine table/tourney dialog in one)
-                if (!player.joinTournamentTable(roomId, UUID.fromString(table.getTableId()), DeckImporter.importDeckFromFile(this.player1Panel.getDeckFile(), true))) {
+                if (!player.joinTournamentTable(roomId, table.getTableId(), DeckImporter.importDeckFromFile(this.player1Panel.getDeckFile(), true))) {
                     // error message must be send by sever
-                    SessionHandler.removeTable(roomId, UUID.fromString(table.getTableId()));
+                    SessionHandler.removeTable(roomId, table.getTableId());
                     table = null;
                     return;
                 }
@@ -754,7 +756,7 @@ public class NewTournamentDialog extends MageDialog {
         // join itself
         if (SessionHandler.joinTournamentTable(
                 roomId,
-                UUID.fromString(table.getTableId()),
+                table.getTableId(),
                 this.player1Panel.getPlayerName(),
                 PlayerType.HUMAN, 1,
                 DeckImporter.importDeckFromFile(this.player1Panel.getDeckFile(), true),
@@ -765,7 +767,7 @@ public class NewTournamentDialog extends MageDialog {
         }
 
         JOptionPane.showMessageDialog(MageFrame.getDesktop(), "Error joining tournament.", "Error", JOptionPane.ERROR_MESSAGE);
-        SessionHandler.removeTable(roomId, UUID.fromString(table.getTableId()));
+        SessionHandler.removeTable(roomId, table.getTableId());
         table = null;
     }//GEN-LAST:event_btnOkActionPerformed
 
@@ -910,7 +912,7 @@ public class NewTournamentDialog extends MageDialog {
     }
 
     private int getCompatiblePlayersCount(int count) {
-        ViewProto.TournamentTypeView tournamentType = (ViewProto.TournamentTypeView) cbTournamentType.getSelectedItem();
+        TournamentTypeView tournamentType = (TournamentTypeView) cbTournamentType.getSelectedItem();
         if (tournamentType == null) {
             return count;
         }
@@ -929,8 +931,7 @@ public class NewTournamentDialog extends MageDialog {
     }
 
     private void loadTourneyView(boolean loadPlayerSettings, String versionStr, int numPlayers, boolean isSingleMultiplayerGame) {
-        ViewProto.TournamentTypeView tournamentType = (ViewProto.TournamentTypeView) cbTournamentType.getSelectedItem();
-        assert tournamentType != null;
+        TournamentTypeView tournamentType = (TournamentTypeView) cbTournamentType.getSelectedItem();
         activatePanelElements(tournamentType);
 
         numPlayers = getCompatiblePlayersCount(numPlayers);
@@ -971,11 +972,11 @@ public class NewTournamentDialog extends MageDialog {
         preparePacksView(tournamentType);
     }
 
-    private void preparePacksView(ViewProto.TournamentTypeView tournamentType) {
-        if (tournamentType.getLimited()) {
-            this.isRandom = tournamentType.getRandom();
-            this.isRichMan = tournamentType.getRichMan();
-            this.isReshuffled = tournamentType.getReshuffled();
+    private void preparePacksView(TournamentTypeView tournamentType) {
+        if (tournamentType.isLimited()) {
+            this.isRandom = tournamentType.isRandom();
+            this.isRichMan = tournamentType.isRichMan();
+            this.isReshuffled = tournamentType.isReshuffled();
             if (this.isRandom || this.isRichMan || this.isReshuffled) {
                 createRandomPacks();
             } else {
@@ -1000,28 +1001,28 @@ public class NewTournamentDialog extends MageDialog {
      *
      * @param tournamentType
      */
-    private void activatePanelElements(ViewProto.TournamentTypeView tournamentType) {
-        this.pnlDraftOptions.setVisible(tournamentType.getDraft());
-        this.lblNumRounds.setVisible(!tournamentType.getElimination());
-        this.spnNumRounds.setVisible(!tournamentType.getElimination());
+    private void activatePanelElements(TournamentTypeView tournamentType) {
+        this.pnlDraftOptions.setVisible(tournamentType.isDraft());
+        this.lblNumRounds.setVisible(!tournamentType.isElimination());
+        this.spnNumRounds.setVisible(!tournamentType.isElimination());
 
-        this.lblConstructionTime.setVisible(tournamentType.getLimited());
-        this.spnConstructTime.setVisible(tournamentType.getLimited());
+        this.lblConstructionTime.setVisible(tournamentType.isLimited());
+        this.spnConstructTime.setVisible(tournamentType.isLimited());
 
-        this.lbDeckType.setVisible(!tournamentType.getLimited());
-        this.cbDeckType.setVisible(!tournamentType.getLimited());
-        this.lblGameType.setVisible(!tournamentType.getLimited());
-        this.cbGameType.setVisible(!tournamentType.getLimited());
-        this.player1Panel.showDeckElements(!tournamentType.getLimited());
+        this.lbDeckType.setVisible(!tournamentType.isLimited());
+        this.cbDeckType.setVisible(!tournamentType.isLimited());
+        this.lblGameType.setVisible(!tournamentType.isLimited());
+        this.cbGameType.setVisible(!tournamentType.isLimited());
+        this.player1Panel.showDeckElements(!tournamentType.isLimited());
 
-        if (tournamentType.getLimited()) {
-            if (tournamentType.getCubeBooster()) {
+        if (tournamentType.isLimited()) {
+            if (tournamentType.isCubeBooster()) {
                 this.lblDraftCube.setVisible(true);
                 this.cbDraftCube.setVisible(true);
                 this.lblPacks.setVisible(false);
                 this.pnlPacks.setVisible(false);
                 this.pnlRandomPacks.setVisible(false);
-            } else if (tournamentType.getRandom() || tournamentType.getRichMan() || tournamentType.getReshuffled()) {
+            } else if (tournamentType.isRandom() || tournamentType.isRichMan() || tournamentType.isReshuffled()) {
                 this.lblDraftCube.setVisible(false);
                 this.cbDraftCube.setVisible(false);
                 this.lblPacks.setVisible(true);
@@ -1303,9 +1304,8 @@ public class NewTournamentDialog extends MageDialog {
     }
 
     private TournamentOptions getTournamentOptions() {
-        ViewProto.TournamentTypeView tournamentType = (ViewProto.TournamentTypeView) cbTournamentType.getSelectedItem();
+        TournamentTypeView tournamentType = (TournamentTypeView) cbTournamentType.getSelectedItem();
         TournamentOptions tOptions = new TournamentOptions(this.txtName.getText(), "", chkSingleMultiplayerGame.isSelected());
-        assert tournamentType != null;
         tOptions.setTournamentType(tournamentType.getName());
         tOptions.setPassword(txtPassword.getText());
         tOptions.getPlayerTypes().add(PlayerType.HUMAN);
@@ -1315,10 +1315,10 @@ public class NewTournamentDialog extends MageDialog {
         for (TournamentPlayerPanel player : players) {
             tOptions.getPlayerTypes().add((PlayerType) player.getPlayerType().getSelectedItem());
         }
-        if (!tournamentType.getElimination()) {
+        if (!tournamentType.isElimination()) {
             tOptions.setNumberRounds((Integer) spnNumRounds.getValue());
         }
-        if (tournamentType.getDraft()) {
+        if (tournamentType.isDraft()) {
             DraftOptions options = new DraftOptions();
             options.setTiming((TimingOption) this.cbDraftTiming.getSelectedItem());
             tOptions.setLimitedOptions(options);
@@ -1326,14 +1326,14 @@ public class NewTournamentDialog extends MageDialog {
         if (tOptions.getLimitedOptions() == null) {
             tOptions.setLimitedOptions(new LimitedOptions());
         }
-        if (tournamentType.getLimited()) {
+        if (tournamentType.isLimited()) {
             tOptions.getLimitedOptions().setConstructionTime((Integer) this.spnConstructTime.getValue() * 60);
-            tOptions.getLimitedOptions().setIsRandom(tournamentType.getRandom());
-            tOptions.getLimitedOptions().setIsReshuffled(tournamentType.getReshuffled());
-            tOptions.getLimitedOptions().setIsRichMan(tournamentType.getRichMan());
-            tOptions.getLimitedOptions().setIsJumpstart(tournamentType.getJumpstart());
+            tOptions.getLimitedOptions().setIsRandom(tournamentType.isRandom());
+            tOptions.getLimitedOptions().setIsReshuffled(tournamentType.isReshuffled());
+            tOptions.getLimitedOptions().setIsRichMan(tournamentType.isRichMan());
+            tOptions.getLimitedOptions().setIsJumpstart(tournamentType.isJumpstart());
 
-            if (tournamentType.getJumpstart()) {
+            if (tournamentType.isJumpstart()) {
                 if (!(jumpstartPacksFilename.isEmpty())) {
                     String jumpstartPacksData = "";
                     try {
@@ -1348,7 +1348,7 @@ public class NewTournamentDialog extends MageDialog {
                     tOptions.getLimitedOptions().setJumpstartPacks(jumpstartPacksData);
                 }
             }
-            if (tournamentType.getCubeBooster()) {
+            if (tournamentType.isCubeBooster()) {
                 tOptions.getLimitedOptions().setDraftCubeName(this.cbDraftCube.getSelectedItem().toString());
                 if (!(cubeFromDeckFilename.isEmpty())) {
                     Deck cubeFromDeck = new Deck();
@@ -1362,15 +1362,15 @@ public class NewTournamentDialog extends MageDialog {
                         tOptions.getLimitedOptions().setCubeFromDeck(cubeFromDeck);
                     }
                 }
-            } else if (tournamentType.getRandom() || tournamentType.getRichMan()) {
-                this.isRandom = tournamentType.getRandom();
-                this.isRichMan = tournamentType.getRichMan();
-                this.isReshuffled = tournamentType.getReshuffled();
+            } else if (tournamentType.isRandom() || tournamentType.isRichMan()) {
+                this.isRandom = tournamentType.isRandom();
+                this.isRichMan = tournamentType.isRichMan();
+                this.isReshuffled = tournamentType.isReshuffled();
                 tOptions.getLimitedOptions().getSetCodes().clear();
                 java.util.List<String> selected = randomPackSelector.getSelectedPacks();
                 Collections.shuffle(selected);
                 int maxPacks = 3 * (players.size() + 1);
-                if (tournamentType.getRichMan()) {
+                if (tournamentType.isRichMan()) {
                     maxPacks = 36;
                 }
                 if (selected.size() > maxPacks) {
@@ -1382,10 +1382,10 @@ public class NewTournamentDialog extends MageDialog {
                 } else {
                     tOptions.getLimitedOptions().getSetCodes().addAll(selected);
                 }
-            } else if (tournamentType.getReshuffled()) {
-                this.isRandom = tournamentType.getRandom();
-                this.isRichMan = tournamentType.getRichMan();
-                this.isReshuffled = tournamentType.getReshuffled();
+            } else if (tournamentType.isReshuffled()) {
+                this.isRandom = tournamentType.isRandom();
+                this.isRichMan = tournamentType.isRichMan();
+                this.isReshuffled = tournamentType.isReshuffled();
                 tOptions.getLimitedOptions().getSetCodes().clear();
                 tOptions.getLimitedOptions().getSetCodes().addAll(randomPackSelector.getSelectedPacks());
             } else {
@@ -1407,7 +1407,7 @@ public class NewTournamentDialog extends MageDialog {
             tOptions.getLimitedOptions().setDraftCube(null);
             tOptions.getLimitedOptions().setDraftCubeName("");
             tOptions.getMatchOptions().setDeckType((String) this.cbDeckType.getSelectedItem());
-            tOptions.getMatchOptions().setGameType(((ViewProto.GameTypeView) this.cbGameType.getSelectedItem()).getName());
+            tOptions.getMatchOptions().setGameType(((GameTypeView) this.cbGameType.getSelectedItem()).getName());
             tOptions.getMatchOptions().setLimited(tOptions.getMatchOptions().getDeckType().startsWith("Limited"));
             if (tOptions.getMatchOptions().getDeckType().startsWith("Variant Magic - Freeform Unlimited Commander")) {
                 tOptions.getMatchOptions().setLimited(true); // limited-style sideboarding with unlimited basics enabled for Freeform Unlimited Commander
@@ -1462,7 +1462,7 @@ public class NewTournamentDialog extends MageDialog {
         }
         this.spnConstructTime.setValue(constructionTime);
         String tournamentTypeName = PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TOURNAMENT_TYPE + versionStr, "Sealed Elimination");
-        for (ViewProto.TournamentTypeView tournamentTypeView : SessionHandler.getTournamentTypes()) {
+        for (TournamentTypeView tournamentTypeView : SessionHandler.getTournamentTypes()) {
             if (tournamentTypeView.getName().equals(tournamentTypeName)) {
                 cbTournamentType.setSelectedItem(tournamentTypeView);
                 break;
@@ -1471,15 +1471,14 @@ public class NewTournamentDialog extends MageDialog {
         this.spnQuitRatio.setValue(Integer.parseInt(PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TOURNAMENT_QUIT_RATIO + versionStr, "100")));
         this.spnMinimumRating.setValue(Integer.parseInt(PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TOURNAMENT_MINIMUM_RATING + versionStr, "0")));
 
-        ViewProto.TournamentTypeView tournamentType = (ViewProto.TournamentTypeView) cbTournamentType.getSelectedItem();
-        assert tournamentType != null;
+        TournamentTypeView tournamentType = (TournamentTypeView) cbTournamentType.getSelectedItem();
         activatePanelElements(tournamentType);
 
         int defaultNumberPlayers = 2;
-        if (tournamentType.getLimited()) {
-            if (tournamentType.getDraft()) {
+        if (tournamentType.isLimited()) {
+            if (tournamentType.isDraft()) {
                 defaultNumberPlayers = 4;
-                if (tournamentType.getRandom() || tournamentType.getRichMan() || tournamentType.getReshuffled()) {
+                if (tournamentType.isRandom() || tournamentType.isRichMan() || tournamentType.isReshuffled()) {
                     loadRandomPacks(version);
                 } else {
                     loadBoosterPacks(PreferencesDialog.getCachedValue(PreferencesDialog.KEY_NEW_TOURNAMENT_PACKS_DRAFT + versionStr, ""));
@@ -1575,7 +1574,7 @@ public class NewTournamentDialog extends MageDialog {
         customOptions.onSaveSettings(version, tOptions.getMatchOptions());
     }
 
-    public ViewProto.TableView getTable() {
+    public TableView getTable() {
         return table;
     }
 

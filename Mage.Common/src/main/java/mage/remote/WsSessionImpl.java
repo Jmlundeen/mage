@@ -18,9 +18,7 @@ import mage.players.net.UserData;
 import mage.remote.transport.GetLobbyInfoResult;
 import mage.remote.transport.LobbyEventBus;
 import mage.remote.transport.WsClientTransport;
-import mage.view.DraftPickView;
-import mage.view.TournamentView;
-import mage.ws.v1.view.ViewProto;
+import mage.view.*;
 import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -200,8 +198,8 @@ public class WsSessionImpl implements Session {
                 handleMageException(new MageException("Failed to get server state after WebSocket connection"));
             }
 
-            if (client.getVersion().compareTo(serverState.getVersion()) != 0) {
-                handleMageException(new MageVersionException(client.getVersion(), serverState.getVersion()));
+            if (client.getVersion().compareTo(serverState.version()) != 0) {
+                handleMageException(new MageVersionException(client.getVersion(), serverState.version()));
             }
 
             logger.info("Login complete for user " + connection.getUsername());
@@ -299,9 +297,9 @@ public class WsSessionImpl implements Session {
                 setLastError("WebSocket: failed to get server state");
                 return false;
             }
-            if (client.getVersion().compareTo(serverState.getVersion()) != 0) {
-                handleThrowable(new MageVersionException(client.getVersion(), serverState.getVersion()));
-                setLastError("Version mismatch: client " + client.getVersion() + " vs server " + serverState.getVersion());
+            if (client.getVersion().compareTo(serverState.version()) != 0) {
+                handleThrowable(new MageVersionException(client.getVersion(), serverState.version()));
+                setLastError("Version mismatch: client " + client.getVersion() + " vs server " + serverState.version());
                 return false;
             }
 
@@ -433,7 +431,7 @@ public class WsSessionImpl implements Session {
     @Override
     public String getVersionInfo() {
         if (serverState != null) {
-            return serverState.getVersion().toString();
+            return serverState.version().toString();
         } else {
             return "<no server state>";
         }
@@ -444,43 +442,43 @@ public class WsSessionImpl implements Session {
         // Is server works fine, possible use cases:
         // - client connected by network, but can't process register/login process due errors like wrong username
         // - client connected to broken server that has a wrong config or broken/miss libraries
-        return isConnected() && serverState != null && !serverState.getGameTypes().isEmpty();
+        return isConnected() && serverState != null && !serverState.gameTypes().isEmpty();
     }
 
     @Override
     public PlayerType[] getPlayerTypes() {
-        return serverState.getPlayerTypes();
+        return serverState.playerTypes();
     }
 
     @Override
-    public List<ViewProto.GameTypeView> getGameTypes() {
-        return serverState.getGameTypes();
+    public List<GameTypeView> getGameTypes() {
+        return serverState.gameTypes();
     }
 
     @Override
-    public List<ViewProto.GameTypeView> getTournamentGameTypes() {
+    public List<GameTypeView> getTournamentGameTypes() {
         return serverState.getTournamentGameTypes();
     }
 
     @Override
     public String[] getDeckTypes() {
-        return serverState.getDeckTypes();
+        return serverState.deckTypes();
     }
 
     @Override
     public String[] getDraftCubes() {
-        return serverState.getDraftCubes();
+        return serverState.draftCubes();
     }
 
     @Override
-    public List<ViewProto.TournamentTypeView> getTournamentTypes() {
-        return serverState.getTournamentTypes();
+    public List<TournamentTypeView> getTournamentTypes() {
+        return serverState.tournamentTypes();
     }
 
     @Override
     public boolean isTestMode() {
         if (serverState != null) {
-            return serverState.isTestMode();
+            return serverState.testMode();
         }
         return false;
     }
@@ -498,7 +496,7 @@ public class WsSessionImpl implements Session {
     }
 
     @Override
-    public List<ViewProto.UserView> getUsers() {
+    public List<UserView> getUsers() {
         return Collections.emptyList();
     }
 
@@ -708,12 +706,12 @@ public class WsSessionImpl implements Session {
     }
 
     @Override
-    public ViewProto.TableView createTable(UUID roomId, MatchOptions matchOptions) {
+    public TableView createTable(UUID roomId, MatchOptions matchOptions) {
        return executeTransportMethodSafe(() -> transport.createTable(sessionId, roomId, matchOptions), null);
     }
 
     @Override
-    public ViewProto.TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions) {
+    public TableView createTournamentTable(UUID roomId, TournamentOptions tournamentOptions) {
         return executeTransportMethodSafe(() -> transport.createTournamentTable(sessionId, roomId, tournamentOptions), null);
     }
 
@@ -839,7 +837,7 @@ public class WsSessionImpl implements Session {
     }
 
     @Override
-    public Optional<ViewProto.TableView> getTable(UUID roomId, UUID tableId) {
+    public Optional<TableView> getTable(UUID roomId, UUID tableId) {
         return executeTransportMethodSafe(() -> transport.getTable(sessionId, roomId, tableId), Optional.empty());
     }
 
@@ -881,17 +879,17 @@ public class WsSessionImpl implements Session {
     }
 
     @Override
-    public Collection<ViewProto.TableView> getTables(UUID roomId) throws MageRemoteException {
+    public Collection<TableView> getTables(UUID roomId) throws MageRemoteException {
         return executeTransportMethod(() -> transport.lobbyGetTables(sessionId, roomId));
     }
 
     @Override
-    public Collection<ViewProto.MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException {
+    public Collection<MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException {
         return executeTransportMethod(() -> transport.getFinishedMatches(sessionId, roomId));
     }
 
     @Override
-    public ViewProto.RoomUsersView getRoomUsers(UUID roomId) throws MageRemoteException {
+    public RoomUsersView getRoomUsers(UUID roomId) throws MageRemoteException {
         return executeTransportMethod(() -> transport.getRoomUsers(sessionId, roomId));
     }
 
@@ -1171,15 +1169,15 @@ public class WsSessionImpl implements Session {
         return false;
     }
 
-    public List<ViewProto.TableView> lobbyGetTables(UUID roomId) {
+    public List<TableView> lobbyGetTables(UUID roomId) {
         return executeTransportMethodSafe(() -> transport.lobbyGetTables(sessionId, roomId), Collections.emptyList());
     }
 
-    public List<ViewProto.MatchView> lobbyGetFinishedMatches(UUID roomId) {
+    public List<MatchView> lobbyGetFinishedMatches(UUID roomId) {
         return executeTransportMethodSafe(() -> transport.getFinishedMatches(sessionId, roomId), Collections.emptyList());
     }
 
-    public ViewProto.RoomUsersView lobbyGetRoomUsers(UUID roomId) {
+    public RoomUsersView lobbyGetRoomUsers(UUID roomId) {
         return executeTransportMethodSafe(() -> transport.getRoomUsers(sessionId, roomId), null);
     }
 
@@ -1218,7 +1216,7 @@ public class WsSessionImpl implements Session {
     public GetLobbyInfoResult lobbyGetInfo(UUID roomId, boolean includeFinishedMatches, boolean includeRoomUsers) {
         return executeTransportMethodSafe(
                 () -> transport.lobbyGetInfo(sessionId, roomId, includeFinishedMatches, includeRoomUsers),
-                new GetLobbyInfoResult(Collections.emptyList(), ViewProto.RoomUsersView.getDefaultInstance(), Collections.emptyList())
+                new GetLobbyInfoResult(Collections.emptyList(), null, Collections.emptyList())
         );
     }
 

@@ -33,7 +33,6 @@ import mage.players.PlayableObjectsList;
 import mage.util.DebugUtil;
 import mage.util.MultiAmountMessage;
 import mage.view.*;
-import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.mage.plugins.card.utils.impl.ImageManagerImpl;
 
@@ -1401,10 +1400,10 @@ public final class GamePanel extends javax.swing.JPanel {
 
         private void updateExtraMode(PlayerView player) {
             this.turn.setExtraMode(false); // not used
-            this.untilEndOfTurn.setExtraMode(player.getUserData().getUserSkipPrioritySteps().getStopOnAllEndPhases());
-            this.untilNextMain.setExtraMode(player.getUserData().getUserSkipPrioritySteps().getStopOnAllMainPhases());
+            this.untilEndOfTurn.setExtraMode(player.getUserData().getUserSkipPrioritySteps().isStopOnAllEndPhases());
+            this.untilNextMain.setExtraMode(player.getUserData().getUserSkipPrioritySteps().isStopOnAllMainPhases());
             this.allTurns.setExtraMode(false); // not used
-            this.untilStackResolved.setExtraMode(player.getUserData().getUserSkipPrioritySteps().getStopOnStackNewObjects());
+            this.untilStackResolved.setExtraMode(player.getUserData().getUserSkipPrioritySteps().isStopOnStackNewObjects());
             this.untilUntilEndStepBeforeMyTurn.setExtraMode(false); // not used
         }
 
@@ -3263,7 +3262,7 @@ public final class GamePanel extends javax.swing.JPanel {
 
 }
 
-class ReplayTask extends SwingWorker<Void, Collection<ViewProto.MatchView>> {
+class ReplayTask extends SwingWorker<Void, Collection<MatchView>> {
 
     // replay without table - just single game
     private final UUID gameId;
@@ -3289,7 +3288,7 @@ class ReplayTask extends SwingWorker<Void, Collection<ViewProto.MatchView>> {
             get();
         } catch (InterruptedException | ExecutionException ex) {
             logger.fatal("Replay Match Task error", ex);
-        } catch (CancellationException ex) {
+        } catch (CancellationException ignored) {
         }
     }
 }

@@ -15,11 +15,12 @@ import mage.server.SessionManagerImpl;
 import mage.server.User;
 import mage.utils.MageVersion;
 import mage.view.DraftPickView;
+import mage.view.MatchView;
+import mage.view.TableView;
 import mage.view.TournamentView;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
 import mage.ws.v1.model.ModelProto;
-import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
@@ -255,7 +256,9 @@ public class WsMessageDispatcher {
         }
 
         WsProto.TablesResponse.Builder builder = WsProto.TablesResponse.newBuilder();
-        builder.addAllTables(mageServer.roomGetAllTables(roomId));
+        builder.addAllTables(mageServer.roomGetAllTables(roomId).stream()
+                .map(TableView::toProto)
+                .toList());
 
         return WsProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
@@ -273,7 +276,9 @@ public class WsMessageDispatcher {
         }
 
         WsProto.FinishedMatchesResponse.Builder builder = WsProto.FinishedMatchesResponse.newBuilder();
-        builder.addAllFinishedMatches(mageServer.roomGetFinishedMatches(roomId));
+        builder.addAllFinishedMatches(mageServer.roomGetFinishedMatches(roomId).stream()
+                .map(MatchView::toProto)
+                .toList());
 
         return WsProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
@@ -291,7 +296,7 @@ public class WsMessageDispatcher {
         }
 
         WsProto.RoomUsersResponse.Builder builder = WsProto.RoomUsersResponse.newBuilder();
-        builder.setRoomUsers(mageServer.roomGetUsers(roomId));
+        builder.setRoomUsers(mageServer.roomGetUsers(roomId).toProto());
 
         return WsProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
@@ -309,9 +314,13 @@ public class WsMessageDispatcher {
         }
 
         WsProto.LobbyInfoResponse.Builder builder = WsProto.LobbyInfoResponse.newBuilder();
-        builder.addAllTables(mageServer.roomGetAllTables(roomId));
-        builder.addAllFinishedMatches(mageServer.roomGetFinishedMatches(roomId));
-        builder.setRoomUsers(mageServer.roomGetUsers(roomId));
+        builder.addAllTables(mageServer.roomGetAllTables(roomId).stream()
+                .map(TableView::toProto)
+                .toList());
+        builder.addAllFinishedMatches(mageServer.roomGetFinishedMatches(roomId).stream()
+                .map(MatchView::toProto)
+                .toList());
+        builder.setRoomUsers(mageServer.roomGetUsers(roomId).toProto());
 
         return WsProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
@@ -402,13 +411,13 @@ public class WsMessageDispatcher {
     private WsProto.ServerMessage createTable(String requestId, String sessionId, WsProto.CreateTableRequest createTableRequest) {
         requireSession(sessionId);
         try {
-            ViewProto.TableView resultView = mageServer.roomCreateTable(sessionId, UUID.fromString(createTableRequest.getRoomId()), MatchOptions.fromProto(createTableRequest.getMatchOptions()));
+            TableView resultView = mageServer.roomCreateTable(sessionId, UUID.fromString(createTableRequest.getRoomId()), MatchOptions.fromProto(createTableRequest.getMatchOptions()));
             return WsProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
-                            .setTableView(resultView)
+                            .setTableView(resultView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {
@@ -419,13 +428,13 @@ public class WsMessageDispatcher {
     private WsProto.ServerMessage createTournamentTable(String requestId, String sessionId, WsProto.CreateTournamentTableRequest createTournamentTableRequest) {
         requireSession(sessionId);
         try {
-            ViewProto.TableView resultView = mageServer.roomCreateTournament(sessionId, UUID.fromString(createTournamentTableRequest.getRoomId()), TournamentOptions.fromProto(createTournamentTableRequest.getTournamentOptions()));
+            TableView resultView = mageServer.roomCreateTournament(sessionId, UUID.fromString(createTournamentTableRequest.getRoomId()), TournamentOptions.fromProto(createTournamentTableRequest.getTournamentOptions()));
             return WsProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
-                            .setTableView(resultView)
+                            .setTableView(resultView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {
@@ -1097,7 +1106,7 @@ public class WsMessageDispatcher {
         try {
             UUID roomId = UUID.fromString(getTableRequest.getRoomId());
             UUID tableId = UUID.fromString(getTableRequest.getTableId());
-            ViewProto.TableView tableView = mageServer.roomGetTableById(roomId, tableId);
+            TableView tableView = mageServer.roomGetTableById(roomId, tableId);
             if (tableView == null) {
                 return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Table not found");
             }
@@ -1106,7 +1115,7 @@ public class WsMessageDispatcher {
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
-                            .setTableView(tableView)
+                            .setTableView(tableView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {

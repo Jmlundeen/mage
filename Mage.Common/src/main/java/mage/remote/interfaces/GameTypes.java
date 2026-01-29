@@ -2,7 +2,8 @@
 package mage.remote.interfaces;
 
 import mage.players.PlayerType;
-import mage.ws.v1.view.ViewProto;
+import mage.view.GameTypeView;
+import mage.view.TournamentTypeView;
 
 import java.util.List;
 
@@ -13,12 +14,12 @@ public interface GameTypes {
 
     PlayerType[] getPlayerTypes();
 
-    List<ViewProto.GameTypeView> getGameTypes();
-    List<ViewProto.GameTypeView> getTournamentGameTypes();
+    List<GameTypeView> getGameTypes();
+    List<GameTypeView> getTournamentGameTypes();
 
     String[] getDeckTypes();
 
     String[] getDraftCubes();
 
-    List<ViewProto.TournamentTypeView> getTournamentTypes();
+    List<TournamentTypeView> getTournamentTypes();
 }

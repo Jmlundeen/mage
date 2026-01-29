@@ -9,7 +9,8 @@ import mage.client.util.gui.countryBox.CountryCellRenderer;
 import mage.components.table.MageTable;
 import mage.components.table.TableInfo;
 import mage.remote.MageRemoteException;
-import mage.ws.v1.view.ViewProto;
+import mage.view.RoomUsersView;
+import mage.view.UsersView;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -144,10 +145,10 @@ public class PlayersChatPanel extends javax.swing.JPanel {
 
     class UserTableModel extends AbstractTableModel {
 
-        private ViewProto.UsersView[] players = new ViewProto.UsersView[0];
+        private UsersView[] players = new UsersView[0];
 
-        public void loadData(ViewProto.RoomUsersView roomUserInfo) throws MageRemoteException {
-            this.players = roomUserInfo.getUsersViewList().toArray(new ViewProto.UsersView[0]);
+        public void loadData(RoomUsersView roomUserInfo) throws MageRemoteException {
+            this.players = roomUserInfo.getUsersView().toArray(new UsersView[0]);
             JTableHeader th = jTablePlayers.getTableHeader();
             TableColumnModel tcm = th.getColumnModel();
 
@@ -206,11 +207,6 @@ public class PlayersChatPanel extends javax.swing.JPanel {
         @Override
         public Class getColumnClass(int columnIndex) {
             return tableInfo.getColumnByIndex(columnIndex).getColClass();
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return false;
         }
 
     }
@@ -291,7 +287,7 @@ public class PlayersChatPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    public void setRoomUserInfo(ViewProto.RoomUsersView view) {
+    public void setRoomUserInfo(RoomUsersView view) {
         try {
             userTableModel.loadData(view);
         } catch (Exception ex) {

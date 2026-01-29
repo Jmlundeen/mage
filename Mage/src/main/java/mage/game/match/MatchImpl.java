@@ -11,7 +11,6 @@ import mage.game.events.TableEventSource;
 import mage.game.result.ResultProtos.MatchProto;
 import mage.game.result.ResultProtos.MatchQuitStatus;
 import mage.players.Player;
-import mage.util.CardUtil;
 import mage.util.DateFormat;
 import mage.util.RandomUtil;
 import mage.util.ThreadUtils;
@@ -143,6 +142,7 @@ public abstract class MatchImpl implements Match {
                 matchWinner = matchPlayer;
             }
             if (matchPlayer.getWins() >= options.getWinsNeeded()) {
+                logger.debug("Match winner found: " + matchPlayer.getName() + " with " + matchPlayer.getWins() + " wins.");
                 matchPlayer.setMatchWinner(true);
                 endTime = new Date();
                 return true;
@@ -248,6 +248,7 @@ public abstract class MatchImpl implements Match {
             addDraw();
         }
         checkIfMatchEnds();
+        logger.debug("Match ended? " + hasEnded() + " for matchId " + this.getId());
         game.fireGameEndInfo();
         gamesInfo.add(createGameInfo(game));
     }

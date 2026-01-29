@@ -18,8 +18,6 @@
  import java.text.DateFormat;
  import java.text.SimpleDateFormat;
  import java.util.Calendar;
- import java.util.Date;
- import java.util.UUID;
 
  /**
   * Game GUI: end game window
@@ -70,9 +68,8 @@
 
          // match duration
          Calendar cal = Calendar.getInstance();
-         Date gameStartTime = new Date(gameEndView.getMatchView().getStartTimeMillis());
-         txtDurationMatch.setText(" " + Format.getDuration(gameStartTime, cal.getTime()));
-         txtDurationMatch.setToolTipText(df.format(gameStartTime) + " - " + df.format(cal.getTime()));
+         txtDurationMatch.setText(" " + Format.getDuration(gameEndView.getMatchView().getStartTime(), cal.getTime()));
+         txtDurationMatch.setToolTipText(df.format(gameEndView.getMatchView().getStartTime()) + " - " + df.format(cal.getTime()));
 
          StringBuilder sb = new StringBuilder(" ");
          for (PlayerView player : gameEndView.getPlayers()) {
@@ -98,16 +95,15 @@
          }
          // get game log
          try {
-             if (!gameEndView.getMatchView().getGamesList().isEmpty()) {
-                 int numGames = gameEndView.getMatchView().getGamesList().size();
-                 GamePanel gamePanel = MageFrame.getGame(UUID.fromString(gameEndView.getMatchView().getGamesList().get(numGames - 1)));
+             if (!gameEndView.getMatchView().getGames().isEmpty()) {
+                 GamePanel gamePanel = MageFrame.getGame(gameEndView.getMatchView().getGames().get(gameEndView.getMatchView().getGames().size() - 1));
                  if (gamePanel != null) {
                      SimpleDateFormat sdf = new SimpleDateFormat();
                      sdf.applyPattern("yyyyMMdd_HHmmss");
                      String fileName = dir + File.separator +
                              sdf.format(gameEndView.getStartTime()) +
                              '_' + gameEndView.getMatchView().getGameType() +
-                             '_' + numGames +
+                             '_' + gameEndView.getMatchView().getGames().size() +
                              ".html";
                      PrintWriter out = new PrintWriter(fileName);
                      String log = gamePanel.getGameLog();

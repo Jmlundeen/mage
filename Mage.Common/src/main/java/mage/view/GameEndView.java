@@ -7,7 +7,6 @@ import mage.game.Table;
 import mage.game.match.Match;
 import mage.game.match.MatchPlayer;
 import mage.players.Player;
-import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class GameEndView implements Serializable {
     private final String matchInfo;
     private final String additionalInfo;
     private boolean won;
-    private final ViewProto.MatchView matchView;
+    private final MatchView matchView;
     private int wins;
     private int loses;
     private final int winsNeeded;
@@ -61,7 +60,7 @@ public class GameEndView implements Serializable {
                 gameInfo = "Game is a draw on Turn " + game.getTurnNum() + ".";
             }
         }
-        matchView = table.getMatchView();
+        matchView = new MatchView(table);
 
         Match match = table.getMatch();
         MatchPlayer matchWinner = null;
@@ -136,7 +135,7 @@ public class GameEndView implements Serializable {
         return won;
     }
 
-    public ViewProto.MatchView getMatchView() {
+    public MatchView getMatchView() {
         return matchView;
     }
 

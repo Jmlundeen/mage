@@ -4,8 +4,6 @@ package mage.ws.v1.model;
 option java_package="mage.ws.v1.model";
 option java_outer_classname="ModelProto";
 
-import "ws/v1/view/view.proto";
-
 // Represents the Mage server version information.
 // @author BetaSteward_at_googlemail.com
 message MageVersion {
@@ -19,8 +17,8 @@ message MageVersion {
 // Represents the state of the server.
 // @author BetaSteward_at_googlemail.com
 message ServerState {
-  repeated view.GameTypeView gameTypes = 1;
-  repeated view.TournamentTypeView tournamentTypes = 2;
+  repeated GameTypeView gameTypes = 1;
+  repeated TournamentTypeView tournamentTypes = 2;
   repeated string playerTypes = 3;
   repeated string deckTypes = 4;
   repeated string draftCubes = 5;
@@ -172,3 +170,27 @@ message DeckCardLists {
   DeckCardLayout sideboard_layout = 6;
 }
 
+message GameTypeView {
+  string name = 1;
+  int32 minPlayers = 2;
+  int32 maxPlayers = 3;
+  int32 numTeams = 4;
+  int32 playersPerTeam = 5;
+  bool useRange = 6;
+  bool useAttackOption = 7;
+}
+
+message TournamentTypeView {
+  string name = 1;
+  int32 minPlayers = 2;
+  int32 maxPlayers = 3;
+  int32 numBoosters = 4;
+  bool draft = 5;
+  bool limited = 6;
+  bool cubeBooster = 7;
+  bool elimination = 8;
+  bool random = 9;
+  bool reshuffled = 10;
+  bool richMan = 11;
+  bool jumpstart = 12;
+}

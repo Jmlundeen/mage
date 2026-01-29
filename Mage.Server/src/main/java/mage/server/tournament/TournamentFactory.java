@@ -6,7 +6,7 @@ import mage.game.tournament.Tournament;
 import mage.game.tournament.TournamentOptions;
 import mage.game.tournament.TournamentType;
 import mage.server.draft.CubeFactory;
-import mage.ws.v1.view.ViewProto;
+import mage.view.TournamentTypeView;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Constructor;
@@ -21,7 +21,7 @@ public enum TournamentFactory {
 
     private final Map<String, Class<Tournament>> tournaments = new HashMap<>();
     private final Map<String, TournamentType> tournamentTypes = new HashMap<>();
-    private final List<ViewProto.TournamentTypeView> tournamentTypeViews = new ArrayList<mage.ws.v1.view.ViewProto.TournamentTypeView>();
+    private final List<TournamentTypeView> tournamentTypeViews = new ArrayList<>();
 
 
     public Tournament createTournament(String tournamentType, TournamentOptions options) {
@@ -87,7 +87,7 @@ public enum TournamentFactory {
         return tournament;
     }
 
-    public List<ViewProto.TournamentTypeView> getTournamentTypes() {
+    public List<TournamentTypeView> getTournamentTypes() {
         return tournamentTypeViews;
     }
 
@@ -96,7 +96,7 @@ public enum TournamentFactory {
         if (tournamentType != null && tournament != null) {
             this.tournaments.put(name, tournament);
             this.tournamentTypes.put(name, tournamentType);
-            this.tournamentTypeViews.add(tournamentType.toProto());
+            this.tournamentTypeViews.add(new TournamentTypeView(tournamentType));
         }
     }
 

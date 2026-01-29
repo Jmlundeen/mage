@@ -2,7 +2,10 @@
 package mage.remote.interfaces;
 
 import mage.remote.MageRemoteException;
-import mage.ws.v1.view.ViewProto;
+import mage.view.MatchView;
+import mage.view.RoomUsersView;
+import mage.view.TableView;
+import mage.view.UserView;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,15 +18,15 @@ public interface ServerState {
 
     UUID getMainRoomId();
 
-    List<ViewProto.UserView> getUsers();
+    List<UserView> getUsers();
 
-    ViewProto.RoomUsersView getRoomUsers (UUID roomId) throws MageRemoteException;
+    RoomUsersView getRoomUsers (UUID roomId) throws MageRemoteException;
     
     List<String> getServerMessages();
 
-    Collection<ViewProto.TableView> getTables(UUID roomId) throws MageRemoteException;
+    Collection<TableView> getTables(UUID roomId) throws MageRemoteException;
 
-    Collection<ViewProto.MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException;
+    Collection<MatchView> getFinishedMatches(UUID roomId) throws MageRemoteException;
 
     String getVersionInfo();
 

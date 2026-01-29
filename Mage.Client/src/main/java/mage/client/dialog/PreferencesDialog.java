@@ -10,10 +10,10 @@ import mage.client.util.gui.BufferedImageBuilder;
 import mage.client.util.gui.GuiDisplayUtil;
 import mage.players.net.UserData;
 import mage.players.net.UserGroup;
+import mage.players.net.UserSkipPrioritySteps;
 import mage.remote.Connection;
 import mage.remote.Connection.ProxyType;
 import mage.view.UserRequestMessage;
-import mage.ws.v1.model.ModelProto;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -3632,38 +3632,37 @@ public class PreferencesDialog extends javax.swing.JDialog {
         return selectedAvatarId;
     }
 
-    public static ModelProto.UserSkipPrioritySteps getUserSkipPrioritySteps() {
+    public static UserSkipPrioritySteps getUserSkipPrioritySteps() {
         PreferencesDialog dialog = PreferencesDialog.getInstance();
         if (!dialog.isVisible()) {
             loadPhases(MageFrame.getPreferences());
         }
-        ModelProto.UserSkipPrioritySteps.Builder userSkipPrioritySteps = ModelProto.UserSkipPrioritySteps.newBuilder();
-        ModelProto.SkipPrioritySteps.Builder yourTurn = ModelProto.SkipPrioritySteps.newBuilder();
-        ModelProto.SkipPrioritySteps.Builder opponentTurn = ModelProto.SkipPrioritySteps.newBuilder();
-        yourTurn.setUpkeep(dialog.checkBoxUpkeepYou.isSelected());
-        yourTurn.setDraw(dialog.checkBoxDrawYou.isSelected());
-        yourTurn.setMain1(dialog.checkBoxMainYou.isSelected());
-        yourTurn.setBeforeCombat(dialog.checkBoxBeforeCYou.isSelected());
-        yourTurn.setEndOfCombat(dialog.checkBoxEndOfCYou.isSelected());
-        yourTurn.setMain2(dialog.checkBoxMain2You.isSelected());
-        yourTurn.setEndOfTurn(dialog.checkBoxEndTurnYou.isSelected());
+        UserSkipPrioritySteps userSkipPrioritySteps = new UserSkipPrioritySteps();
 
-        opponentTurn.setUpkeep(dialog.checkBoxUpkeepOthers.isSelected());
-        opponentTurn.setDraw(dialog.checkBoxDrawOthers.isSelected());
-        opponentTurn.setMain1(dialog.checkBoxMainOthers.isSelected());
-        opponentTurn.setBeforeCombat(dialog.checkBoxBeforeCOthers.isSelected());
-        opponentTurn.setEndOfCombat(dialog.checkBoxEndOfCOthers.isSelected());
-        opponentTurn.setMain2(dialog.checkBoxMain2Others.isSelected());
-        opponentTurn.setEndOfTurn(dialog.checkBoxEndTurnOthers.isSelected());
+        userSkipPrioritySteps.getYourTurn().setUpkeep(dialog.checkBoxUpkeepYou.isSelected());
+        userSkipPrioritySteps.getYourTurn().setDraw(dialog.checkBoxDrawYou.isSelected());
+        userSkipPrioritySteps.getYourTurn().setMain1(dialog.checkBoxMainYou.isSelected());
+        userSkipPrioritySteps.getYourTurn().setBeforeCombat(dialog.checkBoxBeforeCYou.isSelected());
+        userSkipPrioritySteps.getYourTurn().setEndOfCombat(dialog.checkBoxEndOfCYou.isSelected());
+        userSkipPrioritySteps.getYourTurn().setMain2(dialog.checkBoxMain2You.isSelected());
+        userSkipPrioritySteps.getYourTurn().setEndOfTurn(dialog.checkBoxEndTurnYou.isSelected());
 
-        userSkipPrioritySteps.setStopOnDeclareAttackers(dialog.cbStopAttack.isSelected());
+        userSkipPrioritySteps.getOpponentTurn().setUpkeep(dialog.checkBoxUpkeepOthers.isSelected());
+        userSkipPrioritySteps.getOpponentTurn().setDraw(dialog.checkBoxDrawOthers.isSelected());
+        userSkipPrioritySteps.getOpponentTurn().setMain1(dialog.checkBoxMainOthers.isSelected());
+        userSkipPrioritySteps.getOpponentTurn().setBeforeCombat(dialog.checkBoxBeforeCOthers.isSelected());
+        userSkipPrioritySteps.getOpponentTurn().setEndOfCombat(dialog.checkBoxEndOfCOthers.isSelected());
+        userSkipPrioritySteps.getOpponentTurn().setMain2(dialog.checkBoxMain2Others.isSelected());
+        userSkipPrioritySteps.getOpponentTurn().setEndOfTurn(dialog.checkBoxEndTurnOthers.isSelected());
+
+        userSkipPrioritySteps.setStopOnDeclareAttackersDuringSkipActions(dialog.cbStopAttack.isSelected());
         userSkipPrioritySteps.setStopOnDeclareBlockersWithAnyPermanents(dialog.cbStopBlockWithAny.isSelected());
         userSkipPrioritySteps.setStopOnDeclareBlockersWithZeroPermanents(dialog.cbStopBlockWithZero.isSelected());
         userSkipPrioritySteps.setStopOnAllEndPhases(dialog.cbStopOnAllEnd.isSelected());
         userSkipPrioritySteps.setStopOnAllMainPhases(dialog.cbStopOnAllMain.isSelected());
         userSkipPrioritySteps.setStopOnStackNewObjects(dialog.cbStopOnNewStackObjects.isSelected());
 
-        return userSkipPrioritySteps.build();
+        return userSkipPrioritySteps;
     }
 
     private static void openTab(int index) {

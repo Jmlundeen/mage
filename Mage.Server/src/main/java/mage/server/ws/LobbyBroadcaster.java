@@ -1,8 +1,10 @@
 package mage.server.ws;
 
+import mage.view.MatchView;
+import mage.view.RoomUsersView;
+import mage.view.TableView;
 import mage.ws.ProtocolVersion;
 import mage.ws.v1.WsProto;
-import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -23,9 +25,9 @@ public class LobbyBroadcaster {
      * @param finishedMatches The finished matches
      */
     public static void broadcastLobbyUpdate(
-            List<ViewProto.TableView> tables,
-            ViewProto.RoomUsersView roomUsers,
-            List<ViewProto.MatchView> finishedMatches) {
+            List<TableView> tables,
+            RoomUsersView roomUsers,
+            List<MatchView> finishedMatches) {
 
         try {
             WsConnectionRegistry connections = WsServerMain.getConnections();
@@ -37,15 +39,19 @@ public class LobbyBroadcaster {
             WsProto.LobbyInfoResponse.Builder lobbyInfoBuilder = WsProto.LobbyInfoResponse.newBuilder();
 
             if (tables != null && !tables.isEmpty()) {
-                lobbyInfoBuilder.addAllTables(tables);
+                lobbyInfoBuilder.addAllTables(tables.stream()
+                        .map(TableView::toProto)
+                        .toList());
             }
 
             if (roomUsers != null) {
-                lobbyInfoBuilder.setRoomUsers(roomUsers);
+                lobbyInfoBuilder.setRoomUsers(roomUsers.toProto());
             }
 
             if (finishedMatches != null && !finishedMatches.isEmpty()) {
-                lobbyInfoBuilder.addAllFinishedMatches(finishedMatches);
+                lobbyInfoBuilder.addAllFinishedMatches(finishedMatches.stream()
+                        .map(MatchView::toProto)
+                        .toList());
             }
 
             // Build server message (no requestId means it's a push message)

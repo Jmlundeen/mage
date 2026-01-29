@@ -24,8 +24,9 @@ import mage.remote.transport.LobbyEventBus;
 import mage.remote.transport.LobbyEventListener;
 import mage.util.DeckUtil;
 import mage.util.RandomUtil;
+import mage.view.MatchView;
+import mage.view.TableView;
 import mage.view.UserRequestMessage;
-import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.mage.card.arcane.CardRendererUtils;
 import org.ocpsoft.prettytime.Duration;
@@ -708,21 +709,23 @@ public class TablesPanel extends javax.swing.JPanel {
         return components;
     }
 
-    public void updateTables(List<ViewProto.TableView> tables) {
+    public void updateTables(List<TableView> tables) {
         try {
             tableModel.loadData(tables);
             this.tableTables.repaint();
         } catch (Exception ex) {
             hideTables();
+            LOGGER.error("Error updating tables", ex);
         }
     }
 
-    public void updateMatches(List<ViewProto.MatchView> matches) {
+    public void updateMatches(List<MatchView> matches) {
         try {
             matchesModel.loadData(matches);
             this.tableCompleted.repaint();
         } catch (Exception ex) {
             hideTables();
+            LOGGER.error("Error updating finished matches", ex);
         }
     }
 
@@ -777,7 +780,6 @@ public class TablesPanel extends javax.swing.JPanel {
         }
         if (chatRoomId != null) {
             this.chatPanelMain.getUserChatPanel().connect(chatRoomId);
-
             // Subscribe to lobby event bus for server push updates
             if (SessionHandler.getSession() instanceof mage.remote.WsSessionImpl) {
                 LobbyEventBus eventBus = ((mage.remote.WsSessionImpl) SessionHandler.getSession()).getLobbyEventBus();
@@ -835,7 +837,7 @@ public class TablesPanel extends javax.swing.JPanel {
                 ((TableWaitingDialog) component).doClose();
             }
         }
-        this.chatPanelMain.cleanUp();;
+        this.chatPanelMain.cleanUp();
 
         Component c = this.getParent();
         while (c != null && !(c instanceof TablesPane)) {
@@ -1690,14 +1692,13 @@ public class TablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnNewTournamentActionPerformed
 
     private void createTestGame(String gameName, String gameType, boolean useMonteCarloAI) {
-        ViewProto.TableView table;
+        TableView table;
         try {
             String testDeckFile = "test.dck";
             File f = new File(testDeckFile);
             if (!f.exists()) {
                 // default test deck
-                testDeckFile = DeckUtil.writeTextToTempFile(""
-                        + "5 Swamp" + System.lineSeparator()
+                testDeckFile = DeckUtil.writeTextToTempFile("5 Swamp" + System.lineSeparator()
                         + "5 Forest" + System.lineSeparator()
                         + "5 Island" + System.lineSeparator()
                         + "5 Mountain" + System.lineSeparator()
@@ -1730,13 +1731,12 @@ public class TablesPanel extends javax.swing.JPanel {
             options.setBannedUsers(IgnoreList.getIgnoredUsers(serverAddress));
             table = SessionHandler.createTable(roomId, options);
 
-            UUID tableId = UUID.fromString(table.getTableId());
-            SessionHandler.joinTable(roomId, tableId, "Human", PlayerType.HUMAN, 1, testDeck, "");
-            SessionHandler.joinTable(roomId, tableId, "Computer" + (multiPlayer ? " 2" : ""), aiType, 1, testDeck, "");
+            SessionHandler.joinTable(roomId, table.getTableId(), "Human", PlayerType.HUMAN, 1, testDeck, "");
+            SessionHandler.joinTable(roomId, table.getTableId(), "Computer" + (multiPlayer ? " 2" : ""), aiType, 1, testDeck, "");
             for (int i = 2; i < numPlayers; i++) {
-                SessionHandler.joinTable(roomId, tableId, "Computer " + (i + 1), aiType, 1, testDeck, "");
+                SessionHandler.joinTable(roomId, table.getTableId(), "Computer " + (i + 1), aiType, 1, testDeck, "");
             }
-            SessionHandler.startMatch(roomId, tableId);
+            SessionHandler.startMatch(roomId, table.getTableId());
         } catch (HeadlessException ex) {
             handleError(ex);
         }

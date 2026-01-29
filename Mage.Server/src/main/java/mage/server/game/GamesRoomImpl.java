@@ -14,7 +14,10 @@ import mage.server.managers.ManagerFactory;
 import mage.server.ws.LobbyBroadcaster;
 import mage.util.ThreadUtils;
 import mage.util.XmageThreadFactory;
-import mage.ws.v1.view.ViewProto;
+import mage.view.MatchView;
+import mage.view.RoomUsersView;
+import mage.view.TableView;
+import mage.view.UsersView;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -35,9 +38,9 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
     private static final long FORCE_UPDATE_INTERVAL = TimeUnit.MINUTES.toMillis(5);
 
     // server's lobby
-    private static List<ViewProto.TableView> lobbyTables = new ArrayList<>();
-    private static List<ViewProto.MatchView> lobbyMatches = new ArrayList<>();
-    private static ViewProto.RoomUsersView lobbyUsers = null;
+    private static List<TableView> lobbyTables = new ArrayList<>();
+    private static List<MatchView> lobbyMatches = new ArrayList<>();
+    private static RoomUsersView lobbyUsers = null;
     private static final ScheduledExecutorService UPDATE_LOBBY_EXECUTOR = Executors.newSingleThreadScheduledExecutor(
             new XmageThreadFactory(ThreadUtils.THREAD_PREFIX_SERVICE_LOBBY_REFRESH)
     );
@@ -67,7 +70,7 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
     }
 
     @Override
-    public List<ViewProto.TableView> getTables() {
+    public List<TableView> getTables() {
         return lobbyTables;
     }
 
@@ -75,13 +78,13 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
         // tables and matches
         List<Table> allTables = new ArrayList<>(tables.values());
         allTables.sort(new TableListSorter());
-        List<ViewProto.MatchView> matchList = new ArrayList<>();
-        List<ViewProto.TableView> tableList = new ArrayList<>();
+        List<MatchView> matchList = new ArrayList<>();
+        List<TableView> tableList = new ArrayList<>();
         for (Table table : allTables) {
             if (table.getState() != TableState.FINISHED) {
-                tableList.add(table.toProtoView());
+                tableList.add(new TableView(table));
             } else if (matchList.size() < MAX_FINISHED_TABLES) {
-                matchList.add(table.getMatchView());
+                matchList.add(new MatchView(table));
             } else {
                 // more since 50 matches finished since this match so removeUserFromAllTablesAndChat it
                 if (table.isTournament()) {
@@ -94,33 +97,46 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
         lobbyMatches = matchList;
 
         // users
-        List<ViewProto.UsersView> users = new ArrayList<>();
+        List<UsersView> users = new ArrayList<>();
         for (User user : managerFactory.userManager().getUsers()) {
             if (user.isOnlineUser()) {
                 try {
-                    users.add(user.toUsersProto());
+                    users.add(new UsersView(user.getUserData().getFlagName(), user.getName(),
+                            user.getMatchHistory(), user.getMatchQuitRatio(), user.getTourneyHistory(),
+                            user.getTourneyQuitRatio(), user.getGameInfo(), user.getPingInfo(),
+                            user.getUserData().getGeneralRating(), user.getUserData().getConstructedRating(),
+                            user.getUserData().getLimitedRating()));
                 } catch (Exception ex) {
                     LOGGER.fatal("User update exception: " + user.getName() + " - " + ex.toString(), ex);
-                    users.add(user.toUsersProto());
+                    users.add(new UsersView(
+                            (user.getUserData() != null && user.getUserData().getFlagName() != null) ? user.getUserData().getFlagName() : "world",
+                            user.getName() != null ? user.getName() : "<no name>",
+                            user.getMatchHistory() != null ? user.getMatchHistory() : "<no match history>",
+                            user.getMatchQuitRatio(),
+                            user.getTourneyHistory() != null ? user.getTourneyHistory() : "<no tourney history>",
+                            user.getTourneyQuitRatio(),
+                            "[exception]",
+                            user.getPingInfo() != null ? user.getPingInfo() : "<no ping>",
+                            user.getUserData() != null ? user.getUserData().getGeneralRating() : 0,
+                            user.getUserData() != null ? user.getUserData().getConstructedRating() : 0,
+                            user.getUserData() != null ? user.getUserData().getLimitedRating() : 0));
                 }
             }
         }
         users.sort((one, two) -> one.getUserName().compareToIgnoreCase(two.getUserName()));
-        lobbyUsers = ViewProto.RoomUsersView.newBuilder()
-                .addAllUsersView(users)
-                .setNumberActiveGames(managerFactory.gameManager().getNumberActiveGames())
-                .setNumberGameThreads(managerFactory.threadExecutor().getActiveThreads(managerFactory.threadExecutor().getGameExecutor()))
-                .setNumberMaxGames(managerFactory.configSettings().getMaxGameThreads())
-                .build();
-
+        lobbyUsers = new RoomUsersView(users,
+                managerFactory.gameManager().getNumberActiveGames(),
+                managerFactory.threadExecutor().getActiveThreads(managerFactory.threadExecutor().getGameExecutor()),
+                managerFactory.configSettings().getMaxGameThreads()
+        );
         // Check if lobby state has changed using hash comparison
         int currentTablesCount = tableList.size();
         int currentMatchesCount = matchList.size();
         int currentUsersCount = users.size();
 
         boolean hasChanges = (currentTablesCount != previousTablesCount)
-                          || (currentMatchesCount != previousMatchesCount)
-                          || (currentUsersCount != previousUsersCount);
+                || (currentMatchesCount != previousMatchesCount)
+                || (currentUsersCount != previousUsersCount);
 
         if (hasChanges || (System.currentTimeMillis() - lastForceUpdateTime) >= FORCE_UPDATE_INTERVAL) {
             // Update hash values
@@ -134,7 +150,7 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
                 LobbyBroadcaster.broadcastLobbyUpdate(tableList, lobbyUsers, matchList);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Lobby state changed - broadcast sent: " + tableList.size() + " tables, " +
-                               matchList.size() + " matches, " + users.size() + " users");
+                            matchList.size() + " matches, " + users.size() + " users");
                 }
             } catch (Exception e) {
                 LOGGER.error("Failed to broadcast lobby update", e);
@@ -147,7 +163,7 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
     }
 
     @Override
-    public List<ViewProto.MatchView> getFinished() {
+    public List<MatchView> getFinished() {
         return lobbyMatches;
     }
 
@@ -161,10 +177,10 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
     }
 
     @Override
-    public ViewProto.TableView createTable(UUID userId, MatchOptions options) {
+    public TableView createTable(UUID userId, MatchOptions options) {
         Table table = managerFactory.tableManager().createTable(this.getRoomId(), userId, options);
         tables.put(table.getId(), table);
-        return table.toProtoView();
+        return new TableView(table);
     }
 
     @Override
@@ -177,21 +193,16 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
     }
 
     @Override
-    public ViewProto.TableView createTournamentTable(UUID userId, TournamentOptions options) {
+    public TableView createTournamentTable(UUID userId, TournamentOptions options) {
         Table table = managerFactory.tableManager().createTournamentTable(this.getRoomId(), userId, options);
         tables.put(table.getId(), table);
-        return table.toProtoView();
+        return new TableView(table);
     }
 
     @Override
-    public Optional<ViewProto.TableView> getTable(UUID tableId) {
+    public Optional<TableView> getTable(UUID tableId) {
         if (tables.containsKey(tableId)) {
-            Table table = tables.get(tableId);
-            if (table != null) {
-                return Optional.of(table.toProtoView());
-            } else {
-                return Optional.empty();
-            }
+            return Optional.of(new TableView(tables.get(tableId)));
         }
         return Optional.empty();
     }
@@ -224,7 +235,7 @@ public class GamesRoomImpl extends RoomImpl implements GamesRoom, Serializable {
     }
 
     @Override
-    public ViewProto.RoomUsersView getRoomUsersInfo() {
+    public RoomUsersView getRoomUsersInfo() {
         return lobbyUsers;
     }
 
