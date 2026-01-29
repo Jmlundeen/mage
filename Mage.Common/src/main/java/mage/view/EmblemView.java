@@ -4,8 +4,10 @@ import mage.game.Game;
 import mage.game.command.Emblem;
 import mage.game.command.emblems.EmblemOfCard;
 import mage.players.PlayableObjectStats;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -73,6 +75,36 @@ public class EmblemView implements CommandObjectView, Serializable {
     @Override
     public List<String> getRules() {
         return rules;
+    }
+
+    public ViewProto.EmblemView toProto() {
+        return ViewProto.EmblemView.newBuilder()
+                .setId(id.toString())
+                .setName(name != null ? name : "")
+                .setCardNumber(cardNumber != null ? cardNumber : "")
+                .setImageFileName(imageFileName != null ? imageFileName : "")
+                .setImageNumber(imageNumber)
+                .setUsesVariousArt(usesVariousArt)
+                .setExpansionSetCode(expansionSetCode != null ? expansionSetCode : "")
+                .addAllRules(rules != null ? rules : new ArrayList<>())
+                .build();
+    }
+
+    public static EmblemView fromProto(ViewProto.EmblemView proto) {
+        // Since original logic uses Emblem object in constructor, we need to manually fill
+        EmblemView view = new EmblemView();
+        view.id = UUID.fromString(proto.getId());
+        view.name = proto.getName();
+        view.cardNumber = proto.getCardNumber();
+        view.imageFileName = proto.getImageFileName();
+        view.imageNumber = proto.getImageNumber();
+        view.usesVariousArt = proto.getUsesVariousArt();
+        view.expansionSetCode = proto.getExpansionSetCode();
+        view.rules = new ArrayList<>(proto.getRulesList());
+        return view;
+    }
+
+    protected EmblemView() {
     }
 
     @Override

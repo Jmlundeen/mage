@@ -1,9 +1,10 @@
-
 package mage.view;
 
-import java.io.Serializable;
 import mage.ConditionalMana;
 import mage.players.ManaPool;
+import mage.ws.v1.view.ViewProto;
+
+import java.io.Serializable;
 
 /**
  *
@@ -19,6 +20,15 @@ public class ManaPoolView implements Serializable {
     private int white;
     private int black;
     private int colorless;
+
+    public ManaPoolView(int red, int green, int blue, int white, int black, int colorless) {
+        this.red = red;
+        this.green = green;
+        this.blue = blue;
+        this.white = white;
+        this.black = black;
+        this.colorless = colorless;
+    }
 
     public ManaPoolView(ManaPool pool) {
         this.red = pool.getRed();
@@ -59,6 +69,28 @@ public class ManaPoolView implements Serializable {
 
     public int getColorless() {
         return colorless;
+    }
+
+    public ViewProto.ManaPoolView toProto() {
+        return ViewProto.ManaPoolView.newBuilder()
+                .setRed(red)
+                .setGreen(green)
+                .setBlue(blue)
+                .setWhite(white)
+                .setBlack(black)
+                .setColorless(colorless)
+                .build();
+    }
+
+    public static ManaPoolView fromProto(ViewProto.ManaPoolView proto) {
+        return new ManaPoolView(
+                proto.getRed(),
+                proto.getGreen(),
+                proto.getBlue(),
+                proto.getWhite(),
+                proto.getBlack(),
+                proto.getColorless()
+        );
     }
 
 }

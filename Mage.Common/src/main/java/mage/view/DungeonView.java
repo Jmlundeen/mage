@@ -2,8 +2,10 @@ package mage.view;
 
 import mage.game.command.Dungeon;
 import mage.players.PlayableObjectStats;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,6 +59,31 @@ public class DungeonView implements CommandObjectView, Serializable {
     @Override
     public List<String> getRules() {
         return rules;
+    }
+
+    public ViewProto.DungeonView toProto() {
+        return ViewProto.DungeonView.newBuilder()
+                .setId(id.toString())
+                .setName(name != null ? name : "")
+                .setImageFileName(imageFileName != null ? imageFileName : "")
+                .setImageNumber(imageNumber)
+                .setExpansionSetCode(expansionSetCode != null ? expansionSetCode : "")
+                .addAllRules(rules != null ? rules : new ArrayList<>())
+                .build();
+    }
+
+    public static DungeonView fromProto(ViewProto.DungeonView proto) {
+        DungeonView view = new DungeonView();
+        view.id = UUID.fromString(proto.getId());
+        view.name = proto.getName();
+        view.imageFileName = proto.getImageFileName();
+        view.imageNumber = proto.getImageNumber();
+        view.expansionSetCode = proto.getExpansionSetCode();
+        view.rules = new ArrayList<>(proto.getRulesList());
+        return view;
+    }
+
+    protected DungeonView() {
     }
 
     @Override

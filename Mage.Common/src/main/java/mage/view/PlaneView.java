@@ -3,8 +3,10 @@ package mage.view;
 import mage.game.Game;
 import mage.game.command.Plane;
 import mage.players.PlayableObjectStats;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,6 +60,31 @@ public class PlaneView implements CommandObjectView, Serializable {
     @Override
     public List<String> getRules() {
         return rules;
+    }
+
+    public ViewProto.PlaneView toProto() {
+        return ViewProto.PlaneView.newBuilder()
+                .setId(id.toString())
+                .setName(name != null ? name : "")
+                .setImageFileName(imageFileName != null ? imageFileName : "")
+                .setImageNumber(imageNumber)
+                .setExpansionSetCode(expansionSetCode != null ? expansionSetCode : "")
+                .addAllRules(rules != null ? rules : new ArrayList<>())
+                .build();
+    }
+
+    public static PlaneView fromProto(ViewProto.PlaneView proto) {
+        PlaneView view = new PlaneView();
+        view.id = UUID.fromString(proto.getId());
+        view.name = proto.getName();
+        view.imageFileName = proto.getImageFileName();
+        view.imageNumber = proto.getImageNumber();
+        view.expansionSetCode = proto.getExpansionSetCode();
+        view.rules = new ArrayList<>(proto.getRulesList());
+        return view;
+    }
+
+    protected PlaneView() {
     }
 
     @Override

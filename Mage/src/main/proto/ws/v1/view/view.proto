@@ -274,6 +274,62 @@ message CardIconView {
   string hint = 3;
 }
 
+message ManaPoolView {
+  int32 red = 1;
+  int32 green = 2;
+  int32 blue = 3;
+  int32 white = 4;
+  int32 black = 5;
+  int32 colorless = 6;
+}
+
+// Mirrors mage.view.EmblemView
+message EmblemView {
+  string id = 1;
+  string name = 2;
+  string card_number = 3;
+  string image_file_name = 4;
+  int32 image_number = 5;
+  bool uses_various_art = 6;
+  string expansion_set_code = 7;
+  repeated string rules = 8;
+}
+
+// Mirrors mage.view.DungeonView
+message DungeonView {
+  string id = 1;
+  string name = 2;
+  string image_file_name = 3;
+  int32 image_number = 4;
+  string expansion_set_code = 5;
+  repeated string rules = 6;
+}
+
+// Mirrors mage.view.PlaneView
+message PlaneView {
+  string id = 1;
+  string name = 2;
+  string image_file_name = 3;
+  int32 image_number = 4;
+  string expansion_set_code = 5;
+  repeated string rules = 6;
+}
+
+// Mirrors mage.view.CommanderView
+message CommanderView {
+  CardView card_view = 1;
+}
+
+// Mirrors mage.view.CommandObjectView
+message CommandObjectView {
+  oneof type {
+    EmblemView emblem = 1;
+    DungeonView dungeon = 2;
+    PlaneView plane = 3;
+    CommanderView commander = 4;
+  }
+}
+
 // Mirrors mage.view.DraftPickView
 message DraftPickView {
   SimpleCardsView booster = 1;
@@ -324,3 +380,5 @@ message TournamentGameView {
   string players = 6;
   string tableId = 7;
 }
+
+
