@@ -381,4 +381,42 @@ message TournamentGameView {
   string tableId = 7;
 }
 
-
+// Mirrors mage.view.PlayerView
+message PlayerView {
+  string playerId = 1;
+  string name = 2;
+  bool controlled = 3;
+  bool isHuman = 4;
+  int32 life = 5;
+  repeated CounterView counters = 6;
+  int32 wins = 7;
+  int32 winsNeeded = 8;
+  int32 libraryCount = 9;
+  int32 handCount = 10;
+  bool isActive = 11;
+  bool hasPriority = 12;
+  bool timerActive = 13;
+  bool hasLeft = 14;
+  ManaPoolView manaPool = 15;
+  map<string, CardView> graveyard = 16;
+  map<string, CardView> exile = 17;
+  map<string, CardView> sideboard = 18;
+  map<string, CardView> helperCards = 19;
+  map<string, PermanentView> battlefield = 20;
+  CardView topCard = 21;
+  model.UserData userData = 22;
+  repeated CommandObjectView commandList = 23;
+  repeated string attachments = 24;
+  int32 statesSavedSize = 25;
+  int32 priorityTimeLeftSecs = 26;
+  int32 bufferTimeLeft = 27;
+  bool passedTurn = 28;
+  bool passedUntilEndOfTurn = 29;
+  bool passedUntilNextMain = 30;
+  bool passedUntilStackResolved = 31;
+  bool passedAllTurns = 32;
+  bool passedUntilEndStepBeforeMyTurn = 33;
+  bool monarch = 34;
+  bool initiative = 35;
+  repeated string designationNames = 36;
+}

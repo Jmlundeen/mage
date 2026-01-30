@@ -2,12 +2,12 @@
 
 package mage.view;
 
-import java.io.Serializable;
-
 import mage.cards.Card;
 import mage.cards.Cards;
 import mage.game.Game;
 import mage.game.permanent.PermanentCard;
+
+import java.io.Serializable;
 
 /**
  * @author BetaSteward_at_googlemail.com

@@ -24,28 +24,24 @@ public class PermanentView extends CardView {
     private static final long serialVersionUID = 1L;
 
     private boolean tapped;
-    private boolean flipped;
-    private boolean phasedIn;
-    private boolean summoningSickness;
-    private int damage;
+    private final boolean flipped;
+    private final boolean phasedIn;
+    private final boolean summoningSickness;
+    private final int damage;
     private List<UUID> attachments;
-    private CardView original; // original card before transforms and modifications (null for opponents face down cards)
-    private boolean copy;
-    private String nameOwner; // only filled if != controller
-    private String nameController;
-    private boolean controlled;
-    private UUID attachedTo;
-    private boolean morphed;
-    private boolean disguised;
-    private boolean manifested;
-    private boolean cloaked;
-    private boolean attachedToPermanent;
+    private final CardView original; // original card before transforms and modifications (null for opponents face down cards)
+    private final boolean copy;
+    private final String nameOwner; // only filled if != controller
+    private final String nameController;
+    private final boolean controlled;
+    private final UUID attachedTo;
+    private final boolean morphed;
+    private final boolean disguised;
+    private final boolean manifested;
+    private final boolean cloaked;
+    private final boolean attachedToPermanent;
     // If this card is attached to a permanent which is controlled by a player other than the one which controls this permanent
-    private boolean attachedControllerDiffers;
-
-    protected PermanentView() {
-        super();
-    }
+    private final boolean attachedControllerDiffers;
 
     public PermanentView(Permanent permanent, Card card, UUID createdForPlayerId, Game game) {
         super(permanent, game, CardUtil.canShowAsControlled(permanent, createdForPlayerId));
@@ -168,6 +164,108 @@ public class PermanentView extends CardView {
         this.attachedControllerDiffers = permanentView.attachedControllerDiffers;
     }
 
+    // private constructor for fromProto
+    private PermanentView(ViewProto.PermanentView proto) {
+        CardView cardView = CardView.fromProto(proto.getCardView());
+        this.id = cardView.id;
+        this.expansionSetCode = cardView.expansionSetCode;
+        this.cardNumber = cardView.cardNumber;
+        this.usesVariousArt = cardView.usesVariousArt;
+        this.gameObject = cardView.gameObject;
+        this.isChoosable = cardView.isChoosable;
+        this.isSelected = cardView.isSelected;
+        this.playableStats = cardView.playableStats;
+
+        this.parentId = cardView.parentId;
+        this.name = cardView.name;
+        this.displayName = cardView.displayName;
+        this.displayFullName = cardView.displayFullName;
+        this.rules = cardView.rules;
+        this.power = cardView.power;
+        this.toughness = cardView.toughness;
+        this.loyalty = cardView.loyalty;
+        this.defense = cardView.defense;
+        this.startingLoyalty = cardView.startingLoyalty;
+        this.startingDefense = cardView.startingDefense;
+        this.cardTypes = cardView.cardTypes;
+        this.subTypes = cardView.subTypes;
+        this.superTypes = cardView.superTypes;
+        this.color = cardView.color;
+        this.frameColor = cardView.frameColor;
+        this.frameStyle = cardView.frameStyle;
+        this.manaCostLeftStr = cardView.manaCostLeftStr;
+        this.manaCostRightStr = cardView.manaCostRightStr;
+        this.manaValue = cardView.manaValue;
+        this.rarity = cardView.rarity;
+        this.mageObjectType = cardView.mageObjectType;
+        this.isAbility = cardView.isAbility;
+        this.abilityType = cardView.abilityType;
+        this.isToken = cardView.isToken;
+        this.ability = cardView.ability;
+        this.imageFileName = cardView.imageFileName;
+        this.imageNumber = cardView.imageNumber;
+        this.extraDeckCard = cardView.extraDeckCard;
+        this.transformable = cardView.transformable;
+        this.secondCardFace = cardView.secondCardFace;
+        this.transformed = cardView.transformed;
+        this.flipCard = cardView.flipCard;
+        this.faceDown = cardView.faceDown;
+        this.alternateName = cardView.alternateName;
+        this.alternateNumber = cardView.alternateNumber;
+        this.isSplitCard = cardView.isSplitCard;
+        this.leftSplitName = cardView.leftSplitName;
+        this.leftSplitCostsStr = cardView.leftSplitCostsStr;
+        this.leftSplitRules = cardView.leftSplitRules;
+        this.leftSplitTypeLine = cardView.leftSplitTypeLine;
+        this.rightSplitName = cardView.rightSplitName;
+        this.rightSplitCostsStr = cardView.rightSplitCostsStr;
+        this.rightSplitRules = cardView.rightSplitRules;
+        this.rightSplitTypeLine = cardView.rightSplitTypeLine;
+        this.isDoubleFacedCard = cardView.isDoubleFacedCard;
+        this.artRect = cardView.artRect;
+        this.targets = cardView.targets;
+        this.pairedCard = cardView.pairedCard;
+        this.bandedCards = cardView.bandedCards;
+        this.paid = cardView.paid;
+        this.counters = cardView.counters;
+        this.controlledByOwner = cardView.controlledByOwner;
+        this.zone = cardView.zone;
+        this.rotate = cardView.rotate;
+        this.hideInfo = cardView.hideInfo;
+        this.canAttack = cardView.canAttack;
+        this.canBlock = cardView.canBlock;
+        this.inViewerOnly = cardView.inViewerOnly;
+        this.cardIcons = cardView.cardIcons;
+        this.originalPower = cardView.originalPower;
+        this.originalToughness = cardView.originalToughness;
+        this.originalColorIdentity = cardView.originalColorIdentity;
+        this.originalIsCopy = cardView.originalIsCopy;
+
+        // fill PermanentView fields
+        this.tapped = proto.getTapped();
+        this.flipped = proto.getFlipped();
+        this.phasedIn = proto.getPhasedIn();
+        this.summoningSickness = proto.getSummoningSickness();
+        this.damage = proto.getDamage();
+        this.attachments = proto.getAttachmentsList().stream().map(UUID::fromString).collect(Collectors.toList());
+        if (proto.hasOriginal()) {
+            this.original = CardView.fromProto(proto.getOriginal());
+        } else {
+            this.original = null;
+        }
+        this.copy = proto.getCopy();
+        this.nameOwner = proto.getNameOwner();
+        this.nameController = proto.getNameController();
+        this.controlled = proto.getControlled();
+        this.attachedTo = proto.getAttachedTo().isEmpty() ? null : UUID.fromString(proto.getAttachedTo());
+        this.morphed = proto.getMorphed();
+        this.disguised = proto.getDisguised();
+        this.manifested = proto.getManifested();
+        this.cloaked = proto.getCloaked();
+        this.attachedToPermanent = proto.getAttachedToPermanent();
+        this.attachedControllerDiffers = proto.getAttachedControllerDiffers();
+    }
+
     public boolean isTapped() {
         return tapped;
     }
@@ -277,105 +375,6 @@ public class PermanentView extends CardView {
     }
 
     public static PermanentView fromProto(ViewProto.PermanentView proto) {
-        PermanentView view = new PermanentView();
-        // fill CardView fields
-        CardView cardView = CardView.fromProto(proto.getCardView());
-        view.id = cardView.id;
-        view.expansionSetCode = cardView.expansionSetCode;
-        view.cardNumber = cardView.cardNumber;
-        view.usesVariousArt = cardView.usesVariousArt;
-        view.gameObject = cardView.gameObject;
-        view.isChoosable = cardView.isChoosable;
-        view.isSelected = cardView.isSelected;
-        view.playableStats = cardView.playableStats;
-
-        view.parentId = cardView.parentId;
-        view.name = cardView.name;
-        view.displayName = cardView.displayName;
-        view.displayFullName = cardView.displayFullName;
-        view.rules = cardView.rules;
-        view.power = cardView.power;
-        view.toughness = cardView.toughness;
-        view.loyalty = cardView.loyalty;
-        view.defense = cardView.defense;
-        view.startingLoyalty = cardView.startingLoyalty;
-        view.startingDefense = cardView.startingDefense;
-        view.cardTypes = cardView.cardTypes;
-        view.subTypes = cardView.subTypes;
-        view.superTypes = cardView.superTypes;
-        view.color = cardView.color;
-        view.frameColor = cardView.frameColor;
-        view.frameStyle = cardView.frameStyle;
-        view.manaCostLeftStr = cardView.manaCostLeftStr;
-        view.manaCostRightStr = cardView.manaCostRightStr;
-        view.manaValue = cardView.manaValue;
-        view.rarity = cardView.rarity;
-        view.mageObjectType = cardView.mageObjectType;
-        view.isAbility = cardView.isAbility;
-        view.abilityType = cardView.abilityType;
-        view.isToken = cardView.isToken;
-        view.ability = cardView.ability;
-        view.imageFileName = cardView.imageFileName;
-        view.imageNumber = cardView.imageNumber;
-        view.extraDeckCard = cardView.extraDeckCard;
-        view.transformable = cardView.transformable;
-        view.secondCardFace = cardView.secondCardFace;
-        view.transformed = cardView.transformed;
-        view.flipCard = cardView.flipCard;
-        view.faceDown = cardView.faceDown;
-        view.alternateName = cardView.alternateName;
-        view.alternateNumber = cardView.alternateNumber;
-        view.isSplitCard = cardView.isSplitCard;
-        view.leftSplitName = cardView.leftSplitName;
-        view.leftSplitCostsStr = cardView.leftSplitCostsStr;
-        view.leftSplitRules = cardView.leftSplitRules;
-        view.leftSplitTypeLine = cardView.leftSplitTypeLine;
-        view.rightSplitName = cardView.rightSplitName;
-        view.rightSplitCostsStr = cardView.rightSplitCostsStr;
-        view.rightSplitRules = cardView.rightSplitRules;
-        view.rightSplitTypeLine = cardView.rightSplitTypeLine;
-        view.isDoubleFacedCard = cardView.isDoubleFacedCard;
-        view.artRect = cardView.artRect;
-        view.targets = cardView.targets;
-        view.pairedCard = cardView.pairedCard;
-        view.bandedCards = cardView.bandedCards;
-        view.paid = cardView.paid;
-        view.counters = cardView.counters;
-        view.controlledByOwner = cardView.controlledByOwner;
-        view.zone = cardView.zone;
-        view.rotate = cardView.rotate;
-        view.hideInfo = cardView.hideInfo;
-        view.canAttack = cardView.canAttack;
-        view.canBlock = cardView.canBlock;
-        view.inViewerOnly = cardView.inViewerOnly;
-        view.cardIcons = cardView.cardIcons;
-        view.originalPower = cardView.originalPower;
-        view.originalToughness = cardView.originalToughness;
-        view.originalColorIdentity = cardView.originalColorIdentity;
-        view.originalIsCopy = cardView.originalIsCopy;
-
-        // fill PermanentView fields
-        view.tapped = proto.getTapped();
-        view.flipped = proto.getFlipped();
-        view.phasedIn = proto.getPhasedIn();
-        view.summoningSickness = proto.getSummoningSickness();
-        view.damage = proto.getDamage();
-        view.attachments = proto.getAttachmentsList().stream().map(UUID::fromString).collect(Collectors.toList());
-        if (proto.hasOriginal()) {
-            view.original = CardView.fromProto(proto.getOriginal());
-        }
-        view.copy = proto.getCopy();
-        view.nameOwner = proto.getNameOwner();
-        view.nameController = proto.getNameController();
-        view.controlled = proto.getControlled();
-        view.attachedTo = proto.getAttachedTo().isEmpty() ? null : UUID.fromString(proto.getAttachedTo());
-        view.morphed = proto.getMorphed();
-        view.disguised = proto.getDisguised();
-        view.manifested = proto.getManifested();
-        view.cloaked = proto.getCloaked();
-        view.attachedToPermanent = proto.getAttachedToPermanent();
-        view.attachedControllerDiffers = proto.getAttachedControllerDiffers();
-
-        return view;
+        return new PermanentView(proto);
     }
 }
