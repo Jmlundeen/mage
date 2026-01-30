@@ -1,11 +1,10 @@
-
-
 package mage.view;
 
 import mage.game.Game;
 import mage.game.combat.CombatGroup;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+import mage.ws.v1.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -50,6 +49,15 @@ public class CombatGroupView implements Serializable {
         isBlocked = combatGroup.getBlocked();
     }
 
+    // private constructor for fromProto
+    private CombatGroupView(ViewProto.CombatGroupView proto) {
+        this.isBlocked = proto.getIsBlocked();
+        this.defenderName = proto.getDefenderName();
+        this.defenderId = proto.getDefenderId().isEmpty() ? null : UUID.fromString(proto.getDefenderId());
+        proto.getAttackersMap().forEach((uuid, cardProto) -> attackers.put(UUID.fromString(uuid), PermanentView.fromProto(cardProto)));
+        proto.getBlockersMap().forEach((uuid, cardProto) -> blockers.put(UUID.fromString(uuid), PermanentView.fromProto(cardProto)));
+    }
+
     public String getDefenderName() {
         return defenderName;
     }
@@ -68,5 +76,21 @@ public class CombatGroupView implements Serializable {
 
     public boolean isBlocked() {
         return isBlocked;
+    }
+
+    public ViewProto.CombatGroupView toProto() {
+        ViewProto.CombatGroupView.Builder builder = ViewProto.CombatGroupView.newBuilder()
+                .setIsBlocked(isBlocked)
+                .setDefenderName(defenderName != null ? defenderName : "")
+                .setDefenderId(defenderId != null ? defenderId.toString() : "");
+
+        attackers.forEach((uuid, cardView) -> builder.putAttackers(uuid.toString(), ((PermanentView) cardView).toPermanentViewProto()));
+        blockers.forEach((uuid, cardView) -> builder.putBlockers(uuid.toString(), ((PermanentView) cardView).toPermanentViewProto()));
+
+        return builder.build();
+    }
+
+    public static CombatGroupView fromProto(ViewProto.CombatGroupView proto) {
+        return new CombatGroupView(proto);
     }
 }

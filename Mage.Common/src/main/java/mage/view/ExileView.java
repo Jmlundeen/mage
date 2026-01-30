@@ -1,10 +1,10 @@
-
-
 package mage.view;
 
 import mage.cards.Card;
 import mage.game.ExileZone;
 import mage.game.Game;
+import mage.ws.v1.view.ViewProto;
+
 import java.util.UUID;
 
 /**
@@ -25,12 +25,30 @@ public class ExileView extends CardsView {
         }
     }
 
+    private ExileView(ViewProto.ExileView proto) {
+        this.id = UUID.fromString(proto.getId());
+        this.name = proto.getName();
+        proto.getCardsMap().forEach((uuid, cardProto) -> this.put(UUID.fromString(uuid), CardView.fromProto(cardProto)));
+    }
+
     public String getName() {
         return name;
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public ViewProto.ExileView toProto() {
+        ViewProto.ExileView.Builder builder = ViewProto.ExileView.newBuilder()
+                .setId(id.toString())
+                .setName(name);
+        this.forEach((uuid, cardView) -> builder.putCards(uuid.toString(), cardView.toCardViewProto()));
+        return builder.build();
+    }
+
+    public static ExileView fromProto(ViewProto.ExileView proto) {
+        return new ExileView(proto);
     }
 
 }

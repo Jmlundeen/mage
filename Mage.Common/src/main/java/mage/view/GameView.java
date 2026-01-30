@@ -26,6 +26,8 @@ import mage.game.stack.StackObject;
 import mage.players.PlayableObjectsList;
 import mage.players.Player;
 import mage.util.CardUtil;
+import mage.ws.v1.model.ModelProto;
+import mage.ws.v1.view.ViewProto;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -373,5 +375,74 @@ public class GameView implements Serializable {
 
     public int getGameCycle() {
         return this.gameCycle;
+    }
+
+    public ViewProto.GameView toProto() {
+        ViewProto.GameView.Builder builder = ViewProto.GameView.newBuilder()
+                .setPriorityTime(priorityTime)
+                .setBufferTime(bufferTime)
+                .setMyPlayerId(myPlayerId != null ? myPlayerId.toString() : "")
+                .setCanPlayObjects(canPlayObjects != null ? canPlayObjects.toProto() : ModelProto.PlayableObjectsList.getDefaultInstance())
+                .setPhase(phase != null ? phase.toString() : "")
+                .setStep(step != null ? step.toString() : "")
+                .setActivePlayerId(activePlayerId != null ? activePlayerId.toString() : "")
+                .setActivePlayerName(activePlayerName != null ? activePlayerName : "")
+                .setPriorityPlayerName(priorityPlayerName != null ? priorityPlayerName : "")
+                .setTurn(turn)
+                .setSpecial(special)
+                .setRollbackTurnsAllowed(rollbackTurnsAllowed)
+                .setTotalErrorsCount(totalErrorsCount)
+                .setTotalEffectsCount(totalEffectsCount)
+                .setGameCycle(gameCycle);
+
+        players.forEach(p -> builder.addPlayers(p.toProto()));
+        myHand.forEach((uuid, card) -> builder.putMyHand(uuid.toString(), card.toCardViewProto()));
+        myHelperEmblems.forEach((uuid, card) -> builder.putMyHelperEmblems(uuid.toString(), card.toCardViewProto()));
+        opponentHands.forEach((name, cards) -> builder.putOpponentHands(name, cards.toProto()));
+        watchedHands.forEach((name, cards) -> builder.putWatchedHands(name, cards.toProto()));
+        stack.forEach((uuid, card) -> builder.putStack(uuid.toString(), card.toCardViewProto()));
+        exiles.forEach(e -> builder.addExiles(e.toProto()));
+        revealed.forEach(r -> builder.addRevealed(r.toProto()));
+        lookedAt.forEach(l -> builder.addLookedAt(l.toProto()));
+        companion.forEach(c -> builder.addCompanion(c.toProto()));
+        combat.forEach(c -> builder.addCombat(c.toProto()));
+
+        return builder.build();
+    }
+
+
+    private GameView(ViewProto.GameView proto) {
+        this.priorityTime = proto.getPriorityTime();
+        this.bufferTime = proto.getBufferTime();
+        this.myPlayerId = proto.getMyPlayerId().isEmpty() ? null : UUID.fromString(proto.getMyPlayerId());
+        this.canPlayObjects = PlayableObjectsList.fromProto(proto.getCanPlayObjects());
+        this.phase = proto.getPhase().isEmpty() ? null : TurnPhase.valueOf(proto.getPhase());
+        this.step = proto.getStep().isEmpty() ? null : PhaseStep.valueOf(proto.getStep());
+        this.activePlayerId = proto.getActivePlayerId().isEmpty() ? null : UUID.fromString(proto.getActivePlayerId());
+        this.activePlayerName = proto.getActivePlayerName();
+        this.priorityPlayerName = proto.getPriorityPlayerName();
+        this.turn = proto.getTurn();
+        this.special = proto.getSpecial();
+        this.rollbackTurnsAllowed = proto.getRollbackTurnsAllowed();
+        this.totalErrorsCount = proto.getTotalErrorsCount();
+        this.totalEffectsCount = proto.getTotalEffectsCount();
+        this.gameCycle = proto.getGameCycle();
+
+        proto.getPlayersList().forEach(p -> this.players.add(PlayerView.fromProto(p)));
+        proto.getMyHandMap().forEach((uuid, cardProto) -> this.myHand.put(UUID.fromString(uuid), CardView.fromProto(cardProto)));
+        proto.getMyHelperEmblemsMap().forEach((uuid, cardProto) -> this.myHelperEmblems.put(UUID.fromString(uuid), CardView.fromProto(cardProto)));
+        proto.getOpponentHandsMap().forEach((name, cardsProto) -> this.opponentHands.put(name, SimpleCardsView.fromProto(cardsProto)));
+        proto.getWatchedHandsMap().forEach((name, cardsProto) -> this.watchedHands.put(name, SimpleCardsView.fromProto(cardsProto)));
+        proto.getStackMap().forEach((uuid, cardProto) -> this.stack.put(UUID.fromString(uuid), CardView.fromProto(cardProto)));
+        proto.getExilesList().forEach(e -> this.exiles.add(ExileView.fromProto(e)));
+        proto.getRevealedList().forEach(r -> this.revealed.add(RevealedView.fromProto(r)));
+        proto.getLookedAtList().forEach(l -> this.lookedAt.add(LookedAtView.fromProto(l)));
+        proto.getCompanionList().forEach(c -> this.companion.add(RevealedView.fromProto(c)));
+        proto.getCombatList().forEach(c -> this.combat.add(CombatGroupView.fromProto(c)));
+
+    }
+
+    public static GameView fromProto(ViewProto.GameView proto) {
+        return new GameView(proto);
     }
 }

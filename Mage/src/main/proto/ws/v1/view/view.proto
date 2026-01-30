@@ -420,3 +420,61 @@ message PlayerView {
   bool initiative = 35;
   repeated string designationNames = 36;
 }
+
+// Mirrors mage.view.ExileView
+message ExileView {
+  string id = 1;
+  string name = 2;
+  map<string, CardView> cards = 3;
+}
+
+// Mirrors mage.view.RevealedView
+message RevealedView {
+  string name = 1;
+  map<string, CardView> cards = 2;
+}
+
+// Mirrors mage.view.LookedAtView
+message LookedAtView {
+  string name = 1;
+  SimpleCardsView cards = 2;
+}
+
+// Mirrors mage.view.CombatGroupView
+message CombatGroupView {
+  map<string, PermanentView> attackers = 1;
+  map<string, PermanentView> blockers = 2; // these are likely PermanentViews but CardsView uses CardView
+  bool isBlocked = 3;
+  string defenderName = 4;
+  string defenderId = 5;
+}
+
+// Mirrors mage.view.GameView
+message GameView {
+  int32 priorityTime = 1;
+  int32 bufferTime = 2;
+  repeated PlayerView players = 3;
+  string myPlayerId = 4; // null for watcher
+  map<string, CardView> myHand = 5;
+  map<string, CardView> myHelperEmblems = 6;
+  model.PlayableObjectsList canPlayObjects = 7;
+  map<string, SimpleCardsView> opponentHands = 8;
+  map<string, SimpleCardsView> watchedHands = 9;
+  map<string, CardView> stack = 10;
+  repeated ExileView exiles = 11;
+  repeated RevealedView revealed = 12;
+  repeated LookedAtView lookedAt = 13;
+  repeated RevealedView companion = 14;
+  repeated CombatGroupView combat = 15;
+  string phase = 16; // Use enum string representation
+  string step = 17;  // Use enum string representation
+  string activePlayerId = 18;
+  string activePlayerName = 19;
+  string priorityPlayerName = 20;
+  int32 turn = 21;
+  bool special = 22;
+  bool rollbackTurnsAllowed = 23;
+  int32 totalErrorsCount = 24;
+  int32 totalEffectsCount = 25;
+  int32 gameCycle = 26;
+}
