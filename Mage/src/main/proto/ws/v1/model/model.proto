@@ -242,3 +242,23 @@ enum CardIconType {
   SYSTEM_COMBINED = 22;
   SYSTEM_DEBUG = 23;
 }
+
+// Mirrors mage.players.PlayableObjectsList
+message PlayableObjectsList {
+  // map: object UUID (string) -> PlayableObjectStats
+  map<string, PlayableObjectStats> objects = 1;
+}
+
+// Mirrors mage.players.PlayableObjectStats
+message PlayableObjectStats {
+  repeated PlayableObjectRecord basic_mana_abilities = 1;
+  repeated PlayableObjectRecord basic_play_abilities = 2;
+  repeated PlayableObjectRecord basic_cast_abilities = 3;
+  repeated PlayableObjectRecord other = 4;
+}
+
+// Mirrors mage.players.PlayableObjectRecord
+message PlayableObjectRecord {
+  string id = 1;
+  string value = 2;
+}

@@ -6,6 +6,7 @@ import mage.abilities.SpellAbility;
 import mage.abilities.mana.BasicManaAbility;
 import mage.constants.SpellAbilityType;
 import mage.util.Copyable;
+import mage.ws.v1.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -113,6 +114,24 @@ public class PlayableObjectStats implements Serializable, Copyable<PlayableObjec
         // return only important abilities (e.g. show it as card icons)
         return this.other.size();
     }
+
+    public ModelProto.PlayableObjectStats toProto() {
+        ModelProto.PlayableObjectStats.Builder builder = ModelProto.PlayableObjectStats.newBuilder();
+        basicManaAbilities.forEach(rec -> builder.addBasicManaAbilities(rec.toProto()));
+        basicPlayAbilities.forEach(rec -> builder.addBasicPlayAbilities(rec.toProto()));
+        basicCastAbilities.forEach(rec -> builder.addBasicCastAbilities(rec.toProto()));
+        other.forEach(rec -> builder.addOther(rec.toProto()));
+        return builder.build();
+    }
+
+    public static PlayableObjectStats fromProto(ModelProto.PlayableObjectStats proto) {
+        PlayableObjectStats stats = new PlayableObjectStats();
+        proto.getBasicManaAbilitiesList().forEach(rec -> stats.basicManaAbilities.add(PlayableObjectRecord.fromProto(rec)));
+        proto.getBasicPlayAbilitiesList().forEach(rec -> stats.basicPlayAbilities.add(PlayableObjectRecord.fromProto(rec)));
+        proto.getBasicCastAbilitiesList().forEach(rec -> stats.basicCastAbilities.add(PlayableObjectRecord.fromProto(rec)));
+        proto.getOtherList().forEach(rec -> stats.other.add(PlayableObjectRecord.fromProto(rec)));
+        return stats;
+    }
 }
 
 class PlayableObjectRecord implements Serializable, Copyable<PlayableObjectRecord> {
@@ -141,5 +160,16 @@ class PlayableObjectRecord implements Serializable, Copyable<PlayableObjectRecor
     @Override
     public PlayableObjectRecord copy() {
         return new PlayableObjectRecord(this);
+    }
+
+    public ModelProto.PlayableObjectRecord toProto() {
+        return ModelProto.PlayableObjectRecord.newBuilder()
+                .setId(id.toString())
+                .setValue(value)
+                .build();
+    }
+
+    public static PlayableObjectRecord fromProto(ModelProto.PlayableObjectRecord proto) {
+        return new PlayableObjectRecord(UUID.fromString(proto.getId()), proto.getValue());
     }
 }

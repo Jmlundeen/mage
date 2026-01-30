@@ -2,9 +2,13 @@ package mage.players;
 
 import mage.abilities.ActivatedAbility;
 import mage.util.Copyable;
+import mage.ws.v1.model.ModelProto;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Contains stats with all playable cards for the player
@@ -66,5 +70,17 @@ public class PlayableObjectsList implements Serializable, Copyable<PlayableObjec
 
     public Map<UUID, PlayableObjectStats> getObjects() {
         return objects;
+    }
+
+    public ModelProto.PlayableObjectsList toProto() {
+        ModelProto.PlayableObjectsList.Builder builder = ModelProto.PlayableObjectsList.newBuilder();
+        objects.forEach((objectId, stats) -> builder.putObjects(objectId.toString(), stats.toProto()));
+        return builder.build();
+    }
+
+    public static PlayableObjectsList fromProto(ModelProto.PlayableObjectsList proto) {
+        PlayableObjectsList list = new PlayableObjectsList();
+        proto.getObjectsMap().forEach((objectId, stats) -> list.objects.put(UUID.fromString(objectId), PlayableObjectStats.fromProto(stats)));
+        return list;
     }
 }
