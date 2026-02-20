@@ -11,8 +11,8 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.players.net.UserData;
 import mage.util.CardUtil;
-import mage.ws.v1.model.ModelProto;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.model.ModelProto;
+import mage.ws.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.*;

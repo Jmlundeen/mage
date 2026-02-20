@@ -6,7 +6,7 @@ import mage.players.PlayerType;
 import mage.utils.MageVersion;
 import mage.view.GameTypeView;
 import mage.view.TournamentTypeView;
-import mage.ws.v1.model.ModelProto;
+import mage.ws.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.Arrays;

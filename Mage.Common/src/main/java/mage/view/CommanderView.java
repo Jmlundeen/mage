@@ -5,7 +5,7 @@ import mage.constants.MageObjectType;
 import mage.game.Game;
 import mage.game.command.Commander;
 import mage.util.CardUtil;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.UUID;

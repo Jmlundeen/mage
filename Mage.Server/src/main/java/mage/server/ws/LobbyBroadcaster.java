@@ -3,8 +3,8 @@ package mage.server.ws;
 import mage.view.MatchView;
 import mage.view.RoomUsersView;
 import mage.view.TableView;
+import mage.ws.MessageProto;
 import mage.ws.ProtocolVersion;
-import mage.ws.v1.WsProto;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -36,7 +36,7 @@ public class LobbyBroadcaster {
             }
 
             // Build lobby info response
-            WsProto.LobbyInfoResponse.Builder lobbyInfoBuilder = WsProto.LobbyInfoResponse.newBuilder();
+            MessageProto.LobbyInfoResponse.Builder lobbyInfoBuilder = MessageProto.LobbyInfoResponse.newBuilder();
 
             if (tables != null && !tables.isEmpty()) {
                 lobbyInfoBuilder.addAllTables(tables.stream()
@@ -55,7 +55,7 @@ public class LobbyBroadcaster {
             }
 
             // Build server message (no requestId means it's a push message)
-            WsProto.ServerMessage message = WsProto.ServerMessage.newBuilder()
+            MessageProto.ServerMessage message = MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId("") // Empty requestId indicates push message
                     .setSessionId("")

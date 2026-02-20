@@ -17,9 +17,9 @@ import mage.view.DraftPickView;
 import mage.view.MatchView;
 import mage.view.RoomUsersView;
 import mage.view.TableView;
+import mage.ws.MessageProto;
 import mage.ws.ProtocolVersion;
-import mage.ws.v1.WsProto;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 import org.apache.log4j.Logger;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -48,7 +48,7 @@ public class WsClientTransport implements ClientTransport {
 
     private WebSocketClient webSocketClient;
     private final WsSessionImpl wsSession;
-    private final ConcurrentHashMap<String, CompletableFuture<WsProto.ServerMessage>> pending = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CompletableFuture<MessageProto.ServerMessage>> pending = new ConcurrentHashMap<>();
     private final LobbyEventBus lobbyEventBus;
 
     public WsClientTransport(WsSessionImpl wsSession) {
@@ -86,13 +86,13 @@ public class WsClientTransport implements ClientTransport {
                 try {
                     byte[] data = new byte[bytes.remaining()];
                     bytes.get(data);
-                    WsProto.ServerMessage msg = WsProto.ServerMessage.parseFrom(data);
+                    MessageProto.ServerMessage msg = MessageProto.ServerMessage.parseFrom(data);
 
                     String requestId = msg.getRequestId();
                     if (requestId.isEmpty()) {
                         // Handle push messages (no requestId means server-initiated)
                         if (msg.hasLobbyGetInfo()) {
-                            WsProto.LobbyInfoResponse payload = msg.getLobbyGetInfo();
+                            MessageProto.LobbyInfoResponse payload = msg.getLobbyGetInfo();
                             LobbyEvent event = new LobbyEvent(
                                     payload.getTablesList().stream()
                                             .map(TableView::fromProto)
@@ -111,7 +111,7 @@ public class WsClientTransport implements ClientTransport {
                         return;
                     }
 
-                    CompletableFuture<WsProto.ServerMessage> future = pending.remove(requestId);
+                    CompletableFuture<MessageProto.ServerMessage> future = pending.remove(requestId);
                     if (future != null) {
                         future.complete(msg);
                     } else {
@@ -166,11 +166,11 @@ public class WsClientTransport implements ClientTransport {
         try {
             if (webSocketClient != null) {
                 try {
-                    WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+                    MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                             .setProtocolVersion(ProtocolVersion.getVersion())
                             .setRequestId(newRequestId())
                             .setSessionId(sessionId == null ? "" : sessionId)
-                            .setDisconnect(WsProto.Disconnect.getDefaultInstance())
+                            .setDisconnect(MessageProto.Disconnect.getDefaultInstance())
                             .build();
                     sendMessage(req);
                     webSocketClient.closeBlocking();
@@ -193,19 +193,19 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public AuthResult auth(String sessionId, String userName, String password) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAuth(WsProto.AuthRequest.newBuilder()
+                .setAuth(MessageProto.AuthRequest.newBuilder()
                         .setUserName(userName == null ? "" : userName)
                         .setPassword(password == null ? "" : password)
                         .build())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
-            if (res.getError().getCode() == WsProto.ErrorCode.AUTH_FAILED) {
+            if (res.getError().getCode() == MessageProto.ErrorCode.AUTH_FAILED) {
                 return new AuthResult(false, res.getError().getMessage());
             }
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
@@ -218,16 +218,16 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public boolean ping(String sessionId, String lastPingInfo) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setPing(WsProto.PingRequest.newBuilder()
+                .setPing(MessageProto.PingRequest.newBuilder()
                         .setLastPingInfo(lastPingInfo)
                         .build())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -239,16 +239,16 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public List<TableView> lobbyGetTables(String sessionId, UUID roomId) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setTableRequest(WsProto.TablesRequest.newBuilder()
+                .setTableRequest(MessageProto.TablesRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .build())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -262,16 +262,16 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public List<MatchView> getFinishedMatches(String sessionId, UUID roomId) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setFinishedMatchesRequest(WsProto.FinishedMatchesRequest.newBuilder()
+                .setFinishedMatchesRequest(MessageProto.FinishedMatchesRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .build())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -285,16 +285,16 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public RoomUsersView getRoomUsers(String sessionId, UUID roomId) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setRoomUsersRequest(WsProto.RoomUsersRequest.newBuilder()
+                .setRoomUsersRequest(MessageProto.RoomUsersRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .build())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -306,18 +306,18 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public GetLobbyInfoResult lobbyGetInfo(String sessionId, UUID roomId, boolean includeFinishedMatches, boolean includeRoomUsers) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setLobbyInfoRequest(WsProto.LobbyInfoRequest.newBuilder()
+                .setLobbyInfoRequest(MessageProto.LobbyInfoRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setIncludeFinishedMatches(includeFinishedMatches)
                         .setIncludeRoomUsers(includeRoomUsers)
                         .build())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -325,7 +325,7 @@ public class WsClientTransport implements ClientTransport {
             throw new IllegalStateException("Unexpected response type");
         }
 
-        WsProto.LobbyInfoResponse payload = res.getLobbyGetInfo();
+        MessageProto.LobbyInfoResponse payload = res.getLobbyGetInfo();
         return new GetLobbyInfoResult(
                 payload.getTablesList().stream()
                         .map(TableView::fromProto)
@@ -339,14 +339,14 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public UUID getMainRoomId(String sessionId) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setMainRoomIdRequest(WsProto.MainRoomIdRequest.getDefaultInstance())
+                .setMainRoomIdRequest(MessageProto.MainRoomIdRequest.getDefaultInstance())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -360,16 +360,16 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public boolean joinChat(String sessionId, UUID chatId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setJoinChatRequest(WsProto.JoinChatRequest.newBuilder()
+                .setJoinChatRequest(MessageProto.JoinChatRequest.newBuilder()
                         .setChatId(chatId == null ? "" : chatId.toString())
                         .build())
                 .build();
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -386,16 +386,16 @@ public class WsClientTransport implements ClientTransport {
             logger.warn("leaveChat called with null chatId");
             return false;
         }
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setLeaveChatRequest(WsProto.LeaveChatRequest.newBuilder()
+                .setLeaveChatRequest(MessageProto.LeaveChatRequest.newBuilder()
                         .setChatId(chatId.toString())
                         .build())
                 .build();
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -408,14 +408,14 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public ServerState getServerState(String sessionId) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setServerStateRequest(WsProto.ServerStateRequest.getDefaultInstance())
+                .setServerStateRequest(MessageProto.ServerStateRequest.getDefaultInstance())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -428,11 +428,11 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public void sendUserData(String sessionId, UserData userData, MageVersion clientVersion, String userIdStr) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setUserData(WsProto.UserData.newBuilder()
+                .setUserData(MessageProto.UserData.newBuilder()
                         .setUserData(userData.toProto())
                         .setMageVersion(clientVersion.toProto())
                         .setUserIdStr(userIdStr))
@@ -442,13 +442,13 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public List<String> getServerMessages(String sessionId) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setPromotionMessagesRequest(WsProto.PromotionMessagesRequest.getDefaultInstance())
+                .setPromotionMessagesRequest(MessageProto.PromotionMessagesRequest.getDefaultInstance())
                 .build();
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -460,16 +460,16 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public UUID getRoomChatId(String sessionId, UUID roomId) throws Exception {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setRoomChatIdRequest(WsProto.RoomChatIdRequest.newBuilder()
+                .setRoomChatIdRequest(MessageProto.RoomChatIdRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .build())
                 .build();
 
-        WsProto.ServerMessage res = roundTrip(req);
+        MessageProto.ServerMessage res = roundTrip(req);
         if (res.hasError()) {
             throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
         }
@@ -483,18 +483,18 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public TableView createTable(String sessionId, UUID roomId, MatchOptions matchOptions) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setCreateTableRequest(WsProto.CreateTableRequest.newBuilder()
+                .setCreateTableRequest(MessageProto.CreateTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setMatchOptions(matchOptions.toProto())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -510,18 +510,18 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public TableView createTournamentTable(String sessionId, UUID roomId, TournamentOptions tournamentOptions) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setCreateTournamentRequest(WsProto.CreateTournamentTableRequest.newBuilder()
+                .setCreateTournamentRequest(MessageProto.CreateTournamentTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTournamentOptions(tournamentOptions.toProto())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -537,11 +537,11 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public Boolean joinTable(String sessionId, UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setJoinTableRequest(WsProto.JoinTableRequest.newBuilder()
+                .setJoinTableRequest(MessageProto.JoinTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .setPlayerName(playerName == null ? "" : playerName)
@@ -553,7 +553,7 @@ public class WsClientTransport implements ClientTransport {
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -569,17 +569,17 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public Boolean removeTable(String sessionId, UUID roomId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setRemoveTableRequest(WsProto.RemoveTableRequest.newBuilder()
+                .setRemoveTableRequest(MessageProto.RemoveTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -595,17 +595,17 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public Optional<UUID> getTableChatId(String sessionId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setTableChatIdRequest(WsProto.TableChatIdRequest.newBuilder()
+                .setTableChatIdRequest(MessageProto.TableChatIdRequest.newBuilder()
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -622,17 +622,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public Optional<UUID> getGameChatId(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setGameChatIdRequest(WsProto.GameChatIdRequest.newBuilder()
+                .setGameChatIdRequest(MessageProto.GameChatIdRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -649,17 +649,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public Optional<UUID> getTournamentChatId(String sessionId, UUID tournamentId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setTournamentChatIdRequest(WsProto.TournamentChatIdRequest.newBuilder()
+                .setTournamentChatIdRequest(MessageProto.TournamentChatIdRequest.newBuilder()
                         .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -677,18 +677,18 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public Optional<TableView> getTable(String sessionId, UUID roomId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setGetTableRequest(WsProto.GetTableRequest.newBuilder()
+                .setGetTableRequest(MessageProto.GetTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -703,17 +703,17 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public ViewProto.TournamentView getTournament(String sessionId, UUID tournamentId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setGetTournamentRequest(WsProto.GetTournamentRequest.newBuilder()
+                .setGetTournamentRequest(MessageProto.GetTournamentRequest.newBuilder()
                         .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -728,18 +728,18 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public boolean isTableOwner(String sessionId, UUID roomId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setIsTableOwnerRequest(WsProto.IsTableOwnerRequest.newBuilder()
+                .setIsTableOwnerRequest(MessageProto.IsTableOwnerRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -751,18 +751,18 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public boolean watchTable(String sessionId, UUID roomId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setWatchTableRequest(WsProto.WatchTableRequest.newBuilder()
+                .setWatchTableRequest(MessageProto.WatchTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -773,17 +773,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public boolean watchTournamentTable(String sessionId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setWatchTournamentTableRequest(WsProto.WatchTournamentTableRequest.newBuilder()
+                .setWatchTournamentTableRequest(MessageProto.WatchTournamentTableRequest.newBuilder()
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -795,11 +795,11 @@ public class WsClientTransport implements ClientTransport {
 
     @Override
     public Boolean joinTournamentTable(String sessionId, UUID roomId, UUID tableId, String playerName, PlayerType playerType, int skill, DeckCardLists deckList, String password) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setJoinTournamentTableRequest(WsProto.JoinTournamentTableRequest.newBuilder()
+                .setJoinTournamentTableRequest(MessageProto.JoinTournamentTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .setPlayerName(playerName == null ? "" : playerName)
@@ -811,7 +811,7 @@ public class WsClientTransport implements ClientTransport {
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -826,18 +826,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendChatMessage(String sessionId, UUID chatId, String userName, String message) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendChatMessageRequest(WsProto.SendChatMessageRequest.newBuilder()
+                .setSendChatMessageRequest(MessageProto.SendChatMessageRequest.newBuilder()
                         .setChatId(chatId == null ? "" : chatId.toString())
                         .setMessage(message != null ? message : "")
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -847,17 +847,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendBroadcastMessage(String sessionId, String message) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendBroadcastMessageRequest(WsProto.SendBroadcastMessageRequest.newBuilder()
+                .setSendBroadcastMessageRequest(MessageProto.SendBroadcastMessageRequest.newBuilder()
                         .setMessage(message != null ? message : "")
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -867,18 +867,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendPlayerUUID(String sessionId, UUID gameId, UUID data) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                .setSendPlayerDataRequest(MessageProto.SendPlayerDataRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .setUuidData(data == null ? "" : data.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -888,18 +888,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendPlayerBoolean(String sessionId, UUID gameId, Boolean data) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                .setSendPlayerDataRequest(MessageProto.SendPlayerDataRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .setBooleanData(data != null ? data : false)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -909,18 +909,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendPlayerInteger(String sessionId, UUID gameId, Integer data) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                .setSendPlayerDataRequest(MessageProto.SendPlayerDataRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .setIntegerData(data != null ? data : 0)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -930,18 +930,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendPlayerString(String sessionId, UUID gameId, String data) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                .setSendPlayerDataRequest(MessageProto.SendPlayerDataRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .setStringData(data != null ? data : "")
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -951,11 +951,11 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendPlayerManaType(String sessionId, UUID gameId, UUID playerId, ManaType data) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendPlayerDataRequest(WsProto.SendPlayerDataRequest.newBuilder()
+                .setSendPlayerDataRequest(MessageProto.SendPlayerDataRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .setPlayerId(playerId == null ? "" : playerId.toString())
                         .setManaTypeData(data != null ? data.toString() : "")
@@ -963,7 +963,7 @@ public class WsClientTransport implements ClientTransport {
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -973,17 +973,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void quitMatch(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setQuitMatchRequest(WsProto.QuitMatchRequest.newBuilder()
+                .setQuitMatchRequest(MessageProto.QuitMatchRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -993,17 +993,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void quitTournament(String sessionId, UUID tournamentId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setQuitTournamentRequest(WsProto.QuitTournamentRequest.newBuilder()
+                .setQuitTournamentRequest(MessageProto.QuitTournamentRequest.newBuilder()
                         .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1013,17 +1013,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void quitDraft(String sessionId, UUID draftId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setQuitDraftRequest(WsProto.QuitDraftRequest.newBuilder()
+                .setQuitDraftRequest(MessageProto.QuitDraftRequest.newBuilder()
                         .setDraftId(draftId == null ? "" : draftId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1039,18 +1039,18 @@ public class WsClientTransport implements ClientTransport {
             deckCardLists.setSideboardLayout(null);
         }
 
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSubmitDeckRequest(WsProto.SubmitDeckRequest.newBuilder()
+                .setSubmitDeckRequest(MessageProto.SubmitDeckRequest.newBuilder()
                         .setTableId(tableId == null ? "" : tableId.toString())
-                        .setDeckCardLists(deckCardLists != null ? deckCardLists.toProto() : mage.ws.v1.model.ModelProto.DeckCardLists.getDefaultInstance())
+                        .setDeckCardLists(deckCardLists != null ? deckCardLists.toProto() : mage.ws.model.ModelProto.DeckCardLists.getDefaultInstance())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1066,18 +1066,18 @@ public class WsClientTransport implements ClientTransport {
             deckCardLists.setSideboardLayout(null);
         }
 
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setUpdateDeckRequest(WsProto.UpdateDeckRequest.newBuilder()
+                .setUpdateDeckRequest(MessageProto.UpdateDeckRequest.newBuilder()
                         .setTableId(tableId == null ? "" : tableId.toString())
-                        .setDeckCardLists(deckCardLists != null ? deckCardLists.toProto() : mage.ws.v1.model.ModelProto.DeckCardLists.getDefaultInstance())
+                        .setDeckCardLists(deckCardLists != null ? deckCardLists.toProto() : mage.ws.model.ModelProto.DeckCardLists.getDefaultInstance())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1088,17 +1088,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public boolean setBoosterLoaded(String sessionId, UUID draftId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSetBoosterLoadedRequest(WsProto.SetBoosterLoadedRequest.newBuilder()
+                .setSetBoosterLoadedRequest(MessageProto.SetBoosterLoadedRequest.newBuilder()
                         .setDraftId(draftId == null ? "" : draftId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1109,12 +1109,12 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public DraftPickView sendCardPick(String sessionId, UUID draftId, UUID cardId, Set<UUID> hiddenCards) {
-        WsProto.ClientMessage.Builder reqBuilder = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage.Builder reqBuilder = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId);
 
-        WsProto.SendCardPickRequest.Builder pickBuilder = WsProto.SendCardPickRequest.newBuilder()
+        MessageProto.SendCardPickRequest.Builder pickBuilder = MessageProto.SendCardPickRequest.newBuilder()
                 .setDraftId(draftId == null ? "" : draftId.toString())
                 .setCardId(cardId == null ? "" : cardId.toString());
 
@@ -1127,7 +1127,7 @@ public class WsClientTransport implements ClientTransport {
         reqBuilder.setSendCardPickRequest(pickBuilder.build());
 
         try {
-            WsProto.ServerMessage res = roundTrip(reqBuilder.build());
+            MessageProto.ServerMessage res = roundTrip(reqBuilder.build());
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1141,18 +1141,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendCardMark(String sessionId, UUID draftId, UUID cardId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSendCardMarkRequest(WsProto.SendCardMarkRequest.newBuilder()
+                .setSendCardMarkRequest(MessageProto.SendCardMarkRequest.newBuilder()
                         .setDraftId(draftId == null ? "" : draftId.toString())
                         .setCardId(cardId == null ? "" : cardId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1162,7 +1162,7 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void sendPlayerAction(String sessionId, PlayerAction playerAction, UUID gameId, Object data) {
-        WsProto.SendPlayerActionRequest.Builder requestBuilder = WsProto.SendPlayerActionRequest.newBuilder()
+        MessageProto.SendPlayerActionRequest.Builder requestBuilder = MessageProto.SendPlayerActionRequest.newBuilder()
                 .setPlayerAction(playerAction.toString())
                 .setGameId(gameId == null ? "" : gameId.toString());
 
@@ -1181,7 +1181,7 @@ public class WsClientTransport implements ClientTransport {
         }
         // If data is null, leave oneof unset
 
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
@@ -1189,7 +1189,7 @@ public class WsClientTransport implements ClientTransport {
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1199,17 +1199,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void joinGame(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setJoinGameRequest(WsProto.JoinGameRequest.newBuilder()
+                .setJoinGameRequest(MessageProto.JoinGameRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1219,17 +1219,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void adminRemoveTable(String sessionId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAdminRemoveTableRequest(WsProto.AdminRemoveTableRequest.newBuilder()
+                .setAdminRemoveTableRequest(MessageProto.AdminRemoveTableRequest.newBuilder()
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1239,17 +1239,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void joinDraft(String sessionId, UUID draftId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setJoinDraftRequest(WsProto.JoinDraftRequest.newBuilder()
+                .setJoinDraftRequest(MessageProto.JoinDraftRequest.newBuilder()
                         .setDraftId(draftId == null ? "" : draftId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1259,17 +1259,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void joinTournament(String sessionId, UUID tournamentId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setJoinTournamentRequest(WsProto.JoinTournamentRequest.newBuilder()
+                .setJoinTournamentRequest(MessageProto.JoinTournamentRequest.newBuilder()
                         .setTournamentId(tournamentId == null ? "" : tournamentId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1279,18 +1279,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public boolean leaveTable(String sessionId, UUID roomId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setLeaveTableRequest(WsProto.LeaveTableRequest.newBuilder()
+                .setLeaveTableRequest(MessageProto.LeaveTableRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1301,11 +1301,11 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void swapSeats(String sessionId, UUID roomId, UUID tableId, int seatNum1, int seatNum2) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSwapSeatsRequest(WsProto.SwapSeatsRequest.newBuilder()
+                .setSwapSeatsRequest(MessageProto.SwapSeatsRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .setSeatNum1(seatNum1)
@@ -1314,7 +1314,7 @@ public class WsClientTransport implements ClientTransport {
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1324,18 +1324,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public boolean startMatch(String sessionId, UUID roomId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setStartMatchRequest(WsProto.StartMatchRequest.newBuilder()
+                .setStartMatchRequest(MessageProto.StartMatchRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1346,18 +1346,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public boolean startTournament(String sessionId, UUID roomId, UUID tableId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setStartTournamentRequest(WsProto.StartTournamentRequest.newBuilder()
+                .setStartTournamentRequest(MessageProto.StartTournamentRequest.newBuilder()
                         .setRoomId(roomId == null ? "" : roomId.toString())
                         .setTableId(tableId == null ? "" : tableId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1368,17 +1368,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public boolean watchGame(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setWatchGameRequest(WsProto.WatchGameRequest.newBuilder()
+                .setWatchGameRequest(MessageProto.WatchGameRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1389,17 +1389,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void stopWatching(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setStopWatchingRequest(WsProto.StopWatchingRequest.newBuilder()
+                .setStopWatchingRequest(MessageProto.StopWatchingRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1409,17 +1409,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void replayGame(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setReplayGameRequest(WsProto.ReplayGameRequest.newBuilder()
+                .setReplayGameRequest(MessageProto.ReplayGameRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1429,17 +1429,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void startReplay(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setStartReplayRequest(WsProto.StartReplayRequest.newBuilder()
+                .setStartReplayRequest(MessageProto.StartReplayRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1449,17 +1449,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void stopReplay(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setStopReplayRequest(WsProto.StopReplayRequest.newBuilder()
+                .setStopReplayRequest(MessageProto.StopReplayRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1469,17 +1469,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void nextPlay(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setNextPlayRequest(WsProto.NextPlayRequest.newBuilder()
+                .setNextPlayRequest(MessageProto.NextPlayRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1489,17 +1489,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void previousPlay(String sessionId, UUID gameId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setPreviousPlayRequest(WsProto.PreviousPlayRequest.newBuilder()
+                .setPreviousPlayRequest(MessageProto.PreviousPlayRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1509,18 +1509,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void skipForward(String sessionId, UUID gameId, int moves) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setSkipForwardRequest(WsProto.SkipForwardRequest.newBuilder()
+                .setSkipForwardRequest(MessageProto.SkipForwardRequest.newBuilder()
                         .setGameId(gameId == null ? "" : gameId.toString())
                         .setMoves(moves)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1530,17 +1530,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void adminDisconnectUser(String sessionId, String userSessionId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAdminDisconnectUserRequest(WsProto.AdminDisconnectUserRequest.newBuilder()
+                .setAdminDisconnectUserRequest(MessageProto.AdminDisconnectUserRequest.newBuilder()
                         .setUserSessionId(userSessionId == null ? "" : userSessionId)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1550,17 +1550,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void adminEndUserSession(String sessionId, String userSessionId) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAdminEndUserSessionRequest(WsProto.AdminEndUserSessionRequest.newBuilder()
+                .setAdminEndUserSessionRequest(MessageProto.AdminEndUserSessionRequest.newBuilder()
                         .setUserSessionId(userSessionId == null ? "" : userSessionId)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1570,18 +1570,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void adminMuteUser(String sessionId, String userName, long durationMinutes) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAdminMuteUserRequest(WsProto.AdminMuteUserRequest.newBuilder()
+                .setAdminMuteUserRequest(MessageProto.AdminMuteUserRequest.newBuilder()
                         .setUserName(userName == null ? "" : userName)
                         .setDurationMinutes(durationMinutes)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1591,18 +1591,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void adminActivateUser(String sessionId, String userName, boolean active) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAdminActivateUserRequest(WsProto.AdminActivateUserRequest.newBuilder()
+                .setAdminActivateUserRequest(MessageProto.AdminActivateUserRequest.newBuilder()
                         .setUserName(userName == null ? "" : userName)
                         .setActive(active)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1612,17 +1612,17 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void adminToggleActivateUser(String sessionId, String userName) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAdminToggleActivateUserRequest(WsProto.AdminToggleActivateUserRequest.newBuilder()
+                .setAdminToggleActivateUserRequest(MessageProto.AdminToggleActivateUserRequest.newBuilder()
                         .setUserName(userName == null ? "" : userName)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1632,18 +1632,18 @@ public class WsClientTransport implements ClientTransport {
     }
 
     public void adminLockUser(String sessionId, String userName, long durationMinutes) {
-        WsProto.ClientMessage req = WsProto.ClientMessage.newBuilder()
+        MessageProto.ClientMessage req = MessageProto.ClientMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(newRequestId())
                 .setSessionId(sessionId)
-                .setAdminLockUserRequest(WsProto.AdminLockUserRequest.newBuilder()
+                .setAdminLockUserRequest(MessageProto.AdminLockUserRequest.newBuilder()
                         .setUserName(userName == null ? "" : userName)
                         .setDurationMinutes(durationMinutes)
                         .build())
                 .build();
 
         try {
-            WsProto.ServerMessage res = roundTrip(req);
+            MessageProto.ServerMessage res = roundTrip(req);
             if (res.hasError()) {
                 throw new IllegalStateException(res.getError().getCode() + ": " + res.getError().getMessage());
             }
@@ -1652,19 +1652,19 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
-    private WsProto.ServerMessage roundTrip(WsProto.ClientMessage req) throws Exception {
+    private MessageProto.ServerMessage roundTrip(MessageProto.ClientMessage req) throws Exception {
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");
         }
 
-        CompletableFuture<WsProto.ServerMessage> future = new CompletableFuture<>();
+        CompletableFuture<MessageProto.ServerMessage> future = new CompletableFuture<>();
         pending.put(req.getRequestId(), future);
 
         try {
             webSocketClient.send(ByteBuffer.wrap(req.toByteArray()));
-            WsProto.ServerMessage res = future.get(REQUEST_TIMEOUT_SECS, TimeUnit.SECONDS);
-            if (res.getPayloadCase() == WsProto.ServerMessage.PayloadCase.ERROR) {
-                if (res.getError().getCode().equals(WsProto.ErrorCode.MAGE_EXCEPTION)) {
+            MessageProto.ServerMessage res = future.get(REQUEST_TIMEOUT_SECS, TimeUnit.SECONDS);
+            if (res.getPayloadCase() == MessageProto.ServerMessage.PayloadCase.ERROR) {
+                if (res.getError().getCode().equals(MessageProto.ErrorCode.MAGE_EXCEPTION)) {
                     throw new MageException(res.getError().getMessage());
                 }
                 throw new Exception(res.getError().getCode() + ": " + res.getError().getMessage());
@@ -1675,7 +1675,7 @@ public class WsClientTransport implements ClientTransport {
         }
     }
 
-    private void sendMessage(WsProto.ClientMessage msg) {
+    private void sendMessage(MessageProto.ClientMessage msg) {
         try {
             if (!isConnected()) {
                 throw new IllegalStateException("Not connected");

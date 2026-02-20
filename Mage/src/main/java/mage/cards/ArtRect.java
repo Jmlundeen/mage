@@ -1,6 +1,6 @@
 package mage.cards;
 
-import mage.ws.v1.model.ModelProto;
+import mage.ws.model.ModelProto;
 
 import java.awt.geom.Rectangle2D;
 

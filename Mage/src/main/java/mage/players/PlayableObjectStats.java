@@ -6,7 +6,7 @@ import mage.abilities.SpellAbility;
 import mage.abilities.mana.BasicManaAbility;
 import mage.constants.SpellAbilityType;
 import mage.util.Copyable;
-import mage.ws.v1.model.ModelProto;
+import mage.ws.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;

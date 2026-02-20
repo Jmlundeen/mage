@@ -4,7 +4,7 @@ import mage.game.Game;
 import mage.game.command.Emblem;
 import mage.game.command.emblems.EmblemOfCard;
 import mage.players.PlayableObjectStats;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;

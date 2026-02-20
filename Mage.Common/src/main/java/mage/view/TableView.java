@@ -13,7 +13,7 @@ import mage.game.match.MatchOptions;
 import mage.game.match.MatchPlayer;
 import mage.game.mulligan.MulliganType;
 import mage.game.tournament.TournamentPlayer;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;

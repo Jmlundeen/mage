@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import mage.remote.traffic.ZippedObject;
 import mage.util.ThreadUtils;
 import mage.utils.CompressUtil;
-import mage.ws.v1.WsProto;
+import mage.ws.MessageProto;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -112,8 +112,8 @@ public class ClientCallback implements Serializable {
      *
      * @return the protobuf ClientCallback message
      */
-    public WsProto.ClientCallback toProto() {
-        WsProto.ClientCallback.Builder builder = WsProto.ClientCallback.newBuilder()
+    public MessageProto.ClientCallback toProto() {
+        MessageProto.ClientCallback.Builder builder = MessageProto.ClientCallback.newBuilder()
                 .setMethod(method.name())
                 .setMessageId(messageId);
 
@@ -138,7 +138,7 @@ public class ClientCallback implements Serializable {
         return builder.build();
     }
 
-    public static ClientCallback fromProto(WsProto.ClientCallback proto) {
+    public static ClientCallback fromProto(MessageProto.ClientCallback proto) {
         ClientCallbackMethod method = ClientCallbackMethod.valueOf(proto.getMethod());
         proto.getObjectId();
         UUID objectId = UUID.fromString(proto.getObjectId());

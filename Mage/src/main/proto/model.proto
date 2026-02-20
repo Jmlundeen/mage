@@ -1,7 +1,7 @@
 syntax="proto3";
 
-package mage.ws.v1.model;
-option java_package="mage.ws.v1.model";
+package mage.ws.model;
+
 option java_outer_classname="ModelProto";
 
 // Represents the Mage server version information.

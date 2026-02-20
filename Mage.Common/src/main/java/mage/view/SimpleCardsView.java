@@ -3,7 +3,7 @@
 package mage.view;
 
 import mage.cards.Card;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;

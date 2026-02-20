@@ -2,7 +2,7 @@ package mage.view;
 
 import com.google.gson.annotations.Expose;
 import mage.players.PlayableObjectStats;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.UUID;

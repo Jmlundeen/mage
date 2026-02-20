@@ -1,7 +1,7 @@
 package mage.abilities.icon;
 
 import mage.util.Copyable;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 /**
  * @author JayDi85

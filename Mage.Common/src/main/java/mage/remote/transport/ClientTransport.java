@@ -11,7 +11,7 @@ import mage.utils.MageVersion;
 import mage.view.MatchView;
 import mage.view.RoomUsersView;
 import mage.view.TableView;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.util.List;
 import java.util.Optional;

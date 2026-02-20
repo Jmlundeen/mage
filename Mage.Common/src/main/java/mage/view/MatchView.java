@@ -6,7 +6,7 @@ import mage.game.Table;
 import mage.game.match.Match;
 import mage.game.match.MatchPlayer;
 import mage.game.tournament.TournamentPlayer;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;

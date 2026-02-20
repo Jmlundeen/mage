@@ -9,7 +9,7 @@ import mage.game.permanent.PermanentToken;
 import mage.game.permanent.token.Token;
 import mage.players.Player;
 import mage.util.CardUtil;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 import java.util.ArrayList;
 import java.util.List;

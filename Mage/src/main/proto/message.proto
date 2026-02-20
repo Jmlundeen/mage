@@ -1,12 +1,11 @@
 syntax = "proto3";
 
-package mage.ws.v1;
+package mage.ws;
 
-option java_package = "mage.ws.v1";
-option java_outer_classname = "WsProto";
+option java_outer_classname = "MessageProto";
 
-import "ws/v1/view/view.proto";
-import "ws/v1/model/model.proto";
+import "view.proto";
+import "model.proto";
 import "result.proto";
 // Strict, versioned envelopes used by the parallel Javalin WebSocket transport.
 //
@@ -432,7 +431,7 @@ message JoinTournamentTableRequest {
   string playerName = 3;
   string playerType = 4;
   int32 aiSkill = 5;
-  mage.ws.v1.model.DeckCardLists deckCardLists = 6;
+  model.DeckCardLists deckCardLists = 6;
   string password = 7;
 }
 

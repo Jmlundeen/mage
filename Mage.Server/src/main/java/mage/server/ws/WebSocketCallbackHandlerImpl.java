@@ -1,8 +1,8 @@
 package mage.server.ws;
 
 import mage.interfaces.callback.ClientCallback;
+import mage.ws.MessageProto;
 import mage.ws.ProtocolVersion;
-import mage.ws.v1.WsProto;
 import org.apache.log4j.Logger;
 
 import java.nio.ByteBuffer;
@@ -42,10 +42,10 @@ public class WebSocketCallbackHandlerImpl implements WebSocketCallbackHandler {
     private void sendCallbackInternal(ClientCallback callback) {
         try {
             // Convert ClientCallback to protobuf
-            WsProto.ClientCallback callbackProto = callback.toProto();
+            MessageProto.ClientCallback callbackProto = callback.toProto();
 
             // Wrap in ServerMessage envelope
-            WsProto.ServerMessage message = WsProto.ServerMessage.newBuilder()
+            MessageProto.ServerMessage message = MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setSessionId(sessionId)
                     .setClientCallback(callbackProto)

@@ -23,7 +23,7 @@ import mage.server.tournament.TournamentSession;
 import mage.server.util.ServerMessagesUtil;
 import mage.utils.SystemUtil;
 import mage.view.TableClientMessage;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 import org.apache.log4j.Logger;
 
 import java.util.*;

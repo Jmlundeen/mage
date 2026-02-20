@@ -2,7 +2,7 @@ package mage.game.tournament;
 
 import mage.cards.decks.Deck;
 import mage.game.draft.DraftCube;
-import mage.ws.v1.model.ModelProto;
+import mage.ws.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.ArrayList;

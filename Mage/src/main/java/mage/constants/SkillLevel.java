@@ -1,7 +1,7 @@
 
 package mage.constants;
 
-import mage.ws.v1.view.ViewProto;
+import mage.ws.view.ViewProto;
 
 /**
  *

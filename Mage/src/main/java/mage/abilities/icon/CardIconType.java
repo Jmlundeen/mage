@@ -1,6 +1,6 @@
 package mage.abilities.icon;
 
-import mage.ws.v1.model.ModelProto;
+import mage.ws.model.ModelProto;
 
 /**
  * Icons for GUI card panel

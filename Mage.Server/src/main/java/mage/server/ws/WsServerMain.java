@@ -9,8 +9,8 @@ import mage.interfaces.MageServer;
 import mage.server.DisconnectReason;
 import mage.server.MainManagerFactory;
 import mage.server.util.ConfigWrapper;
+import mage.ws.MessageProto;
 import mage.ws.ProtocolVersion;
-import mage.ws.v1.WsProto;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -230,21 +230,21 @@ public final class WsServerMain {
         data.get(bytes);
 
 
-        WsProto.ServerMessage out;
+        MessageProto.ServerMessage out;
         try {
-            WsProto.ClientMessage in = WsProto.ClientMessage.parseFrom(bytes);
+            MessageProto.ClientMessage in = MessageProto.ClientMessage.parseFrom(bytes);
             WsFrameLogger.log(logger, "IN", in.getSessionId(), in.getRequestId(), "Client Message." + in.getPayloadCase(), bytes.length);
 
             // If the client sends a sessionId in the message, verify it matches the connection sessionId
             String ctxSessionId = ctx.attribute("sessionId");
             if (!in.getSessionId().isEmpty() && !in.getSessionId().equals(ctxSessionId)) {
                 logger.warn("WS message sessionId mismatch: connection=" + ctxSessionId + ", message=" + in.getSessionId());
-                out = WsProto.ServerMessage.newBuilder()
+                out = MessageProto.ServerMessage.newBuilder()
                         .setProtocolVersion(ProtocolVersion.getVersion())
                         .setRequestId(in.getRequestId())
                         .setSessionId(in.getSessionId())
-                        .setError(WsProto.Error.newBuilder()
-                                .setCode(WsProto.ErrorCode.INVALID_PROTOCOL_VERSION)
+                        .setError(MessageProto.Error.newBuilder()
+                                .setCode(MessageProto.ErrorCode.INVALID_PROTOCOL_VERSION)
                                 .setMessage("SessionId mismatch")
                                 .build())
                         .build();
@@ -256,12 +256,12 @@ public final class WsServerMain {
 
             out = dispatcher.handle(in);
         } catch (Exception e) {
-            out = WsProto.ServerMessage.newBuilder()
+            out = MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(UUID.randomUUID().toString())
                     .setSessionId("")
-                    .setError(WsProto.Error.newBuilder()
-                            .setCode(WsProto.ErrorCode.SERVER_ERROR)
+                    .setError(MessageProto.Error.newBuilder()
+                            .setCode(MessageProto.ErrorCode.SERVER_ERROR)
                             .setMessage("Invalid protobuf frame")
                             .build())
                     .build();

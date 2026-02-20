@@ -41,8 +41,8 @@ import mage.target.Targets;
 import mage.util.CardUtil;
 import mage.util.ManaUtil;
 import mage.util.SubTypes;
-import mage.ws.v1.model.ModelProto;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.model.ModelProto;
+import mage.ws.view.ViewProto;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -1,7 +1,7 @@
 package mage.abilities.icon;
 
-import mage.ws.v1.model.ModelProto;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.model.ModelProto;
+import mage.ws.view.ViewProto;
 
 import java.io.Serializable;
 

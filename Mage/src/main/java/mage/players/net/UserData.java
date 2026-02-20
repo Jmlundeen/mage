@@ -1,6 +1,6 @@
 package mage.players.net;
 
-import mage.ws.v1.model.ModelProto;
+import mage.ws.model.ModelProto;
 
 import java.io.Serializable;
 import java.util.*;

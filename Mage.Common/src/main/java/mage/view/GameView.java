@@ -26,8 +26,8 @@ import mage.game.stack.StackObject;
 import mage.players.PlayableObjectsList;
 import mage.players.Player;
 import mage.util.CardUtil;
-import mage.ws.v1.model.ModelProto;
-import mage.ws.v1.view.ViewProto;
+import mage.ws.model.ModelProto;
+import mage.ws.view.ViewProto;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;

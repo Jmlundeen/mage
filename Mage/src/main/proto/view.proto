@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package mage.ws.v1.view;
-option java_package = "mage.ws.v1.view";
+package mage.ws.view;
+
 option java_outer_classname = "ViewProto";
 
-import "ws/v1/model/model.proto";
+import "model.proto";
 
 // Mirrors mage.view.TableView (fields actually used by lobby UI)
 message TableView {

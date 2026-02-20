@@ -1,6 +1,6 @@
 package mage.server.ws;
 
-import mage.ws.v1.WsProto;
+import mage.ws.MessageProto;
 import org.apache.log4j.Logger;
 
 import java.nio.ByteBuffer;
@@ -53,7 +53,7 @@ public class WsConnectionRegistry {
      *
      * @param message The protobuf message to broadcast
      */
-    public void broadcast(WsProto.ServerMessage message) {
+    public void broadcast(MessageProto.ServerMessage message) {
         byte[] data = message.toByteArray();
         ByteBuffer buffer = ByteBuffer.wrap(data);
 

@@ -18,9 +18,9 @@ import mage.view.DraftPickView;
 import mage.view.MatchView;
 import mage.view.TableView;
 import mage.view.TournamentView;
+import mage.ws.MessageProto;
 import mage.ws.ProtocolVersion;
-import mage.ws.v1.WsProto;
-import mage.ws.v1.model.ModelProto;
+import mage.ws.model.ModelProto;
 import org.apache.log4j.Logger;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 
@@ -63,17 +63,17 @@ public class WsMessageDispatcher {
         }
     }
 
-    public WsProto.ServerMessage handle(WsProto.ClientMessage msg) {
+    public MessageProto.ServerMessage handle(MessageProto.ClientMessage msg) {
         String requestId = msg.getRequestId();
         String sessionId = msg.getSessionId();
 
         if (msg.getProtocolVersion().isEmpty() || !ProtocolVersion.equalsStrict(msg.getProtocolVersion())) {
-            return error(requestId, sessionId, WsProto.ErrorCode.INVALID_PROTOCOL_VERSION,
+            return error(requestId, sessionId, MessageProto.ErrorCode.INVALID_PROTOCOL_VERSION,
                     "Invalid protocolVersion. ServerProtocol=" + ProtocolVersion.getVersion());
         }
 
         if (requestId.trim().isEmpty()) {
-            return error("", sessionId, WsProto.ErrorCode.MISSING_REQUEST_ID, "Missing requestId");
+            return error("", sessionId, MessageProto.ErrorCode.MISSING_REQUEST_ID, "Missing requestId");
         }
 
         try {
@@ -139,19 +139,19 @@ public class WsMessageDispatcher {
                 case ADMIN_ACTIVATE_USER_REQUEST -> adminActivateUser(requestId, sessionId, msg.getAdminActivateUserRequest());
                 case ADMIN_TOGGLE_ACTIVATE_USER_REQUEST -> adminToggleActivateUser(requestId, sessionId, msg.getAdminToggleActivateUserRequest());
                 case ADMIN_LOCK_USER_REQUEST -> adminLockUser(requestId, sessionId, msg.getAdminLockUserRequest());
-                default -> error(requestId, sessionId, WsProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
+                default -> error(requestId, sessionId, MessageProto.ErrorCode.UNKNOWN_MESSAGE_TYPE, "Unknown message type");
             };
         } catch (MissingSessionException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MISSING_SESSION_ID, e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MISSING_SESSION_ID, e.getMessage());
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, e.getMessage());
         } catch (Exception e) {
             logger.error("WS dispatch error", e);
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Server error");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Server error");
         }
     }
 
-    private WsProto.ServerMessage disconnect(String requestId, String sessionId, WsProto.Disconnect msg) {
+    private MessageProto.ServerMessage disconnect(String requestId, String sessionId, MessageProto.Disconnect msg) {
         requireSession(sessionId);
         DisconnectReason reason = DisconnectReason.DisconnectedByUser;
         if (SessionImpl.KEEP_MY_OLD_SESSION.equals(sessionId)) {
@@ -162,26 +162,26 @@ public class WsMessageDispatcher {
         return null; // No response expected for disconnect
     }
 
-    private WsProto.ServerMessage ping(String requestId, String sessionId, WsProto.PingRequest req) {
+    private MessageProto.ServerMessage ping(String requestId, String sessionId, MessageProto.PingRequest req) {
         requireSession(sessionId);
         try {
             if (mageServer.ping(sessionId, req.getLastPingInfo())) {
-                return WsProto.ServerMessage.newBuilder()
+                return MessageProto.ServerMessage.newBuilder()
                         .setProtocolVersion(ProtocolVersion.getVersion())
                         .setRequestId(requestId)
                         .setSessionId(sessionId)
-                        .setAck(WsProto.Ack.getDefaultInstance())
+                        .setAck(MessageProto.Ack.getDefaultInstance())
                         .build();
             }
             else {
-                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Ping rejected by server");
+                return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Ping rejected by server");
             }
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Ping failed: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Ping failed: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage auth(String requestId, String sessionId, WsProto.AuthRequest req) {
+    private MessageProto.ServerMessage auth(String requestId, String sessionId, MessageProto.AuthRequest req) {
         // For now: implement a minimal login call path.
         // Ensure a server-side session exists for that sessionId.
         if (sessionManager.getSession(sessionId).isEmpty()) {
@@ -197,70 +197,70 @@ public class WsMessageDispatcher {
         }
 
         if (!ok) {
-            return error(requestId, sessionId, WsProto.ErrorCode.AUTH_FAILED, "Auth failed");
+            return error(requestId, sessionId, MessageProto.ErrorCode.AUTH_FAILED, "Auth failed");
         }
 
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
-                .setAuth(WsProto.AuthResponse.newBuilder()
+                .setAuth(MessageProto.AuthResponse.newBuilder()
                         .setOk(true)
                         .setMessage("OK")
                         .build())
                 .build();
     }
 
-    private WsProto.ServerMessage getMainRoomId(String requestId, String sessionId, WsProto.MainRoomIdRequest req) {
+    private MessageProto.ServerMessage getMainRoomId(String requestId, String sessionId, MessageProto.MainRoomIdRequest req) {
         requireSession(sessionId);
         UUID mainRoomId;
         try {
             mainRoomId = mageServer.serverGetMainRoomId();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get main room ID");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not get main room ID");
         }
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
-                .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                .setUuidResponse(MessageProto.UUIDResponse.newBuilder()
                         .setUuid(mainRoomId.toString())
                         .build())
                 .build();
     }
 
-    private WsProto.ServerMessage getChatRoomId(String requestId, String sessionId, WsProto.RoomChatIdRequest roomChatIdRequest) {
+    private MessageProto.ServerMessage getChatRoomId(String requestId, String sessionId, MessageProto.RoomChatIdRequest roomChatIdRequest) {
         requireSession(sessionId);
         UUID roomId = UUID.fromString(roomChatIdRequest.getRoomId());
         UUID chatRoomId;
         try {
             chatRoomId = mageServer.chatFindByRoom(roomId);
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get chat room ID");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not get chat room ID");
         }
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
-                .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                .setUuidResponse(MessageProto.UUIDResponse.newBuilder()
                         .setUuid(chatRoomId.toString())
                         .build())
                 .build();
     }
 
-    private WsProto.ServerMessage getTables(String requestId, String sessionId, WsProto.TablesRequest req) throws MageException {
+    private MessageProto.ServerMessage getTables(String requestId, String sessionId, MessageProto.TablesRequest req) throws MageException {
         requireSession(sessionId);
         UUID roomId = req.getRoomId().isEmpty() ? null : UUID.fromString(req.getRoomId());
         if (roomId == null) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Missing roomId");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Missing roomId");
         }
 
-        WsProto.TablesResponse.Builder builder = WsProto.TablesResponse.newBuilder();
+        MessageProto.TablesResponse.Builder builder = MessageProto.TablesResponse.newBuilder();
         builder.addAllTables(mageServer.roomGetAllTables(roomId).stream()
                 .map(TableView::toProto)
                 .toList());
 
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
@@ -268,19 +268,19 @@ public class WsMessageDispatcher {
                 .build();
     }
 
-    private WsProto.ServerMessage getFinishedMatches(String requestId, String sessionId, WsProto.FinishedMatchesRequest req) throws MageException {
+    private MessageProto.ServerMessage getFinishedMatches(String requestId, String sessionId, MessageProto.FinishedMatchesRequest req) throws MageException {
         requireSession(sessionId);
         UUID roomId = req.getRoomId().isEmpty() ? null : UUID.fromString(req.getRoomId());
         if (roomId == null) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Missing roomId");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Missing roomId");
         }
 
-        WsProto.FinishedMatchesResponse.Builder builder = WsProto.FinishedMatchesResponse.newBuilder();
+        MessageProto.FinishedMatchesResponse.Builder builder = MessageProto.FinishedMatchesResponse.newBuilder();
         builder.addAllFinishedMatches(mageServer.roomGetFinishedMatches(roomId).stream()
                 .map(MatchView::toProto)
                 .toList());
 
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
@@ -288,17 +288,17 @@ public class WsMessageDispatcher {
                 .build();
     }
 
-    private WsProto.ServerMessage getRoomUsers(String requestId, String sessionId, WsProto.RoomUsersRequest req) throws MageException {
+    private MessageProto.ServerMessage getRoomUsers(String requestId, String sessionId, MessageProto.RoomUsersRequest req) throws MageException {
         requireSession(sessionId);
         UUID roomId = req.getRoomId().isEmpty() ? null : UUID.fromString(req.getRoomId());
         if (roomId == null) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Missing roomId");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Missing roomId");
         }
 
-        WsProto.RoomUsersResponse.Builder builder = WsProto.RoomUsersResponse.newBuilder();
+        MessageProto.RoomUsersResponse.Builder builder = MessageProto.RoomUsersResponse.newBuilder();
         builder.setRoomUsers(mageServer.roomGetUsers(roomId).toProto());
 
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
@@ -306,14 +306,14 @@ public class WsMessageDispatcher {
                 .build();
     }
 
-    private WsProto.ServerMessage getLobbyInfo(String requestId, String sessionId, WsProto.LobbyInfoRequest req) throws MageException {
+    private MessageProto.ServerMessage getLobbyInfo(String requestId, String sessionId, MessageProto.LobbyInfoRequest req) throws MageException {
         requireSession(sessionId);
         UUID roomId = req.getRoomId().isEmpty() ? null : UUID.fromString(req.getRoomId());
         if (roomId == null) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Missing roomId");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Missing roomId");
         }
 
-        WsProto.LobbyInfoResponse.Builder builder = WsProto.LobbyInfoResponse.newBuilder();
+        MessageProto.LobbyInfoResponse.Builder builder = MessageProto.LobbyInfoResponse.newBuilder();
         builder.addAllTables(mageServer.roomGetAllTables(roomId).stream()
                 .map(TableView::toProto)
                 .toList());
@@ -322,7 +322,7 @@ public class WsMessageDispatcher {
                 .toList());
         builder.setRoomUsers(mageServer.roomGetUsers(roomId).toProto());
 
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
@@ -330,61 +330,61 @@ public class WsMessageDispatcher {
                 .build();
     }
 
-    private WsProto.ServerMessage joinChat(String requestId, String sessionId, WsProto.JoinChatRequest joinChatRequest) {
+    private MessageProto.ServerMessage joinChat(String requestId, String sessionId, MessageProto.JoinChatRequest joinChatRequest) {
         requireSession(sessionId);
         UUID chatId = UUID.fromString(joinChatRequest.getChatId());
         try {
             User user = managerFactory.userManager().getUserBySessionId(sessionId).orElse(null);
             if (user == null) {
-                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "User not found for session");
+                return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "User not found for session");
             }
             mageServer.chatJoin(chatId, sessionId, user.getName());
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join chat: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not join chat: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage leaveChat(String requestId, String sessionId, WsProto.LeaveChatRequest leaveChatRequest) {
+    private MessageProto.ServerMessage leaveChat(String requestId, String sessionId, MessageProto.LeaveChatRequest leaveChatRequest) {
         requireSession(sessionId);
         try {
             UUID chatId = UUID.fromString(leaveChatRequest.getChatId());
             mageServer.chatLeave(chatId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not leave chat: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not leave chat: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage getServerState(String requestId, String sessionId) {
+    private MessageProto.ServerMessage getServerState(String requestId, String sessionId) {
         requireSession(sessionId);
         ModelProto.ServerState serverState;
         try {
             serverState = mageServer.getServerState().toProto();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get server state");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not get server state");
         }
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
-                .setServerStateResponse(WsProto.ServerStateResponse.newBuilder()
+                .setServerStateResponse(MessageProto.ServerStateResponse.newBuilder()
                         .setServerState(serverState)
                         .build())
                 .build();
     }
 
-    private WsProto.ServerMessage setUserData(String sessionId, WsProto.UserData msg) throws MageException {
+    private MessageProto.ServerMessage setUserData(String sessionId, MessageProto.UserData msg) throws MageException {
         requireSession(sessionId);
         UserData userData = UserData.fromProto(msg.getUserData());
         MageVersion clientVersion = MageVersion.fromProto(msg.getMageVersion());
@@ -392,15 +392,15 @@ public class WsMessageDispatcher {
         return null; // No response expected for setUserData
     }
 
-    private WsProto.ServerMessage getPromotionMessages(String requestId, String sessionId) {
+    private MessageProto.ServerMessage getPromotionMessages(String requestId, String sessionId) {
         requireSession(sessionId);
-        WsProto.PromotionMessagesResponse.Builder builder = WsProto.PromotionMessagesResponse.newBuilder();
+        MessageProto.PromotionMessagesResponse.Builder builder = MessageProto.PromotionMessagesResponse.newBuilder();
         try {
             builder.addAllMessages(mageServer.serverGetPromotionMessages(sessionId));
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get promotion messages");
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not get promotion messages");
         }
-        return WsProto.ServerMessage.newBuilder()
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId)
                 .setSessionId(sessionId)
@@ -408,41 +408,41 @@ public class WsMessageDispatcher {
                 .build();
     }
 
-    private WsProto.ServerMessage createTable(String requestId, String sessionId, WsProto.CreateTableRequest createTableRequest) {
+    private MessageProto.ServerMessage createTable(String requestId, String sessionId, MessageProto.CreateTableRequest createTableRequest) {
         requireSession(sessionId);
         try {
             TableView resultView = mageServer.roomCreateTable(sessionId, UUID.fromString(createTableRequest.getRoomId()), MatchOptions.fromProto(createTableRequest.getMatchOptions()));
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
+                    .setTableViewResponse(MessageProto.TableViewResponse.newBuilder()
                             .setTableView(resultView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not create table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not create table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage createTournamentTable(String requestId, String sessionId, WsProto.CreateTournamentTableRequest createTournamentTableRequest) {
+    private MessageProto.ServerMessage createTournamentTable(String requestId, String sessionId, MessageProto.CreateTournamentTableRequest createTournamentTableRequest) {
         requireSession(sessionId);
         try {
             TableView resultView = mageServer.roomCreateTournament(sessionId, UUID.fromString(createTournamentTableRequest.getRoomId()), TournamentOptions.fromProto(createTournamentTableRequest.getTournamentOptions()));
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
+                    .setTableViewResponse(MessageProto.TableViewResponse.newBuilder()
                             .setTableView(resultView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not create tournament table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not create tournament table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage joinTable(String requestId, String sessionId, WsProto.JoinTableRequest joinTableRequest) {
+    private MessageProto.ServerMessage joinTable(String requestId, String sessionId, MessageProto.JoinTableRequest joinTableRequest) {
         requireSession(sessionId);
         try {
             boolean result = mageServer.roomJoinTable(sessionId,
@@ -455,86 +455,86 @@ public class WsMessageDispatcher {
                     joinTableRequest.getPassword()
             );
             if (!result) {
-                return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not join table");
+                return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not join table");
             }
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not join table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not join table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage removeTable(String requestId, String sessionId, WsProto.RemoveTableRequest removeTableRequest) {
+    private MessageProto.ServerMessage removeTable(String requestId, String sessionId, MessageProto.RemoveTableRequest removeTableRequest) {
         requireSession(sessionId);
         try {
             mageServer.tableRemove(sessionId, UUID.fromString(removeTableRequest.getRoomId()), UUID.fromString(removeTableRequest.getTableId()));
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not remove table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not remove table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage getTableChatId(String requestId, String sessionId, WsProto.TableChatIdRequest tableChatIdRequest) {
+    private MessageProto.ServerMessage getTableChatId(String requestId, String sessionId, MessageProto.TableChatIdRequest tableChatIdRequest) {
         requireSession(sessionId);
         try {
             UUID chatId = mageServer.chatFindByTable(UUID.fromString(tableChatIdRequest.getTableId()));
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                    .setUuidResponse(MessageProto.UUIDResponse.newBuilder()
                             .setUuid(chatId.toString())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get table chat ID: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not get table chat ID: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage getGameChatId(String requestId, String sessionId, WsProto.GameChatIdRequest gameChatIdRequest) {
+    private MessageProto.ServerMessage getGameChatId(String requestId, String sessionId, MessageProto.GameChatIdRequest gameChatIdRequest) {
         requireSession(sessionId);
         try {
             UUID chatId = mageServer.chatFindByGame(UUID.fromString(gameChatIdRequest.getGameId()));
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                    .setUuidResponse(MessageProto.UUIDResponse.newBuilder()
                             .setUuid(chatId == null ? "" : chatId.toString())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get game chat ID: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not get game chat ID: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage getTournamentChatId(String requestId, String sessionId, WsProto.TournamentChatIdRequest tournamentChatIdRequest) {
+    private MessageProto.ServerMessage getTournamentChatId(String requestId, String sessionId, MessageProto.TournamentChatIdRequest tournamentChatIdRequest) {
         requireSession(sessionId);
         try {
             UUID chatId = mageServer.chatFindByTournament(UUID.fromString(tournamentChatIdRequest.getTournamentId()));
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setUuidResponse(WsProto.UUIDResponse.newBuilder()
+                    .setUuidResponse(MessageProto.UUIDResponse.newBuilder()
                             .setUuid(chatId == null ? "" : chatId.toString())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not get tournament chat ID: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not get tournament chat ID: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage sendChatMessage(String requestId, String sessionId, WsProto.SendChatMessageRequest sendChatMessageRequest) {
+    private MessageProto.ServerMessage sendChatMessage(String requestId, String sessionId, MessageProto.SendChatMessageRequest sendChatMessageRequest) {
         requireSession(sessionId);
         try {
             UUID chatId = UUID.fromString(sendChatMessageRequest.getChatId());
@@ -543,38 +543,38 @@ public class WsMessageDispatcher {
             // Get username from session
             User user = managerFactory.userManager().getUserBySessionId(sessionId).orElse(null);
             if (user == null) {
-                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "User not found for session");
+                return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "User not found for session");
             }
 
             mageServer.chatSendMessage(chatId, user.getName(), message);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send chat message: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not send chat message: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage sendBroadcastMessage(String requestId, String sessionId, WsProto.SendBroadcastMessageRequest sendBroadcastMessageRequest) {
+    private MessageProto.ServerMessage sendBroadcastMessage(String requestId, String sessionId, MessageProto.SendBroadcastMessageRequest sendBroadcastMessageRequest) {
         requireSession(sessionId);
         try {
             String message = sendBroadcastMessageRequest.getMessage();
             mageServer.adminSendBroadcastMessage(sessionId, message);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send broadcast message: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not send broadcast message: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage sendPlayerData(String requestId, String sessionId, WsProto.SendPlayerDataRequest sendPlayerDataRequest) {
+    private MessageProto.ServerMessage sendPlayerData(String requestId, String sessionId, MessageProto.SendPlayerDataRequest sendPlayerDataRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(sendPlayerDataRequest.getGameId());
@@ -608,137 +608,137 @@ public class WsMessageDispatcher {
                     break;
 
                 case DATA_NOT_SET:
-                    return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "No player data provided");
+                    return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "No player data provided");
             }
 
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send player data: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not send player data: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage quitMatch(String requestId, String sessionId, WsProto.QuitMatchRequest quitMatchRequest) {
+    private MessageProto.ServerMessage quitMatch(String requestId, String sessionId, MessageProto.QuitMatchRequest quitMatchRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(quitMatchRequest.getGameId());
             mageServer.matchQuit(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not quit match: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not quit match: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage quitTournament(String requestId, String sessionId, WsProto.QuitTournamentRequest quitTournamentRequest) {
+    private MessageProto.ServerMessage quitTournament(String requestId, String sessionId, MessageProto.QuitTournamentRequest quitTournamentRequest) {
         requireSession(sessionId);
         try {
             UUID tournamentId = UUID.fromString(quitTournamentRequest.getTournamentId());
             mageServer.tournamentQuit(tournamentId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not quit tournament: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not quit tournament: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage quitDraft(String requestId, String sessionId, WsProto.QuitDraftRequest quitDraftRequest) {
+    private MessageProto.ServerMessage quitDraft(String requestId, String sessionId, MessageProto.QuitDraftRequest quitDraftRequest) {
         requireSession(sessionId);
         try {
             UUID draftId = UUID.fromString(quitDraftRequest.getDraftId());
             mageServer.draftQuit(draftId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not quit draft: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not quit draft: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage getIsTableOwner(String requestId, String sessionId, WsProto.IsTableOwnerRequest isTableOwnerRequest) {
+    private MessageProto.ServerMessage getIsTableOwner(String requestId, String sessionId, MessageProto.IsTableOwnerRequest isTableOwnerRequest) {
         requireSession(sessionId);
         try {
             boolean isOwner = mageServer.tableIsOwner(sessionId, UUID.fromString(isTableOwnerRequest.getRoomId()), UUID.fromString(isTableOwnerRequest.getTableId()));
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setBoolean(isOwner)
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not determine table owner status: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not determine table owner status: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage submitDeck(String requestId, String sessionId, WsProto.SubmitDeckRequest submitDeckRequest) {
+    private MessageProto.ServerMessage submitDeck(String requestId, String sessionId, MessageProto.SubmitDeckRequest submitDeckRequest) {
         requireSession(sessionId);
         try {
             UUID tableId = UUID.fromString(submitDeckRequest.getTableId());
             DeckCardLists deckCardLists = DeckCardLists.fromProto(submitDeckRequest.getDeckCardLists());
             boolean result = mageServer.deckSubmit(sessionId, tableId, deckCardLists);
             if (!result) {
-                return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not submit deck");
+                return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not submit deck");
             }
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not submit deck: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not submit deck: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage updateDeck(String requestId, String sessionId, WsProto.UpdateDeckRequest updateDeckRequest) {
+    private MessageProto.ServerMessage updateDeck(String requestId, String sessionId, MessageProto.UpdateDeckRequest updateDeckRequest) {
         requireSession(sessionId);
         try {
             UUID tableId = UUID.fromString(updateDeckRequest.getTableId());
             DeckCardLists deckCardLists = DeckCardLists.fromProto(updateDeckRequest.getDeckCardLists());
             mageServer.deckSave(sessionId, tableId, deckCardLists);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not update deck: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not update deck: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage setBoosterLoaded(String requestId, String sessionId, WsProto.SetBoosterLoadedRequest setBoosterLoadedRequest) {
+    private MessageProto.ServerMessage setBoosterLoaded(String requestId, String sessionId, MessageProto.SetBoosterLoadedRequest setBoosterLoadedRequest) {
         requireSession(sessionId);
         try {
             UUID draftId = UUID.fromString(setBoosterLoadedRequest.getDraftId());
             mageServer.draftSetBoosterLoaded(draftId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not set booster loaded: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not set booster loaded: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage sendCardPick(String requestId, String sessionId, WsProto.SendCardPickRequest sendCardPickRequest) {
+    private MessageProto.ServerMessage sendCardPick(String requestId, String sessionId, MessageProto.SendCardPickRequest sendCardPickRequest) {
         requireSession(sessionId);
         try {
             UUID draftId = UUID.fromString(sendCardPickRequest.getDraftId());
@@ -755,46 +755,46 @@ public class WsMessageDispatcher {
             DraftPickView draftPickView = mageServer.sendDraftCardPick(draftId, sessionId, cardId, hiddenCards);
 
             if (draftPickView == null) {
-                return WsProto.ServerMessage.newBuilder()
+                return MessageProto.ServerMessage.newBuilder()
                         .setProtocolVersion(ProtocolVersion.getVersion())
                         .setRequestId(requestId)
                         .setSessionId(sessionId)
-                        .setDraftPickViewResponse(WsProto.DraftPickViewResponse.newBuilder()
+                        .setDraftPickViewResponse(MessageProto.DraftPickViewResponse.newBuilder()
                                 .build())
                         .build();
             }
 
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setDraftPickViewResponse(WsProto.DraftPickViewResponse.newBuilder()
+                    .setDraftPickViewResponse(MessageProto.DraftPickViewResponse.newBuilder()
                             .setDraftPickView(draftPickView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send card pick: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not send card pick: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage sendCardMark(String requestId, String sessionId, WsProto.SendCardMarkRequest sendCardMarkRequest) {
+    private MessageProto.ServerMessage sendCardMark(String requestId, String sessionId, MessageProto.SendCardMarkRequest sendCardMarkRequest) {
         requireSession(sessionId);
         try {
             UUID draftId = UUID.fromString(sendCardMarkRequest.getDraftId());
             UUID cardId = UUID.fromString(sendCardMarkRequest.getCardId());
             mageServer.sendDraftCardMark(draftId, sessionId, cardId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send card mark: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not send card mark: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage sendPlayerAction(String requestId, String sessionId, WsProto.SendPlayerActionRequest sendPlayerActionRequest) {
+    private MessageProto.ServerMessage sendPlayerAction(String requestId, String sessionId, MessageProto.SendPlayerActionRequest sendPlayerActionRequest) {
         requireSession(sessionId);
         try {
             String playerActionStr = sendPlayerActionRequest.getPlayerAction();
@@ -825,101 +825,101 @@ public class WsMessageDispatcher {
 
             mageServer.sendPlayerAction(playerAction, gameId, sessionId, data);
 
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not send player action: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not send player action: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Invalid player action: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Invalid player action: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage joinGame(String requestId, String sessionId, WsProto.JoinGameRequest joinGameRequest) {
+    private MessageProto.ServerMessage joinGame(String requestId, String sessionId, MessageProto.JoinGameRequest joinGameRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(joinGameRequest.getGameId());
             mageServer.gameJoin(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join game: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not join game: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage adminRemoveTable(String requestId, String sessionId, WsProto.AdminRemoveTableRequest adminRemoveTableRequest) {
+    private MessageProto.ServerMessage adminRemoveTable(String requestId, String sessionId, MessageProto.AdminRemoveTableRequest adminRemoveTableRequest) {
         requireSession(sessionId);
         try {
             UUID tableId = UUID.fromString(adminRemoveTableRequest.getTableId());
             mageServer.adminTableRemove(sessionId, tableId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not remove table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not remove table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage joinDraft(String requestId, String sessionId, WsProto.JoinDraftRequest joinDraftRequest) {
+    private MessageProto.ServerMessage joinDraft(String requestId, String sessionId, MessageProto.JoinDraftRequest joinDraftRequest) {
         requireSession(sessionId);
         try {
             UUID draftId = UUID.fromString(joinDraftRequest.getDraftId());
             mageServer.draftJoin(draftId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join draft: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not join draft: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage joinTournament(String requestId, String sessionId, WsProto.JoinTournamentRequest joinTournamentRequest) {
+    private MessageProto.ServerMessage joinTournament(String requestId, String sessionId, MessageProto.JoinTournamentRequest joinTournamentRequest) {
         requireSession(sessionId);
         try {
             UUID tournamentId = UUID.fromString(joinTournamentRequest.getTournamentId());
             mageServer.tournamentJoin(tournamentId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join tournament: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not join tournament: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage leaveTable(String requestId, String sessionId, WsProto.LeaveTableRequest leaveTableRequest) {
+    private MessageProto.ServerMessage leaveTable(String requestId, String sessionId, MessageProto.LeaveTableRequest leaveTableRequest) {
         requireSession(sessionId);
         try {
             UUID roomId = UUID.fromString(leaveTableRequest.getRoomId());
             UUID tableId = UUID.fromString(leaveTableRequest.getTableId());
             boolean result = mageServer.roomLeaveTableOrTournament(sessionId, roomId, tableId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setBoolean(result)
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not leave table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not leave table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage swapSeats(String requestId, String sessionId, WsProto.SwapSeatsRequest swapSeatsRequest) {
+    private MessageProto.ServerMessage swapSeats(String requestId, String sessionId, MessageProto.SwapSeatsRequest swapSeatsRequest) {
         requireSession(sessionId);
         try {
             UUID roomId = UUID.fromString(swapSeatsRequest.getRoomId());
@@ -927,257 +927,257 @@ public class WsMessageDispatcher {
             int seatNum1 = swapSeatsRequest.getSeatNum1();
             int seatNum2 = swapSeatsRequest.getSeatNum2();
             mageServer.tableSwapSeats(sessionId, roomId, tableId, seatNum1, seatNum2);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not swap seats: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not swap seats: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage startMatch(String requestId, String sessionId, WsProto.StartMatchRequest startMatchRequest) {
+    private MessageProto.ServerMessage startMatch(String requestId, String sessionId, MessageProto.StartMatchRequest startMatchRequest) {
         requireSession(sessionId);
         try {
             UUID roomId = UUID.fromString(startMatchRequest.getRoomId());
             UUID tableId = UUID.fromString(startMatchRequest.getTableId());
             boolean result = mageServer.matchStart(sessionId, roomId, tableId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setBoolean(result)
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not start match: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not start match: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage startTournament(String requestId, String sessionId, WsProto.StartTournamentRequest startTournamentRequest) {
+    private MessageProto.ServerMessage startTournament(String requestId, String sessionId, MessageProto.StartTournamentRequest startTournamentRequest) {
         requireSession(sessionId);
         try {
             UUID roomId = UUID.fromString(startTournamentRequest.getRoomId());
             UUID tableId = UUID.fromString(startTournamentRequest.getTableId());
             boolean result = mageServer.tournamentStart(sessionId, roomId, tableId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setBoolean(result)
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not start tournament: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not start tournament: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage watchGame(String requestId, String sessionId, WsProto.WatchGameRequest watchGameRequest) {
+    private MessageProto.ServerMessage watchGame(String requestId, String sessionId, MessageProto.WatchGameRequest watchGameRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(watchGameRequest.getGameId());
             boolean result = mageServer.gameWatchStart(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setBoolean(result)
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not watch game: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not watch game: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage stopWatching(String requestId, String sessionId, WsProto.StopWatchingRequest stopWatchingRequest) {
+    private MessageProto.ServerMessage stopWatching(String requestId, String sessionId, MessageProto.StopWatchingRequest stopWatchingRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(stopWatchingRequest.getGameId());
             mageServer.gameWatchStop(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not stop watching: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not stop watching: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage replayGame(String requestId, String sessionId, WsProto.ReplayGameRequest replayGameRequest) {
+    private MessageProto.ServerMessage replayGame(String requestId, String sessionId, MessageProto.ReplayGameRequest replayGameRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(replayGameRequest.getGameId());
             mageServer.replayInit(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not replay game: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not replay game: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage startReplay(String requestId, String sessionId, WsProto.StartReplayRequest startReplayRequest) {
+    private MessageProto.ServerMessage startReplay(String requestId, String sessionId, MessageProto.StartReplayRequest startReplayRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(startReplayRequest.getGameId());
             mageServer.replayStart(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not start replay: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not start replay: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage stopReplay(String requestId, String sessionId, WsProto.StopReplayRequest stopReplayRequest) {
+    private MessageProto.ServerMessage stopReplay(String requestId, String sessionId, MessageProto.StopReplayRequest stopReplayRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(stopReplayRequest.getGameId());
             mageServer.replayStop(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not stop replay: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not stop replay: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage nextPlay(String requestId, String sessionId, WsProto.NextPlayRequest nextPlayRequest) {
+    private MessageProto.ServerMessage nextPlay(String requestId, String sessionId, MessageProto.NextPlayRequest nextPlayRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(nextPlayRequest.getGameId());
             mageServer.replayNext(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not move to next play: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not move to next play: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage previousPlay(String requestId, String sessionId, WsProto.PreviousPlayRequest previousPlayRequest) {
+    private MessageProto.ServerMessage previousPlay(String requestId, String sessionId, MessageProto.PreviousPlayRequest previousPlayRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(previousPlayRequest.getGameId());
             mageServer.replayPrevious(gameId, sessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not move to previous play: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not move to previous play: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage skipForward(String requestId, String sessionId, WsProto.SkipForwardRequest skipForwardRequest) {
+    private MessageProto.ServerMessage skipForward(String requestId, String sessionId, MessageProto.SkipForwardRequest skipForwardRequest) {
         requireSession(sessionId);
         try {
             UUID gameId = UUID.fromString(skipForwardRequest.getGameId());
             int moves = skipForwardRequest.getMoves();
             mageServer.replaySkipForward(gameId, sessionId, moves);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not skip forward: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not skip forward: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage getTable(String requestId, String sessionId, WsProto.GetTableRequest getTableRequest) {
+    private MessageProto.ServerMessage getTable(String requestId, String sessionId, MessageProto.GetTableRequest getTableRequest) {
         requireSession(sessionId);
         try {
             UUID roomId = UUID.fromString(getTableRequest.getRoomId());
             UUID tableId = UUID.fromString(getTableRequest.getTableId());
             TableView tableView = mageServer.roomGetTableById(roomId, tableId);
             if (tableView == null) {
-                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Table not found");
+                return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Table not found");
             }
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setTableViewResponse(WsProto.TableViewResponse.newBuilder()
+                    .setTableViewResponse(MessageProto.TableViewResponse.newBuilder()
                             .setTableView(tableView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not get table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not get table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage getTournament(String requestId, String sessionId, WsProto.GetTournamentRequest getTournamentRequest) {
+    private MessageProto.ServerMessage getTournament(String requestId, String sessionId, MessageProto.GetTournamentRequest getTournamentRequest) {
         requireSession(sessionId);
         try {
             UUID tournamentId = UUID.fromString(getTournamentRequest.getTournamentId());
             TournamentView tournamentView = mageServer.tournamentFindById(tournamentId);
             if (tournamentView == null) {
-                return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Tournament not found");
+                return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Tournament not found");
             }
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setTournamentViewResponse(WsProto.TournamentViewResponse.newBuilder()
+                    .setTournamentViewResponse(MessageProto.TournamentViewResponse.newBuilder()
                             .setTournamentView(tournamentView.toProto())
                             .build())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not get tournament: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not get tournament: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage watchTable(String requestId, String sessionId, WsProto.WatchTableRequest watchTableRequest) {
+    private MessageProto.ServerMessage watchTable(String requestId, String sessionId, MessageProto.WatchTableRequest watchTableRequest) {
         requireSession(sessionId);
         try {
             UUID roomId = UUID.fromString(watchTableRequest.getRoomId());
             UUID tableId = UUID.fromString(watchTableRequest.getTableId());
             boolean result = mageServer.roomWatchTable(sessionId, roomId, tableId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setBoolean(result)
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not watch table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not watch table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage watchTournamentTable(String requestId, String sessionId, WsProto.WatchTournamentTableRequest watchTournamentTableRequest) {
+    private MessageProto.ServerMessage watchTournamentTable(String requestId, String sessionId, MessageProto.WatchTournamentTableRequest watchTournamentTableRequest) {
         requireSession(sessionId);
         try {
             UUID tableId = UUID.fromString(watchTournamentTableRequest.getTableId());
             boolean result = mageServer.roomWatchTournament(sessionId, tableId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
                     .setBoolean(result)
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not watch tournament table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not watch tournament table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage joinTournamentTable(String requestId, String sessionId, WsProto.JoinTournamentTableRequest joinTournamentTableRequest) {
+    private MessageProto.ServerMessage joinTournamentTable(String requestId, String sessionId, MessageProto.JoinTournamentTableRequest joinTournamentTableRequest) {
         requireSession(sessionId);
         try {
             UUID roomId = UUID.fromString(joinTournamentTableRequest.getRoomId());
@@ -1190,124 +1190,124 @@ public class WsMessageDispatcher {
 
             boolean result = mageServer.roomJoinTournament(sessionId, roomId, tableId, playerName, playerType, skill, deckCardLists, password);
             if (!result) {
-                return error(requestId, sessionId, WsProto.ErrorCode.SERVER_ERROR, "Could not join tournament table");
+                return error(requestId, sessionId, MessageProto.ErrorCode.SERVER_ERROR, "Could not join tournament table");
             }
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not join tournament table: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not join tournament table: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage adminDisconnectUser(String requestId, String sessionId, WsProto.AdminDisconnectUserRequest adminDisconnectUserRequest) {
+    private MessageProto.ServerMessage adminDisconnectUser(String requestId, String sessionId, MessageProto.AdminDisconnectUserRequest adminDisconnectUserRequest) {
         requireSession(sessionId);
         try {
             String userSessionId = adminDisconnectUserRequest.getUserSessionId();
             mageServer.adminDisconnectUser(sessionId, userSessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not disconnect user: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not disconnect user: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage adminEndUserSession(String requestId, String sessionId, WsProto.AdminEndUserSessionRequest adminEndUserSessionRequest) {
+    private MessageProto.ServerMessage adminEndUserSession(String requestId, String sessionId, MessageProto.AdminEndUserSessionRequest adminEndUserSessionRequest) {
         requireSession(sessionId);
         try {
             String userSessionId = adminEndUserSessionRequest.getUserSessionId();
             mageServer.adminEndUserSession(sessionId, userSessionId);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not end user session: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not end user session: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage adminMuteUser(String requestId, String sessionId, WsProto.AdminMuteUserRequest adminMuteUserRequest) {
+    private MessageProto.ServerMessage adminMuteUser(String requestId, String sessionId, MessageProto.AdminMuteUserRequest adminMuteUserRequest) {
         requireSession(sessionId);
         try {
             String userName = adminMuteUserRequest.getUserName();
             long durationMinutes = adminMuteUserRequest.getDurationMinutes();
             mageServer.adminMuteUser(sessionId, userName, durationMinutes);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not mute user: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not mute user: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage adminActivateUser(String requestId, String sessionId, WsProto.AdminActivateUserRequest adminActivateUserRequest) {
+    private MessageProto.ServerMessage adminActivateUser(String requestId, String sessionId, MessageProto.AdminActivateUserRequest adminActivateUserRequest) {
         requireSession(sessionId);
         try {
             String userName = adminActivateUserRequest.getUserName();
             boolean active = adminActivateUserRequest.getActive();
             mageServer.adminActivateUser(sessionId, userName, active);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not activate user: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not activate user: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage adminToggleActivateUser(String requestId, String sessionId, WsProto.AdminToggleActivateUserRequest adminToggleActivateUserRequest) {
+    private MessageProto.ServerMessage adminToggleActivateUser(String requestId, String sessionId, MessageProto.AdminToggleActivateUserRequest adminToggleActivateUserRequest) {
         requireSession(sessionId);
         try {
             String userName = adminToggleActivateUserRequest.getUserName();
             mageServer.adminToggleActivateUser(sessionId, userName);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not toggle activate user: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not toggle activate user: " + e.getMessage());
         }
     }
 
-    private WsProto.ServerMessage adminLockUser(String requestId, String sessionId, WsProto.AdminLockUserRequest adminLockUserRequest) {
+    private MessageProto.ServerMessage adminLockUser(String requestId, String sessionId, MessageProto.AdminLockUserRequest adminLockUserRequest) {
         requireSession(sessionId);
         try {
             String userName = adminLockUserRequest.getUserName();
             long durationMinutes = adminLockUserRequest.getDurationMinutes();
             mageServer.adminLockUser(sessionId, userName, durationMinutes);
-            return WsProto.ServerMessage.newBuilder()
+            return MessageProto.ServerMessage.newBuilder()
                     .setProtocolVersion(ProtocolVersion.getVersion())
                     .setRequestId(requestId)
                     .setSessionId(sessionId)
-                    .setAck(WsProto.Ack.getDefaultInstance())
+                    .setAck(MessageProto.Ack.getDefaultInstance())
                     .build();
         } catch (MageException e) {
-            return error(requestId, sessionId, WsProto.ErrorCode.MAGE_EXCEPTION, "Could not lock user: " + e.getMessage());
+            return error(requestId, sessionId, MessageProto.ErrorCode.MAGE_EXCEPTION, "Could not lock user: " + e.getMessage());
         }
     }
 
-    private static WsProto.ServerMessage error(String requestId, String sessionId, WsProto.ErrorCode code, String message) {
-        return WsProto.ServerMessage.newBuilder()
+    private static MessageProto.ServerMessage error(String requestId, String sessionId, MessageProto.ErrorCode code, String message) {
+        return MessageProto.ServerMessage.newBuilder()
                 .setProtocolVersion(ProtocolVersion.getVersion())
                 .setRequestId(requestId == null ? "" : requestId)
                 .setSessionId(sessionId == null ? "" : sessionId)
-                .setError(WsProto.Error.newBuilder()
+                .setError(MessageProto.Error.newBuilder()
                         .setCode(code)
                         .setMessage(message == null ? "" : message)
                         .build())
