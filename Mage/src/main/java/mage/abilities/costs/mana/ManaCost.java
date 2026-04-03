@@ -4,6 +4,7 @@ import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.ColoredManaSymbol;
 import mage.filter.Filter;
 import mage.game.Game;
@@ -46,7 +47,7 @@ public interface ManaCost extends Cost {
      */
     ManaOptions getOptions(boolean canPayLifeCost);
 
-    boolean testPay(Mana testMana);
+    boolean testPay(ManaSourceNode testSource);
 
     Filter getSourceFilter();
 

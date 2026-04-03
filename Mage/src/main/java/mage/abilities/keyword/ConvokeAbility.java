@@ -163,7 +163,6 @@ public class ConvokeAbility extends SimpleStaticAbility implements AlternateMana
                     options.addMana(permMana);
                 });
 
-        options.removeFullyIncludedVariations();
         return options;
     }
 }

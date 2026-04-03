@@ -4,6 +4,7 @@ package mage.abilities.costs.mana;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.ColoredManaSymbol;
 import mage.game.Game;
 import mage.players.ManaPool;
@@ -52,23 +53,18 @@ public class ColoredManaCost extends ManaCostImpl {
     }
 
     @Override
-    public boolean testPay(Mana testMana) {
-        if (testMana.getAny() > 0) {
+    public boolean testPay(ManaSourceNode testSource) {
+        if (testSource.getAny() > 0) {
             return true;
         }
-        switch (mana) {
-            case B:
-                return testMana.getBlack() > 0;
-            case U:
-                return testMana.getBlue() > 0;
-            case R:
-                return testMana.getRed() > 0;
-            case W:
-                return testMana.getWhite() > 0;
-            case G:
-                return testMana.getGreen() > 0;
-        }
-        return false;
+        return switch (mana) {
+            case B -> testSource.getBlack() > 0;
+            case U -> testSource.getBlue() > 0;
+            case R -> testSource.getRed() > 0;
+            case W -> testSource.getWhite() > 0;
+            case G -> testSource.getGreen() > 0;
+            default -> false;
+        };
     }
 
     @Override

@@ -4,6 +4,7 @@ package mage.abilities.costs.mana;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.ColoredManaSymbol;
 import mage.game.Game;
 import mage.players.ManaPool;
@@ -51,11 +52,7 @@ public class ColorlessManaCost extends ManaCostImpl {
 
     @Override
     public String getText() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < mana; i++) {
-            sb.append("{C}");
-        }
-        return sb.toString();
+        return "{C}".repeat(Math.max(0, mana));
     }
 
     @Override
@@ -68,8 +65,8 @@ public class ColorlessManaCost extends ManaCostImpl {
     }
 
     @Override
-    public boolean testPay(Mana testMana) {
-        return testMana.getColorless() > 0;
+    public boolean testPay(ManaSourceNode testSource) {
+        return testSource.getColorless() > 0;
     }
 
     @Override

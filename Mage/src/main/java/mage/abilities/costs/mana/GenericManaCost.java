@@ -3,6 +3,7 @@ package mage.abilities.costs.mana;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.ColoredManaSymbol;
 import mage.game.Game;
 import mage.players.ManaPool;
@@ -62,8 +63,8 @@ public class GenericManaCost extends ManaCostImpl {
     }
 
     @Override
-    public boolean testPay(Mana testMana) {
-        return testMana.count() > 0;
+    public boolean testPay(ManaSourceNode testSource) {
+        return testSource.count() > 0;
     }
 
     @Override

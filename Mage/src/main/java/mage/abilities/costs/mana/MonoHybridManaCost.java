@@ -3,6 +3,7 @@ package mage.abilities.costs.mana;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.ColoredManaSymbol;
 import mage.game.Game;
 import mage.players.ManaPool;
@@ -67,30 +68,30 @@ public class MonoHybridManaCost extends ManaCostImpl {
     }
 
     @Override
-    public boolean testPay(Mana testMana) {
+    public boolean testPay(ManaSourceNode testSource) {
         switch (manaColor) {
             case B:
-                if (testMana.getBlack() > 0) {
+                if (testSource.getBlack() > 0) {
                     return true;
                 }
             case U:
-                if (testMana.getBlue() > 0) {
+                if (testSource.getBlue() > 0) {
                     return true;
                 }
             case R:
-                if (testMana.getRed() > 0) {
+                if (testSource.getRed() > 0) {
                     return true;
                 }
             case W:
-                if (testMana.getWhite() > 0) {
+                if (testSource.getWhite() > 0) {
                     return true;
                 }
             case G:
-                if (testMana.getGreen() > 0) {
+                if (testSource.getGreen() > 0) {
                     return true;
                 }
         }
-        return testMana.count() > 0;
+        return testSource.count() > 0;
     }
 
     @Override

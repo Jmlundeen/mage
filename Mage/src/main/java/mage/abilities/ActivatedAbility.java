@@ -2,7 +2,7 @@ package mage.abilities;
 
 import mage.ApprovingObject;
 import mage.abilities.condition.Condition;
-import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaCostSymbol;
 import mage.constants.TargetController;
 import mage.constants.TimingRule;
 import mage.game.Game;
@@ -78,14 +78,13 @@ public interface ActivatedAbility extends Ability {
     ActivatedAbility setMayActivate(TargetController mayActivate);
 
     /**
-     * Returns the minimal possible cost for what the ability can be activated
-     * or cast
+     * Returns the minimal mana cost expressed as a list of cost symbols.
      *
-     * @param playerId
-     * @param game
-     * @return
+     * @param playerId the player attempting to activate
+     * @param game     the current game state
+     * @return list of mana cost symbols representing the minimum activation cost
      */
-    ManaOptions getMinimumCostToActivate(UUID playerId, Game game);
+    List<ManaCostSymbol> getMinimumCostSymbolsToActivate(UUID playerId, Game game);
 
     /**
      * Creates a fresh copy of this activated ability.

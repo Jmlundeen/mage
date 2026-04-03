@@ -6,7 +6,8 @@ import mage.MageObject;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.Cost;
 import mage.abilities.effects.Effect;
-import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaCostSymbol;
+import mage.abilities.mana.ManaCostSymbolParser;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.game.Game;
@@ -16,6 +17,7 @@ import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -162,10 +164,10 @@ public abstract class ActivatedAbilityImpl extends AbilityImpl implements Activa
     }
 
     @Override
-    public ManaOptions getMinimumCostToActivate(UUID playerId, Game game) {
+    public List<ManaCostSymbol> getMinimumCostSymbolsToActivate(UUID playerId, Game game) {
         Player player = game.getPlayer(playerId);
-
-        return getManaCostsToPay().getOptions(player.canPayLifeCost(this));
+        getManaCostsToPay().getOptions(player.canPayLifeCost(this));
+        return ManaCostSymbolParser.fromManaCosts(getManaCostsToPay(), player.canPayLifeCost(this));
     }
 
     protected boolean controlsAbility(UUID playerId, Game game) {

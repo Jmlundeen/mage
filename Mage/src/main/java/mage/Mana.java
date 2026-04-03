@@ -3,16 +3,14 @@ package mage;
 import mage.abilities.condition.Condition;
 import mage.constants.ColoredManaSymbol;
 import mage.constants.ManaType;
+import mage.filter.Filter;
 import mage.filter.FilterMana;
 import mage.util.CardUtil;
 import mage.util.Copyable;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**
@@ -33,6 +31,12 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
     protected int colorless;
     protected int any;
     protected boolean flag;
+
+    protected List<Condition> conditions = new ArrayList<>();
+    protected Filter.ComparisonScope conditionScope = Filter.ComparisonScope.All;
+    protected String conditionText = "";
+    protected UUID manaProducerId;
+    protected UUID manaProducerOriginalId;
 
     /**
      * Default constructor. Creates a {@link Mana} object with 0 values.
@@ -91,6 +95,11 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         this.colorless = mana.colorless;
         this.any = mana.any;
         this.flag = mana.flag;
+        this.conditions = new ArrayList<>(mana.conditions);
+        this.conditionScope = mana.conditionScope;
+        this.conditionText = mana.conditionText;
+        this.manaProducerId = mana.manaProducerId;
+        this.manaProducerOriginalId = mana.manaProducerOriginalId;
     }
 
 
@@ -306,7 +315,6 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
 
     /**
      * Adds mana from the passed in {@link Mana} object to this object.
-     * Ignores conditions from conditional mana
      *
      * @param mana mana to add to this object.
      */
@@ -319,6 +327,10 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         generic = CardUtil.overflowInc(generic, mana.generic);
         colorless = CardUtil.overflowInc(colorless, mana.colorless);
         any = CardUtil.overflowInc(any, mana.any);
+
+        if (mana.hasConditions()) {
+            this.conditions.addAll(mana.getConditions());
+        }
     }
 
     /**
@@ -1193,6 +1205,58 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         return flag;
     }
 
+    public boolean hasConditions() {
+        return !conditions.isEmpty();
+    }
+
+    public List<Condition> getConditions() {
+        return conditions;
+    }
+
+    public Filter.ComparisonScope getConditionScope() {
+        return conditionScope;
+    }
+
+    public void setConditionScope(Filter.ComparisonScope conditionScope) {
+        this.conditionScope = conditionScope;
+    }
+
+    public void addConditions(List<Condition> conditionsToAdd) {
+        if (conditionsToAdd != null && !conditionsToAdd.isEmpty()) {
+            this.conditions.addAll(conditionsToAdd);
+        }
+    }
+
+    public void addCondition(Condition condition) {
+        if (condition != null) {
+            this.conditions.add(condition);
+        }
+    }
+
+    public String getConditionText() {
+        return conditionText;
+    }
+
+    public void setConditionText(String conditionText) {
+        this.conditionText = conditionText;
+    }
+
+    public UUID getManaProducerId() {
+        return manaProducerId;
+    }
+
+    public void setManaProducerId(UUID manaProducerId) {
+        this.manaProducerId = manaProducerId;
+    }
+
+    public UUID getManaProducerOriginalId() {
+        return manaProducerOriginalId;
+    }
+
+    public void setManaProducerOriginalId(UUID manaProducerOriginalId) {
+        this.manaProducerOriginalId = manaProducerOriginalId;
+    }
+
     /**
      * Sets this objects mana to that of the passed in {@link Mana}
      *
@@ -1208,6 +1272,8 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         this.colorless = mana.colorless;
         this.generic = mana.generic;
         //this.flag = mana.flag;
+        this.conditions = new ArrayList<>(mana.conditions);
+        this.conditionText = mana.conditionText;
     }
 
     /**
@@ -1352,15 +1418,15 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
             return null;
         }
 
-        boolean mana1IsConditional = mana1 instanceof ConditionalMana;
-        boolean mana2IsConditional = mana2 instanceof ConditionalMana;
-        if (mana1IsConditional != mana2IsConditional) {
+        boolean mana1HasConditions = mana1.hasConditions();
+        boolean mana2HasConditions = mana2.hasConditions();
+        if (mana1HasConditions != mana2HasConditions) {
             return null;
         }
 
-        if (mana1IsConditional) {
-            List<Condition> conditions1 = ((ConditionalMana) mana1).getConditions();
-            List<Condition> conditions2 = ((ConditionalMana) mana2).getConditions();
+        if (mana1HasConditions) {
+            List<Condition> conditions1 = mana1.getConditions();
+            List<Condition> conditions2 = mana2.getConditions();
             if (!Objects.equals(conditions1, conditions2)) {
                 return null;
             }
@@ -1466,7 +1532,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
             return false;
         }
         Mana mana = (Mana) o;
-        return flag == mana.flag
+        boolean manaResult = flag == mana.flag
                 && white == mana.white
                 && blue == mana.blue
                 && black == mana.black
@@ -1475,11 +1541,33 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
                 && generic == mana.generic
                 && colorless == mana.colorless
                 && any == mana.any;
+        if (!manaResult) {
+            return false;
+        }
+        if (!Objects.equals(this.manaProducerId, mana.manaProducerId)) {
+            return false;
+        }
+        if (!Objects.equals(this.manaProducerOriginalId, mana.manaProducerOriginalId)) {
+            return false;
+        }
+        if (!Objects.equals(this.conditionScope, mana.conditionScope)) {
+            return false;
+        }
+        if (this.conditions == null || mana.conditions == null
+                || this.conditions.size() != mana.conditions.size()) {
+            return false;
+        }
+        for (int i = 0; i < this.conditions.size(); i++) {
+            if (!(Objects.equals(this.conditions.get(i), mana.conditions.get(i)))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
      * Hardcoding here versus using Objects.hash in order to increase performance since this is
-     * called thousands of times by {@link mage.abilities.mana.ManaOptions#addManaWithCost(List, Game)}
+     * called thousands of times by
      *
      * @return
      */
@@ -1496,6 +1584,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         result = 31 * result + colorless;
         result = 31 * result + any;
         result = 31 * result + (flag ? 1 : 0);
+        result = 31 * result +  Objects.hash(super.hashCode(), conditions, conditionScope, manaProducerId, manaProducerOriginalId);
 
         return Long.hashCode(result);
     }

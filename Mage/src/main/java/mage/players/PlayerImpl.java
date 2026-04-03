@@ -16,6 +16,7 @@ import mage.abilities.effects.RestrictionEffect;
 import mage.abilities.effects.RestrictionUntapNotMoreThanEffect;
 import mage.abilities.keyword.*;
 import mage.abilities.mana.ActivatedManaAbilityImpl;
+import mage.abilities.mana.ManaCostSymbol;
 import mage.abilities.mana.ManaOptions;
 import mage.cards.*;
 import mage.cards.decks.Deck;
@@ -43,7 +44,6 @@ import mage.game.events.*;
 import mage.game.match.MatchPlayer;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
-import mage.game.permanent.PermanentToken;
 import mage.game.permanent.token.SquirrelToken;
 import mage.game.stack.Spell;
 import mage.game.stack.StackAbility;
@@ -676,7 +676,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     this.turnController = null;
                     this.isGameUnderControl = true;
                 } else {
-                    this.turnController = turnControllers.get(turnControllers.size() - 1);
+                    this.turnController = turnControllers.getLast();
                     isGameUnderControl = false;
                     addMeToPlayersUnderControl(game, this.turnController);
                 }
@@ -786,7 +786,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             }
             Card card = isDrawsFromBottom() ? getLibrary().drawFromBottom(game) : getLibrary().drawFromTop(game);
             if (card != null) {
-                card.moveToZone(Zone.HAND, source, game, false); // if you want to use event.getSourceId() here then thinks x10 times
+                moveCards(card, Zone.HAND, source, game);
                 if (isTopCardRevealed() && !isDrawsFromBottom()) {
                     game.fireInformEvent(getLogName() + " draws a revealed card  (" + card.getLogName() + ')');
                 }
@@ -835,7 +835,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         }
         library.remove(card.getId(), game);
         // must return true all the time (some cards can be removed directly from library, see getLibrary().removeFromTop)
-        // TODO: replace removeFromTop logic to normal with moveToZone
+        // TODO: replace removeFromTop logic to normal with moveCards?
         return true;
     }
 
@@ -942,7 +942,7 @@ public abstract class PlayerImpl implements Player, Serializable {
          * when a card is discarded (such as madness) still work, even though that card never reaches
          * a graveyard. In addition, spells or abilities that check the characteristics of a discarded
          * card (such as Chandra Ablaze's first ability) can find that card in exile. */
-        card.moveToZone(new MoveCardsParameters(Zone.GRAVEYARD), source, game);
+        moveCards(card, Zone.GRAVEYARD, source, game);
         // So discard is also successful if card is moved to another zone by replacement effect!
         game.fireEvent(GameEvent.getEvent(GameEvent.EventType.DISCARDED_CARD, card.getId(), source, playerId));
 
@@ -1103,8 +1103,9 @@ public abstract class PlayerImpl implements Player, Serializable {
             if (library.size() + 1 < xFromTheTop) {
                 putCardsOnBottomOfLibrary(new CardsImpl(card), game, source, true);
             } else {
-                if (card.moveToZone(Zone.LIBRARY, source, game, true)
-                        && !(card instanceof PermanentToken) && !card.isCopy()) {
+                MoveCardsParameters params = new MoveCardsParameters(card, Zone.LIBRARY)
+                        .setToTopOfLibrary(true);
+                if (moveCards(params, source, game) && !card.isCopy()) {
                     Card cardInLib = getLibrary().getFromTop(game);
                     if (cardInLib != null && cardInLib.getId().equals(card.getMainCard().getId())) { // check needed because e.g. commander can go to command zone
                         cardInLib = getLibrary().removeFromTop(game);
@@ -1725,7 +1726,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                 .filter(SpellAbility.class::isInstance)
                 .map(SpellAbility.class::cast)
                 .filter(sa -> sa.getSpellAbilityType().canCast())
-                .collect(Collectors.toList())) {
+                .toList()) {
             switch (spellAbility.getSpellAbilityType()) {
                 case BASE_ALTERNATE:
                     // rules:
@@ -3040,7 +3041,7 @@ public abstract class PlayerImpl implements Player, Serializable {
      */
     @Override
     public boolean flipCoin(Ability source, Game game, boolean winnable) {
-        return flipCoins(source, game, 1, winnable).get(0);
+        return flipCoins(source, game, 1, winnable).getFirst();
     }
 
     @Override
@@ -3493,98 +3494,24 @@ public abstract class PlayerImpl implements Player, Serializable {
         Game game = originalGame.createSimulationForPlayableCalc();
 
         ManaOptions availableMana = new ManaOptions();
-        availableMana.addMana(manaPool.getMana());
+        if (!manaPool.isEmpty()) {
+            availableMana.addMana(manaPool.getMana());
+        }
         // conditional mana
         for (ConditionalMana conditionalMana : manaPool.getConditionalMana()) {
             availableMana.addMana(conditionalMana);
         }
 
-        List<Abilities<ActivatedManaAbilityImpl>> sourceWithoutManaCosts = new ArrayList<>();
-        List<Abilities<ActivatedManaAbilityImpl>> sourceWithCosts = new ArrayList<>();
+        List<ActivatedManaAbilityImpl> abilitiesList = new ArrayList<>();
         for (Card card : getHand().getCards(game)) {
-            Abilities<ActivatedManaAbilityImpl> manaAbilities
-                    = card.getAbilities(game).getAvailableActivatedManaAbilities(Zone.HAND, playerId, game);
-            for (ActivatedManaAbilityImpl ability : manaAbilities) {
-                Abilities<ActivatedManaAbilityImpl> noTapAbilities = new AbilitiesImpl<>(ability);
-                if (ability.getManaCosts().isEmpty() && !ability.isPoolDependant()) {
-                    sourceWithoutManaCosts.add(noTapAbilities);
-                } else {
-                    sourceWithCosts.add(noTapAbilities);
-                }
-            }
+            abilitiesList.addAll(card.getAbilities().getAvailableActivatedManaAbilities(Zone.HAND, playerId, game));
         }
 
         for (Permanent permanent : game.getBattlefield().getActivePermanents(playerId, game)) { // Some permanents allow use of abilities from non controlling players. so check all permanents in range
-            Boolean canUse = null;
-            boolean canAdd = false;
-            boolean useLater = false; // sources with mana costs or mana pool dependency
-            Abilities<ActivatedManaAbilityImpl> manaAbilities
-                    = permanent.getAbilities(game).getAvailableActivatedManaAbilities(Zone.BATTLEFIELD, playerId, game); // returns ability only if canActivate is true
-            for (Iterator<ActivatedManaAbilityImpl> it = manaAbilities.iterator(); it.hasNext(); ) {
-                ActivatedManaAbilityImpl ability = it.next();
-                if (canUse == null) {
-                    canUse = permanent.canUseActivatedAbilities(game);
-                }
-                if (canUse) {
-                    // abilities without Tap costs have to be handled as separate sources, because they can be used also
-                    if (!ability.hasTapCost()) {
-                        it.remove();
-                        Abilities<ActivatedManaAbilityImpl> noTapAbilities = new AbilitiesImpl<>(ability);
-                        if (ability.getManaCosts().isEmpty() && !ability.isPoolDependant()) {
-                            sourceWithoutManaCosts.add(noTapAbilities);
-                        } else {
-                            sourceWithCosts.add(noTapAbilities);
-                        }
-                        continue;
-                    }
-
-                    canAdd = true;
-                    if (!ability.getManaCosts().isEmpty() || ability.isPoolDependant()) {
-                        useLater = true;
-                        break;
-                    }
-                }
-            }
-            if (canAdd) {
-                if (useLater) {
-                    sourceWithCosts.add(manaAbilities);
-                } else {
-                    sourceWithoutManaCosts.add(manaAbilities);
-                }
-            }
+            abilitiesList.addAll(permanent.getAbilities().getAvailableActivatedManaAbilities(Zone.BATTLEFIELD, playerId, game)); // returns ability only if canActivate is true
         }
 
-        for (Abilities<ActivatedManaAbilityImpl> manaAbilities : sourceWithoutManaCosts) {
-            availableMana.addMana(manaAbilities, game);
-        }
-
-        boolean anAbilityWasUsed = true;
-        boolean usePoolDependantAbilities = false; // use such abilities later than other if possible because it can maximize mana production
-        while (anAbilityWasUsed && !sourceWithCosts.isEmpty()) {
-            anAbilityWasUsed = false;
-            for (Iterator<Abilities<ActivatedManaAbilityImpl>> iterator = sourceWithCosts.iterator(); iterator.hasNext(); ) {
-                Abilities<ActivatedManaAbilityImpl> manaAbilities = iterator.next();
-                if (usePoolDependantAbilities || !manaAbilities.hasPoolDependantAbilities()) {
-                    boolean used;
-                    if (manaAbilities.hasPoolDependantAbilities()) {
-                        used = availableMana.addManaPoolDependant(manaAbilities, game);
-                    } else {
-                        used = availableMana.addManaWithCost(manaAbilities, game);
-                    }
-                    if (used) {
-                        iterator.remove();
-                        anAbilityWasUsed = true;
-                    }
-                }
-            }
-            if (!anAbilityWasUsed && !usePoolDependantAbilities) {
-                usePoolDependantAbilities = true;
-                anAbilityWasUsed = true;
-            }
-        }
-
-        availableMana.removeFullyIncludedVariations();
-        availableMana.remove(new Mana()); // Remove any empty mana that was left over from the way the code is written
+        availableMana.addMana(abilitiesList, game);
 
         // make sure it independent of sim game
         return availableMana.copy();
@@ -3600,8 +3527,7 @@ public abstract class PlayerImpl implements Player, Serializable {
      *                         ability
      */
     @Override
-    public void addAvailableTriggeredMana(List<Mana> netManaAvailable
-    ) {
+    public void addAvailableTriggeredMana(List<Mana> netManaAvailable) {
         this.availableTriggeredManaList.add(netManaAvailable);
     }
 
@@ -3689,6 +3615,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             if (!copy.canActivate(playerId, game).canActivate()) {
                 return false;
             }
+            copy.setControllerId(playerId);
 
             // apply dynamic costs and cost modification
             copy.adjustX(game);
@@ -3753,92 +3680,15 @@ public abstract class PlayerImpl implements Player, Serializable {
      * @return Boolean. True if the minimum can be paid, false otherwise.
      */
     protected boolean canPayMinimumManaCost(ActivatedAbility ability, ManaOptions availableMana, Game game) {
-        ManaOptions abilityOptions = ability.getMinimumCostToActivate(playerId, game); // All possible combinations of mana costs
-        if (abilityOptions.isEmpty()) {
+        List<ManaCostSymbol> costSymbols = ability.getMinimumCostSymbolsToActivate(playerId, game);
+        if (costSymbols.isEmpty()) {
             return true;
-        } else {
-            if (availableMana == null) {
-                return true;
-            }
-            // Check for pay option with like phyrexian mana
-            if (getPhyrexianColors() != null) {
-                addPhyrexianLikePayOptions(abilityOptions);
-            }
-
-            // Get the ability, if any, which allows for spending many as if it were another color.
-            Set<ApprovingObject> approvingObjects = game.getContinuousEffects().asThough(ability.getSourceId(),
-                    AsThoughEffectType.SPEND_OTHER_MANA, ability, ability.getControllerId(), game);
-            for (Mana mana : abilityOptions) {
-                if (mana.count() == 0) {
-                    return true;
-                }
-                // Iterate through combinations of available mana
-                for (Mana avail : availableMana) {
-                    // TODO: SPEND_OTHER_MANA effects with getAsThoughManaType can change mana type to pay,
-                    //  but that code processing it as any color, need to test and fix another use cases
-                    //  (example: Sunglasses of Urza - may spend white mana as though it were red mana)
-
-                    // TODO: add tests for non any color like Sunglasses of Urza
-                    // TODO: Describe this
-                    // Abilities that let us spend mana as if it were any (or other colors/types) must be handled separately
-                    // and can't be incorporated into calculating availableMana since the number of combinations would explode.
-                    if (!approvingObjects.isEmpty() && mana.count() <= avail.count()) {
-                        // TODO: I think this is wrong for spell that require colorless
-                        return true;
-                    }
-                    // TODO: Why is this second? Shouldn't conditional mana be checked before the above line?
-                    if (avail instanceof ConditionalMana && !((ConditionalMana) avail).apply(ability, game, getId(), ability.getManaCosts())) {
-                        continue;
-                    }
-                    if (mana.enough(avail)) { // here we need to check if spend mana as though allow to pay the mana cost
-                        return true;
-                    }
-                }
-            }
         }
-        return false;
-    }
-
-    private void addPhyrexianLikePayOptions(ManaOptions abilityOptions) {
-        int maxLifeMana = getLife() / 2;
-        if (maxLifeMana > 0) {
-            Set<Mana> phyrexianOptions = new HashSet<>();
-            for (Mana mana : abilityOptions) {
-                if (getPhyrexianColors().isBlack()) {
-                    createReducedManaPayOption(maxLifeMana, mana, phyrexianOptions, ManaType.BLACK);
-                }
-                if (getPhyrexianColors().isBlue()) {
-                    createReducedManaPayOption(maxLifeMana, mana, phyrexianOptions, ManaType.BLUE);
-                }
-                if (getPhyrexianColors().isRed()) {
-                    createReducedManaPayOption(maxLifeMana, mana, phyrexianOptions, ManaType.RED);
-                }
-                if (getPhyrexianColors().isGreen()) {
-                    createReducedManaPayOption(maxLifeMana, mana, phyrexianOptions, ManaType.GREEN);
-                }
-                if (getPhyrexianColors().isWhite()) {
-                    createReducedManaPayOption(maxLifeMana, mana, phyrexianOptions, ManaType.WHITE);
-                }
-            }
-            abilityOptions.addAll(phyrexianOptions);
+        if (availableMana == null) {
+            return true;
         }
-    }
 
-    private int createReducedManaPayOption(int availableLifeMana, Mana oldPayOption, Set<Mana> phyrexianOptions, ManaType manaType) {
-        if (oldPayOption.get(manaType) > 0) {
-            Mana manaCopy = oldPayOption.copy();
-            int restVal;
-            if (availableLifeMana > oldPayOption.get(manaType)) {
-                restVal = 0;
-                availableLifeMana -= oldPayOption.get(manaType);
-            } else {
-                restVal = CardUtil.overflowDec(oldPayOption.get(manaType), availableLifeMana);
-                availableLifeMana = 0;
-            }
-            manaCopy.set(manaType, restVal);
-            phyrexianOptions.add(manaCopy);
-        }
-        return availableLifeMana;
+        return availableMana.canPayWithFlow(costSymbols, game, ability);
     }
 
     /**
@@ -3850,12 +3700,12 @@ public abstract class PlayerImpl implements Player, Serializable {
      * @param game          The game to check for.
      * @return Boolean, true if the card can be played by *any* of the available alternative costs, false otherwise.
      */
-    protected boolean canPlayCardByAlternateCost(Card sourceObject, ManaOptions availableMana, Ability ability, Game game) {
+    protected boolean canPlayCardByAlternateCost(Card sourceObject, ManaOptions availableMana, ActivatedAbility ability, Game game) {
         // TODO: Why is the "sourceObject instanceof Permanent" in there?
         if (sourceObject == null || (sourceObject instanceof Permanent)) {
             return false;
         }
-        Ability copyAbility; // for alternative cost and reduce tries
+        ActivatedAbility copyAbility; // for alternative cost and reduce tries
         Set<MageIdentifier> allowedIdentifiers = null;
         if (ability instanceof SpellAbility) {
             // This returns the set of MageIdentifier that allow to play the card at that timing.
@@ -3913,10 +3763,10 @@ public abstract class PlayerImpl implements Player, Serializable {
                     return true;
                 }
 
-                for (Mana mana : copyAbility.getManaCostsToPay().getOptions()) {
-                    if (availableMana.enough(mana)) {
-                        return true;
-                    }
+
+                List<ManaCostSymbol> costSymbols = copyAbility.getMinimumCostSymbolsToActivate(playerId, game);
+                if (availableMana.canPayWithFlow(costSymbols, game, copyAbility)) {
+                    return true;
                 }
             }
         }
@@ -3987,10 +3837,9 @@ public abstract class PlayerImpl implements Player, Serializable {
                     return true;
                 }
 
-                for (Mana mana : copyAbility.getManaCostsToPay().getOptions()) {
-                    if (availableMana.enough(mana)) {
-                        return true;
-                    }
+                List<ManaCostSymbol> costSymbols = copyAbility.getMinimumCostSymbolsToActivate(playerId, game);
+                if (availableMana.canPayWithFlow(costSymbols, game, copyAbility)) {
+                    return true;
                 }
             }
         }
@@ -4005,7 +3854,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             for (AlternateManaPaymentAbility altAbility : CardUtil.getAbilities(object, game).stream()
                     .filter(AlternateManaPaymentAbility.class::isInstance)
                     .map(a -> (AlternateManaPaymentAbility) a)
-                    .collect(Collectors.toList())) {
+                    .toList()) {
                 ManaOptions manaSpecial = altAbility.getManaOptions(ability, game, ability.getManaCostsToPay());
                 manaFull.addMana(manaSpecial);
             }
@@ -5033,7 +4882,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     if (auraSpellAbility.getTargets().isEmpty()) {
                         throw new IllegalArgumentException("Something wrong, found etb aura with empty spell ability or without any targets: " + card + ", source: " + source);
                     }
-                    if (!auraSpellAbility.getTargets().get(0).copy().withNotTarget(true).canChooseOrAlreadyChosen(parameters.isByOwner() ? card.getOwnerId() : getId(), source, game)) {
+                    if (!auraSpellAbility.getTargets().getFirst().copy().withNotTarget(true).canChooseOrAlreadyChosen(parameters.isByOwner() ? card.getOwnerId() : getId(), source, game)) {
                         continue;
                     }
                 }
@@ -5572,8 +5421,8 @@ public abstract class PlayerImpl implements Player, Serializable {
                 .getActivePermanents(StaticFilters.FILTER_CONTROLLED_CREATURE, getId(), null, game)
                 .stream()
                 .filter(Objects::nonNull)
-                .map(p -> p.getId())
-                .collect(Collectors.toList());
+                .map(MageItem::getId)
+                .toList();
 
         if (ids.isEmpty()) {
             game.informPlayers(getLogName() + " has no creature to be Ring-bearer.");
@@ -5585,7 +5434,7 @@ public abstract class PlayerImpl implements Player, Serializable {
         if (ids.size() == 1) {
             // Only one creature, it will be the Ring-bearer.
             // The player does not have to make any choice.
-            newBearerId = ids.get(0);
+            newBearerId = ids.getFirst();
         } else {
             // Multiple possible Ring-bearer.
             // Asking first if the player wants to change Ring-bearer.
@@ -5615,7 +5464,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             // or abilities that care about which creature was chosen as your Ring-bearer.
             // (2023-06-16)
             game.informPlayers(getLogName() + " did not choose a new Ring-bearer. " +
-                    "It is still " + (currentBearer == null ? "" : currentBearer.getLogName()) + ".");
+                    "It is still " + currentBearer.getLogName() + ".");
             game.fireEvent(GameEvent.getEvent(GameEvent.EventType.RING_BEARER_CHOSEN, currentBearerId, null, getId()));
         } else {
             Permanent ringBearer = game.getPermanent(newBearerId);

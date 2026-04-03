@@ -2,6 +2,7 @@ package org.mage.test.cards.continuous;
 
 import mage.abilities.keyword.IndestructibleAbility;
 import mage.abilities.mana.AnyColorManaAbility;
+import mage.abilities.mana.ManaOptions;
 import mage.constants.CardType;
 import mage.constants.PhaseStep;
 import mage.constants.SubType;
@@ -141,7 +142,10 @@ public class LandTypeChangingEffectsTest extends CardTestPlayerBase {
         assertNotSubtype(canopyvista, SubType.SWAMP);
         assertType(urborgtoy, CardType.LAND, SubType.MOUNTAIN);
         assertNotSubtype(urborgtoy, SubType.SWAMP);
-        Assert.assertTrue("The mana the land can produce should be [{R}] but it's " + playerB.getManaAvailable(currentGame).toString(), playerB.getManaAvailable(currentGame).toString().equals("[{R}]"));
+        ManaOptions manaOptions = playerB.getManaAvailable(currentGame);
+        Assert.assertTrue("The mana the land can produce should be [{R}] but it's " + manaOptions.toString(),
+                manaOptions.size() == 1 && manaOptions.getFirst().getRed() == 1 && manaOptions.getFirst().hasSingleOption()
+        );
     }
 
     @Test
@@ -171,7 +175,10 @@ public class LandTypeChangingEffectsTest extends CardTestPlayerBase {
         assertNotSubtype(canopyvista, SubType.SWAMP);
         assertType(urborgtoy, CardType.LAND, SubType.MOUNTAIN);
         assertNotSubtype(urborgtoy, SubType.SWAMP);
-        Assert.assertTrue("The mana the land can produce should be [{R}] but it's " + playerB.getManaAvailable(currentGame).toString(), playerB.getManaAvailable(currentGame).toString().equals("[{R}]"));
+        ManaOptions manaOptions = playerB.getManaAvailable(currentGame);
+        Assert.assertTrue("The mana the land can produce should be [{R}] but it's " + manaOptions.toString(),
+                manaOptions.size() == 1 && manaOptions.getFirst().getRed() == 1 && manaOptions.getFirst().hasSingleOption()
+        );
     }
 
     /*

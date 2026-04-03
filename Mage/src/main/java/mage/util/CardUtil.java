@@ -21,6 +21,7 @@ import mage.abilities.effects.common.asthought.YouMaySpendManaAsAnyColorToCastTa
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.HintUtils;
+import mage.abilities.mana.ManaSourceNode;
 import mage.cards.*;
 import mage.constants.*;
 import mage.counters.Counter;
@@ -200,7 +201,7 @@ public final class CardUtil {
                 }
 
                 // generic mana reduce
-                Mana mana = manaCost.getOptions().getAtIndex(0);
+                ManaSourceNode mana = manaCost.getOptions().getFirst();
                 int colorless = mana != null ? mana.getGeneric() : 0;
                 if (restToReduce != 0 && colorless > 0) {
                     if ((colorless - restToReduce) > 0) {
@@ -230,10 +231,9 @@ public final class CardUtil {
                     continue;
                 }
 
-                if (manaCost instanceof MonoHybridManaCost) {
+                if (manaCost instanceof MonoHybridManaCost mono) {
                     // current implemention supports reduce from left to right hybrid cost without cost parts announce
-                    MonoHybridManaCost mono = (MonoHybridManaCost) manaCost;
-                    int colorless = mono.getOptions().getAtIndex(1).getGeneric();
+                    int colorless = mono.getOptions().get(1).getGeneric();
                     if (restToReduce != 0 && colorless > 0) {
                         if ((colorless - restToReduce) > 0) {
                             // partly reduce
@@ -266,9 +266,8 @@ public final class CardUtil {
                 }
 
                 // add to existing cost
-                if (reduceCount != 0 && manaCost instanceof GenericManaCost) {
-                    GenericManaCost gen = (GenericManaCost) manaCost;
-                    changedCost.put(manaCost, new GenericManaCost(gen.getOptions().getAtIndex(0).getGeneric() + -reduceCount));
+                if (reduceCount != 0 && manaCost instanceof GenericManaCost gen) {
+                    changedCost.put(manaCost, new GenericManaCost(gen.getOptions().getFirst().getGeneric() - reduceCount));
                     reduceCount = 0;
                     added = true;
                 } else {

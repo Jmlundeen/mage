@@ -624,7 +624,7 @@ public class KickerTest extends CardTestPlayerBase {
         setStopAt(1, PhaseStep.BEGIN_COMBAT);
         execute();
 
-        Assert.assertEquals("All mana has to be used", "[]", playerA.getManaAvailable(currentGame).toString());
+        Assert.assertEquals("All mana has to be used", 0, playerA.getManaAvailable(currentGame).size());
         assertGraveyardCount(playerB, "Lightning Bolt", 1);
         assertGraveyardCount(playerA, "Bloodhusk Ritualist", 1);
         assertGraveyardCount(playerB, "Fireball", 2);

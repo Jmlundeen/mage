@@ -1,7 +1,5 @@
 package mage.abilities.keyword;
 
-import java.util.UUID;
-
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.SpecialAction;
@@ -12,6 +10,7 @@ import mage.abilities.costs.mana.AlternateManaPaymentAbility;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.*;
 import mage.filter.FilterPlayer;
 import mage.game.Game;
@@ -21,6 +20,8 @@ import mage.players.Player;
 import mage.target.Target;
 import mage.target.TargetPlayer;
 import mage.util.ManaUtil;
+
+import java.util.UUID;
 
 /**
  * 702.131. Assist
@@ -109,11 +110,11 @@ public class AssistAbility extends SimpleStaticAbility implements AlternateManaP
                 // basic and pool, but no coditional mana
                 ManaOptions availableMana = opponent.getManaAvailable(game);
 //                availableMana.addMana(opponent.getManaPool().getMana());
-                for (Mana mana : availableMana) {
-                    if (mana.count() > 0) {
-                        opponentCanPayMax = Math.max(opponentCanPayMax, mana.count());
-                    }
+                int amount = 0;
+                for (ManaSourceNode mana : availableMana) {
+                    amount += mana.count();
                 }
+                opponentCanPayMax = Math.max(opponentCanPayMax, amount);
             }
         }
 

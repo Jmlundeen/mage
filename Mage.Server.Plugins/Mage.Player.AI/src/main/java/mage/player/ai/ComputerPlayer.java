@@ -4,7 +4,9 @@ import mage.*;
 import mage.abilities.*;
 import mage.abilities.costs.mana.*;
 import mage.abilities.mana.ActivatedManaAbilityImpl;
+import mage.abilities.mana.ManaAbilityOption;
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.cards.Card;
 import mage.cards.Cards;
 import mage.cards.RateCard;
@@ -435,17 +437,21 @@ public class ComputerPlayer extends PlayerImpl {
                 }
                 // found compatible source - try to pay
                 if (canPayColoredMana && (cost instanceof ColoredManaCost)) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana)) {
-                            if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode)) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana, manaAbility, mageObject, game)) {
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -457,17 +463,21 @@ public class ComputerPlayer extends PlayerImpl {
             // pay all colored costs first
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof ColoredManaCost) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana) || hasApprovingObject) {
-                            if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode) || hasApprovingObject) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana, manaAbility, mageObject, game)) {
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -475,17 +485,21 @@ public class ComputerPlayer extends PlayerImpl {
             // pay snow covered mana
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof SnowManaCost) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana) || hasApprovingObject) {
-                            if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode) || hasApprovingObject) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana, manaAbility, mageObject, game)) {
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -493,19 +507,22 @@ public class ComputerPlayer extends PlayerImpl {
             // pay colorless - more restrictive than hybrid (think of it like colored)
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof ColorlessManaCost) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana) || hasApprovingObject) {
-                            if (netMana instanceof ConditionalMana
-                                    && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode) || hasApprovingObject) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana,
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option,
                                     manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -513,17 +530,21 @@ public class ComputerPlayer extends PlayerImpl {
             // then pay hybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof HybridManaCost) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana) || hasApprovingObject) {
-                            if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode) || hasApprovingObject) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana, manaAbility, mageObject, game)) {
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -531,17 +552,21 @@ public class ComputerPlayer extends PlayerImpl {
             // then pay colorless hybrid - more restrictive than monohybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof ColorlessHybridManaCost) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana) || hasApprovingObject) {
-                            if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode) || hasApprovingObject) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana, manaAbility, mageObject, game)) {
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -549,17 +574,21 @@ public class ComputerPlayer extends PlayerImpl {
             // then pay monohybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof MonoHybridManaCost) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana) || hasApprovingObject) {
-                            if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode) || hasApprovingObject) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana, manaAbility, mageObject, game)) {
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -567,17 +596,21 @@ public class ComputerPlayer extends PlayerImpl {
             // finally pay generic
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof GenericManaCost) {
-                    for (Mana netMana : manaAbility.getNetMana(game)) {
-                        if (cost.testPay(netMana) || hasApprovingObject) {
-                            if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    if (cost.testPay(sourceNode) || hasApprovingObject) {
+                        boolean canActivate = false;
+                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                            if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
                                 continue;
                             }
-                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, netMana, manaAbility, mageObject, game)) {
+                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
                                 continue;
                             }
-                            if (activateAbility(manaAbility, game)) {
-                                return true;
-                            }
+                            canActivate = true;
+                            break;
+                        }
+                        if (canActivate && activateAbility(manaAbility, game)) {
+                            return true;
                         }
                     }
                 }
@@ -606,12 +639,18 @@ public class ComputerPlayer extends PlayerImpl {
                 .orElse(null);
         ManaOptions specialMana = specialAction == null ? null : specialAction.getManaOptions(ability, game, unpaid);
         if (specialMana != null) {
-            for (Mana netMana : specialMana) {
-                if (cost.testPay(netMana) || hasApprovingObject) {
-                    if (netMana instanceof ConditionalMana && !((ConditionalMana) netMana).apply(ability, game, getId(), cost)) {
-                        continue;
+            for (ManaSourceNode sourceNode : specialMana) {
+                if (cost.testPay(sourceNode) || hasApprovingObject) {
+                    // Check conditions for each option in the source node
+                    boolean canActivate = false;
+                    for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
+                        if (option.hasConditions() && !option.applyConditions(ability, game, getId(), cost)) {
+                            continue;
+                        }
+                        canActivate = true;
+                        break;
                     }
-                    if (activateAbility(specialAction, game)) {
+                    if (canActivate && activateAbility(specialAction, game)) {
                         return true;
                     }
                     // only one time try to pay to skip infinite AI loop
@@ -623,14 +662,16 @@ public class ComputerPlayer extends PlayerImpl {
         return false;
     }
 
-    boolean canUseAsThoughManaToPayManaCost(ManaCost checkCost, Ability abilityToPay, Mana manaOption, Ability manaAbility, MageObject manaProducer, Game game) {
+    boolean canUseAsThoughManaToPayManaCost(ManaCost checkCost, Ability abilityToPay, ManaAbilityOption manaOption, Ability manaAbility, MageObject manaProducer, Game game) {
         // asThoughMana can change producing mana type, so you must check it here
         // cause some effects adds additional checks in getAsThoughManaType (example: Draugr Necromancer with snow mana sources)
 
         // simulate real asThoughMana usage
+        // Convert ManaAbilityOption to Mana for ManaPoolItem creation
+        Mana optionMana = manaOption.toMana();
+
         ManaPoolItem possiblePoolItem;
-        if (manaOption instanceof ConditionalMana) {
-            ConditionalMana conditionalNetMana = (ConditionalMana) manaOption;
+        if (optionMana instanceof ConditionalMana conditionalNetMana) {
             possiblePoolItem = new ManaPoolItem(
                     conditionalNetMana,
                     manaAbility.getSourceObject(game),
@@ -638,15 +679,15 @@ public class ComputerPlayer extends PlayerImpl {
             );
         } else {
             possiblePoolItem = new ManaPoolItem(
-                    manaOption.getRed(),
-                    manaOption.getGreen(),
-                    manaOption.getBlue(),
-                    manaOption.getWhite(),
-                    manaOption.getBlack(),
-                    manaOption.getGeneric() + manaOption.getColorless(),
+                    optionMana.getRed(),
+                    optionMana.getGreen(),
+                    optionMana.getBlue(),
+                    optionMana.getWhite(),
+                    optionMana.getBlack(),
+                    optionMana.getGeneric() + optionMana.getColorless(),
                     manaProducer,
                     manaAbility.getOriginalId(),
-                    manaOption.getFlag()
+                    optionMana.getFlag()
             );
         }
 
@@ -717,11 +758,10 @@ public class ComputerPlayer extends PlayerImpl {
             for (ManaCost cost : unpaid) {
                 Abilities:
                 for (ActivatedManaAbilityImpl ability : mageObject.getAbilities().getAvailableActivatedManaAbilities(Zone.BATTLEFIELD, playerId, game)) {
-                    for (Mana netMana : ability.getNetMana(game)) {
-                        if (cost.testPay(netMana)) {
-                            score++;
-                            break Abilities;
-                        }
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(ability, game);
+                    if (cost.testPay(sourceNode)) {
+                        score++;
+                        break Abilities;
                     }
                 }
             }

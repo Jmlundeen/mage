@@ -6,6 +6,7 @@ import mage.abilities.AbilityImpl;
 import mage.abilities.costs.*;
 import mage.abilities.costs.common.PayLifeCost;
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.ColoredManaSymbol;
 import mage.constants.ManaType;
 import mage.constants.Outcome;
@@ -527,9 +528,9 @@ public class ManaCostsImpl<T extends ManaCost> extends ArrayList<T> implements M
     }
 
     @Override
-    public boolean testPay(Mana testMana) {
+    public boolean testPay(ManaSourceNode testSource) {
         for (ManaCost cost : this) {
-            if (cost.testPay(testMana)) {
+            if (cost.testPay(testSource)) {
                 return true;
             }
         }

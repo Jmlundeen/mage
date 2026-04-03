@@ -183,7 +183,7 @@ public class ConditionalMana extends Mana implements Serializable, Emptiable {
     @Override
     public void add(Mana mana) {
         if (mana instanceof ConditionalMana) {
-            for (Condition condition : ((ConditionalMana) mana).getConditions()) {
+            for (Condition condition : mana.getConditions()) {
                 addCondition(condition);
             }
         }

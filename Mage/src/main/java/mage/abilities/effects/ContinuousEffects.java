@@ -7,8 +7,10 @@ import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.MageSingleton;
 import mage.abilities.StaticAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.continuous.BecomesFaceDownCreatureEffect;
 import mage.abilities.effects.common.continuous.CommanderReplacementEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.*;
 import mage.constants.*;
 import mage.filter.FilterCard;
@@ -1041,6 +1043,7 @@ public class ContinuousEffects implements Serializable {
         activeLayerEffects = getLayeredEffects(game);
         applyLayer(activeLayerEffects, Layer.TypeChangingEffects_4, SubLayer.NA, game);
         activeLayerEffects = getLayeredEffects(game);
+//        addBasicManaAbilities(game);
         applyLayer(activeLayerEffects, Layer.ColorChangingEffects_5, SubLayer.NA, game);
         activeLayerEffects = getLayeredEffects(game);
         applyStatus.apply(Layer.AbilityAddingRemovingEffects_6, SubLayer.NA, null, game);
@@ -1060,6 +1063,40 @@ public class ContinuousEffects implements Serializable {
         applyLayer(activeLayerEffects, Layer.PlayerEffects, SubLayer.NA, game);
         activeLayerEffects = getLayeredEffects(game);
         applyLayer(activeLayerEffects, Layer.RulesEffects, SubLayer.NA, game);
+    }
+
+    private static void addBasicManaAbilities(Game game) {
+        // add a mana ability for permanents with basic land types
+        for (Permanent permanent : game.getBattlefield().getAllPermanents()) {
+            ComposedManaAbilityBuilder builder = new ComposedManaAbilityBuilder();
+            Set<ManaType> manaTypes = new HashSet<>();
+            if (permanent.hasSubtype(SubType.PLAINS, game)) {
+                builder.addStatic(1, 0, 0, 0, 0, 0, 0);
+                manaTypes.add(ManaType.WHITE);
+            }
+            if (permanent.hasSubtype(SubType.ISLAND, game)) {
+                builder.addStatic(0, 1, 0, 0, 0, 0, 0);
+                manaTypes.add(ManaType.BLUE);
+            }
+            if (permanent.hasSubtype(SubType.SWAMP, game)) {
+                builder.addStatic(0, 0, 1, 0, 0, 0, 0);
+                manaTypes.add(ManaType.BLACK);
+            }
+            if (permanent.hasSubtype(SubType.MOUNTAIN, game)) {
+                builder.addStatic(0, 0, 0, 1, 0, 0, 0);
+                manaTypes.add(ManaType.RED);
+            }
+            if (permanent.hasSubtype(SubType.FOREST, game)) {
+                builder.addStatic(0, 0, 0, 0, 1, 0, 0);
+                manaTypes.add(ManaType.GREEN);
+            }
+            if (!manaTypes.isEmpty()) {
+                builder.addChoice(manaTypes, 1);
+                builder.cost(new TapSourceCost());
+//                    permanent.addAbility(game, builder.build());
+                permanent.addAbility(builder.build(), null, game);
+            }
+        }
     }
 
     /**

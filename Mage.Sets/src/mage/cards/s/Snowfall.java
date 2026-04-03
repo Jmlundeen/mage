@@ -1,7 +1,5 @@
 package mage.cards.s;
 
-import java.util.*;
-
 import mage.ConditionalMana;
 import mage.Mana;
 import mage.abilities.Ability;
@@ -16,11 +14,15 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.choices.Choice;
 import mage.choices.ChoiceImpl;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.SetTargetPointer;
+import mage.constants.SubType;
 import mage.filter.common.FilterLandPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+
+import java.util.*;
 
 /**
  * @author Cguy7777
@@ -94,7 +96,7 @@ class SnowfallManaEffect extends ManaEffect {
         }
 
         Mana mana = Mana.BlueMana(land.isSnow(game) ? 2 : 1);
-        netMana.add(mana);
+        netMana.add(new SnowfallConditionalMana(mana));
         return netMana;
     }
 

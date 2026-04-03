@@ -1,5 +1,6 @@
 package mage.abilities.keyword;
 
+import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.StaticAbility;
@@ -102,7 +103,9 @@ public class OfferingAbility extends StaticAbility implements AlternateManaPayme
                             for (ManaCost manaCost : spellAbility.getManaCosts()) {
                                 if (manaCost instanceof HybridManaCost) {
                                     ManaOptions manaOptionsForHybrid = new ManaOptions();
-                                    manaOptionsForHybrid.addAll(manaCost.getManaOptions());
+                                    for (Mana mana : manaCost.getManaOptions()) {
+                                        manaOptionsForHybrid.addMana(mana);
+                                    }
                                     manaOptionsForThisPermanent.addMana(manaOptionsForHybrid);
                                 } else {
                                     manaOptionsForThisPermanent.addMana(manaCost.getMana());
@@ -112,8 +115,6 @@ public class OfferingAbility extends StaticAbility implements AlternateManaPayme
                             additionalManaOptionsForThisAbility.addAll(manaOptionsForThisPermanent);
                         }
                 );
-
-        additionalManaOptionsForThisAbility.removeFullyIncludedVariations();
         return additionalManaOptionsForThisAbility;
     }
 }

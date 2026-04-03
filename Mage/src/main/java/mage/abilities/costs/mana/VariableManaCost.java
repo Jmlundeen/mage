@@ -6,6 +6,7 @@ import mage.abilities.costs.Cost;
 import mage.abilities.costs.MinMaxVariableCost;
 import mage.abilities.costs.VariableCostType;
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.ColoredManaSymbol;
 import mage.filter.FilterMana;
 import mage.game.Game;
@@ -82,11 +83,7 @@ public class VariableManaCost extends ManaCostImpl implements MinMaxVariableCost
     @Override
     public String getText() {
         if (xInstancesCount > 1) {
-            StringBuilder symbol = new StringBuilder(xInstancesCount);
-            for (int i = 0; i < xInstancesCount; i++) {
-                symbol.append("{X}");
-            }
-            return symbol.toString();
+            return "{X}".repeat(xInstancesCount);
         } else {
             return "{X}";
         }
@@ -127,7 +124,7 @@ public class VariableManaCost extends ManaCostImpl implements MinMaxVariableCost
     }
 
     @Override
-    public boolean testPay(Mana testMana) {
+    public boolean testPay(ManaSourceNode testSource) {
         return true; // TODO: need rework to generic mana style?
     }
 

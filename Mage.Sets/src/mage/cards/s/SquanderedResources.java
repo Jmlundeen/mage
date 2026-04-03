@@ -1,7 +1,5 @@
 package mage.cards.s;
 
-import java.util.*;
-import java.util.stream.Collectors;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
@@ -23,7 +21,8 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
-import mage.target.common.TargetControlledPermanent;
+
+import java.util.*;
 
 /**
  * @author escplan9 (Derek Monturo - dmontur1 at gmail dot com)
@@ -80,8 +79,11 @@ class SquanderedResourcesEffect extends ManaEffect {
                 }
                 allPossibleMana.addMana(currentPossibleMana);
             }
-            allPossibleMana.removeFullyIncludedVariations();
-            return new ArrayList<>(allPossibleMana);
+            List<Mana> manaList = new ArrayList<>();
+            for (Iterator<Mana> it = allPossibleMana.manaIterator(); it.hasNext(); ) {
+                manaList.add(it.next());
+            }
+            return manaList;
         }
         return ManaType.getManaListFromManaTypes(getManaTypesFromSacrificedPermanent(game, source), false);
     }

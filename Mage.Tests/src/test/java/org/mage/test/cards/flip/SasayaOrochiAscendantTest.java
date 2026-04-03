@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
-import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
+import static org.mage.test.utils.ManaOptionsTestUtils.*;
 
 /**
  * @author LevelX2
@@ -92,8 +92,8 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{G}{G}{G}{G}{G}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertCanPay("{G}{G}{G}{G}{G}", manaOptions, currentGame);
 
     }
 
@@ -127,10 +127,11 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
-        assertManaOptions("{C}{C}{C}{G}{G}", manaOptions);
-        assertManaOptions("{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{G}{G}{W}{W}{W}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 5, manaOptions.size());
+        assertCannotPay("{G}{G}{G}{W}{W}", manaOptions, currentGame);
+        assertCanPay("{C}{C}{C}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{G}{G}{G}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{G}{G}{W}{W}{W}", manaOptions, currentGame);
 
     }
 
@@ -166,11 +167,11 @@ public class SasayaOrochiAscendantTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 4, manaOptions.size());
-        assertManaOptions("{R}{R}{R}{R}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{R}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{R}{R}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{R}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 7, manaOptions.size());
+        assertCanPay("{R}{R}{R}{R}{G}{G}{G}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{R}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{R}{R}{G}{G}{G}{G}{G}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{R}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions, currentGame);
     }
 
 }

@@ -4,7 +4,6 @@ import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
-import mage.abilities.mana.ManaOptions;
 import mage.constants.ColoredManaSymbol;
 import mage.constants.ManaType;
 import mage.constants.MultiAmountType;
@@ -73,23 +72,17 @@ public class AddManaInAnyCombinationEffect extends ManaEffect {
             if (count <= 0) {
                 return netMana;
             }
-            // add color combinations
-            ManaOptions allPossibleMana = new ManaOptions();
+            // add color combinations as Mana objects for playable state check
             for (int i = 0; i < count; ++i) {
-                ManaOptions currentPossibleMana = new ManaOptions();
-
                 if (manaSymbols.size() == 5) { // If all colors available, then it's the same as any, but this is much faster
-                    currentPossibleMana.add(new Mana(0, 0, 0, 0, 0, 0, 1, 0));
+                    netMana.add(new Mana(0, 0, 0, 0, 0, 0, 1, 0));
                 } else {
                     for (ColoredManaSymbol coloredManaSymbol : manaSymbols) {
-                        currentPossibleMana.add(new Mana(coloredManaSymbol));
+                        netMana.add(new Mana(coloredManaSymbol));
                     }
                 }
-
-                allPossibleMana.addMana(currentPossibleMana);
             }
-            allPossibleMana.removeFullyIncludedVariations();
-            return new ArrayList<>(allPossibleMana);
+            return netMana;
 
         } else {
             int amountOfManaLeft = amount.calculate(game, source, this);

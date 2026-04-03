@@ -3,12 +3,11 @@ package mage.abilities.keyword;
 import mage.ApprovingObject;
 import mage.MageIdentifier;
 import mage.MageObjectReference;
-import mage.Mana;
 import mage.abilities.SpellAbility;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaCostSymbol;
 import mage.cards.Card;
 import mage.constants.Outcome;
 import mage.constants.SpellAbilityType;
@@ -21,6 +20,8 @@ import mage.players.Player;
 import mage.target.common.TargetSacrifice;
 import mage.util.CardUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -83,7 +84,7 @@ public class EmergeAbility extends SpellAbility {
     }
 
     @Override
-    public ManaOptions getMinimumCostToActivate(UUID playerId, Game game) {
+    public List<ManaCostSymbol> getMinimumCostSymbolsToActivate(UUID playerId, Game game) {
         int maxCMC = 0;
         for (Permanent permanentToSacrifice : game.getBattlefield().getActivePermanents(filter, playerId, this, game)) {
             int cmc = permanentToSacrifice.getManaValue();
@@ -91,15 +92,22 @@ public class EmergeAbility extends SpellAbility {
                 maxCMC = cmc;
             }
         }
-        ManaOptions manaOptions = super.getMinimumCostToActivate(playerId, game);
-        for (Mana mana : manaOptions) {
-            if (mana.getGeneric() > maxCMC) {
-                mana.setGeneric(mana.getGeneric() - maxCMC);
+        List<ManaCostSymbol> symbols = super.getMinimumCostSymbolsToActivate(playerId, game);
+        List<ManaCostSymbol> adjusted = new ArrayList<>();
+        int remainingReduction = maxCMC;
+        for (ManaCostSymbol symbol : symbols) {
+            if (remainingReduction <= 0) {
+                adjusted.add(symbol);
+            } else if (symbol.getType() == ManaCostSymbol.SymbolType.GENERIC) {
+                int reduction = Math.min(symbol.getGenericCost(), remainingReduction);
+                int newCost = symbol.getGenericCost() - reduction;
+                adjusted.add(ManaCostSymbol.generic(newCost));
+                remainingReduction -= reduction;
             } else {
-                mana.setGeneric(0);
+                adjusted.add(symbol);
             }
         }
-        return manaOptions;
+        return adjusted;
     }
 
     @Override

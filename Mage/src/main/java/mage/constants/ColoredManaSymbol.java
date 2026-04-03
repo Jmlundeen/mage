@@ -36,22 +36,15 @@ public enum ColoredManaSymbol {
     }
     
     public static ColoredManaSymbol lookup(char c) {
-        switch (c) {
-            case 'W':
-                return W;
-            case 'R':
-                return R;
-            case 'G':
-                return G;
-            case 'B':
-                return B;
-            case 'U':
-                return U;
-                
-            case 'O':
-                return O;
-        }
-        return null;
+        return switch (c) {
+            case 'W' -> W;
+            case 'R' -> R;
+            case 'G' -> G;
+            case 'B' -> B;
+            case 'U' -> U;
+            case 'O' -> O;
+            default -> null;
+        };
     }
 
 }

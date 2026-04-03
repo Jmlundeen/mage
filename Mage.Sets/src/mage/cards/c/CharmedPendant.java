@@ -6,10 +6,11 @@ import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.MillCardsCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.*;
-import mage.abilities.effects.mana.ManaEffect;
 import mage.abilities.effects.mana.BasicManaEffect;
+import mage.abilities.effects.mana.ManaEffect;
 import mage.abilities.mana.ActivatedManaAbilityImpl;
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -155,14 +156,14 @@ class CharmedPendantManaEffect extends ManaEffect {
                             } else {
                                 Choice manaChoice = new ChoiceImpl(true);
                                 manaChoice.setMessage("Select which mana you like to produce");
-                                for (Mana manaOption : manaOptions) {
+                                for (ManaSourceNode manaOption : manaOptions) {
                                     manaChoice.getChoices().add(manaOption.toString());
                                 }
                                 if (manaChoice.getChoices().isEmpty()) {  // no mana choices available
                                     return mana;
                                 }
                                 if (controller.choose(outcome, manaChoice, game)) {
-                                    for (Mana manaOption : manaOptions) {
+                                    for (Mana manaOption : manaOptions.toManaList()) {
                                         if (manaChoice.getChoice().equals(manaOption.toString())) {
                                             mana = manaOption;
                                             break;
