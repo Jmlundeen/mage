@@ -3511,7 +3511,7 @@ public abstract class PlayerImpl implements Player, Serializable {
             abilitiesList.addAll(permanent.getAbilities().getAvailableActivatedManaAbilities(Zone.BATTLEFIELD, playerId, game)); // returns ability only if canActivate is true
         }
 
-        availableMana.addMana(abilitiesList, game);
+        availableMana.addMana(abilitiesList, game, this);
 
         // make sure it independent of sim game
         return availableMana.copy();

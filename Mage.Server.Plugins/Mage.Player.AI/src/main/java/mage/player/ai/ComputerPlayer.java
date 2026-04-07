@@ -437,7 +437,7 @@ public class ComputerPlayer extends PlayerImpl {
                 }
                 // found compatible source - try to pay
                 if (canPayColoredMana && (cost instanceof ColoredManaCost)) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode)) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -463,7 +463,7 @@ public class ComputerPlayer extends PlayerImpl {
             // pay all colored costs first
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof ColoredManaCost) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode) || hasApprovingObject) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -485,7 +485,7 @@ public class ComputerPlayer extends PlayerImpl {
             // pay snow covered mana
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof SnowManaCost) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode) || hasApprovingObject) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -507,7 +507,7 @@ public class ComputerPlayer extends PlayerImpl {
             // pay colorless - more restrictive than hybrid (think of it like colored)
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof ColorlessManaCost) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode) || hasApprovingObject) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -530,7 +530,7 @@ public class ComputerPlayer extends PlayerImpl {
             // then pay hybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof HybridManaCost) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode) || hasApprovingObject) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -552,7 +552,7 @@ public class ComputerPlayer extends PlayerImpl {
             // then pay colorless hybrid - more restrictive than monohybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof ColorlessHybridManaCost) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode) || hasApprovingObject) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -574,7 +574,7 @@ public class ComputerPlayer extends PlayerImpl {
             // then pay monohybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof MonoHybridManaCost) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode) || hasApprovingObject) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -596,7 +596,7 @@ public class ComputerPlayer extends PlayerImpl {
             // finally pay generic
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
                 if (cost instanceof GenericManaCost) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
                     if (cost.testPay(sourceNode) || hasApprovingObject) {
                         boolean canActivate = false;
                         for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -758,7 +758,7 @@ public class ComputerPlayer extends PlayerImpl {
             for (ManaCost cost : unpaid) {
                 Abilities:
                 for (ActivatedManaAbilityImpl ability : mageObject.getAbilities().getAvailableActivatedManaAbilities(Zone.BATTLEFIELD, playerId, game)) {
-                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(ability, game);
+                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(ability, game, this);
                     if (cost.testPay(sourceNode)) {
                         score++;
                         break Abilities;

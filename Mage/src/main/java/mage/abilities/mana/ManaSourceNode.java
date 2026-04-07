@@ -4,6 +4,7 @@ import mage.Mana;
 import mage.abilities.condition.Condition;
 import mage.constants.ManaType;
 import mage.game.Game;
+import mage.players.Player;
 
 import java.util.*;
 
@@ -25,59 +26,9 @@ public final class ManaSourceNode {
     }
 
     /**
-     * Builds a list of nodes from mana abilities on one permanent.
-     * Abilities with tap costs are grouped into a single node (only one tap per cycle).
-     * Abilities without tap costs each get their own node (can be used independently).
-     *
-     * @param abilities the mana abilities to process
-     * @param game     the current game state
-     * @return list of source nodes (one for tap-cost abilities, one per non-tap-cost ability)
-     */
-    public static List<ManaSourceNode> fromAbilities(List<ActivatedManaAbilityImpl> abilities, Game game) {
-        List<ManaAbilityOption> tapCostOptions = new ArrayList<>();
-        // Each inner list is the set of mutually-exclusive alternatives for one non-tap ability.
-        List<List<ManaAbilityOption>> nonTapCostGroups = new ArrayList<>();
-
-        for (ActivatedManaAbilityImpl ability : abilities) {
-            List<mage.Mana> netManas = ability.getNetMana(game);
-            if (netManas.isEmpty()) {
-                continue;
-            }
-            List<Condition> conditions = netManas.stream()
-                    .filter(Mana::hasConditions)
-                    .flatMap(m -> m.getConditions().stream())
-                    .toList();
-            List<ManaAbilityOption> options = ManaAbilityOption.fromAbility(ability, netManas, conditions);
-
-            if (ability.hasTapCost()) {
-                // All tap-cost alternatives share the single tap — flatten into one group.
-                options.forEach(o -> o.setHasTapCost(true));
-                tapCostOptions.addAll(options);
-            } else {
-                // Alternatives of one non-tap ability are still mutually exclusive —
-                // keep them together in their own node.
-                nonTapCostGroups.add(options);
-            }
-        }
-
-        List<ManaSourceNode> nodes = new ArrayList<>();
-
-        if (!tapCostOptions.isEmpty()) {
-            nodes.add(new ManaSourceNode(tapCostOptions));
-        }
-
-        for (List<ManaAbilityOption> group : nonTapCostGroups) {
-            nodes.add(new ManaSourceNode(group));
-        }
-
-        return nodes;
-    }
-
-    /**
      * Builds a single node from all mana abilities on one permanent (no tap-cost grouping).
-     * Use {@link #fromAbilities(List, Game)} for proper tap-cost grouping.
      */
-    public static ManaSourceNode fromAbilitiesAll(List<ActivatedManaAbilityImpl> abilities, Game game) {
+    public static ManaSourceNode fromAbilitiesAll(List<ActivatedManaAbilityImpl> abilities, Game game, Player player) {
         List<ManaAbilityOption> options = new ArrayList<>();
         for (ActivatedManaAbilityImpl ability : abilities) {
             List<mage.Mana> netManas = ability.getNetMana(game);
@@ -88,7 +39,7 @@ public final class ManaSourceNode {
                     .filter(Mana::hasConditions)
                     .flatMap(m -> m.getConditions().stream())
                     .toList();
-            options.addAll(ManaAbilityOption.fromAbility(ability, netManas, conditions));
+            options.addAll(ManaAbilityOption.fromAbility(ability, netManas, conditions, player));
         }
         return new ManaSourceNode(options);
     }
@@ -96,8 +47,8 @@ public final class ManaSourceNode {
     /**
      * Convenience: single-ability permanent (the common case).
      */
-    public static ManaSourceNode fromSingleAbility(ActivatedManaAbilityImpl ability, Game game) {
-        return fromAbilitiesAll(Collections.singletonList(ability), game);
+    public static ManaSourceNode fromSingleAbility(ActivatedManaAbilityImpl ability, Game game, Player player) {
+        return fromAbilitiesAll(Collections.singletonList(ability), game, player);
     }
 
     /**

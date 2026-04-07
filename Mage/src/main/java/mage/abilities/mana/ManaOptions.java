@@ -38,10 +38,13 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
         if (isEmpty()) {
             return false;
         }
-        return ManaPaymentFlowSolver.canPay(costSymbols, this, game, ability);
+        // Use ability's controller as player ID and get the mana cost from the ability
+        UUID playerId = ability != null ? ability.getControllerId() : null;
+        mage.abilities.costs.mana.ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
+        return ManaPaymentFlowSolver.canPay(costSymbols, this, game, ability, playerId, manaCost);
     }
 
-    public void addMana(List<ActivatedManaAbilityImpl> abilities, Game game) {
+    public void addMana(List<ActivatedManaAbilityImpl> abilities, Game game, Player player) {
         if (abilities.isEmpty()) {
             return;
         }
@@ -50,9 +53,6 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
         for (ActivatedManaAbilityImpl ability : abilities) {
             bySource.computeIfAbsent(ability.getSourceId(), k -> new ArrayList<>()).add(ability);
         }
-
-        // Track triggered mana by the ability that triggered it (not by source)
-        Map<UUID, List<List<Mana>>> triggeredManaByTriggeringAbility = new LinkedHashMap<>();
 
         for (Map.Entry<UUID, List<ActivatedManaAbilityImpl>> entry : bySource.entrySet()) {
             List<ManaAbilityOption> tapCostOptions = new ArrayList<>();
@@ -85,7 +85,7 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
                     }
                 }
 
-                List<ManaAbilityOption> options = ManaAbilityOption.fromAbility(ability, netManas, conditions);
+                List<ManaAbilityOption> options = ManaAbilityOption.fromAbility(ability, netManas, conditions, player);
                 if (ability.hasTapCost()) {
                     // All tap-cost alternatives share the single tap — flatten into one group.
                     tapCostOptions.addAll(options);
@@ -129,78 +129,6 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
         addAll(options);
     }
 
-    public boolean addManaPoolDependant(List<ActivatedManaAbilityImpl> abilities, Game game) {
-        if (abilities.size() != 1) {
-            return false;
-        }
-        ManaSourceNode node = ManaSourceNode.fromAbilitiesAll(abilities, game);
-        add(node);
-        return true;
-    }
-
-    public boolean addManaWithCost(List<ActivatedManaAbilityImpl> abilities, Game game) {
-        if (abilities.isEmpty()) {
-            return false;
-        }
-
-        boolean wasUsable = false;
-
-        for (ActivatedManaAbilityImpl ability : abilities) {
-            List<Mana> netManas = ability.getNetMana(game);
-            if (netManas.isEmpty()) {
-                continue;
-            }
-
-            List<Mana> processedManas = new ArrayList<>();
-            for (Mana mana : netManas) {
-                if (checkManaReplacementAndTriggeredMana(ability, game, mana)) {
-                    processedManas.add(mana);
-                }
-            }
-
-            if (processedManas.isEmpty()) {
-                continue;
-            }
-
-            List<ManaAbilityOption> options = new ArrayList<>();
-
-            for (Mana baseMana : processedManas) {
-                List<Mana> triggeredVariations = getTriggeredManaVariations(game, ability, baseMana);
-                List<Mana> allMana = new ArrayList<>(triggeredVariations);
-
-                int totalCapacity = allMana.stream().mapToInt(Mana::count).max().orElse(0);
-
-                EnumSet<ManaType> types = EnumSet.noneOf(ManaType.class);
-                boolean producesAny = false;
-
-                for (Mana m : allMana) {
-                    if (m.getWhite() > 0) types.add(ManaType.WHITE);
-                    if (m.getBlue() > 0) types.add(ManaType.BLUE);
-                    if (m.getBlack() > 0) types.add(ManaType.BLACK);
-                    if (m.getRed() > 0) types.add(ManaType.RED);
-                    if (m.getGreen() > 0) types.add(ManaType.GREEN);
-                    if (m.getColorless() > 0) types.add(ManaType.COLORLESS);
-                    if (m.getAny() > 0) producesAny = true;
-                }
-
-                options.add(ManaAbilityOption.of(
-                        ability.getId(),
-                        totalCapacity,
-                        types,
-                        producesAny,
-                        ManaAbilityOption.manaToSymbols(ability.getManaCosts().getMana())));
-            }
-
-            // All alternatives from this single ability are mutually exclusive —
-            // group them in one node so the solver picks at most one per activation.
-            add(ManaSourceNode.ofOptions(options));
-
-            wasUsable = true;
-        }
-
-        return wasUsable;
-    }
-
     private static List<List<Mana>> getSimulatedTriggeredManaFromPlayer(Game game, Ability ability) {
         Player player = game.getPlayer(ability.getControllerId());
         List<List<Mana>> newList = new ArrayList<>();
@@ -223,31 +151,6 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
         manaEvent.setData(mana.toString());
         game.fireEvent(manaEvent);
         return true;
-    }
-
-    public static List<Mana> getTriggeredManaVariations(Game game, Ability ability, Mana baseMana) {
-        List<Mana> baseManaPlusTriggeredMana = new ArrayList<>();
-        baseManaPlusTriggeredMana.add(baseMana);
-        List<List<Mana>> availableTriggeredManaList = getSimulatedTriggeredManaFromPlayer(game, ability);
-        for (List<Mana> availableTriggeredMana : availableTriggeredManaList) {
-            if (availableTriggeredMana.size() == 1) {
-                for (Mana prevMana : baseManaPlusTriggeredMana) {
-                    prevMana.add(availableTriggeredMana.getFirst());
-                }
-            } else if (availableTriggeredMana.size() > 1) {
-                List<Mana> copy = new ArrayList<>(baseManaPlusTriggeredMana);
-                baseManaPlusTriggeredMana.clear();
-                for (Mana triggeredMana : availableTriggeredMana) {
-                    for (Mana prevMana : copy) {
-                        Mana newMana = new Mana();
-                        newMana.add(prevMana);
-                        newMana.add(triggeredMana);
-                        baseManaPlusTriggeredMana.add(newMana);
-                    }
-                }
-            }
-        }
-        return baseManaPlusTriggeredMana;
     }
 
     public ManaOptions copy() {

@@ -1,7 +1,6 @@
 package mage.abilities.mana;
 
 import mage.abilities.Ability;
-import mage.abilities.condition.Condition;
 import mage.constants.ManaType;
 import mage.game.Game;
 import mage.players.ManaPoolItem;
@@ -85,6 +84,29 @@ public final class ManaPaymentFlowSolver {
                                                   List<ManaSourceNode> sources,
                                                   Game game,
                                                   Ability ability) {
+        UUID playerId = ability != null ? ability.getControllerId() : null;
+        mage.abilities.costs.mana.ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
+        return findPaymentPlan(cost, sources, game, ability, playerId, manaCost);
+    }
+
+    /**
+     * Returns a payment plan if the given cost can be paid from the given sources,
+     * or {@code null} otherwise.
+     * Checks conditions on mana options and AsThoughEffects when game and ability are provided.
+     *
+     * @param cost    parsed mana cost symbols to pay
+     * @param sources available mana source nodes
+     * @param game    the game state (for AsThoughEffects and conditions); may be {@code null}
+     * @param ability the ability being paid for (for AsThoughEffects); may be {@code null}
+     * @param playerId the player paying the cost; may be {@code null}
+     * @param manaCost the full mana cost being paid; may be {@code null}
+     */
+    public static ManaPaymentPlan findPaymentPlan(List<ManaCostSymbol> cost,
+                                                  List<ManaSourceNode> sources,
+                                                  Game game,
+                                                  Ability ability,
+                                                  UUID playerId,
+                                                  mage.abilities.costs.mana.ManaCost manaCost) {
         if (cost.isEmpty()) {
             return ManaPaymentPlan.empty();
         }
@@ -116,7 +138,7 @@ public final class ManaPaymentFlowSolver {
         List<ManaAbilityOption> freePool = new ArrayList<>();
         for (ManaSourceNode node : pureFree) {
             ManaAbilityOption option = node.getSingleOption();
-            if (game == null || ability == null || checkConditions(option, ability, game)) {
+            if (game == null || ability == null || checkConditions(option, ability, game, playerId, manaCost)) {
                 freePool.add(option);
             }
         }
@@ -125,7 +147,7 @@ public final class ManaPaymentFlowSolver {
         accumulator.purePaid = purePaid;
         accumulator.freePool = freePool;
 
-        if (enumerateMixedSelections(cost, mixed, game, ability, 0, accumulator)) {
+        if (enumerateMixedSelections(cost, mixed, game, ability, playerId, manaCost, 0, accumulator)) {
             return new ManaPaymentPlan(
                     List.copyOf(accumulator.selectedMixedOptions),
                     List.copyOf(accumulator.selectedPaidOptions)
@@ -142,7 +164,7 @@ public final class ManaPaymentFlowSolver {
      * @param sources available mana source nodes
      */
     public static boolean canPay(List<ManaCostSymbol> cost, List<ManaSourceNode> sources) {
-        return canPay(cost, sources, null, null);
+        return canPay(cost, sources, (Game) null, (Ability) null, (UUID) null, (mage.abilities.costs.mana.ManaCost) null);
     }
 
     /**
@@ -155,6 +177,23 @@ public final class ManaPaymentFlowSolver {
      * @param ability  the ability being paid for (for AsThoughEffects)
      */
     public static boolean canPay(List<ManaCostSymbol> cost, List<ManaSourceNode> sources, Game game, Ability ability) {
+        UUID playerId = ability != null ? ability.getControllerId() : null;
+        mage.abilities.costs.mana.ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
+        return canPay(cost, sources, game, ability, playerId, manaCost);
+    }
+
+    /**
+     * Returns {@code true} if the given cost can be paid from the given sources.
+     * Checks conditions on mana options and AsThoughEffects when game and ability are provided.
+     *
+     * @param cost     list of parsed mana cost symbols
+     * @param sources  available mana source nodes
+     * @param game     the game state (for AsThoughEffects and conditions)
+     * @param ability  the ability being paid for (for AsThoughEffects)
+     * @param playerId the player paying the cost; may be {@code null}
+     * @param manaCost the full mana cost being paid; may be {@code null}
+     */
+    public static boolean canPay(List<ManaCostSymbol> cost, List<ManaSourceNode> sources, Game game, Ability ability, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
         if (cost.isEmpty()) {
             return true;
         }
@@ -182,7 +221,7 @@ public final class ManaPaymentFlowSolver {
         List<ManaAbilityOption> freePool = new ArrayList<>();
         for (ManaSourceNode node : pureFree) {
             ManaAbilityOption option = node.getSingleOption();
-            if (game == null || ability == null || checkConditions(option, ability, game)) {
+            if (game == null || ability == null || checkConditions(option, ability, game, playerId, manaCost)) {
                 freePool.add(option);
             }
         }
@@ -190,7 +229,7 @@ public final class ManaPaymentFlowSolver {
         Accumulator acc = new Accumulator();
         acc.purePaid = purePaid;
         acc.freePool = freePool;
-        return enumerateMixedSelections(cost, mixed, game, ability, 0, acc);
+        return enumerateMixedSelections(cost, mixed, game, ability, playerId, manaCost, 0, acc);
     }
 
     private static class Accumulator {
@@ -200,16 +239,13 @@ public final class ManaPaymentFlowSolver {
         final List<ManaAbilityOption> selectedPaidOptions = new ArrayList<>();
     }
 
-    private static boolean checkConditions(ManaAbilityOption option, Ability ability, Game game) {
+    private static boolean checkConditions(ManaAbilityOption option, Ability ability, Game game, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
         if (!option.hasConditions() || game == null || ability == null) {
             return true;
         }
-        for (Condition condition : option.getConditions()) {
-            if (!condition.apply(game, ability)) {
-                return false;
-            }
-        }
-        return true;
+        // Use the provided playerId if available, otherwise fall back to ability controller
+        UUID effectivePlayerId = playerId != null ? playerId : ability.getControllerId();
+        return option.applyConditions(ability, game, effectivePlayerId, manaCost);
     }
 
     /**
@@ -222,19 +258,21 @@ public final class ManaPaymentFlowSolver {
                                                      List<ManaSourceNode> mixed,
                                                      Game game,
                                                      Ability ability,
+                                                     UUID playerId,
+                                                     mage.abilities.costs.mana.ManaCost manaCost,
                                                      int idx,
                                                      Accumulator accumulator) {
         if (idx == mixed.size()) {
-            return enumeratePaidFunding(cost, accumulator, game, ability);
+            return enumeratePaidFunding(cost, accumulator, game, ability, playerId, manaCost);
         }
 
         ManaSourceNode node = mixed.get(idx);
         for (ManaAbilityOption option : node.getAbilityOptions()) {
-            if (game != null && ability != null && !checkConditions(option, ability, game)) {
+            if (game != null && ability != null && !checkConditions(option, ability, game, playerId, manaCost)) {
                 continue;
             }
             accumulator.selectedMixedOptions.add(option);
-            if (enumerateMixedSelections(cost, mixed, game, ability, idx + 1, accumulator)) {
+            if (enumerateMixedSelections(cost, mixed, game, ability, playerId, manaCost, idx + 1, accumulator)) {
                 return true;
             }
             accumulator.selectedMixedOptions.removeLast();
@@ -247,7 +285,7 @@ public final class ManaPaymentFlowSolver {
      * can be funded, then runs the flow solver on the remaining available mana.
      * Populates {@code accumulator.selectedPaidOptions} on success.
      */
-    private static boolean enumeratePaidFunding(List<ManaCostSymbol> cost, Accumulator accumulator, Game game, Ability ability) {
+    private static boolean enumeratePaidFunding(List<ManaCostSymbol> cost, Accumulator accumulator, Game game, Ability ability, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
         List<ManaAbilityOption> freeMixed = new ArrayList<>();
         List<ManaAbilityOption> paidMixed = new ArrayList<>();
         for (ManaAbilityOption opt : accumulator.selectedMixedOptions) {
@@ -270,7 +308,7 @@ public final class ManaPaymentFlowSolver {
         allPaid.sort(Comparator.comparingInt(o -> o.getActivationCost().stream()
                 .mapToInt(ManaCostSymbol::minCost).sum()));
 
-        return enumeratePaidActivations(cost, allFree, allPaid, 0, Collections.emptySet(), new HashMap<>(), allFree, accumulator, game, ability);
+        return enumeratePaidActivations(cost, allFree, allPaid, 0, Collections.emptySet(), new HashMap<>(), allFree, accumulator, game, ability, playerId, manaCost);
     }
 
     private static boolean enumeratePaidActivations(List<ManaCostSymbol> cost,
@@ -280,7 +318,7 @@ public final class ManaPaymentFlowSolver {
                                                     Set<UUID> spentFreeIds,
                                                     Map<UUID, Integer> activationCounts,
                                                     List<ManaAbilityOption> currentFreePool,
-                                                    Accumulator accumulator, Game game, Ability ability) {
+                                                    Accumulator accumulator, Game game, Ability ability, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
         if (index == allPaid.size()) {
             // Filter the free pool to only include triggered mana whose triggering ability is active
             List<ManaAbilityOption> effectiveFreePool = filterTriggeredMana(
@@ -311,11 +349,11 @@ public final class ManaPaymentFlowSolver {
 
             List<ManaCostSymbol> activationCost = paid.getActivationCost();
             if (count == 0) {
-                if (enumeratePaidActivations(cost, allFree, allPaid, index + 1, spentFreeIds, activationCounts, currentFreePool, accumulator, game, ability)) {
+                if (enumeratePaidActivations(cost, allFree, allPaid, index + 1, spentFreeIds, activationCounts, currentFreePool, accumulator, game, ability, playerId, manaCost)) {
                     return true;
                 }
             } else {
-                List<List<ManaAbilityOption>> poolWithPaidOutput = getPoolWithPaidActivations(activationCost, spentFreeIds, currentFreePool, paid, game, count);
+                List<List<ManaAbilityOption>> poolWithPaidOutput = getPoolWithPaidActivations(activationCost, spentFreeIds, currentFreePool, paid, game, count, playerId, manaCost);
                 for ( List<ManaAbilityOption> pool : poolWithPaidOutput) {
                     Set<UUID> newSpentFreeIds = new HashSet<>(spentFreeIds);
                     for (ManaAbilityOption opt : currentFreePool) {
@@ -323,7 +361,7 @@ public final class ManaPaymentFlowSolver {
                             newSpentFreeIds.add(opt.getOptionId());
                         }
                     }
-                    if (enumeratePaidActivations(cost, allFree, allPaid, index + 1, newSpentFreeIds, activationCounts, pool, accumulator, game, ability)) {
+                    if (enumeratePaidActivations(cost, allFree, allPaid, index + 1, newSpentFreeIds, activationCounts, pool, accumulator, game, ability, playerId, manaCost)) {
                         return true;
                     }
                 }
@@ -532,7 +570,7 @@ public final class ManaPaymentFlowSolver {
             return capacityBetween(symbol, option);
         }
 
-        Set<ManaType> spendableTypes = getSpendableTypes(option, game, ability);
+        Set<ManaType> spendableTypes = getSpendableTypes(symbol.getColorOptions(), option, game, ability);
         return capacityBetween(symbol, option, spendableTypes);
     }
 
@@ -571,7 +609,7 @@ public final class ManaPaymentFlowSolver {
     /**
      * Gets the set of mana types that can be spent from this option, considering AsThoughEffects.
      */
-    private static Set<ManaType> getSpendableTypes(ManaAbilityOption option, Game game, Ability ability) {
+    private static Set<ManaType> getSpendableTypes(Set<ManaType> colorOptions, ManaAbilityOption option, Game game, Ability ability) {
         EnumSet<ManaType> spendableTypes = EnumSet.copyOf(option.getProducibleTypes());
 
         if (ability == null) {
@@ -581,28 +619,24 @@ public final class ManaPaymentFlowSolver {
         UUID controllerId = ability.getControllerId();
         UUID objectId = ability.getSourceId() != null ? ability.getSourceId() : option.getAbilityId();
 
-        for (ManaType manaType : option.getProducibleTypes()) {
-            ManaPoolItem manaItem = new ManaPoolItem(0, 0, 0, 0, 0, 0, null, option.getAbilityId(), false);
-            manaItem.add(manaType, 1);
-            ManaType asThoughType = game.getContinuousEffects().asThoughMana(
-                    manaType, manaItem, objectId, ability, controllerId, game);
-            if (asThoughType != null && asThoughType != manaType) {
-                spendableTypes.add(asThoughType);
-            } else if (asThoughType == manaType) {
-                // If the AsThoughEffect returns the same type, it means the mana can be treated as any color
-                spendableTypes.add(ManaType.WHITE);
-                spendableTypes.add(ManaType.BLUE);
-                spendableTypes.add(ManaType.BLACK);
-                spendableTypes.add(ManaType.RED);
-                spendableTypes.add(ManaType.GREEN);
+        for (ManaType colorOption : colorOptions) {
+            for (ManaType manaType : option.getProducibleTypes()) {
+                ManaPoolItem manaItem = new ManaPoolItem(0, 0, 0, 0, 0, 0, null, option.getAbilityId(), false);
+                manaItem.add(manaType, 1);
+                ManaType asThoughType = game.getContinuousEffects().asThoughMana(
+                        colorOption, manaItem, objectId, ability, controllerId, game);
+                if (asThoughType == manaType) {
+                    spendableTypes.add(colorOption);
+                }
             }
         }
+
 
         return spendableTypes;
     }
 
     private static List<List<ManaAbilityOption>> getPoolWithPaidActivations(List<ManaCostSymbol> activationCost,
-                                                                      Set<UUID> spentFreeIds, List<ManaAbilityOption> freeOptions, ManaAbilityOption paid, Game game, int paidActivations) {
+                                                                      Set<UUID> spentFreeIds, List<ManaAbilityOption> freeOptions, ManaAbilityOption paid, Game game, int paidActivations, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
         List<List<ManaAbilityOption>> resultPools = new ArrayList<>();
         if (freeOptions.isEmpty() || activationCost.isEmpty()) {
             return resultPools;
@@ -620,7 +654,7 @@ public final class ManaPaymentFlowSolver {
                     if (tempSpentFreeIds.contains(option.getOptionId())) {
                         continue;
                     }
-                    if (!checkConditions(option, getAbility(paid, game), game)) {
+                    if (!checkConditions(option, getAbility(paid, game), game, playerId, manaCost)) {
                         continue;
                     }
                     if (option.canProduce(symbol)) {
@@ -718,6 +752,9 @@ public final class ManaPaymentFlowSolver {
         }
     }
 }
+
+
+
 
 
 

@@ -8,6 +8,7 @@ import mage.abilities.mana.conditional.ManaCondition;
 import mage.constants.ManaType;
 import mage.filter.Filter;
 import mage.game.Game;
+import mage.players.Player;
 
 import java.io.Serializable;
 import java.util.*;
@@ -82,11 +83,11 @@ public final class ManaAbilityOption implements Serializable {
      * {@code getNetMana()} reports exact pip counts.
      */
     public static List<ManaAbilityOption> fromAbility(ActivatedManaAbilityImpl ability,
-                                                       List<Mana> netManas,
-                                                       List<Condition> conditions) {
+                                                      List<Mana> netManas,
+                                                      List<Condition> conditions, Player player) {
         List<ManaCostSymbol> activationSymbols = ability.getManaCosts().isEmpty()
                 ? Collections.emptyList()
-                : manaToSymbols(ability.getManaCosts().getMana());
+                : ManaCostSymbolParser.fromManaCosts(ability.getManaCosts(), player.canPayLifeCost(ability));
 
         List<ManaAbilityOption> result = new ArrayList<>();
         for (Mana m : netManas) {
@@ -101,6 +102,7 @@ public final class ManaAbilityOption implements Serializable {
             if (m.getAny() > 0)       anyFlag = true;
             ManaAbilityOption option = new ManaAbilityOption(ability.getId(), null, m.count(), map, anyFlag,
                     activationSymbols, conditions);
+            option.setScope(m.getConditionScope());
             option.setSourceId(ability.getSourceId());
             if (ability.hasTapCost()) {
                 option.setHasTapCost(true);
@@ -218,6 +220,14 @@ public final class ManaAbilityOption implements Serializable {
      */
     public boolean isTriggeredMana() {
         return triggeringAbilityId != null;
+    }
+
+    public Filter.ComparisonScope getScope() {
+        return scope;
+    }
+
+    public void setScope(Filter.ComparisonScope scope) {
+        this.scope = scope;
     }
 
     /**
