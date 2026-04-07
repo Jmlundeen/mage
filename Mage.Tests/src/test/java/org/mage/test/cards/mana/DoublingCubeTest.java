@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
-import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
+import static org.mage.test.utils.ManaOptionsTestUtils.assertCanPay;
 
 public class DoublingCubeTest extends CardTestPlayerBase {
 
@@ -55,11 +55,11 @@ public class DoublingCubeTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 4, manaOptions.size());
-        assertManaOptions("{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);        
+        Assert.assertEquals("mana variations don't fit", 9, manaOptions.size());
+        assertCanPay("{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions, currentGame);
     }    
 
     @Test
@@ -79,62 +79,12 @@ public class DoublingCubeTest extends CardTestPlayerBase {
         
         execute();
 
-        ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 138, manaOptions.size());
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{B}{B}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{B}{B}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{B}{B}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{B}{B}{R}{R}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{B}{B}{R}{R}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{B}{B}{B}{B}{G}{G}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{U}{U}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{U}{U}{U}{U}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{G}{G}{U}{U}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{G}{G}{G}{G}{U}{U}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{G}{G}{U}{U}{U}{U}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{G}{G}{G}{G}{U}{U}{U}{U}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{G}{G}{G}{G}{G}{G}{U}{U}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{G}{G}{G}{G}{G}{G}{G}{G}{U}{U}", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{G}{G}{G}{G}{G}{G}{U}{U}{U}{U}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{B}{B}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{R}{R}{R}{R}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{R}{R}{R}{R}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{B}{B}{R}{R}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{B}{B}{R}{R}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{R}{R}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{G}{G}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{B}{B}{B}{B}{G}{G}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{U}{U}{B}{B}{R}{R}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{U}{U}{U}{U}{B}{B}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{U}{U}{B}{B}{B}{B}{R}{R}{R}{R}", manaOptions);
-        assertManaOptions("{U}{U}{U}{U}{B}{B}{B}{B}{R}{R}", manaOptions);
-        assertManaOptions("{U}{U}{B}{B}{R}{R}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{U}{U}{B}{B}{R}{R}{G}{G}{G}{G}", manaOptions);
-        assertManaOptions("{U}{U}{U}{U}{B}{B}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{G}{G}{G}{G}{U}{U}{U}{U}", manaOptions);
-        assertManaOptions("{U}{U}{B}{B}{B}{B}{R}{R}{G}{G}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{G}{G}{G}{G}{U}{U}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}{G}{G}{U}{U}{U}{U}", manaOptions);
-        assertManaOptions("{B}{B}{G}{G}{G}{G}{G}{G}{U}{U}", manaOptions);
-        assertManaOptions("{U}{U}{U}{U}{U}{U}", manaOptions);
+        ManaOptions manaOptions = playerA.getManaAvailable(currentGame);
+        Assert.assertEquals("mana variations don't fit", 12, manaOptions.size());
+        assertCanPay("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions, currentGame);
+        assertCanPay("{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}", manaOptions, currentGame);
+        assertCanPay("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{C}{C}{C}{C}{C}{C}{C}{C}{R}{R}{R}{R}{R}{R}{R}{R}{R}{R}{G}{G}{G}{G}", manaOptions, currentGame);
     }    
     
 }

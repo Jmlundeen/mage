@@ -44,6 +44,12 @@ public final class ManaAbilityOption implements Serializable {
      * this field holds the triggering ability's ID. Otherwise null.
      */
     private final UUID triggeringAbilityId;
+    /**
+     * If this ability's output depends on the current mana pool state.
+     * Example: Doubling Cube doubles whatever mana is currently in the pool.
+     * These abilities must be evaluated dynamically using getNetMana(game, possibleManaInPool).
+     */
+    private final boolean isPoolDependent;
     private final int capacity;
     /**
      * Map of producible types to their fixed pip count.
@@ -60,6 +66,7 @@ public final class ManaAbilityOption implements Serializable {
 
     private ManaAbilityOption(UUID abilityId,
                                UUID triggeringAbilityId,
+                               boolean isPoolDependent,
                                int capacity,
                                EnumMap<ManaType, Integer> producibleMap,
                                boolean producesAny,
@@ -67,6 +74,7 @@ public final class ManaAbilityOption implements Serializable {
                                List<Condition> conditions) {
         this.abilityId = abilityId;
         this.triggeringAbilityId = triggeringAbilityId;
+        this.isPoolDependent = isPoolDependent;
         this.capacity = capacity;
         this.producibleMap = new EnumMap<>(producibleMap);
         this.producesAny = producesAny;
@@ -89,7 +97,36 @@ public final class ManaAbilityOption implements Serializable {
                 ? Collections.emptyList()
                 : ManaCostSymbolParser.fromManaCosts(ability.getManaCosts(), player.canPayLifeCost(ability));
 
+        // Check if this ability is pool-dependent (e.g., Doubling Cube)
+        boolean isPoolDependent = ability.isPoolDependant();
+
         List<ManaAbilityOption> result = new ArrayList<>();
+
+        // Pool-dependent abilities may have empty netManas when called without a pool state
+        // Create a placeholder option that will be evaluated dynamically later
+        if (isPoolDependent && netManas.isEmpty()) {
+            // Create a placeholder with no static mana output (empty map, capacity 0)
+            // This will be recognized and handled specially by the flow solver
+            EnumMap<ManaType, Integer> emptyMap = new EnumMap<>(ManaType.class);
+            ManaAbilityOption option = new ManaAbilityOption(
+                ability.getId(),
+                null,  // not triggered
+                true,  // pool dependent
+                0,     // no static capacity
+                emptyMap,
+                false, // not any
+                activationSymbols,
+                conditions
+            );
+            option.setSourceId(ability.getSourceId());
+            if (ability.hasTapCost()) {
+                option.setHasTapCost(true);
+                option.setMaxActivationsPerTurn(1);
+            }
+            result.add(option);
+            return result;
+        }
+
         for (Mana m : netManas) {
             EnumMap<ManaType, Integer> map = new EnumMap<>(ManaType.class);
             boolean anyFlag = false;
@@ -100,8 +137,16 @@ public final class ManaAbilityOption implements Serializable {
             if (m.getGreen() > 0)     map.put(ManaType.GREEN, m.getGreen());
             if (m.getColorless() > 0) map.put(ManaType.COLORLESS, m.getColorless());
             if (m.getAny() > 0)       anyFlag = true;
-            ManaAbilityOption option = new ManaAbilityOption(ability.getId(), null, m.count(), map, anyFlag,
-                    activationSymbols, conditions);
+            ManaAbilityOption option = new ManaAbilityOption(
+                ability.getId(),
+                null,  // not triggered
+                isPoolDependent,
+                m.count(),
+                map,
+                anyFlag,
+                activationSymbols,
+                conditions
+            );
             option.setScope(m.getConditionScope());
             option.setSourceId(ability.getSourceId());
             if (ability.hasTapCost()) {
@@ -138,7 +183,7 @@ public final class ManaAbilityOption implements Serializable {
             if (m.getGreen() > 0)     map.put(ManaType.GREEN, m.getGreen());
             if (m.getColorless() > 0) map.put(ManaType.COLORLESS, m.getColorless());
             if (m.getAny() > 0)       anyFlag = true;
-            result.add(new ManaAbilityOption(triggeredManaAbilityId, triggeringAbilityId, m.count(), map, anyFlag,
+            result.add(new ManaAbilityOption(triggeredManaAbilityId, triggeringAbilityId, false, m.count(), map, anyFlag,
                     Collections.emptyList(), m.getConditions()));
         }
         return result;
@@ -157,7 +202,7 @@ public final class ManaAbilityOption implements Serializable {
         for (ManaType t : producibleTypes) {
             map.put(t, 0);
         }
-        return new ManaAbilityOption(abilityId, null, capacity, map, producesAny, activationCost,
+        return new ManaAbilityOption(abilityId, null, false, capacity, map, producesAny, activationCost,
                 Collections.emptyList());
     }
 
@@ -173,6 +218,30 @@ public final class ManaAbilityOption implements Serializable {
                 ? List.of(ManaCostSymbol.generic(genericCost))
                 : Collections.emptyList();
         return of(abilityId, capacity, producibleTypes, producesAny, cost);
+    }
+
+    /**
+     * Creates a simple synthetic mana option for a specific mana type and amount.
+     * Used when converting produced mana from pool-dependent abilities into options.
+     *
+     * @param sourceAbilityId the ability that produced this mana
+     * @param type the mana type produced
+     * @param amount the amount of mana produced
+     * @return a new static mana option
+     */
+    public static ManaAbilityOption createSyntheticOption(UUID sourceAbilityId, ManaType type, int amount) {
+        EnumMap<ManaType, Integer> map = new EnumMap<>(ManaType.class);
+        map.put(type, amount);
+        return new ManaAbilityOption(
+                sourceAbilityId,
+                null,  // not triggered
+                false, // not pool dependent
+                amount,
+                map,
+                false, // not any
+                Collections.emptyList(), // no activation cost
+                Collections.emptyList()  // no conditions
+        );
     }
 
     /**
@@ -199,7 +268,7 @@ public final class ManaAbilityOption implements Serializable {
     }
 
     public ManaAbilityOption withCapacity(int difference) {
-        return new ManaAbilityOption(abilityId, triggeringAbilityId, difference, producibleMap, producesAny,
+        return new ManaAbilityOption(abilityId, triggeringAbilityId, isPoolDependent, difference, producibleMap, producesAny,
                 activationCost, conditions);
     }
 
@@ -220,6 +289,14 @@ public final class ManaAbilityOption implements Serializable {
      */
     public boolean isTriggeredMana() {
         return triggeringAbilityId != null;
+    }
+
+    /**
+     * Returns true if this ability's output depends on the current pool state.
+     * Pool-dependent abilities like Doubling Cube must be evaluated dynamically.
+     */
+    public boolean isPoolDependent() {
+        return isPoolDependent;
     }
 
     public Filter.ComparisonScope getScope() {
@@ -287,7 +364,7 @@ public final class ManaAbilityOption implements Serializable {
         }
 
         public ManaAbilityOption build() {
-            return new ManaAbilityOption(abilityId, null, capacity, producibleMap, producesAny,
+            return new ManaAbilityOption(abilityId, null, false, capacity, producibleMap, producesAny,
                     activationCost, conditions);
         }
     }

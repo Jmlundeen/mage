@@ -62,7 +62,7 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
             abilityLoop:
             for (ActivatedManaAbilityImpl ability : entry.getValue()) {
                 List<Mana> netManas = ability.getNetMana(game);
-                if (netManas.isEmpty()) {
+                if (netManas.isEmpty() && !ability.isPoolDependant()) {
                     continue;
                 }
                 List<Condition> conditions = netManas.stream()

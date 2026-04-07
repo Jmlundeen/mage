@@ -1,6 +1,8 @@
 package mage.abilities.mana;
 
+import mage.Mana;
 import mage.abilities.Ability;
+import mage.abilities.costs.mana.ManaCost;
 import mage.constants.ManaType;
 import mage.game.Game;
 import mage.players.ManaPoolItem;
@@ -85,7 +87,7 @@ public final class ManaPaymentFlowSolver {
                                                   Game game,
                                                   Ability ability) {
         UUID playerId = ability != null ? ability.getControllerId() : null;
-        mage.abilities.costs.mana.ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
+        ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
         return findPaymentPlan(cost, sources, game, ability, playerId, manaCost);
     }
 
@@ -106,7 +108,7 @@ public final class ManaPaymentFlowSolver {
                                                   Game game,
                                                   Ability ability,
                                                   UUID playerId,
-                                                  mage.abilities.costs.mana.ManaCost manaCost) {
+                                                  ManaCost manaCost) {
         if (cost.isEmpty()) {
             return ManaPaymentPlan.empty();
         }
@@ -164,7 +166,7 @@ public final class ManaPaymentFlowSolver {
      * @param sources available mana source nodes
      */
     public static boolean canPay(List<ManaCostSymbol> cost, List<ManaSourceNode> sources) {
-        return canPay(cost, sources, (Game) null, (Ability) null, (UUID) null, (mage.abilities.costs.mana.ManaCost) null);
+        return canPay(cost, sources, (Game) null, (Ability) null, (UUID) null, (ManaCost) null);
     }
 
     /**
@@ -178,7 +180,7 @@ public final class ManaPaymentFlowSolver {
      */
     public static boolean canPay(List<ManaCostSymbol> cost, List<ManaSourceNode> sources, Game game, Ability ability) {
         UUID playerId = ability != null ? ability.getControllerId() : null;
-        mage.abilities.costs.mana.ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
+        ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
         return canPay(cost, sources, game, ability, playerId, manaCost);
     }
 
@@ -193,7 +195,7 @@ public final class ManaPaymentFlowSolver {
      * @param playerId the player paying the cost; may be {@code null}
      * @param manaCost the full mana cost being paid; may be {@code null}
      */
-    public static boolean canPay(List<ManaCostSymbol> cost, List<ManaSourceNode> sources, Game game, Ability ability, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
+    public static boolean canPay(List<ManaCostSymbol> cost, List<ManaSourceNode> sources, Game game, Ability ability, UUID playerId, ManaCost manaCost) {
         if (cost.isEmpty()) {
             return true;
         }
@@ -239,7 +241,7 @@ public final class ManaPaymentFlowSolver {
         final List<ManaAbilityOption> selectedPaidOptions = new ArrayList<>();
     }
 
-    private static boolean checkConditions(ManaAbilityOption option, Ability ability, Game game, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
+    private static boolean checkConditions(ManaAbilityOption option, Ability ability, Game game, UUID playerId, ManaCost manaCost) {
         if (!option.hasConditions() || game == null || ability == null) {
             return true;
         }
@@ -259,7 +261,7 @@ public final class ManaPaymentFlowSolver {
                                                      Game game,
                                                      Ability ability,
                                                      UUID playerId,
-                                                     mage.abilities.costs.mana.ManaCost manaCost,
+                                                     ManaCost manaCost,
                                                      int idx,
                                                      Accumulator accumulator) {
         if (idx == mixed.size()) {
@@ -285,7 +287,7 @@ public final class ManaPaymentFlowSolver {
      * can be funded, then runs the flow solver on the remaining available mana.
      * Populates {@code accumulator.selectedPaidOptions} on success.
      */
-    private static boolean enumeratePaidFunding(List<ManaCostSymbol> cost, Accumulator accumulator, Game game, Ability ability, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
+    private static boolean enumeratePaidFunding(List<ManaCostSymbol> cost, Accumulator accumulator, Game game, Ability ability, UUID playerId, ManaCost manaCost) {
         List<ManaAbilityOption> freeMixed = new ArrayList<>();
         List<ManaAbilityOption> paidMixed = new ArrayList<>();
         for (ManaAbilityOption opt : accumulator.selectedMixedOptions) {
@@ -299,26 +301,51 @@ public final class ManaPaymentFlowSolver {
         List<ManaAbilityOption> allFree = new ArrayList<>(accumulator.freePool);
         allFree.addAll(freeMixed);
 
+        // Separate pool-dependent abilities (e.g., Doubling Cube) from normal abilities
+        List<ManaAbilityOption> normalFree = new ArrayList<>();
+        List<ManaAbilityOption> poolDependent = new ArrayList<>();
+        for (ManaAbilityOption opt : allFree) {
+            if (opt.isPoolDependent()) {
+                poolDependent.add(opt);
+            } else {
+                normalFree.add(opt);
+            }
+        }
+
         List<ManaAbilityOption> allPaid = new ArrayList<>();
         for (ManaSourceNode node : accumulator.purePaid) {
             allPaid.addAll(node.getAbilityOptions());
         }
         allPaid.addAll(paidMixed);
 
-        allPaid.sort(Comparator.comparingInt(o -> o.getActivationCost().stream()
+        // Also separate pool-dependent from paid abilities
+        List<ManaAbilityOption> normalPaid = new ArrayList<>();
+        List<ManaAbilityOption> poolDependentPaid = new ArrayList<>();
+        for (ManaAbilityOption opt : allPaid) {
+            if (opt.isPoolDependent()) {
+                poolDependentPaid.add(opt);
+            } else {
+                normalPaid.add(opt);
+            }
+        }
+
+        normalPaid.sort(Comparator.comparingInt(o -> o.getActivationCost().stream()
                 .mapToInt(ManaCostSymbol::minCost).sum()));
 
-        return enumeratePaidActivations(cost, allFree, allPaid, 0, Collections.emptySet(), new HashMap<>(), allFree, accumulator, game, ability, playerId, manaCost);
+        // Pass both normal and pool-dependent lists to the enumeration
+        return enumeratePaidActivations(cost, normalFree, normalPaid, poolDependent, poolDependentPaid, 0, Collections.emptySet(), new HashMap<>(), normalFree, accumulator, game, ability, playerId, manaCost);
     }
 
     private static boolean enumeratePaidActivations(List<ManaCostSymbol> cost,
                                                     List<ManaAbilityOption> allFree,
                                                     List<ManaAbilityOption> allPaid,
+                                                    List<ManaAbilityOption> poolDependentFree,
+                                                    List<ManaAbilityOption> poolDependentPaid,
                                                     int index,
                                                     Set<UUID> spentFreeIds,
                                                     Map<UUID, Integer> activationCounts,
                                                     List<ManaAbilityOption> currentFreePool,
-                                                    Accumulator accumulator, Game game, Ability ability, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
+                                                    Accumulator accumulator, Game game, Ability ability, UUID playerId, ManaCost manaCost) {
         if (index == allPaid.size()) {
             // Filter the free pool to only include triggered mana whose triggering ability is active
             List<ManaAbilityOption> effectiveFreePool = filterTriggeredMana(
@@ -337,6 +364,20 @@ public final class ManaPaymentFlowSolver {
                 }
                 return true;
             }
+
+            // If not solvable without pool-dependent, try enumerating pool-dependent abilities
+            if (!poolDependentFree.isEmpty() || !poolDependentPaid.isEmpty()) {
+                List<ManaAbilityOption> allPoolDependent = new ArrayList<>();
+                allPoolDependent.addAll(poolDependentFree);
+                allPoolDependent.addAll(poolDependentPaid);
+
+                if (enumeratePoolDependentActivations(
+                        cost, effectiveFreePool, allPoolDependent,
+                        accumulator, game, ability, playerId, manaCost)) {
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -349,7 +390,7 @@ public final class ManaPaymentFlowSolver {
 
             List<ManaCostSymbol> activationCost = paid.getActivationCost();
             if (count == 0) {
-                if (enumeratePaidActivations(cost, allFree, allPaid, index + 1, spentFreeIds, activationCounts, currentFreePool, accumulator, game, ability, playerId, manaCost)) {
+                if (enumeratePaidActivations(cost, allFree, allPaid, poolDependentFree, poolDependentPaid, index + 1, spentFreeIds, activationCounts, currentFreePool, accumulator, game, ability, playerId, manaCost)) {
                     return true;
                 }
             } else {
@@ -361,7 +402,7 @@ public final class ManaPaymentFlowSolver {
                             newSpentFreeIds.add(opt.getOptionId());
                         }
                     }
-                    if (enumeratePaidActivations(cost, allFree, allPaid, index + 1, newSpentFreeIds, activationCounts, pool, accumulator, game, ability, playerId, manaCost)) {
+                    if (enumeratePaidActivations(cost, allFree, allPaid, poolDependentFree, poolDependentPaid, index + 1, newSpentFreeIds, activationCounts, pool, accumulator, game, ability, playerId, manaCost)) {
                         return true;
                     }
                 }
@@ -370,6 +411,550 @@ public final class ManaPaymentFlowSolver {
 
         activationCounts.remove(paid.getOptionId());
         return false;
+    }
+
+    /**
+     * Enumerates pool-dependent ability activations by trying different combinations.
+     * Pool-dependent abilities (like Doubling Cube) depend on the current pool state and can cascade.
+     *
+     * @param cost the mana cost to pay
+     * @param basePool the available mana pool before activating pool-dependent abilities
+     * @param poolDependentOptions the pool-dependent abilities to consider
+     * @param accumulator the result accumulator
+     * @param game the game state
+     * @param ability the ability being paid for
+     * @param playerId the player paying the cost
+     * @param manaCost the full mana cost being paid
+     * @return true if a valid payment plan was found
+     */
+    private static boolean enumeratePoolDependentActivations(
+            List<ManaCostSymbol> cost,
+            List<ManaAbilityOption> basePool,
+            List<ManaAbilityOption> poolDependentOptions,
+            Accumulator accumulator,
+            Game game,
+            Ability ability,
+            UUID playerId,
+            ManaCost manaCost) {
+
+        // Try without activating any pool-dependent abilities first
+        if (solveWithHybrids(cost, basePool, game, ability)) {
+            return true;
+        }
+
+        // Enumerate different combinations of pool-dependent activations
+        return enumeratePoolDependentRecursive(
+                cost, basePool, poolDependentOptions,
+                0, new ArrayList<>(), accumulator,
+                game, ability, playerId, manaCost);
+    }
+
+    /**
+     * Recursively enumerates pool-dependent ability activations.
+     * Tries each option at each index, checking if the activation is affordable and beneficial.
+     *
+     * @param cost the mana cost to pay
+     * @param currentPool the current pool state
+     * @param poolDependentOptions all available pool-dependent abilities
+     * @param index current index in poolDependentOptions
+     * @param activatedOptions the options activated so far
+     * @param accumulator the result accumulator
+     * @param game the game state
+     * @param ability the ability being paid for
+     * @param playerId the player paying the cost
+     * @param manaCost the full mana cost being paid
+     * @return true if a valid payment plan was found
+     */
+    private static boolean enumeratePoolDependentRecursive(
+            List<ManaCostSymbol> cost,
+            List<ManaAbilityOption> currentPool,
+            List<ManaAbilityOption> poolDependentOptions,
+            int index,
+            List<ManaAbilityOption> activatedOptions,
+            Accumulator accumulator,
+            Game game,
+            Ability ability,
+            UUID playerId,
+            ManaCost manaCost) {
+
+        // Base case: tried all pool-dependent options
+        if (index == poolDependentOptions.size()) {
+            return solveWithHybrids(cost, currentPool, game, ability);
+        }
+
+        ManaAbilityOption poolDepOpt = poolDependentOptions.get(index);
+        int maxActivations = poolDepOpt.hasTapCost() ? 1 : MAX_REUSE_ACTIVATIONS;
+
+        // Try activating this option 0 to maxActivations times
+        for (int count = 0; count <= maxActivations; count++) {
+            if (count == 0) {
+                // Don't activate this option - recurse to next
+                if (enumeratePoolDependentRecursive(
+                        cost, currentPool, poolDependentOptions,
+                        index + 1, activatedOptions, accumulator,
+                        game, ability, playerId, manaCost)) {
+                    return true;
+                }
+            } else {
+                // Try activating this option 'count' times
+                List<ManaAbilityOption> newPool = currentPool;
+                boolean allSucceeded = true;
+
+                // Try all possible ways to activate 'count' times
+                if (tryPoolDependentActivations(
+                        poolDepOpt, currentPool, count,
+                        cost, poolDependentOptions, index + 1,
+                        activatedOptions, accumulator,
+                        game, ability, playerId, manaCost)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Tries activating a pool-dependent ability 'count' times, enumerating all possible
+     * ways to pay the activation cost. This is critical because different payment allocations
+     * leave different remaining pools, which produce different outputs when doubled.
+     *
+     * @param poolDepOpt the pool-dependent ability to activate
+     * @param currentPool the current pool state
+     * @param count how many times to activate
+     * @param cost the mana cost we're trying to pay
+     * @param poolDependentOptions all pool-dependent options
+     * @param nextIndex the next index in poolDependentOptions to try
+     * @param activatedOptions the options activated so far
+     * @param accumulator result accumulator
+     * @param game the game state
+     * @param ability the ability being paid for
+     * @param playerId the player paying the cost
+     * @param manaCost the full mana cost being paid
+     * @return true if found a valid solution
+     */
+    private static boolean tryPoolDependentActivations(
+            ManaAbilityOption poolDepOpt,
+            List<ManaAbilityOption> currentPool,
+            int count,
+            List<ManaCostSymbol> cost,
+            List<ManaAbilityOption> poolDependentOptions,
+            int nextIndex,
+            List<ManaAbilityOption> activatedOptions,
+            Accumulator accumulator,
+            Game game,
+            Ability ability,
+            UUID playerId,
+            ManaCost manaCost) {
+
+        // Recursively activate 'count' times, enumerating payment allocations
+        return activatePoolDependentWithEnumeration(
+                poolDepOpt, currentPool, count, 0,
+                cost, poolDependentOptions, nextIndex,
+                activatedOptions, accumulator,
+                game, ability, playerId, manaCost);
+    }
+
+    /**
+     * Recursively activates a pool-dependent ability, enumerating all ways to pay
+     * the activation cost at each step.
+     */
+    private static boolean activatePoolDependentWithEnumeration(
+            ManaAbilityOption poolDepOpt,
+            List<ManaAbilityOption> currentPool,
+            int totalCount,
+            int currentCount,
+            List<ManaCostSymbol> cost,
+            List<ManaAbilityOption> poolDependentOptions,
+            int nextIndex,
+            List<ManaAbilityOption> activatedOptions,
+            Accumulator accumulator,
+            Game game,
+            Ability ability,
+            UUID playerId,
+            ManaCost manaCost) {
+
+        // Base case: completed all activations
+        if (currentCount == totalCount) {
+            List<ManaAbilityOption> newActivatedOptions = new ArrayList<>(activatedOptions);
+            for (int i = 0; i < totalCount; i++) {
+                newActivatedOptions.add(poolDepOpt);
+            }
+
+            return enumeratePoolDependentRecursive(
+                    cost, currentPool, poolDependentOptions,
+                    nextIndex, newActivatedOptions, accumulator,
+                    game, ability, playerId, manaCost);
+        }
+
+        // Check if we can afford to activate
+        if (!canAffordPoolDependentActivation(poolDepOpt, currentPool, game, ability, playerId, manaCost)) {
+            return false;
+        }
+
+        // Enumerate all ways to pay the activation cost
+        List<ManaCostSymbol> activationCost = poolDepOpt.getActivationCost();
+        if (activationCost == null || activationCost.isEmpty()) {
+            // Free activation - just calculate output and recurse
+            List<ManaAbilityOption> expandedPool = activatePoolDependentSinglePayment(
+                    poolDepOpt, currentPool, null, game, ability, playerId);
+            if (expandedPool != null) {
+                return activatePoolDependentWithEnumeration(
+                        poolDepOpt, expandedPool, totalCount, currentCount + 1,
+                        cost, poolDependentOptions, nextIndex,
+                        activatedOptions, accumulator,
+                        game, ability, playerId, manaCost);
+            }
+            return false;
+        }
+
+        // Enumerate different ways to pay the activation cost
+        List<List<ManaAbilityOption>> paymentOptions = enumeratePaymentAllocations(
+                activationCost, currentPool, game, ability);
+
+        for (List<ManaAbilityOption> remainingPool : paymentOptions) {
+            // Activate with this specific payment allocation
+            List<ManaAbilityOption> expandedPool = activatePoolDependentSinglePayment(
+                    poolDepOpt, currentPool, remainingPool, game, ability, playerId);
+
+            if (expandedPool != null) {
+                if (activatePoolDependentWithEnumeration(
+                        poolDepOpt, expandedPool, totalCount, currentCount + 1,
+                        cost, poolDependentOptions, nextIndex,
+                        activatedOptions, accumulator,
+                        game, ability, playerId, manaCost)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Enumerates all possible ways to pay a cost from a pool, returning the
+     * different remaining pool states after payment.
+     */
+    private static List<List<ManaAbilityOption>> enumeratePaymentAllocations(
+            List<ManaCostSymbol> cost,
+            List<ManaAbilityOption> pool,
+            Game game,
+            Ability ability) {
+
+        List<List<ManaAbilityOption>> results = new ArrayList<>();
+        enumeratePaymentAllocationsRecursive(cost, pool, 0, new ArrayList<>(pool), results, game, ability);
+        return results;
+    }
+
+    /**
+     * Recursively builds all payment allocations for a cost.
+     */
+    private static void enumeratePaymentAllocationsRecursive(
+            List<ManaCostSymbol> cost,
+            List<ManaAbilityOption> originalPool,
+            int costIndex,
+            List<ManaAbilityOption> currentRemaining,
+            List<List<ManaAbilityOption>> results,
+            Game game,
+            Ability ability) {
+
+        // Base case: paid all cost symbols
+        if (costIndex == cost.size()) {
+            results.add(new ArrayList<>(currentRemaining));
+            return;
+        }
+
+        ManaCostSymbol symbol = cost.get(costIndex);
+        int amountNeeded = symbol.minCost();
+
+        // Try different ways to pay this symbol from currentRemaining
+        enumerateSymbolPayments(symbol, amountNeeded, currentRemaining, 0, 0,
+                new ArrayList<>(),
+                cost, costIndex + 1, originalPool, results, game, ability);
+    }
+
+    /**
+     * Enumerates different ways to pay a single symbol from the remaining pool.
+     */
+    private static void enumerateSymbolPayments(
+            ManaCostSymbol symbol,
+            int amountNeeded,
+            List<ManaAbilityOption> remainingPool,
+            int poolIndex,
+            int amountPaid,
+            List<ManaAbilityOption> newRemaining,
+            List<ManaCostSymbol> cost,
+            int nextCostIndex,
+            List<ManaAbilityOption> originalPool,
+            List<List<ManaAbilityOption>> results,
+            Game game,
+            Ability ability) {
+
+        // Base case: fully paid this symbol
+        if (amountPaid >= amountNeeded) {
+            // Add remaining pool items that we haven't processed yet
+            for (int i = poolIndex; i < remainingPool.size(); i++) {
+                newRemaining.add(remainingPool.get(i));
+            }
+            // Continue to next cost symbol
+            enumeratePaymentAllocationsRecursive(cost, originalPool, nextCostIndex,
+                    newRemaining, results, game, ability);
+            return;
+        }
+
+        // Base case: exhausted pool without fully paying
+        if (poolIndex >= remainingPool.size()) {
+            return; // Can't pay - don't add to results
+        }
+
+        ManaAbilityOption opt = remainingPool.get(poolIndex);
+        boolean canPay = opt.canProduce(symbol);
+
+        if (!canPay) {
+            // This option can't pay for this symbol - keep it and try next
+            List<ManaAbilityOption> updatedRemaining = new ArrayList<>(newRemaining);
+            updatedRemaining.add(opt);
+            enumerateSymbolPayments(symbol, amountNeeded, remainingPool, poolIndex + 1, amountPaid,
+                    updatedRemaining, cost, nextCostIndex, originalPool, results, game, ability);
+        } else {
+            // This option CAN pay - try using different amounts
+            int maxUse = Math.min(opt.getCapacity(), amountNeeded - amountPaid);
+
+            // Try using 0 to maxUse from this option
+            for (int use = 0; use <= maxUse; use++) {
+                List<ManaAbilityOption> updatedRemaining = new ArrayList<>(newRemaining);
+
+                if (use == 0) {
+                    // Don't use this option - keep it fully
+                    updatedRemaining.add(opt);
+                } else if (use < opt.getCapacity()) {
+                    // Partial use - keep the remainder
+                    updatedRemaining.add(opt.withCapacity(opt.getCapacity() - use));
+                }
+                // If use == opt.getCapacity(), we consumed it entirely (don't add to remaining)
+
+                enumerateSymbolPayments(symbol, amountNeeded, remainingPool, poolIndex + 1, amountPaid + use,
+                        updatedRemaining, cost, nextCostIndex, originalPool, results, game, ability);
+            }
+        }
+    }
+
+    /**
+     * Activates a pool-dependent ability with a specific payment allocation.
+     * The remainingPoolAfterPayment is provided (already computed by enumeration).
+     */
+    private static List<ManaAbilityOption> activatePoolDependentSinglePayment(
+            ManaAbilityOption poolDepOpt,
+            List<ManaAbilityOption> currentPool,
+            List<ManaAbilityOption> remainingPoolAfterPayment,
+            Game game,
+            Ability ability,
+            UUID playerId) {
+
+        List<ManaAbilityOption> remainingPool = remainingPoolAfterPayment != null
+                ? remainingPoolAfterPayment
+                : new ArrayList<>(currentPool);
+
+        // Calculate pool mana AFTER paying activation cost
+        Mana poolMana = calculatePoolMana(remainingPool);
+
+        // Get the ability and calculate its output given the REDUCED pool state
+        Ability manaAbility = getAbility(poolDepOpt, game);
+        if (manaAbility == null || !(manaAbility instanceof ManaAbility)) {
+            return null;
+        }
+
+        ManaAbility poolDepAbility = (ManaAbility) manaAbility;
+        List<Mana> producedMana = poolDepAbility.getNetMana(game, poolMana);
+
+        if (producedMana == null || producedMana.isEmpty()) {
+            return null;
+        }
+
+        // Add the produced mana to the remaining pool
+        List<ManaAbilityOption> result = new ArrayList<>(remainingPool);
+        for (Mana mana : producedMana) {
+            List<ManaAbilityOption> producedOptions = convertManaToOptions(mana, poolDepOpt.getAbilityId());
+            result.addAll(producedOptions);
+        }
+
+        return result;
+    }
+
+    /**
+     * Activates a pool-dependent ability and returns the resulting pool state.
+     *
+     * @deprecated Use activatePoolDependentSinglePayment with explicit payment allocation instead
+     */
+    private static List<ManaAbilityOption> activatePoolDependent(
+            ManaAbilityOption poolDepOpt,
+            List<ManaAbilityOption> currentPool,
+            Game game,
+            Ability ability,
+            UUID playerId) {
+
+        // Subtract the activation cost from the pool FIRST
+        List<ManaAbilityOption> remainingPool = subtractActivationCost(
+                poolDepOpt.getActivationCost(), currentPool, game, ability);
+
+        if (remainingPool == null) {
+            return null; // Can't afford activation cost
+        }
+
+        // Calculate pool mana AFTER paying activation cost
+        Mana poolMana = calculatePoolMana(remainingPool);
+
+        // Get the ability and calculate its output given the REDUCED pool state
+        Ability manaAbility = getAbility(poolDepOpt, game);
+        if (!(manaAbility instanceof ManaAbility poolDepAbility)) {
+            return null;
+        }
+
+        List<Mana> producedMana = poolDepAbility.getNetMana(game, poolMana);
+
+        if (producedMana == null || producedMana.isEmpty()) {
+            return null;
+        }
+
+        // Add the produced mana to the remaining pool
+        List<ManaAbilityOption> result = new ArrayList<>(remainingPool);
+        for (Mana mana : producedMana) {
+            List<ManaAbilityOption> producedOptions = convertManaToOptions(mana, poolDepOpt.getAbilityId());
+            result.addAll(producedOptions);
+        }
+
+        return result;
+    }
+
+    /**
+     * Calculates the amount of each mana type in the pool after activating the given options.
+     * Used to evaluate pool-dependent abilities like Doubling Cube.
+     */
+    private static Mana calculatePoolMana(List<ManaAbilityOption> activatedOptions) {
+        Mana pool = new Mana();
+        for (ManaAbilityOption opt : activatedOptions) {
+            if (!opt.isPoolDependent()) {
+                // Only add mana from normal (non-pool-dependent) abilities
+                Mana produced = opt.toMana();
+                pool.add(produced);
+            }
+        }
+        return pool;
+    }
+
+    /**
+     * Checks if activating a pool-dependent ability with the given pool state would help pay the cost.
+     * Returns true if the activation cost can be paid from available sources.
+     */
+    private static boolean canAffordPoolDependentActivation(
+            ManaAbilityOption poolDepOpt,
+            List<ManaAbilityOption> currentPool,
+            Game game,
+            Ability ability,
+            UUID playerId,
+            ManaCost manaCost) {
+        if (!poolDepOpt.hasCost()) {
+            return true; // Free to activate
+        }
+
+        // Check if we can pay the activation cost from the current pool
+        List<ManaCostSymbol> activationCost = poolDepOpt.getActivationCost();
+        return checkFlow(activationCost, currentPool, game, ability);
+    }
+
+    /**
+     * Subtracts the activation cost from the pool and returns the remaining pool.
+     * Returns null if the cost cannot be paid.
+     */
+    private static List<ManaAbilityOption> subtractActivationCost(
+            List<ManaCostSymbol> activationCost,
+            List<ManaAbilityOption> currentPool,
+            Game game,
+            Ability ability) {
+
+        if (activationCost == null || activationCost.isEmpty()) {
+            return new ArrayList<>(currentPool);
+        }
+
+        // Check if we can pay the cost
+        if (!checkFlow(activationCost, currentPool, game, ability)) {
+            return null;
+        }
+
+        // Simple greedy subtraction (could be improved with actual flow result)
+        List<ManaAbilityOption> remaining = new ArrayList<>(currentPool);
+
+        // Track remaining cost amounts for each symbol
+        Map<ManaCostSymbol, Integer> symbolAmounts = new LinkedHashMap<>();
+        for (ManaCostSymbol symbol : activationCost) {
+            symbolAmounts.put(symbol, symbol.minCost());
+        }
+
+        // Pay each symbol from the pool
+        for (ManaCostSymbol symbol : activationCost) {
+            int amountRemaining = symbolAmounts.get(symbol);
+            if (amountRemaining <= 0) {
+                continue; // Already fully paid
+            }
+
+            for (int i = 0; i < remaining.size() && amountRemaining > 0; i++) {
+                ManaAbilityOption opt = remaining.get(i);
+                if (opt.canProduce(symbol)) {
+                    int toSubtract = Math.min(opt.getCapacity(), amountRemaining);
+                    if (toSubtract > 0) {
+                        amountRemaining -= toSubtract;
+                        symbolAmounts.put(symbol, amountRemaining);
+
+                        if (opt.getCapacity() > toSubtract) {
+                            remaining.set(i, opt.withCapacity(opt.getCapacity() - toSubtract));
+                        } else {
+                            remaining.remove(i);
+                            i--;
+                        }
+                    }
+                }
+            }
+        }
+
+        return remaining;
+    }
+
+    /**
+     * Converts a Mana object to a list of ManaAbilityOptions.
+     */
+    private static List<ManaAbilityOption> convertManaToOptions(Mana mana, UUID sourceAbilityId) {
+        List<ManaAbilityOption> options = new ArrayList<>();
+
+        if (mana.getWhite() > 0) {
+            options.add(ManaAbilityOption.createSyntheticOption(
+                    sourceAbilityId, ManaType.WHITE, mana.getWhite()));
+        }
+        if (mana.getBlue() > 0) {
+            options.add(ManaAbilityOption.createSyntheticOption(
+                    sourceAbilityId, ManaType.BLUE, mana.getBlue()));
+        }
+        if (mana.getBlack() > 0) {
+            options.add(ManaAbilityOption.createSyntheticOption(
+                    sourceAbilityId, ManaType.BLACK, mana.getBlack()));
+        }
+        if (mana.getRed() > 0) {
+            options.add(ManaAbilityOption.createSyntheticOption(
+                    sourceAbilityId, ManaType.RED, mana.getRed()));
+        }
+        if (mana.getGreen() > 0) {
+            options.add(ManaAbilityOption.createSyntheticOption(
+                    sourceAbilityId, ManaType.GREEN, mana.getGreen()));
+        }
+        if (mana.getColorless() > 0) {
+            options.add(ManaAbilityOption.createSyntheticOption(
+                    sourceAbilityId, ManaType.COLORLESS, mana.getColorless()));
+        }
+        if (mana.getGeneric() > 0) {
+            options.add(ManaAbilityOption.createSyntheticOption(
+                    sourceAbilityId, ManaType.GENERIC, mana.getGeneric()));
+        }
+
+        return options;
     }
 
     /**
@@ -636,7 +1221,7 @@ public final class ManaPaymentFlowSolver {
     }
 
     private static List<List<ManaAbilityOption>> getPoolWithPaidActivations(List<ManaCostSymbol> activationCost,
-                                                                      Set<UUID> spentFreeIds, List<ManaAbilityOption> freeOptions, ManaAbilityOption paid, Game game, int paidActivations, UUID playerId, mage.abilities.costs.mana.ManaCost manaCost) {
+                                                                      Set<UUID> spentFreeIds, List<ManaAbilityOption> freeOptions, ManaAbilityOption paid, Game game, int paidActivations, UUID playerId, ManaCost manaCost) {
         List<List<ManaAbilityOption>> resultPools = new ArrayList<>();
         if (freeOptions.isEmpty() || activationCost.isEmpty()) {
             return resultPools;
@@ -752,10 +1337,3 @@ public final class ManaPaymentFlowSolver {
         }
     }
 }
-
-
-
-
-
-
-
