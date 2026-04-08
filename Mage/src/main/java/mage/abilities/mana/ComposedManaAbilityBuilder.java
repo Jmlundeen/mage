@@ -64,6 +64,8 @@ public class ComposedManaAbilityBuilder {
     private Cost cost = null;
     private Zone zone = Zone.BATTLEFIELD;
     private String ruleText = null;
+    private Condition activationCondition = null;
+    private ComposedManaEffect manaEffect = null;
 
     public ComposedManaAbilityBuilder() {
     }
@@ -276,6 +278,11 @@ public class ComposedManaAbilityBuilder {
         return this;
     }
 
+    public ComposedManaAbilityBuilder activationCondition(Condition condition) {
+        this.activationCondition = condition;
+        return this;
+    }
+
     /**
      * Builds the ComposedManaAbility.
      * 
@@ -286,6 +293,11 @@ public class ComposedManaAbilityBuilder {
         if (manaValues.isEmpty()) {
             throw new IllegalStateException("At least one mana value must be added");
         }
+        ComposedManaEffect effect = new ComposedManaEffect(manaValues, spendingConditions);
+        if (ruleText != null) {
+            effect.setText(ruleText);
+        }
+        this.manaEffect = effect;
         return new ComposedManaAbility(this);
     }
 
@@ -320,5 +332,13 @@ public class ComposedManaAbilityBuilder {
 
     public String getRuleText() {
         return ruleText;
+    }
+
+    public Condition getActivationCondition() {
+        return activationCondition;
+    }
+
+    public ComposedManaEffect getManaEffect() {
+        return manaEffect;
     }
 }

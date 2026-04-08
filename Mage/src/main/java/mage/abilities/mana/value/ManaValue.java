@@ -25,12 +25,13 @@ public interface ManaValue extends Copyable<ManaValue> {
     /**
      * Evaluates this mana value in the given game state.
      *
-     * @param game       the current game (may be null for AI score calculations)
-     * @param source     the ability producing this mana
+     * @param game        the current game (may be null for AI score calculations)
+     * @param source      the ability producing this mana
      * @param manaEffect
+     * @param produceMana
      * @return list of possible mana produced; may contain multiple options for choice-based values
      */
-    List<Mana> evaluate(Game game, Ability source, Effect manaEffect);
+    List<Mana> evaluate(Game game, Ability source, Effect manaEffect, boolean produceMana);
 
     /**
      * Returns the set of mana types this value can produce.

@@ -49,7 +49,7 @@ public class StaticManaValue implements ManaValue {
     }
 
     @Override
-    public List<Mana> evaluate(Game game, Ability source, Effect manaEffect) {
+    public List<Mana> evaluate(Game game, Ability source, Effect manaEffect, boolean produceMana) {
         return Collections.singletonList(new Mana(white, blue, black, red, green, generic, any, colorless));
     }
 

@@ -28,7 +28,7 @@ public class AnyColorManaValue implements ManaValue {
     }
 
     @Override
-    public List<Mana> evaluate(Game game, Ability source, Effect manaEffect) {
+    public List<Mana> evaluate(Game game, Ability source, Effect manaEffect, boolean produceMana) {
         if (amount <= 0) {
             return Collections.emptyList();
         }

@@ -109,7 +109,7 @@ public class DynamicManaValue implements ManaValue {
     }
 
     @Override
-    public List<Mana> evaluate(Game game, Ability source, Effect manaEffect) {
+    public List<Mana> evaluate(Game game, Ability source, Effect manaEffect, boolean produceMana) {
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return Collections.emptyList();
@@ -131,7 +131,7 @@ public class DynamicManaValue implements ManaValue {
             List<Mana> options = new ArrayList<>();
             
             if (anyCombination) {
-                if (!game.inCheckPlayableState()) {
+                if (produceMana) {
                     List<String> choiceList = getChoiceStrings();
                     List<Integer> manaList = player.getMultiAmount(Outcome.PutManaInPool, choiceList, 0, calculatedAmount, calculatedAmount, MultiAmountType.MANA, game);
                     Mana mana = getMana(choiceList, manaList);
@@ -145,7 +145,7 @@ public class DynamicManaValue implements ManaValue {
                 }
                 options.add(mana);
             } else {
-                if (!game.inCheckPlayableState()) {
+                if (produceMana) {
                     Choice choice = ManaType.getChoiceOfManaTypes(choices, !choices.contains(ManaType.COLORLESS));
                     if (player.choose(Outcome.PutManaInPool, choice, game)) {
                         if (choice.getChoice() != null) {
