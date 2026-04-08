@@ -158,6 +158,103 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
     }
 
     /**
+     * Checks if the mana options can produce the mana specified by the input string.
+     * The input string should be in the format of mana symbols, e.g. "{W}{U}{B}" for one white, one blue, and one black mana.
+     *
+     * @param manaString the string representing the required mana
+     * @return true if the mana options can produce the required mana, false otherwise
+     */
+    public boolean canProduce(String manaString) {
+        if (manaString == null || manaString.isEmpty()) {
+            return true; // Can always produce zero mana
+        }
+
+        // Parse the mana string to count each mana type
+        Map<ManaType, Integer> required = new HashMap<>();
+
+        // Parse mana symbols in the format {W}, {U}, {B}, {R}, {G}, {C}, {X}, etc.
+        // Also handles hybrid like {W/U}, taking the first option as the requirement
+        int i = 0;
+        while (i < manaString.length()) {
+            if (manaString.charAt(i) == '{') {
+                int endIdx = manaString.indexOf('}', i);
+                if (endIdx == -1) {
+                    break; // Malformed, stop parsing
+                }
+
+                String symbol = manaString.substring(i + 1, endIdx).toUpperCase().trim();
+
+                // For hybrid mana like {W/U}, try each option
+                // We check if we can produce ANY of the options
+                if (symbol.contains("/")) {
+                    String[] options = symbol.split("/");
+                    ManaType type = parseManaType(options[0]);
+                    if (type != null) {
+                        required.merge(type, 1, Integer::sum);
+                    }
+                } else {
+                    ManaType type = parseManaType(symbol);
+                    if (type != null) {
+                        required.merge(type, 1, Integer::sum);
+                    }
+                }
+
+                i = endIdx + 1;
+            } else {
+                i++;
+            }
+        }
+
+        // Check if we can produce all required mana types
+        for (Map.Entry<ManaType, Integer> entry : required.entrySet()) {
+            if (!canProduce(entry.getKey(), entry.getValue())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Parses a single mana type symbol (W, U, B, R, G, C, X) to a ManaType.
+     * Returns null if the symbol is not recognized.
+     */
+    private static ManaType parseManaType(String symbol) {
+        return switch (symbol.trim().toUpperCase()) {
+            case "W" -> ManaType.WHITE;
+            case "U" -> ManaType.BLUE;
+            case "B" -> ManaType.BLACK;
+            case "R" -> ManaType.RED;
+            case "G" -> ManaType.GREEN;
+            case "C" -> ManaType.COLORLESS;
+            case "X" -> ManaType.GENERIC;
+            default -> null;
+        };
+    }
+
+    public boolean canProduce(ManaType type, int amount) {
+        for (ManaSourceNode node : this) {
+            for (ManaAbilityOption option : node.getAbilityOptions()) {
+                boolean producesAny = option.isProducesAny();
+                if (producesAny) {
+                    int anyCapacity = option.getCapacity();
+                    if (anyCapacity >= amount) {
+                        return true;
+                    }
+                }
+                boolean producesType = option.getProducibleTypes().contains(type);
+                if (producesType || producesAny) {
+                    int capacity = option.getProducibleMap().getOrDefault(type, 0);
+                    if (capacity >= amount) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Enumerates every possible total-mana combination reachable by independently activating
      * each source node and choosing exactly one option (and, for multi-type options with
      * capacity 1, one colour).  The result is deduplicated as bags (order of pips does not
