@@ -3508,6 +3508,9 @@ public abstract class PlayerImpl implements Player, Serializable {
         }
 
         for (Permanent permanent : game.getBattlefield().getActivePermanents(playerId, game)) { // Some permanents allow use of abilities from non controlling players. so check all permanents in range
+            if (!permanent.canUseActivatedAbilities(game)) {
+                continue;
+            }
             abilitiesList.addAll(permanent.getAbilities().getAvailableActivatedManaAbilities(Zone.BATTLEFIELD, playerId, game)); // returns ability only if canActivate is true
         }
 
