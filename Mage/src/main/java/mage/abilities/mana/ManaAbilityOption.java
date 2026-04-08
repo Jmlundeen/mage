@@ -64,7 +64,7 @@ public final class ManaAbilityOption implements Serializable {
     private Filter.ComparisonScope scope = Filter.ComparisonScope.All;
     private int maxActivationsPerTurn = Integer.MAX_VALUE;
 
-    private ManaAbilityOption(UUID abilityId,
+    public ManaAbilityOption(UUID abilityId,
                                UUID triggeringAbilityId,
                                boolean isPoolDependent,
                                int capacity,
@@ -187,37 +187,6 @@ public final class ManaAbilityOption implements Serializable {
                     Collections.emptyList(), m.getConditions()));
         }
         return result;
-    }
-
-    /**
-     * Primary direct constructor — builds a <b>flexible</b> option (all map values&nbsp;=&nbsp;0)
-     * with an explicit capacity.  Used in tests and solver internals.
-     */
-    public static ManaAbilityOption of(UUID abilityId,
-                                        int capacity,
-                                        Set<ManaType> producibleTypes,
-                                        boolean producesAny,
-                                        List<ManaCostSymbol> activationCost) {
-        EnumMap<ManaType, Integer> map = new EnumMap<>(ManaType.class);
-        for (ManaType t : producibleTypes) {
-            map.put(t, 0);
-        }
-        return new ManaAbilityOption(abilityId, null, false, capacity, map, producesAny, activationCost,
-                Collections.emptyList());
-    }
-
-    /**
-     * Convenience overload for pure-generic activation costs (e.g. {@code {T}{2}: ...}).
-     */
-    public static ManaAbilityOption of(UUID abilityId,
-                                        int capacity,
-                                        Set<ManaType> producibleTypes,
-                                        boolean producesAny,
-                                        int genericCost) {
-        List<ManaCostSymbol> cost = genericCost > 0
-                ? List.of(ManaCostSymbol.generic(genericCost))
-                : Collections.emptyList();
-        return of(abilityId, capacity, producibleTypes, producesAny, cost);
     }
 
     /**

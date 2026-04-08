@@ -110,14 +110,14 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
     }
 
     public void addMana(Mana mana) {
-        add(ManaSourceNode.fromTriggeredMana(mana));
+        add(ManaSourceNode.fromMana(mana));
     }
 
     /**
      * Backward-compatible method to add Mana objects.
      */
     public boolean add(Mana mana) {
-        add(ManaSourceNode.fromTriggeredMana(mana));
+        add(ManaSourceNode.fromMana(mana));
         return true;
     }
 
@@ -160,6 +160,7 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
     /**
      * Checks if the mana options can produce the mana specified by the input string.
      * The input string should be in the format of mana symbols, e.g. "{W}{U}{B}" for one white, one blue, and one black mana.
+     * Special case: "{Any}{Any}..." checks if that amount of any mana can be produced
      *
      * @param manaString the string representing the required mana
      * @return true if the mana options can produce the required mana, false otherwise
@@ -169,11 +170,12 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
             return true; // Can always produce zero mana
         }
 
-        // Parse the mana string to count each mana type
+        // Parse the mana string to count each mana type and "{Any}" occurrences
         Map<ManaType, Integer> required = new HashMap<>();
+        int anyCount = 0;
 
         // Parse mana symbols in the format {W}, {U}, {B}, {R}, {G}, {C}, {X}, etc.
-        // Also handles hybrid like {W/U}, taking the first option as the requirement
+        // Also handles {Any} for any mana and hybrid like {W/U}
         int i = 0;
         while (i < manaString.length()) {
             if (manaString.charAt(i) == '{') {
@@ -184,15 +186,18 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
 
                 String symbol = manaString.substring(i + 1, endIdx).toUpperCase().trim();
 
-                // For hybrid mana like {W/U}, try each option
-                // We check if we can produce ANY of the options
-                if (symbol.contains("/")) {
+                // Check for {Any} symbol
+                if ("ANY".equals(symbol)) {
+                    anyCount++;
+                } else if (symbol.contains("/")) {
+                    // For hybrid mana like {W/U}, take the first option as the requirement
                     String[] options = symbol.split("/");
                     ManaType type = parseManaType(options[0]);
                     if (type != null) {
                         required.merge(type, 1, Integer::sum);
                     }
                 } else {
+                    // Regular mana type
                     ManaType type = parseManaType(symbol);
                     if (type != null) {
                         required.merge(type, 1, Integer::sum);
@@ -202,6 +207,13 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
                 i = endIdx + 1;
             } else {
                 i++;
+            }
+        }
+
+        // Check if we can produce all {Any} symbols
+        if (anyCount > 0) {
+            if (!canProduceAny(anyCount)) {
+                return false;
             }
         }
 
@@ -230,6 +242,31 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
             case "X" -> ManaType.GENERIC;
             default -> null;
         };
+    }
+
+    /**
+     * Checks if any mana can be produced with the specified amount.
+     * Sums up total capacity from all available mana options and checks if it meets the requirement.
+     *
+     * @param amount the required amount of any mana
+     * @return true if the total mana capacity >= amount, false otherwise
+     */
+    private boolean canProduceAny(int amount) {
+        if (amount <= 0) {
+            return true; // Can always produce zero
+        }
+        if (isEmpty()) {
+            return false; // No mana sources
+        }
+
+        int totalCapacity = 0;
+        for (ManaSourceNode node : this) {
+            for (ManaAbilityOption option : node.getAbilityOptions()) {
+                totalCapacity += option.getCapacity();
+            }
+        }
+
+        return totalCapacity >= amount;
     }
 
     public boolean canProduce(ManaType type, int amount) {

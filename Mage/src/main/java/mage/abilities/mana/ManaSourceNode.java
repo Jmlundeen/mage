@@ -52,25 +52,28 @@ public final class ManaSourceNode {
     }
 
     /**
-     * Builds a source node from triggered mana.
-     * Triggered mana is typically one-time and doesn't have activation costs.
+     * Builds a source node from mana.
      */
-    public static ManaSourceNode fromTriggeredMana(Mana mana) {
-        EnumSet<ManaType> types = EnumSet.noneOf(ManaType.class);
-        if (mana.getWhite() > 0) types.add(ManaType.WHITE);
-        if (mana.getBlue() > 0) types.add(ManaType.BLUE);
-        if (mana.getBlack() > 0) types.add(ManaType.BLACK);
-        if (mana.getRed() > 0) types.add(ManaType.RED);
-        if (mana.getGreen() > 0) types.add(ManaType.GREEN);
-        if (mana.getColorless() > 0) types.add(ManaType.COLORLESS);
+    public static ManaSourceNode fromMana(Mana mana) {
+        EnumMap<ManaType, Integer> map = new EnumMap<>(ManaType.class);
+        if (mana.getWhite() > 0) map.put(ManaType.WHITE, mana.getWhite());
+        if (mana.getBlue() > 0) map.put(ManaType.BLUE, mana.getBlue());
+        if (mana.getBlack() > 0) map.put(ManaType.BLACK, mana.getBlack());
+        if (mana.getRed() > 0) map.put(ManaType.RED, mana.getRed());
+        if (mana.getGreen() > 0) map.put(ManaType.GREEN, mana.getGreen());
+        if (mana.getColorless() > 0) map.put(ManaType.COLORLESS, mana.getColorless());
 
-        ManaAbilityOption option = ManaAbilityOption.of(
+        ManaAbilityOption option = new ManaAbilityOption(
                 UUID.randomUUID(),
+                null,
+                false,
                 mana.count(),
-                types,
+                map,
                 mana.getAny() > 0,
-                Collections.emptyList());
-
+                Collections.emptyList(),
+                mana.getConditions()
+        );
+        option.setScope(mana.getConditionScope());
         return new ManaSourceNode(List.of(option));
     }
 
