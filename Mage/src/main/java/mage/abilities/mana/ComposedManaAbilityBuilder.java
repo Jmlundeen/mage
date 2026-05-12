@@ -5,10 +5,7 @@ import mage.abilities.condition.Condition;
 import mage.abilities.costs.Cost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
-import mage.abilities.mana.value.AnyColorManaValue;
-import mage.abilities.mana.value.DynamicManaValue;
-import mage.abilities.mana.value.ManaValue;
-import mage.abilities.mana.value.StaticManaValue;
+import mage.abilities.mana.value.*;
 import mage.constants.ManaType;
 import mage.constants.Zone;
 
@@ -154,6 +151,14 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Adds a dynamic mana value where player chooses one mana type from runtime-provided options.
+     */
+    public ComposedManaAbilityBuilder addDynamicChoice(DynamicValue amount, ManaTypeProvider choicesProvider) {
+        manaValues.add(new DynamicManaValue(amount, choicesProvider, false));
+        return this;
+    }
+
+    /**
      * Adds a dynamic mana value where player chooses any combination of colors.
      * Example: "Add X mana in any combination of {B} and/or {R}."
      * 
@@ -163,6 +168,14 @@ public class ComposedManaAbilityBuilder {
      */
     public ComposedManaAbilityBuilder addDynamicCombination(DynamicValue amount, Set<ManaType> choices) {
         manaValues.add(new DynamicManaValue(amount, choices, true));
+        return this;
+    }
+
+    /**
+     * Adds a dynamic mana value where player chooses any combination from runtime-provided mana types.
+     */
+    public ComposedManaAbilityBuilder addDynamicCombination(DynamicValue amount, ManaTypeProvider choicesProvider) {
+        manaValues.add(new DynamicManaValue(amount, choicesProvider, true));
         return this;
     }
 
@@ -293,12 +306,20 @@ public class ComposedManaAbilityBuilder {
         if (manaValues.isEmpty()) {
             throw new IllegalStateException("At least one mana value must be added");
         }
+        this.manaEffect = buildEffect();
+        return new ComposedManaAbility(this);
+    }
+
+    public ComposedManaEffect buildEffect() {
+        if (manaValues.isEmpty()) {
+            throw new IllegalStateException("At least one mana value must be added");
+        }
         ComposedManaEffect effect = new ComposedManaEffect(manaValues, spendingConditions);
         if (ruleText != null) {
             effect.setText(ruleText);
         }
         this.manaEffect = effect;
-        return new ComposedManaAbility(this);
+        return effect;
     }
 
     // Convenience static factory method

@@ -20,7 +20,7 @@ public class ComposedManaEffect extends ManaEffect {
 
         private ComposedManaEffect(final ComposedManaEffect effect) {
             super(effect);
-            this.manaValues.addAll(effect.manaValues);
+            effect.manaValues.stream().map(ManaValue::copy).forEach(this.manaValues::add);
             this.spendingConditions.addAll(effect.spendingConditions);
         }
 
@@ -56,7 +56,7 @@ public class ComposedManaEffect extends ManaEffect {
         public Set<ManaType> getProducableManaTypes(Game game, Ability source) {
             Set<ManaType> types = HashSet.newHashSet(5);
             for (ManaValue mv : manaValues) {
-                types.addAll(mv.getProducibleTypes());
+                types.addAll(mv.getProducibleTypes(game, source, this));
             }
             return types.isEmpty() ? super.getProducableManaTypes(game, source) : types;
         }

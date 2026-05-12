@@ -31,6 +31,7 @@ public class DynamicManaValue implements ManaValue {
     private final ManaType singleType;
     private final int baseAmount;
     private final Set<ManaType> choices;
+    private final ManaTypeProvider manaTypeProvider;
     private final boolean anyCombination;
 
     /**
@@ -55,6 +56,7 @@ public class DynamicManaValue implements ManaValue {
         this.singleType = manaType;
         this.baseAmount = baseAmount;
         this.choices = null;
+        this.manaTypeProvider = null;
         this.anyCombination = false;
     }
 
@@ -81,7 +83,12 @@ public class DynamicManaValue implements ManaValue {
         this.singleType = null;
         this.baseAmount = 0;
         this.choices = EnumSet.copyOf(choices);
+        this.manaTypeProvider = null;
         this.anyCombination = anyCombination;
+    }
+
+    public DynamicManaValue(DynamicValue amount, ManaTypeProvider manaTypeProvider, boolean anyCombination) {
+        this(amount, manaTypeProvider, anyCombination, 0);
     }
 
     /**
@@ -97,6 +104,16 @@ public class DynamicManaValue implements ManaValue {
         this.singleType = null;
         this.baseAmount = baseAmount;
         this.choices = EnumSet.copyOf(choices);
+        this.manaTypeProvider = null;
+        this.anyCombination = anyCombination;
+    }
+
+    public DynamicManaValue(DynamicValue amount, ManaTypeProvider manaTypeProvider, boolean anyCombination, int baseAmount) {
+        this.amount = amount;
+        this.singleType = null;
+        this.baseAmount = baseAmount;
+        this.choices = null;
+        this.manaTypeProvider = manaTypeProvider;
         this.anyCombination = anyCombination;
     }
 
@@ -110,6 +127,9 @@ public class DynamicManaValue implements ManaValue {
 
     @Override
     public List<Mana> evaluate(Game game, Ability source, Effect manaEffect, boolean produceMana) {
+        if (game == null) {
+            return Collections.emptyList();
+        }
         Player player = game.getPlayer(source.getControllerId());
         if (player == null) {
             return Collections.emptyList();
@@ -127,12 +147,21 @@ public class DynamicManaValue implements ManaValue {
         }
 
         // Choice mode - return all possible options
-        if (choices != null) {
+        Set<ManaType> currentChoices = getChoices(game, source, manaEffect);
+        if (currentChoices != null) {
+            if (currentChoices.isEmpty()) {
+                return Collections.emptyList();
+            }
             List<Mana> options = new ArrayList<>();
             
             if (anyCombination) {
+                if (currentChoices.size() == 1) {
+                    Mana mana = new Mana();
+                    setMana(mana, currentChoices.iterator().next(), calculatedAmount);
+                    return Collections.singletonList(mana);
+                }
                 if (produceMana) {
-                    List<String> choiceList = getChoiceStrings();
+                    List<String> choiceList = getChoiceStrings(currentChoices);
                     List<Integer> manaList = player.getMultiAmount(Outcome.PutManaInPool, choiceList, 0, calculatedAmount, calculatedAmount, MultiAmountType.MANA, game);
                     Mana mana = getMana(choiceList, manaList);
                     return Collections.singletonList(mana);
@@ -140,14 +169,14 @@ public class DynamicManaValue implements ManaValue {
                 // Any combination - return single mana with all possible colors
                 // The actual distribution will be chosen by player during resolution
                 Mana mana = new Mana();
-                for (ManaType type : choices) {
+                for (ManaType type : currentChoices) {
                     setMana(mana, type, calculatedAmount);
                 }
                 mana.setAnyCombination(true);
                 options.add(mana);
             } else {
                 if (produceMana) {
-                    Choice choice = ManaType.getChoiceOfManaTypes(choices, !choices.contains(ManaType.COLORLESS));
+                    Choice choice = ManaType.getChoiceOfManaTypes(currentChoices, !currentChoices.contains(ManaType.COLORLESS));
                     if (player.choose(Outcome.PutManaInPool, choice, game)) {
                         if (choice.getChoice() != null) {
                             ManaType chosenType = ManaType.findByName(choice.getChoice());
@@ -156,7 +185,7 @@ public class DynamicManaValue implements ManaValue {
                     }
                 }
                 // Choose one color - return one option per color
-                for (ManaType type : choices) {
+                for (ManaType type : currentChoices) {
                     if (type == ManaType.COLORLESS || type == ManaType.GENERIC) {
                         options.add(Mana.ColorlessMana(calculatedAmount));
                     } else {
@@ -192,9 +221,9 @@ public class DynamicManaValue implements ManaValue {
         return mana;
     }
 
-    private @NonNull List<String> getChoiceStrings() {
+    private @NonNull List<String> getChoiceStrings(Set<ManaType> manaChoices) {
         List<String> choiceList = new ArrayList<>();
-        for (ManaType type : choices) {
+        for (ManaType type : manaChoices) {
             switch (type) {
                 case WHITE -> choiceList.add("W");
                 case BLUE -> choiceList.add("U");
@@ -205,6 +234,20 @@ public class DynamicManaValue implements ManaValue {
             }
         }
         return choiceList;
+    }
+
+    private Set<ManaType> getChoices(Game game, Ability source, Effect manaEffect) {
+        if (choices != null) {
+            return choices;
+        }
+        if (manaTypeProvider == null) {
+            return null;
+        }
+        Set<ManaType> dynamicChoices = manaTypeProvider.getManaTypes(game, source, manaEffect);
+        if (dynamicChoices == null || dynamicChoices.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return EnumSet.copyOf(dynamicChoices);
     }
 
     private void setMana(Mana mana, ManaType type, int calculatedAmount) {
@@ -232,7 +275,21 @@ public class DynamicManaValue implements ManaValue {
             types.remove(ManaType.GENERIC);
             return types;
         }
+        if (manaTypeProvider != null) {
+            return EnumSet.noneOf(ManaType.class);
+        }
         return EnumSet.of(ManaType.COLORLESS);
+    }
+
+    @Override
+    public Set<ManaType> getProducibleTypes(Game game, Ability source, Effect manaEffect) {
+        Set<ManaType> currentChoices = getChoices(game, source, manaEffect);
+        if (currentChoices == null || currentChoices.isEmpty()) {
+            return getProducibleTypes();
+        }
+        Set<ManaType> types = EnumSet.copyOf(currentChoices);
+        types.remove(ManaType.GENERIC);
+        return types;
     }
 
     public DynamicValue getAmount() {
@@ -245,6 +302,10 @@ public class DynamicManaValue implements ManaValue {
 
     public Set<ManaType> getChoices() {
         return choices;
+    }
+
+    public ManaTypeProvider getManaTypeProvider() {
+        return manaTypeProvider;
     }
 
     public boolean isAnyCombination() {
@@ -263,6 +324,9 @@ public class DynamicManaValue implements ManaValue {
         if (choices != null) {
             return new DynamicManaValue(amount.copy(), choices, anyCombination, baseAmount);
         }
+        if (manaTypeProvider != null) {
+            return new DynamicManaValue(amount.copy(), manaTypeProvider.copy(), anyCombination, baseAmount);
+        }
         return new DynamicManaValue(amount, EnumSet.of(ManaType.COLORLESS), false, baseAmount);
     }
 
@@ -275,8 +339,8 @@ public class DynamicManaValue implements ManaValue {
         sb.append('{').append(amount.getMessage()).append("} ");
         if (singleType != null) {
             sb.append(singleType.name().toLowerCase());
-        } else if (choices != null) {
-            sb.append("from ").append(choices);
+        } else if (choices != null || manaTypeProvider != null) {
+            sb.append("from ").append(choices != null ? choices : "runtime mana types");
             if (anyCombination) {
                 sb.append(" (any combination)");
             }

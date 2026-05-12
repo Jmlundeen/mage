@@ -42,6 +42,19 @@ public interface ManaValue extends Copyable<ManaValue> {
     Set<ManaType> getProducibleTypes();
 
     /**
+     * Returns the set of mana types this value can produce in current runtime context.
+     * Dynamic implementations may inspect effect state such as already-produced mana.
+     *
+     * @param game current game
+     * @param source ability producing mana
+     * @param manaEffect mana effect being evaluated
+     * @return set of producible mana types for current context
+     */
+    default Set<ManaType> getProducibleTypes(Game game, Ability source, Effect manaEffect) {
+        return getProducibleTypes();
+    }
+
+    /**
      * Returns true if this value is static (does not depend on game state).
      * Static values can be cached for net mana calculations.
      * 
