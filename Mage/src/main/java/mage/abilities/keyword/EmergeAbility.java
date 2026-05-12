@@ -101,7 +101,9 @@ public class EmergeAbility extends SpellAbility {
             } else if (symbol.getType() == ManaCostSymbol.SymbolType.GENERIC) {
                 int reduction = Math.min(symbol.getGenericCost(), remainingReduction);
                 int newCost = symbol.getGenericCost() - reduction;
-                adjusted.add(ManaCostSymbol.generic(newCost));
+                if (newCost > 0) {
+                    adjusted.add(ManaCostSymbol.generic(newCost));
+                }
                 remainingReduction -= reduction;
             } else {
                 adjusted.add(symbol);

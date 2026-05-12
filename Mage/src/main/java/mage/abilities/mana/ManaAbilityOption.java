@@ -36,7 +36,7 @@ import java.util.*;
  */
 public final class ManaAbilityOption implements Serializable {
 
-    private final UUID optionId = UUID.randomUUID();
+    private final UUID optionId;
     private final UUID abilityId;
     private UUID sourceId;
     /**
@@ -72,6 +72,19 @@ public final class ManaAbilityOption implements Serializable {
                                boolean producesAny,
                                List<ManaCostSymbol> activationCost,
                                List<Condition> conditions) {
+        this(UUID.randomUUID(), abilityId, triggeringAbilityId, isPoolDependent, capacity, producibleMap, producesAny, activationCost, conditions);
+    }
+
+    private ManaAbilityOption(UUID optionId,
+                               UUID abilityId,
+                               UUID triggeringAbilityId,
+                               boolean isPoolDependent,
+                               int capacity,
+                               EnumMap<ManaType, Integer> producibleMap,
+                               boolean producesAny,
+                               List<ManaCostSymbol> activationCost,
+                               List<Condition> conditions) {
+        this.optionId = optionId;
         this.abilityId = abilityId;
         this.triggeringAbilityId = triggeringAbilityId;
         this.isPoolDependent = isPoolDependent;
@@ -95,7 +108,7 @@ public final class ManaAbilityOption implements Serializable {
                                                       List<Condition> conditions, Player player) {
         List<ManaCostSymbol> activationSymbols = ability.getManaCosts().isEmpty()
                 ? Collections.emptyList()
-                : ManaCostSymbolParser.fromManaCosts(ability.getManaCosts(), player.canPayLifeCost(ability));
+                : ManaCostSymbolParser.fromManaCosts(ability.getManaCosts(), player, ability);
 
         // Check if this ability is pool-dependent (e.g., Doubling Cube)
         boolean isPoolDependent = ability.isPoolDependant();
@@ -123,6 +136,9 @@ public final class ManaAbilityOption implements Serializable {
                 option.setHasTapCost(true);
                 option.setMaxActivationsPerTurn(1);
             }
+            if (ability.getMaxActivationsPerTurn(null) != Integer.MAX_VALUE) {
+                option.setMaxActivationsPerTurn(ability.getMaxActivationsPerTurn(null));
+            }
             result.add(option);
             return result;
         }
@@ -130,18 +146,20 @@ public final class ManaAbilityOption implements Serializable {
         for (Mana m : netManas) {
             EnumMap<ManaType, Integer> map = new EnumMap<>(ManaType.class);
             boolean anyFlag = false;
-            if (m.getWhite() > 0)     map.put(ManaType.WHITE, m.getWhite());
-            if (m.getBlue() > 0)      map.put(ManaType.BLUE, m.getBlue());
-            if (m.getBlack() > 0)     map.put(ManaType.BLACK, m.getBlack());
-            if (m.getRed() > 0)       map.put(ManaType.RED, m.getRed());
-            if (m.getGreen() > 0)     map.put(ManaType.GREEN, m.getGreen());
-            if (m.getColorless() > 0) map.put(ManaType.COLORLESS, m.getColorless());
+            boolean anyCombination = m.isAnyCombination();
+            int maxCapacity = anyCombination ? m.getMaxCapacity() : m.count();
+            if (m.getWhite() > 0)     map.put(ManaType.WHITE, anyCombination ? 0 : m.getWhite());
+            if (m.getBlue() > 0)      map.put(ManaType.BLUE, anyCombination ? 0 : m.getBlue());
+            if (m.getBlack() > 0)     map.put(ManaType.BLACK, anyCombination ? 0 : m.getBlack());
+            if (m.getRed() > 0)       map.put(ManaType.RED, anyCombination ? 0 : m.getRed());
+            if (m.getGreen() > 0)     map.put(ManaType.GREEN, anyCombination ? 0 : m.getGreen());
+            if (m.getColorless() > 0) map.put(ManaType.COLORLESS, anyCombination ? 0 : m.getColorless());
             if (m.getAny() > 0)       anyFlag = true;
             ManaAbilityOption option = new ManaAbilityOption(
                 ability.getId(),
                 null,  // not triggered
                 isPoolDependent,
-                m.count(),
+                maxCapacity,
                 map,
                 anyFlag,
                 activationSymbols,
@@ -152,6 +170,9 @@ public final class ManaAbilityOption implements Serializable {
             if (ability.hasTapCost()) {
                 option.setHasTapCost(true);
                 option.setMaxActivationsPerTurn(1);
+            }
+            if (ability.getMaxActivationsPerTurn(null) != Integer.MAX_VALUE) {
+                option.setMaxActivationsPerTurn(ability.getMaxActivationsPerTurn(null));
             }
             result.add(option);
         }
@@ -237,8 +258,13 @@ public final class ManaAbilityOption implements Serializable {
     }
 
     public ManaAbilityOption withCapacity(int difference) {
-        return new ManaAbilityOption(abilityId, triggeringAbilityId, isPoolDependent, difference, producibleMap, producesAny,
+        ManaAbilityOption copy = new ManaAbilityOption(optionId, abilityId, triggeringAbilityId, isPoolDependent, difference, producibleMap, producesAny,
                 activationCost, conditions);
+        copy.setSourceId(sourceId);
+        copy.setHasTapCost(hasTapCost);
+        copy.setScope(scope);
+        copy.setMaxActivationsPerTurn(maxActivationsPerTurn);
+        return copy;
     }
 
     public boolean isHasTapCost() {

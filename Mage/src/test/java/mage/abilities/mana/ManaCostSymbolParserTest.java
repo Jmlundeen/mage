@@ -2,6 +2,7 @@ package mage.abilities.mana;
 
 import mage.Mana;
 import mage.constants.ManaType;
+import mage.filter.FilterMana;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -95,7 +96,7 @@ class ManaCostSymbolParserTest {
     @Test
     @DisplayName("parse: {R/P} → phyrexian(RED)")
     void parsePhyrexianRed() {
-        List<ManaCostSymbol> symbols = ManaCostSymbolParser.parse("{R/P}");
+        List<ManaCostSymbol> symbols = ManaCostSymbolParser.parse("{R/P}", getFilterMana(), false);
         assertEquals(1, symbols.size());
         ManaCostSymbol s = symbols.getFirst();
         assertEquals(ManaCostSymbol.SymbolType.PHYREXIAN, s.getType());
@@ -105,7 +106,7 @@ class ManaCostSymbolParserTest {
     @Test
     @DisplayName("parse: {W/U/P} → hybridColor(W, U)  [phyrexian hybrid treated as hybrid for mana purposes]")
     void parseHybridPhyrexian() {
-        List<ManaCostSymbol> symbols = ManaCostSymbolParser.parse("{W/U/P}");
+        List<ManaCostSymbol> symbols = ManaCostSymbolParser.parse("{W/U/P}", getFilterMana(), false);
         assertEquals(1, symbols.size());
         ManaCostSymbol s = symbols.getFirst();
         assertEquals(ManaCostSymbol.SymbolType.HYBRID_COLOR, s.getType());
@@ -159,5 +160,15 @@ class ManaCostSymbolParserTest {
                 && s.getColorOptions().contains(ManaType.GREEN)));
         assertTrue(symbols.stream().anyMatch(s -> s.getType() == ManaCostSymbol.SymbolType.GENERIC
                 && s.getGenericCost() == 1));
+    }
+
+    FilterMana getFilterMana() {
+        FilterMana filterMana = new FilterMana();
+        filterMana.setWhite(true);
+        filterMana.setBlue(true);
+        filterMana.setBlack(true);
+        filterMana.setRed(true);
+        filterMana.setGreen(true);
+        return filterMana;
     }
 }

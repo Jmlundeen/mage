@@ -1,5 +1,6 @@
 package org.mage.test.cards.restriction;
 
+import mage.abilities.mana.ManaOptions;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import org.junit.Assert;
@@ -32,7 +33,8 @@ public class CantUseActivatedAbilitiesTest extends CardTestPlayerBase {
         execute();
 
         // Sol Ring can't produce mana
-        Assert.assertTrue("PlayerB may not be able to produce any mana but he he can produce " + playerB.getManaAvailable(currentGame).toString(), playerB.getManaAvailable(currentGame).toString().equals("[]"));
+        ManaOptions manaAvailable = playerB.getManaAvailable(currentGame);
+        Assert.assertTrue("PlayerB may not be able to produce any mana but he he can produce " + manaAvailable.size(), manaAvailable.isEmpty());
     }
     
    @Test

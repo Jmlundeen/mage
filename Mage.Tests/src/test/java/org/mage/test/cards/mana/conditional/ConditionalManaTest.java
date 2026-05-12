@@ -4,14 +4,18 @@ import mage.ConditionalMana;
 import mage.Mana;
 import mage.abilities.condition.common.AdamantCondition;
 import mage.abilities.keyword.FlyingAbility;
+import mage.abilities.mana.ManaAbilityOption;
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import mage.counters.CounterType;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
-import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mage.test.utils.ManaOptionsTestUtils.assertCanPay;
 
 /**
  * @author LevelX2
@@ -331,8 +335,8 @@ public class ConditionalManaTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{R}{R}", manaOptions);
+        assertEquals("mana variations don't fit", 2, manaOptions.size());
+        assertCanPay("{R}{R}", manaOptions);
     }
 
     @Test
@@ -382,11 +386,18 @@ public class ConditionalManaTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Titans' Nest", 1);
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 4, manaOptions.size());
-        assertManaOptions("{R}", manaOptions);
-        assertManaOptions("{C}{C}{C}{R}[{TitansNestManaCondition}]", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{R}[{XCostManaCondition}]", manaOptions);
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{R}[{XCostManaCondition}{TitansNestManaCondition}]", manaOptions);
+        assertEquals("mana variations don't fit", 3, manaOptions.size());
+        int conditionalManaCount = 0;
+        for (ManaSourceNode mana : manaOptions) {
+            for (ManaAbilityOption option : mana.getAbilityOptions()) {
+                if (option.hasConditions()) {
+                    conditionalManaCount++;
+                }
+            }
+        }
+        assertEquals("conditional mana variations don't fit", 2, conditionalManaCount);
+        assertTrue(manaOptions.canProduce("{C}".repeat(7)));
+        assertTrue(manaOptions.canProduce("{R}"));
     }
 
     @Test
@@ -455,7 +466,7 @@ public class ConditionalManaTest extends CardTestPlayerBase {
         manaOptions.add(mana4);
         manaOptions.add(mana4Copy); // Adding it to make sure it gets removed
 
-        Assert.assertEquals("Incorrect number of mana", 5, manaOptions.size());
+        assertEquals("Incorrect number of mana", 6, manaOptions.size());
     }
 
 }

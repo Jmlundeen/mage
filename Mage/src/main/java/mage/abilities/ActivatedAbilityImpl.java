@@ -167,7 +167,7 @@ public abstract class ActivatedAbilityImpl extends AbilityImpl implements Activa
     public List<ManaCostSymbol> getMinimumCostSymbolsToActivate(UUID playerId, Game game) {
         Player player = game.getPlayer(playerId);
         getManaCostsToPay().getOptions(player.canPayLifeCost(this));
-        return ManaCostSymbolParser.fromManaCosts(getManaCostsToPay(), player.canPayLifeCost(this));
+        return ManaCostSymbolParser.fromManaCosts(getManaCostsToPay(), player, this);
     }
 
     protected boolean controlsAbility(UUID playerId, Game game) {

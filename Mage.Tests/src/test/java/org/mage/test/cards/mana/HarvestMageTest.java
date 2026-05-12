@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
+import static org.junit.Assert.assertTrue;
 import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
 
 /**
@@ -65,7 +66,7 @@ public class HarvestMageTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Harvest Mage", 1);
         
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{Any}{Any}", manaOptions);        
+        Assert.assertEquals("mana variations don't fit", 2, manaOptions.size());
+        assertTrue(manaOptions.canProduce("{Any}{Any}"));
     }    
 }

@@ -5,7 +5,8 @@ import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mage.test.utils.ManaOptionsTestUtils;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author TheElk801
@@ -49,9 +50,9 @@ public class ThePrismaticPiperTest8 extends ThePrismaticPiperBaseTest {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
-        ManaOptionsTestUtils.assertManaOptions("{U}", manaOptions);
-        ManaOptionsTestUtils.assertManaOptions("{R}", manaOptions);
-        ManaOptionsTestUtils.assertManaOptions("{G}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
+        assertTrue(manaOptions.canProduce("{U}"));
+        assertTrue(manaOptions.canProduce("{R}"));
+        assertTrue(manaOptions.canProduce("{G}"));
     }
 }

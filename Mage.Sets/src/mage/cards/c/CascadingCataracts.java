@@ -1,18 +1,18 @@
 
 package mage.cards.c;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.mana.AddManaInAnyCombinationEffect;
+import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.keyword.IndestructibleAbility;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
+
+import java.util.UUID;
 
 /**
  *
@@ -30,9 +30,13 @@ public final class CascadingCataracts extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {5}, {T}: Add five mana in any combination of colors.
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaInAnyCombinationEffect(5), new GenericManaCost(5));
-        ability.addCost(new TapSourceCost());
-        this.addAbility(ability);
+        Ability manaAbility = new ComposedManaAbilityBuilder()
+                .addDynamicAnyCombination(StaticValue.get(5))
+                .cost(new GenericManaCost(5))
+                .ruleText("Add five mana in any combination of colors.")
+                .build();
+        manaAbility.addCost(new TapSourceCost());
+        this.addAbility(manaAbility);
     }
 
     private CascadingCataracts(final CascadingCataracts card) {

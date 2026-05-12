@@ -121,25 +121,28 @@ class SasayasEssenceManaEffect extends ManaEffect {
             filter.add(Predicates.not(new PermanentIdPredicate(permanent.getId())));
             filter.add(new NamePredicate(permanent.getName()));
             int count = game.getBattlefield().countAll(filter, controller.getId(), game);
+            Mana mana = new Mana();
             if (count > 0) {
                 if (producedMana.getBlack() > 0) {
-                    netMana.add(Mana.BlackMana(count));
+                    mana.setBlack(count);
                 }
                 if (producedMana.getRed() > 0) {
-                    netMana.add(Mana.RedMana(count));
+                    mana.setRed(count);
                 }
                 if (producedMana.getBlue() > 0) {
-                    netMana.add(Mana.BlueMana(count));
+                    mana.setBlue(count);
                 }
                 if (producedMana.getGreen() > 0) {
-                    netMana.add(Mana.GreenMana(count));
+                    mana.setGreen(count);
                 }
                 if (producedMana.getWhite() > 0) {
-                    netMana.add(Mana.WhiteMana(count));
+                    mana.setWhite(count);
                 }
                 if (producedMana.getColorless() > 0) {
-                    netMana.add(Mana.ColorlessMana(count));
+                    mana.setColorless(count);
                 }
+                mana.setAnyCombination(true);
+                netMana.add(mana);
             }
         }
         return netMana;

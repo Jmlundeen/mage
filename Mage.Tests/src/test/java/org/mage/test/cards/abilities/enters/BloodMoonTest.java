@@ -1,5 +1,6 @@
 package org.mage.test.cards.abilities.enters;
 
+import mage.abilities.mana.ManaOptions;
 import mage.constants.CardType;
 import mage.constants.PhaseStep;
 import mage.constants.SubType;
@@ -9,6 +10,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -125,7 +128,8 @@ public class BloodMoonTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Blood Moon", 1);
         assertHandCount(playerA, 1);
         // Check that the Steam Vents produces only {R}
-        Assert.assertTrue("The mana the land can produce should be [{R}] but it's " + playerB.getManaAvailable(currentGame).toString(), playerB.getManaAvailable(currentGame).toString().equals("[{R}]"));
+        ManaOptions manaAvailable = playerB.getManaAvailable(currentGame);
+        assertTrue("The mana the land can produce should be {R} but it's " + manaAvailable.toString(), manaAvailable.canProduce("{R}"));
 
     }
 
@@ -155,8 +159,9 @@ public class BloodMoonTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Spreading Seas", 1);
         assertPermanentCount(playerA, "Blood Moon", 1);
         assertHandCount(playerA, 1);
-        // Check that the Steam Vents produces only {R}
-        Assert.assertTrue("The mana the land can produce should be [{U}] but it's " + playerB.getManaAvailable(currentGame).toString(), playerB.getManaAvailable(currentGame).toString().equals("[{U}]"));
+        // Check that the Steam Vents produces only {U}
+        ManaOptions manaAvailable = playerB.getManaAvailable(currentGame);
+        assertTrue("The mana the land can produce should be {U} but it's " + manaAvailable.toString(), manaAvailable.canProduce("{U}"));
     }
 
     /**
@@ -196,7 +201,8 @@ public class BloodMoonTest extends CardTestPlayerBase {
         assertPermanentCount(playerB, "Pithing Needle", 1);
         assertPermanentCount(playerB, "Ghost Quarter", 2);
 
-        Assert.assertTrue("The mana Ghost Quarter can produce should be [{R}] but it's " + playerB.getManaAvailable(currentGame).toString(), playerB.getManaAvailable(currentGame).toString().equals("[{R}]"));
+        ManaOptions manaAvailable = playerB.getManaAvailable(currentGame);
+        assertTrue("The mana Ghost Quarter can produce should be {R} but it's " + manaAvailable.toString(), manaAvailable.canProduce("{R}"));
     }
 
     /**
@@ -234,7 +240,8 @@ public class BloodMoonTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Pithing Needle", 1);
         assertPermanentCount(playerA, "Ghost Quarter", 1);
 
-        Assert.assertTrue("The mana the land can produce should be [{R}] but it's " + playerA.getManaAvailable(currentGame).toString(), playerA.getManaAvailable(currentGame).toString().equals("[{R}]"));
+        ManaOptions manaAvailable = playerA.getManaAvailable(currentGame);
+        assertTrue("The mana the land can produce should be [{R}] but it's " + manaAvailable.toString(), manaAvailable.canProduce("{R}"));
     }
 
     /**
@@ -272,7 +279,8 @@ public class BloodMoonTest extends CardTestPlayerBase {
         assertType("Mutavault", CardType.LAND, SubType.MOUNTAIN);
         assertType("Swamp", CardType.LAND, SubType.SWAMP);
 
-        Assert.assertTrue("The mana the land can produce should be [{R}] but it's " + playerA.getManaAvailable(currentGame).toString(), playerA.getManaAvailable(currentGame).toString().equals("[{R}]"));
+        ManaOptions manaAvailable = playerA.getManaAvailable(currentGame);
+        assertTrue("The mana the land can produce should be [{R}] but it's " + manaAvailable.toString(), manaAvailable.canProduce("{R}"));
     }
 
     @Test
@@ -302,8 +310,8 @@ public class BloodMoonTest extends CardTestPlayerBase {
         assertPowerToughness(playerA, "Mutavault", 0, 0);
         assertType("Mutavault", CardType.LAND, SubType.MOUNTAIN);
         assertType("Swamp", CardType.LAND, SubType.SWAMP);
-
-        Assert.assertTrue("The mana the lands can produce should be [{B}{R}] but it's " + playerA.getManaAvailable(currentGame).toString(), playerA.getManaAvailable(currentGame).toString().equals("[{B}{R}]"));
+        ManaOptions manaOptions = playerA.getManaAvailable(currentGame);
+        assertTrue("Should be able to produce {R}{B} but it's false", manaOptions.canProduce("{R}{B}"));
     }
 
     /**

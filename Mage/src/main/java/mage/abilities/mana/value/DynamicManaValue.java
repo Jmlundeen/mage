@@ -143,6 +143,7 @@ public class DynamicManaValue implements ManaValue {
                 for (ManaType type : choices) {
                     setMana(mana, type, calculatedAmount);
                 }
+                mana.setAnyCombination(true);
                 options.add(mana);
             } else {
                 if (produceMana) {

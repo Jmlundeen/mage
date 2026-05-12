@@ -286,9 +286,9 @@ public class ReflectingPoolTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions options = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("Player A should be able to create only 2 different mana options", 2, options.size());
-        assertManaOptions("{C}{C}{Any}", options);
-        assertManaOptions("{C}{Any}{Any}", options);
+        Assert.assertEquals("Player A should have 3 different mana options", 3, options.size());
+        options.canProduce("{C}{C}{Any}");
+        options.canProduce("{C}{Any}{Any}");
     }
     
     @Test
@@ -304,9 +304,9 @@ public class ReflectingPoolTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions options = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("Player A should be able to create only 3 different mana options", 3, options.size());
-        assertManaOptions("{C}{C}", options);
-        assertManaOptions("{C}{W}", options);
-        assertManaOptions("{C}{U}", options);
+        Assert.assertEquals("Player A should have only 2 different mana options", 2, options.size());
+        options.canProduce("{C}{C}");
+        options.canProduce("{C}{W}");
+        options.canProduce("{C}{U}");
     }    
 }

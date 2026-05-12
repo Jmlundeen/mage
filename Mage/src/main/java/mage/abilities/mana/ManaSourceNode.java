@@ -6,6 +6,7 @@ import mage.constants.ManaType;
 import mage.game.Game;
 import mage.players.Player;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -13,7 +14,7 @@ import java.util.*;
  * Holds one or more {@link ManaAbilityOption} instances that would typically share the tap cost, only one
  * can be used per activation cycle.
  */
-public final class ManaSourceNode {
+public final class ManaSourceNode implements Serializable {
 
     private final List<ManaAbilityOption> abilityOptions;
     private int maxActivations = Integer.MAX_VALUE;

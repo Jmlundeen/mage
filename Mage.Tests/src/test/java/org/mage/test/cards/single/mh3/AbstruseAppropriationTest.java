@@ -2,7 +2,6 @@ package org.mage.test.cards.single.mh3;
 
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
@@ -32,19 +31,10 @@ public class AbstruseAppropriationTest extends CardTestPlayerBase {
         checkPlayableAbility(
                 "Can not cast Darkheart Sliver out of Swamps",
                 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Cast Darkheart Sliver",
-                true // Should be false, but the playability check does not compute the "may spend colorless" at this point.
+                false
         );
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Darkheart Sliver");
-
         setStopAt(1, PhaseStep.BEGIN_COMBAT);
-        try {
-            execute();
-            Assert.fail("should have failed to execute on cast");
-        } catch (Throwable e) {
-            if (!e.getMessage().contains("Can't find ability to activate command: Cast Darkheart Sliver")) {
-                Assert.fail("Should have thrown error about not being able to cast Darkheart Sliver, but got:\n" + e.getMessage());
-            }
-        }
+        execute();
     }
 
     @Test

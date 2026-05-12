@@ -8,7 +8,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
-import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -38,6 +39,8 @@ public class TitansNestTest extends CardTestPlayerBase {
         
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
         Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{C}[{TitansNestManaCondition}]", manaOptions);        
+        assertTrue("Mana option should have a condition", manaOptions.getFirst().getSingleOption().hasConditions());
+        assertTrue("Mana option should produce colorless mana", manaOptions.canProduce("{C}"));
+        assertFalse("Mana option should produce colorless mana", manaOptions.canProduce("{U}"));
     }
 }

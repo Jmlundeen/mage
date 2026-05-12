@@ -31,6 +31,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
     protected int colorless;
     protected int any;
     protected boolean flag;
+    protected boolean anyCombination;
 
     protected List<Condition> conditions = new ArrayList<>();
     protected Filter.ComparisonScope conditionScope = Filter.ComparisonScope.All;
@@ -1203,6 +1204,30 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
 
     public boolean getFlag() {
         return flag;
+    }
+
+    public boolean isAnyCombination() {
+        return anyCombination;
+    }
+
+    public void setAnyCombination(boolean anyCombination) {
+        this.anyCombination = anyCombination;
+    }
+
+    /**
+     * @return the max mana value among all mana types
+     */
+    public int getMaxCapacity() {
+        int max = 0;
+        max = Math.max(max, white);
+        max = Math.max(max, blue);
+        max = Math.max(max, black);
+        max = Math.max(max, red);
+        max = Math.max(max, green);
+        max = Math.max(max, generic);
+        max = Math.max(max, colorless);
+        max = Math.max(max, any);
+        return max;
     }
 
     public boolean hasConditions() {

@@ -202,7 +202,7 @@ public class WorldgorgerDragonTest extends CardTestPlayerBase {
         assertLife(playerA, 28);
         assertLife(playerB, 11);
 
-        Assert.assertEquals("Mana pool", "[]", playerA.getManaAvailable(currentGame).toString());
+        Assert.assertTrue("Mana pool", playerA.getManaAvailable(currentGame).isEmpty());
 
     }
 

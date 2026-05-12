@@ -3,6 +3,7 @@ package mage.abilities.mana;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.condition.Condition;
+import mage.abilities.costs.mana.ManaCost;
 import mage.constants.ManaType;
 import mage.game.Game;
 import mage.game.events.GameEvent;
@@ -40,7 +41,7 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
         }
         // Use ability's controller as player ID and get the mana cost from the ability
         UUID playerId = ability != null ? ability.getControllerId() : null;
-        mage.abilities.costs.mana.ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
+        ManaCost manaCost = ability != null ? ability.getManaCostsToPay() : null;
         return ManaPaymentFlowSolver.canPay(costSymbols, this, game, ability, playerId, manaCost);
     }
 
@@ -270,21 +271,17 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
     }
 
     public boolean canProduce(ManaType type, int amount) {
+        int totalCapacity = 0;
         for (ManaSourceNode node : this) {
             for (ManaAbilityOption option : node.getAbilityOptions()) {
-                boolean producesAny = option.isProducesAny();
-                if (producesAny) {
-                    int anyCapacity = option.getCapacity();
-                    if (anyCapacity >= amount) {
-                        return true;
-                    }
-                }
-                boolean producesType = option.getProducibleTypes().contains(type);
-                if (producesType || producesAny) {
+                boolean producesType = option.isProducesAny() || option.getProducibleTypes().contains(type);
+                if (producesType) {
                     int capacity = option.getProducibleMap().getOrDefault(type, 0);
-                    if (capacity >= amount) {
+                    totalCapacity += capacity;
+                    if (totalCapacity >= amount) {
                         return true;
                     }
+                    continue;
                 }
             }
         }

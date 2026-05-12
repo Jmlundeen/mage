@@ -15,7 +15,9 @@ import org.mage.test.serverside.base.CardTestPlayerBase;
 import java.util.EnumSet;
 import java.util.stream.Collectors;
 
-import static org.mage.test.utils.ManaOptionsTestUtils.*;
+import static org.junit.Assert.assertTrue;
+import static org.mage.test.utils.ManaOptionsTestUtils.assertCanPay;
+import static org.mage.test.utils.ManaOptionsTestUtils.assertCannotPay;
 
 /**
  * This test checks if the calculated possible mana options are correct related
@@ -224,7 +226,6 @@ public class ManaOptionsTest extends CardTestPlayerBase {
     }
 
     @Test
-    @Ignore
     public void testNykthos3() {
         addCard(Zone.BATTLEFIELD, playerA, "Sylvan Caryatid", 1);
         addCard(Zone.BATTLEFIELD, playerA, "Forest", 1);
@@ -235,8 +236,10 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getManaAvailable(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{G}{Any}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertTrue("Expected to be able to produce {C}{G}{Any}", manaOptions.canProduce("{C}{G}{Any}"));
+        assertCanPay("{C}{G}{G}", manaOptions, currentGame);
+        assertCanPay("{C}{G}{W}", manaOptions, currentGame);
     }
 
     // Nykthos, Shrine to Nyx
@@ -402,7 +405,6 @@ public class ManaOptionsTest extends CardTestPlayerBase {
     }
 
     @Test
-    @Ignore
     public void testFetidHeath() {
         // {T}: Add {C}.
         // {W/B}, {T}: Add {W}{W}, {W}{B}, or {B}{B}.        
@@ -414,18 +416,17 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 4, manaOptions.size());
-        assertManaOptions("{C}{W}", manaOptions);
-        assertManaOptions("{W}{W}", manaOptions);
-        assertManaOptions("{W}{B}", manaOptions);
-        assertManaOptions("{B}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 2, manaOptions.size());
+        assertTrue("Expected to be able to produce {C}{W}", manaOptions.canProduce("{C}{W}"));
+        assertTrue("Expected to be able to produce {W}{W}", manaOptions.canProduce("{W}{W}"));
+        assertTrue("Expected to be able to produce {W}{B}", manaOptions.canProduce("{W}{B}"));
+        assertTrue("Expected to be able to produce {B}{B}", manaOptions.canProduce("{B}{B}"));
     }
 
     /**
      * Don't use mana sources that only reduce available mana
      */
     @Test
-    @Ignore
     public void testCabalCoffers1() {
         addCard(Zone.BATTLEFIELD, playerA, "Cabal Coffers", 1);
         addCard(Zone.BATTLEFIELD, playerA, "Plains", 1);
@@ -436,12 +437,12 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size()); // TODO: Why one, should there be {B} and {B}{U}?
-        assertManaOptions("{W}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertCanPay("{W}{B}", manaOptions, currentGame);
+        assertCannotPay("{B}{B}", manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testCabalCoffers2() {
         addCard(Zone.BATTLEFIELD, playerA, "Cabal Coffers", 1);
         addCard(Zone.BATTLEFIELD, playerA, "Plains", 1);
@@ -452,13 +453,13 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 2, manaOptions.size());
-        assertManaOptions("{W}{B}{B}", manaOptions);
-        assertManaOptions("{B}{B}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 4, manaOptions.size());
+        assertCanPay("{W}{B}{B}", manaOptions, currentGame);
+        assertCanPay("{B}{B}{B}", manaOptions, currentGame);
+        assertCannotPay("{B}{B}{B}{B}", manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testMageRingNetwork() {
         // {T}: Add {C}.
         // {T}, {1} : Put a storage counter on Mage-Ring Network.
@@ -472,12 +473,11 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{W}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertCanPay("{C}{W}{B}", manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testMageRingNetwork2() {
         // {T}: Add {C}.
         // {T}, {1} : Put a storage counter on Mage-Ring Network.
@@ -492,12 +492,11 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{C}{C}{C}{W}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertCanPay("{C}{C}{C}{C}{W}{B}", manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testCryptGhast() {
         //Extort (Whenever you cast a spell, you may pay {WB}. If you do, each opponent loses 1 life and you gain that much life.)
         // Whenever you tap a Swamp for mana, add {B} (in addition to the mana the land produces).
@@ -510,12 +509,11 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{B}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 2, manaOptions.size());
+        assertCanPay("{B}{B}", manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testDampingSphere() {
         // If a land is tapped for two or more mana, it produces {C} instead of any other type and amount.
         // Each spell a player casts costs {1} more to cast for each other spell that player has cast this turn.
@@ -530,11 +528,11 @@ public class ManaOptionsTest extends CardTestPlayerBase {
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
         Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}", manaOptions);
+        assertTrue("Expected to be able to produce {C}", manaOptions.canProduce("{C}"));
+        assertCannotPay("{C}{C}", manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testCharmedPedant() {
         // {T}, Put the top card of your library into your graveyard: For each colored mana symbol in that card's mana cost, add one mana of that color.
         // Activate this ability only any time you could cast an instant.
@@ -549,11 +547,11 @@ public class ManaOptionsTest extends CardTestPlayerBase {
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
         Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{C}", manaOptions);
+        assertTrue("Expected to be able to produce {C}{C}", manaOptions.canProduce("{C}{C}"));
+        assertCannotPay("{C}{C}{C}", manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testManaSourcesWithCosts() {
         // {T}: Add {C} to your mana pool.
         // {5}, {T}: Add {W}{U}{B}{R}{G} to your mana pool.
@@ -569,27 +567,13 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 16, manaOptions.size());
-        assertManaOptions("{C}{C}{C}{C}{W}{W}{W}", manaOptions);
-        assertManaOptions("{C}{C}{C}{W}{W}{W}{W}", manaOptions);
-        assertManaOptions("{C}{C}{C}{W}{W}{W}{B}", manaOptions);
-        assertManaOptions("{C}{C}{C}{W}{W}{B}{B}", manaOptions);
-        assertManaOptions("{C}{C}{W}{W}{W}{W}{W}", manaOptions);
-        assertManaOptions("{C}{C}{W}{W}{W}{W}{B}", manaOptions);
-        assertManaOptions("{C}{C}{W}{W}{W}{B}{B}", manaOptions);
-        assertManaOptions("{C}{C}{W}{W}{B}{B}{B}", manaOptions);
-        assertManaOptions("{C}{C}{W}{B}{B}{B}{B}", manaOptions);
-        assertManaOptions("{C}{W}{W}{W}{W}{W}{W}", manaOptions);
-        assertManaOptions("{C}{W}{W}{W}{W}{W}{B}", manaOptions);
-        assertManaOptions("{C}{W}{W}{W}{W}{B}{B}", manaOptions);
-        assertManaOptions("{C}{W}{W}{W}{B}{B}{B}", manaOptions);
-        assertManaOptions("{C}{W}{W}{B}{B}{B}{B}", manaOptions);
-        assertManaOptions("{C}{W}{B}{B}{B}{B}{B}", manaOptions);
-        assertManaOptions("{C}{B}{B}{B}{B}{B}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 7, manaOptions.size());
+        assertCanPay("{C}{W}{U}{B}{R}{G}", manaOptions, currentGame);
+        assertCanPay("{C}" + "{W}".repeat(6), manaOptions, currentGame);
+        assertCanPay("{C}" + "{B}".repeat(6), manaOptions, currentGame);
     }
 
     @Test
-    @Ignore
     public void testSungrassPrairie() {
         // {1}, {T}: Add {G}{W}.
         addCard(Zone.BATTLEFIELD, playerA, "Sungrass Prairie", 1);
@@ -601,14 +585,13 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 2, manaOptions.size());
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
 
-        assertManaOptions("{G}{W}{Any}", manaOptions);
-        assertManaOptions("{Any}{Any}", manaOptions);
+        assertTrue("Expected to be able to produce {G}{W}{Any}", manaOptions.canProduce("{G}{W}{Any}"));
+        assertTrue("Expected to be able to produce {Any}{Any}", manaOptions.canProduce("{Any}{Any}"));
     }
 
     @Test
-    @Ignore
     public void testSungrassPrairie2() {
         // {1}, {T}: Add {G}{W}.
         addCard(Zone.BATTLEFIELD, playerA, "Sungrass Prairie", 5);
@@ -619,17 +602,18 @@ public class ManaOptionsTest extends CardTestPlayerBase {
 
         setStopAt(3, PhaseStep.PRECOMBAT_MAIN);
         execute();
+        long startTime = System.currentTimeMillis();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
 
-        Assert.assertEquals("mana variations don't fit", 88, manaOptions.size());
+        Assert.assertEquals("mana variations don't fit", 17, manaOptions.size());
 
-        assertManaOptions("{G}{G}{G}{G}{G}{G}{G}{G}{W}{W}{W}{W}{W}{W}{W}{W}{W}", manaOptions);
-        assertManaOptions("{G}{G}{G}{G}{G}{G}{G}{G}{W}{W}{W}{W}{W}{W}{W}{W}{U}", manaOptions);
+        assertCanPay("{G}".repeat(8) + "{W}".repeat(7) + "{U}", manaOptions, currentGame);
+        assertCanPay("{G}".repeat(8) + "{W}".repeat(8), manaOptions, currentGame);
+        logger.info("Sungrass Prairie test completed in " + (System.currentTimeMillis() - startTime) + " ms");
     }
 
     @Test
-    @Ignore
     public void testSungrassPrairie3() {
         // {1}, {T}: Add {G}{W}.
         addCard(Zone.BATTLEFIELD, playerA, "Sungrass Prairie", 1);
@@ -642,12 +626,14 @@ public class ManaOptionsTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
+        long startTime = System.currentTimeMillis();
 
-        Assert.assertEquals("mana variations don't fit", 4, manaOptions.size());
-        assertManaOptions("{U}{U}", manaOptions);
-        assertManaOptions("{G}{G}{W}", manaOptions);
-        assertManaOptions("{G}{W}{U}", manaOptions);
-        assertManaOptions("{G}{W}{W}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertCanPay("{U}{U}", manaOptions, currentGame);
+        assertCanPay("{G}{W}{U}", manaOptions, currentGame);
+        assertCanPay("{G}{W}{W}", manaOptions, currentGame);
+        assertCanPay("{G}{G}{W}", manaOptions, currentGame);
+        logger.info("Sungrass Prairie test completed in " + (System.currentTimeMillis() - startTime) + " ms");
     }
 
     /**
@@ -655,7 +641,6 @@ public class ManaOptionsTest extends CardTestPlayerBase {
      * Based on the bug from: https://github.com/magefree/mage/issues/7710
      */
     @Test
-    @Ignore
     public void testCascadingCataracts() {
         addCard(Zone.BATTLEFIELD, playerA, "Plains", 5);
         addCard(Zone.BATTLEFIELD, playerA, "Island", 5);
@@ -669,8 +654,19 @@ public class ManaOptionsTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        // The size below is based on no optimization to remove any mana possibilities beyond exact duplicates.
-        Assert.assertEquals("mana variations don't match", 6902, manaOptions.size());
+        long startTime = System.currentTimeMillis();
+        Assert.assertEquals("mana variations don't match", 33, manaOptions.size());
+        assertCanPay("{W}".repeat(20), manaOptions, currentGame);
+        assertCannotPay("{W}".repeat(21), manaOptions, currentGame);
+        assertCanPay("{U}".repeat(20), manaOptions, currentGame);
+        assertCannotPay("{U}".repeat(21), manaOptions, currentGame);
+        assertCanPay("{B}".repeat(20), manaOptions, currentGame);
+        assertCannotPay("{B}".repeat(21), manaOptions, currentGame);
+        assertCanPay("{R}".repeat(20), manaOptions, currentGame);
+        assertCannotPay("{R}".repeat(21), manaOptions, currentGame);
+        assertCanPay("{G}".repeat(20), manaOptions, currentGame);
+        assertCannotPay("{G}".repeat(21), manaOptions, currentGame);
+        logger.info("Cascading Cataracts test completed in " + (System.currentTimeMillis() - startTime) + " ms");
     }
 
     /**
@@ -678,9 +674,9 @@ public class ManaOptionsTest extends CardTestPlayerBase {
      * Leave the @Ignore added when pushing commits.
      */
     @Test
-    @Ignore
+    @Ignore("Enable for performance testing")
     public void testCascadingCataractsN() {
-        int n = 5;
+        int n = 6;
         addCard(Zone.BATTLEFIELD, playerA, "Plains", n);
         addCard(Zone.BATTLEFIELD, playerA, "Island", n);
         addCard(Zone.BATTLEFIELD, playerA, "Swamp", n);
@@ -693,5 +689,22 @@ public class ManaOptionsTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
+        long startTime = System.currentTimeMillis();
+        assertCanPay("{W}".repeat(n), manaOptions, currentGame);
+        assertCanPay("{W}".repeat(n + (n * 5)), manaOptions, currentGame);
+        assertCannotPay("{W}".repeat(n + (n * 5) + 1), manaOptions, currentGame);
+        assertCanPay("{U}".repeat(n), manaOptions, currentGame);
+        assertCanPay("{U}".repeat(n + (n * 5)), manaOptions, currentGame);
+        assertCannotPay("{U}".repeat(n + (n * 5) + 1), manaOptions, currentGame);
+        assertCanPay("{B}".repeat(n), manaOptions, currentGame);
+        assertCanPay("{B}".repeat(n + (n * 5)), manaOptions, currentGame);
+        assertCannotPay("{B}".repeat(n + (n * 5) + 1), manaOptions, currentGame);
+        assertCanPay("{R}".repeat(n), manaOptions, currentGame);
+        assertCanPay("{R}".repeat(n + (n * 5)), manaOptions, currentGame);
+        assertCannotPay("{R}".repeat(n + (n * 5) + 1), manaOptions, currentGame);
+        assertCanPay("{G}".repeat(n), manaOptions, currentGame);
+        assertCanPay("{G}".repeat(n + (n * 5)), manaOptions, currentGame);
+        assertCannotPay("{G}".repeat(n + (n * 5) + 1), manaOptions, currentGame);
+        logger.info("Cascading Cataracts test completed in " + (System.currentTimeMillis() - startTime) + " ms");
     }
 }

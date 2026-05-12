@@ -1,14 +1,14 @@
 package org.mage.test.cards.mana.conditional;
 
 import mage.abilities.mana.ManaOptions;
+import mage.abilities.mana.ManaSourceNode;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import mage.counters.CounterType;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
-import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -37,8 +37,10 @@ public class CrypticTrilobiteTest extends CardTestPlayerBase {
         assertPermanentCount(playerA, "Cryptic Trilobite", 1);
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{C}{C}{C}{C}{C}{C}{C}{C}{C}[{ActivatedAbilityManaCondition}]", manaOptions);
+        assertEquals("mana variations don't fit", 1, manaOptions.size());
+        ManaSourceNode manaSourceNode = manaOptions.getFirst();
+        assertEquals("mana source is wrong", 10, manaSourceNode.getColorless());
+        assertEquals("mana condition is missing", 1, manaSourceNode.getSingleOption().getConditions().size());
     }
 
     @Test
@@ -71,8 +73,10 @@ public class CrypticTrilobiteTest extends CardTestPlayerBase {
         assertPowerToughness(playerA, "Deathknell Kami", 2, 3);
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{C}{C}{C}{C}{C}[{ActivatedAbilityManaCondition}]", manaOptions);
+        assertEquals("mana variations don't fit", 1, manaOptions.size());
+        ManaSourceNode manaSourceNode = manaOptions.getFirst();
+        assertEquals("mana source is wrong", 6, manaSourceNode.getColorless());
+        assertEquals("mana condition is missing", 1, manaSourceNode.getSingleOption().getConditions().size());
     }
 
     @Test

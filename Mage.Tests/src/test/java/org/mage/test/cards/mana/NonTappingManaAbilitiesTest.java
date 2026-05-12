@@ -1,6 +1,7 @@
 package org.mage.test.cards.mana;
 
 import mage.abilities.mana.ManaOptions;
+import mage.constants.ManaType;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import mage.counters.CounterType;
@@ -8,6 +9,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
+import static org.junit.Assert.assertTrue;
+import static org.mage.test.utils.ManaOptionsTestUtils.assertCanPay;
 import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
 
 /**
@@ -80,8 +83,8 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{B}{B}{Any}{Any}{Any}{Any}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 4, manaOptions.size());
+        assertTrue("Expected to be able to produce {B}{B}{Any}{Any}{Any}{Any}", manaOptions.canProduce("{B}{B}{Any}{Any}{Any}{Any}"));
     }
 
     @Test
@@ -96,11 +99,9 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
         Assert.assertEquals("mana variations don't fit", 5, manaOptions.size());
-        assertManaOptions("{W}{W}{W}{W}", manaOptions);
-        assertManaOptions("{W}{W}{W}{B}", manaOptions);
-        assertManaOptions("{W}{W}{B}{B}", manaOptions);
-        assertManaOptions("{W}{B}{B}{B}", manaOptions);
-        assertManaOptions("{B}{B}{B}{B}", manaOptions);
+        assertTrue("Expected to be able to produce 4 Black", manaOptions.canProduce(ManaType.BLACK, 4));
+        assertCanPay("{W}".repeat(4), manaOptions);
+        assertCanPay("{W}{W}{B}{B}", manaOptions);
     }
 
     @Test
@@ -136,9 +137,9 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
         Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
-        assertManaOptions("{G}", manaOptions);
-        assertManaOptions("{W}{U}{B}", manaOptions);
-        assertManaOptions("{R}{R}{R}", manaOptions);
+        assertTrue("Expected to be able to produce {G}", manaOptions.canProduce("{G}"));
+        assertTrue("Expected to be able to produce {W}{U}{B}", manaOptions.canProduce("{W}{U}{B}"));
+        assertTrue("Expected to be able to produce {R}{R}{R}", manaOptions.canProduce("{R}{R}{R}"));
     }
 
     /**
@@ -162,9 +163,9 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
         Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
-        assertManaOptions("{G}", manaOptions);
-        assertManaOptions("{W}{U}{B}", manaOptions);
-        assertManaOptions("{R}{R}{R}", manaOptions);
+        assertTrue("Expected to be able to produce {G}", manaOptions.canProduce("{G}"));
+        assertTrue("Expected to be able to produce {W}{U}{B}", manaOptions.canProduce("{W}{U}{B}"));
+        assertTrue("Expected to be able to produce {R}{R}{R}", manaOptions.canProduce("{R}{R}{R}"));
     }
 
     @Test
@@ -208,16 +209,13 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 9, manaOptions.size());
-        assertManaOptions("{C}{G}{G}{U}{U}{U}{R}{R}", manaOptions);
-        assertManaOptions("{C}{G}{G}{G}{G}{U}{U}{U}", manaOptions);
-        assertManaOptions("{C}{G}{G}{G}{U}{U}{U}{R}", manaOptions);
-        assertManaOptions("{C}{C}{G}{G}{U}{U}{R}{R}", manaOptions);
-        assertManaOptions("{C}{C}{G}{G}{G}{G}{U}{U}", manaOptions);
-        assertManaOptions("{C}{C}{G}{G}{G}{U}{U}{R}", manaOptions);
-        assertManaOptions("{C}{R}{R}{G}{G}{W}{U}{U}", manaOptions);
-        assertManaOptions("{C}{G}{G}{G}{G}{W}{U}{U}", manaOptions);
-        assertManaOptions("{C}{R}{G}{G}{G}{W}{U}{U}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 5, manaOptions.size());
+        assertTrue("Expected to be able to produce 3 Green", manaOptions.canProduce(ManaType.GREEN, 3));
+        assertTrue("Expected to be able to produce 3 Blue", manaOptions.canProduce(ManaType.BLUE, 3));
+        assertTrue("Expected to be able to produce 2 Red", manaOptions.canProduce(ManaType.RED, 2));
+        assertTrue("Expected to be able to produce 2 Colorless", manaOptions.canProduce(ManaType.COLORLESS, 2));
+        assertTrue("Expected to be able to produce 1 White", manaOptions.canProduce(ManaType.WHITE, 1));
+        assertTrue("Expected to be able to produce {C}{R}{G}{G}{G}{W}{U}{U}", manaOptions.canProduce("{C}{R}{G}{G}{G}{W}{U}{U}"));
     }
 
     @Test
@@ -234,8 +232,9 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{G}{G}{Any}{Any}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertTrue("Expected to be able to produce 2 Green", manaOptions.canProduce(ManaType.GREEN, 2));
+        assertTrue("Expected to be able to produce {G}{G}{Any}{Any}", manaOptions.canProduce("{G}{G}{Any}{Any}"));
     }
 
     @Test
@@ -265,8 +264,8 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{B}{B}{B}{B}", manaOptions);
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertTrue("Expected to be able to produce 4 Black", manaOptions.canProduce(ManaType.BLACK, 4));
     }
     
    @Test
@@ -285,9 +284,9 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
        assertCounterCount("Mana Cache", CounterType.CHARGE, 2);
         
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{C}{C}{B}{B}", manaOptions);
-    }    
+        Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
+        assertTrue("Expected to be able to produce {C}{C}{B}{B}", manaOptions.canProduce("{C}{C}{B}{B}"));
+    }
 
     @Test
     public void Test_ManaCacheOpponent() {
@@ -320,8 +319,8 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
-        assertManaOptions("{R}{G}", manaOptions);        
+        Assert.assertEquals("mana variations don't fit", 2, manaOptions.size());
+        assertTrue("Expected to be able to produce {R}{G}", manaOptions.canProduce("{R}{G}"));
     }
     
 }

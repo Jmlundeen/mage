@@ -1,11 +1,15 @@
 package mage.abilities.mana;
 
 import mage.Mana;
+import mage.ObjectColor;
+import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCosts;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.costs.mana.VariableManaCost;
 import mage.constants.ManaType;
+import mage.filter.FilterMana;
+import mage.players.Player;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +21,7 @@ import java.util.List;
  * <p>Three entry points:
  * <ol>
  *   <li>{@link #parse(String)} — accepts a raw cost string such as {@code "{2}{G}{2/U}"}.</li>
- *   <li>{@link #fromManaCosts(ManaCosts, boolean)} — accepts a live {@link ManaCosts} object (preserves
+ *   <li>{@link #fromManaCosts(ManaCosts, Player, Ability)} — accepts a live {@link ManaCosts} object (preserves
  *       hybrid structure by iterating individual {@link ManaCost} instances).</li>
  *   <li>{@link #fromMana(Mana)} — converts an already-resolved {@link Mana} aggregate
  *       (delegates to {@link ManaAbilityOption#manaToSymbols}).</li>
@@ -56,7 +60,25 @@ public final class ManaCostSymbolParser {
         }
         // Leverage the existing parser to get typed ManaCost objects, then convert
         ManaCostsImpl<?> parsed = new ManaCostsImpl<>(costString);
-        return fromManaCosts(parsed, false);
+        return fromManaCosts(parsed, null, null);
+    }
+
+    /**
+     * Parses a mana cost string (e.g. {@code "{2}{G}{2/U}"}) into a list of
+     * {@link ManaCostSymbol} instances.
+     *
+     * @param costString the cost string, e.g. {@code "{1}{W}{W/U}"}; may be {@code null}
+     * @param phyrexianColors the colors of phyrexian mana the player can pay
+     * @param canPayLife whether to include phyrexian symbols
+     * @return immutable list; empty if the string is null, blank, or zero-cost
+     */
+    public static List<ManaCostSymbol> parse(String costString, FilterMana phyrexianColors, boolean canPayLife) {
+        if (costString == null || costString.isBlank()) {
+            return Collections.emptyList();
+        }
+        // Leverage the existing parser to get typed ManaCost objects, then convert
+        ManaCostsImpl<?> parsed = new ManaCostsImpl<>(costString);
+        return fromManaCosts(parsed, phyrexianColors, canPayLife);
     }
 
     /**
@@ -64,17 +86,40 @@ public final class ManaCostSymbolParser {
      * structure by iterating individual {@link ManaCost} elements rather than using
      * the aggregated {@link Mana} value.
      *
-     * @param costs the cost list; may be {@code null}
-     * @param canPayLife whether to include mana symbols for costs that can be paid with life
+     * @param costs   the cost list; may be {@code null}
+     * @param player
+     * @param ability
      * @return immutable list; empty if null or empty
      */
-    public static List<ManaCostSymbol> fromManaCosts(ManaCosts<? extends ManaCost> costs, boolean canPayLife) {
+    public static List<ManaCostSymbol> fromManaCosts(ManaCosts<? extends ManaCost> costs, Player player, Ability ability) {
+        if (costs == null || costs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        boolean canPayLife = true;
+        if (player != null && ability != null) {
+            canPayLife = player.canPayLifeCost(ability);
+        }
+        FilterMana phyrexianColors = player != null ? player.getPhyrexianColors() : new FilterMana();
+        return fromManaCosts(costs, phyrexianColors, canPayLife);
+    }
+
+    /**
+     * Converts a live {@link ManaCosts} instance into symbols. Preserves hybrid
+     * structure by iterating individual {@link ManaCost} elements rather than using
+     * the aggregated {@link Mana} value.
+     *
+     * @param costs   the cost list; may be {@code null}
+     * @param phyrexianColors the colors of phyrexian mana the player can pay
+     * @param canPayLife whether to include phyrexian symbols (if false, phyrexian costs are omitted as if paid with life)
+     * @return immutable list; empty if null or empty
+     */
+    public static List<ManaCostSymbol> fromManaCosts(ManaCosts<? extends ManaCost> costs, FilterMana phyrexianColors, boolean canPayLife) {
         if (costs == null || costs.isEmpty()) {
             return Collections.emptyList();
         }
         List<ManaCostSymbol> result = new ArrayList<>(costs.size() * 2);
         for (ManaCost cost : costs) {
-            appendSymbolsForCost(cost, result, canPayLife);
+            appendSymbolsForCost(cost, result, canPayLife, phyrexianColors);
         }
         return Collections.unmodifiableList(result);
     }
@@ -95,7 +140,7 @@ public final class ManaCostSymbolParser {
      * Appends one or more {@link ManaCostSymbol}s for the given {@link ManaCost} by
      * parsing its {@link ManaCost#getText()} token(s).
      */
-    private static void appendSymbolsForCost(ManaCost cost, List<ManaCostSymbol> out, boolean canPayLife) {
+    private static void appendSymbolsForCost(ManaCost cost, List<ManaCostSymbol> out, boolean canPayLife, FilterMana phyrexianColors) {
         if (cost instanceof VariableManaCost variableCost) {
             int xValue = variableCost.wasAnnounced() ? variableCost.getAmount() : variableCost.getMinX();
             int instances = variableCost.getXInstancesCount();
@@ -113,14 +158,14 @@ public final class ManaCostSymbolParser {
         if (text == null || text.isBlank()) {
             return;
         }
-        parseTokens(text, out);
+        parseTokens(text, out, canPayLife, phyrexianColors);
     }
 
     /**
      * Splits a token string such as {@code "{W/U}{3}"} into {@code {...}} tokens and
      * appends the resulting symbols to {@code out}.
      */
-    private static void parseTokens(String text, List<ManaCostSymbol> out) {
+    private static void parseTokens(String text, List<ManaCostSymbol> out, boolean canPayLife, FilterMana phyrexianColors) {
         int i = 0;
         while (i < text.length()) {
             int open = text.indexOf('{', i);
@@ -129,7 +174,23 @@ public final class ManaCostSymbolParser {
             if (close == -1) break;
             String inner = text.substring(open + 1, close);
             ManaCostSymbol sym = parseInner(inner);
+            // if the symbol is mono color and matches a phyrexian color, convert to phyrexian
+            if (sym != null && phyrexianColors != null && sym.getType() == ManaCostSymbol.SymbolType.MONO_COLOR) {
+                ManaType color = sym.getColorOptions().iterator().next();
+                for (ObjectColor phyColor : phyrexianColors.getColors()) {
+                    boolean match = (phyColor.isWhite() && color == ManaType.WHITE)
+                            || (phyColor.isBlue() && color == ManaType.BLUE)
+                            || (phyColor.isBlack() && color == ManaType.BLACK)
+                            || (phyColor.isRed() && color == ManaType.RED)
+                            || (phyColor.isGreen() && color == ManaType.GREEN);
+                    if (match && canPayLife) {
+                        sym = null;
+                        break;
+                    }
+                }
+            }
             if (sym != null) {
+
                 out.add(sym);
             }
             i = close + 1;
