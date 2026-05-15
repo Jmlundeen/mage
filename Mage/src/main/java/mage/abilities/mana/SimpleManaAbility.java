@@ -3,6 +3,7 @@ package mage.abilities.mana;
 import mage.Mana;
 import mage.abilities.costs.Cost;
 import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.mana.BasicManaEffect;
 import mage.abilities.effects.mana.ManaEffect;
 import mage.constants.Zone;
@@ -36,6 +37,11 @@ public class SimpleManaAbility extends ActivatedManaAbilityImpl {
     public SimpleManaAbility(Zone zone, ManaEffect effect, Cost cost, boolean predictable) {
         super(zone, effect, cost);
         this.predictable = predictable;
+    }
+
+    public SimpleManaAbility(Zone zone, Effect effect, Cost cost) {
+        super(zone, effect, cost);
+        this.predictable = true;
     }
 
     public SimpleManaAbility(Zone zone, Mana mana, Cost cost) {

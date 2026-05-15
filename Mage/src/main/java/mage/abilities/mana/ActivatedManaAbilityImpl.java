@@ -37,6 +37,18 @@ public abstract class ActivatedManaAbilityImpl extends ActivatedAbilityImpl impl
         }
     }
 
+    public ActivatedManaAbilityImpl(Zone zone, Effect effect, Cost cost) {
+        super(AbilityType.ACTIVATED_MANA, zone);
+        this.usesStack = false;
+        this.undoPossible = true;
+        if (effect != null) {
+            this.addEffect(effect);
+        }
+        if (cost != null) {
+            this.addCost(cost);
+        }
+    }
+
     protected ActivatedManaAbilityImpl(final ActivatedManaAbilityImpl ability) {
         super(ability);
         this.netMana.addAll(ability.netMana);
