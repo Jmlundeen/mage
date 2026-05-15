@@ -100,7 +100,7 @@ public final class ManaPaymentFlowSolver {
         List<ManaAbilityOption> freePool = new ArrayList<>();
         for (ManaSourceNode node : pureFree) {
             ManaAbilityOption option = node.getSingleOption();
-            if (game == null || ability == null || checkConditions(option, ability, game, playerId, manaCost)) {
+            if (game == null || ability == null || checkConditions(option, ability, game, manaCost)) {
                 freePool.add(option);
             }
         }
@@ -125,15 +125,13 @@ public final class ManaPaymentFlowSolver {
     }
 
     /**
-     * Evaluates mana-option conditions with consistent player-id fallback.
+     * Evaluates mana-option conditions
      */
-    private static boolean checkConditions(ManaAbilityOption option, Ability ability, Game game, UUID playerId, ManaCost manaCost) {
+    private static boolean checkConditions(ManaAbilityOption option, Ability ability, Game game, ManaCost manaCost) {
         if (!option.hasConditions() || game == null || ability == null) {
             return true;
         }
-        // Use the provided playerId if available, otherwise fall back to ability controller
-        UUID effectivePlayerId = playerId != null ? playerId : ability.getControllerId();
-        return option.applyConditions(ability, game, effectivePlayerId, manaCost);
+        return option.applyConditions(ability, game, option.getSourceId(), manaCost);
     }
 
     /**
@@ -156,7 +154,7 @@ public final class ManaPaymentFlowSolver {
 
         ManaSourceNode node = mixed.get(idx);
         for (ManaAbilityOption option : node.getAbilityOptions()) {
-            boolean conditionsMet = game == null || ability == null || checkConditions(option, ability, game, playerId, manaCost);
+            boolean conditionsMet = game == null || ability == null || checkConditions(option, ability, game, manaCost);
 
             if (conditionsMet) {
                 searchContext.selectedMixedOptions.add(option);
@@ -305,7 +303,7 @@ public final class ManaPaymentFlowSolver {
                     return true;
                 }
             } else {
-                List<List<ManaAbilityOption>> poolWithPaidOutput = getPoolWithPaidActivations(activationCost, spentFreeIds, currentFreePool, paid, game, count, playerId, manaCost, paidActivationPoolCache, paidOutputCache, paidConditionCache, activationCounts, searchContext.selectedMixedOptions, allPaid);
+                List<List<ManaAbilityOption>> poolWithPaidOutput = getPoolWithPaidActivations(activationCost, spentFreeIds, currentFreePool, paid, game, count, manaCost, paidActivationPoolCache, paidOutputCache, paidConditionCache, activationCounts, searchContext.selectedMixedOptions, allPaid);
                 for ( List<ManaAbilityOption> pool : poolWithPaidOutput) {
                     Set<UUID> newSpentFreeIds = buildNextSpentFreeIds(spentFreeIds, currentFreePool, pool);
                     if (enumeratePaidActivations(cost, allFree, allPaid, poolDependentFree, poolDependentPaid, index + 1, newSpentFreeIds, activationCounts, pool, allPaidKey, paidActivationPoolCache, paidOutputCache, paidConditionCache, searchContext, game, ability, playerId, manaCost)) {
@@ -542,7 +540,6 @@ public final class ManaPaymentFlowSolver {
                                                                             ManaAbilityOption paid,
                                                                             Game game,
                                                                             int paidActivations,
-                                                                            UUID playerId,
                                                                             ManaCost manaCost,
                                                                             Map<String, List<List<ManaAbilityOption>>> paidActivationPoolCache,
                                                                             Map<String, List<ManaAbilityOption>> paidOutputCache,
@@ -608,7 +605,7 @@ public final class ManaPaymentFlowSolver {
             String conditionKey = option.getOptionId() + "@" + (paidAbilityId != null ? paidAbilityId : "null");
             boolean conditionsMet = paidConditionCache.computeIfAbsent(
                     conditionKey,
-                    k -> checkConditions(option, paidAbility, game, playerId, manaCost)
+                    k -> checkConditions(option, paidAbility, game, manaCost)
             );
             if (conditionsMet) {
                 validFreeOptions.add(option);

@@ -4,6 +4,8 @@ import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
+import mage.abilities.mana.ComposedManaEffect;
+import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.choices.Choice;
 import mage.constants.ManaType;
 import mage.constants.MultiAmountType;
@@ -130,10 +132,6 @@ public class DynamicManaValue implements ManaValue {
         if (game == null) {
             return Collections.emptyList();
         }
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return Collections.emptyList();
-        }
         int calculatedAmount = calculateAmount(game, source, manaEffect);
         if (calculatedAmount <= 0) {
             return Collections.emptyList();
@@ -161,6 +159,10 @@ public class DynamicManaValue implements ManaValue {
                     return Collections.singletonList(mana);
                 }
                 if (produceMana) {
+                    Player player = getChoicePlayer(game, source, manaEffect);
+                    if (player == null) {
+                        return Collections.emptyList();
+                    }
                     List<String> choiceList = getChoiceStrings(currentChoices);
                     List<Integer> manaList = player.getMultiAmount(Outcome.PutManaInPool, choiceList, 0, calculatedAmount, calculatedAmount, MultiAmountType.MANA, game);
                     Mana mana = getMana(choiceList, manaList);
@@ -176,12 +178,19 @@ public class DynamicManaValue implements ManaValue {
                 options.add(mana);
             } else {
                 if (produceMana) {
+                    Player player = getChoicePlayer(game, source, manaEffect);
+                    if (player == null) {
+                        return Collections.emptyList();
+                    }
                     Choice choice = ManaType.getChoiceOfManaTypes(currentChoices, !currentChoices.contains(ManaType.COLORLESS));
-                    if (player.choose(Outcome.PutManaInPool, choice, game)) {
-                        if (choice.getChoice() != null) {
-                            ManaType chosenType = ManaType.findByName(choice.getChoice());
-                            return Collections.singletonList(new Mana(chosenType, calculatedAmount));
-                        }
+                    if (choice.getChoices().size() == 1) {
+                        choice.setChoice(choice.getChoices().iterator().next());
+                    } else if (!player.choose(Outcome.PutManaInPool, choice, game)) {
+                        return Collections.emptyList();
+                    }
+                    if (choice.getChoice() != null) {
+                        ManaType chosenType = ManaType.findByName(choice.getChoice());
+                        return Collections.singletonList(new Mana(chosenType, calculatedAmount));
                     }
                 }
                 // Choose one color - return one option per color
@@ -206,6 +215,13 @@ public class DynamicManaValue implements ManaValue {
         return Collections.singletonList(Mana.ColorlessMana(calculatedAmount));
     }
 
+    private Player getChoicePlayer(Game game, Ability source, Effect manaEffect) {
+        if (manaEffect instanceof ComposedManaEffect composedManaEffect) {
+            return composedManaEffect.getChoicePlayer(game, source);
+        }
+        return game.getPlayer(source.getControllerId());
+    }
+
     private static @NonNull Mana getMana(List<String> choiceList, List<Integer> manaList) {
         Mana mana = new Mana();
         for (int i = 0; i < choiceList.size(); i++) {
@@ -223,15 +239,21 @@ public class DynamicManaValue implements ManaValue {
 
     private @NonNull List<String> getChoiceStrings(Set<ManaType> manaChoices) {
         List<String> choiceList = new ArrayList<>();
-        for (ManaType type : manaChoices) {
-            switch (type) {
-                case WHITE -> choiceList.add("W");
-                case BLUE -> choiceList.add("U");
-                case BLACK -> choiceList.add("B");
-                case RED -> choiceList.add("R");
-                case GREEN -> choiceList.add("G");
-                case COLORLESS -> choiceList.add("Colorless");
-            }
+        // ensure WUBRG order
+        if (manaChoices.contains(ManaType.WHITE)) {
+            choiceList.add("W");
+        }
+        if (manaChoices.contains(ManaType.BLUE)) {
+            choiceList.add("U");
+        }
+        if (manaChoices.contains(ManaType.BLACK)) {
+            choiceList.add("B");
+        }
+        if (manaChoices.contains(ManaType.RED)) {
+            choiceList.add("R");
+        }
+        if (manaChoices.contains(ManaType.GREEN)) {
+            choiceList.add("G");
         }
         return choiceList;
     }

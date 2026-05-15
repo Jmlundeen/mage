@@ -249,7 +249,7 @@ public class ManaCostsImpl<T extends ManaCost> extends ArrayList<T> implements M
     private boolean canPayColoredManaFromPool(ManaType needColor, ManaCost cost, ManaType canUseManaType, ManaPool pool) {
         if (canUseManaType == null || canUseManaType.equals(needColor)) {
             return cost.containsColor(CardUtil.manaTypeToColoredManaSymbol(needColor))
-                    && (pool.getColoredAmount(needColor) > 0 || pool.conditionalManaHasManaType(needColor));
+                    && (pool.getColoredAmount(needColor) > 0);
         }
         return false;
     }
@@ -325,7 +325,7 @@ public class ManaCostsImpl<T extends ManaCost> extends ArrayList<T> implements M
                         || canPayColoredManaFromPool(ManaType.GREEN, cost, canUseManaType, pool)
                         || canPayColoredManaFromPool(ManaType.BLUE, cost, canUseManaType, pool)) {
                     cost.assignPayment(game, ability, pool, costToPay);
-                    if (pool.isEmpty() && pool.getConditionalMana().isEmpty()) {
+                    if (pool.isEmpty()) {
                         return;
                     }
                 }

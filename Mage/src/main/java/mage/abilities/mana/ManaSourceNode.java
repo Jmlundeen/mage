@@ -74,7 +74,7 @@ public final class ManaSourceNode implements Serializable {
                 Collections.emptyList(),
                 mana.getConditions()
         );
-        option.setScope(mana.getConditionScope());
+        option.setScope(mana.getComparisonScope());
         return new ManaSourceNode(List.of(option));
     }
 
@@ -105,6 +105,10 @@ public final class ManaSourceNode implements Serializable {
 
     public boolean hasSingleOption() {
         return abilityOptions.size() == 1;
+    }
+
+    public boolean hasConditions() {
+        return abilityOptions.stream().anyMatch(ManaAbilityOption::hasConditions);
     }
 
     /**

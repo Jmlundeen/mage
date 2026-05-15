@@ -28,9 +28,9 @@ public class XCostManaCondition extends ManaCondition {
         } else {
             result = costToPay instanceof VariableManaCost;
         }
-        if (!result && game != null && game.inCheckPlayableState()) {
-            return true; // TODO: Check the card if there are related abilities with {X} costs.
-        }
+//        if (!result && game != null && game.inCheckPlayableState()) {
+//            return true; // TODO: Check the card if there are related abilities with {X} costs.
+//        }
         return result;
     }
 }

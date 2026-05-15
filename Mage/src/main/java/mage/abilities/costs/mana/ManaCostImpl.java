@@ -2,7 +2,6 @@ package mage.abilities.costs.mana;
 
 import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.AbilityImpl;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.mana.ManaOptions;
@@ -153,8 +152,7 @@ public abstract class ManaCostImpl extends CostImpl implements ManaCost {
     }
 
     protected boolean assignColorless(Ability ability, Game game, ManaPool pool, int mana, Cost costToPay) {
-        int conditionalCount = pool.getConditionalCount(ability, game, null, costToPay);
-        if (mana > payment.count() && (pool.count() > 0 || conditionalCount > 0)
+        if (mana > payment.count() && pool.count() > 0
                 && pool.pay(ManaType.COLORLESS, ability, sourceFilter, game, costToPay, usedManaToPay)) {
             this.payment.increaseColorless();
             return true;
@@ -164,8 +162,7 @@ public abstract class ManaCostImpl extends CostImpl implements ManaCost {
     }
 
     protected boolean assignGeneric(Ability ability, Game game, ManaPool pool, int mana, FilterMana filterMana, Cost costToPay) {
-        int conditionalCount = pool.getConditionalCount(ability, game, filterMana, costToPay);
-        while (mana > payment.count() && (pool.count() > 0 || conditionalCount > 0)) {
+        while (mana > payment.count() && pool.count() > 0) {
             // try to use different mana to pay (conditional mana will used in pool.pay)
             // filterMana can be null, uses for spells like "spend only black mana on X"
 
@@ -224,19 +221,14 @@ public abstract class ManaCostImpl extends CostImpl implements ManaCost {
     }
 
     protected boolean isColoredPaid(ColoredManaSymbol mana) {
-        switch (mana) {
-            case B:
-                return this.payment.getBlack() > 0;
-            case U:
-                return this.payment.getBlue() > 0;
-            case W:
-                return this.payment.getWhite() > 0;
-            case G:
-                return this.payment.getGreen() > 0;
-            case R:
-                return this.payment.getRed() > 0;
-        }
-        return false;
+        return switch (mana) {
+            case B -> this.payment.getBlack() > 0;
+            case U -> this.payment.getBlue() > 0;
+            case W -> this.payment.getWhite() > 0;
+            case G -> this.payment.getGreen() > 0;
+            case R -> this.payment.getRed() > 0;
+            default -> false;
+        };
     }
 
     protected boolean isColorlessPaid(int mana) {

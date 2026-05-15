@@ -165,7 +165,7 @@ public final class ManaAbilityOption implements Serializable {
                 activationSymbols,
                 conditions
             );
-            option.setScope(m.getConditionScope());
+            option.setScope(m.getComparisonScope());
             option.setSourceId(ability.getSourceId());
             if (ability.hasTapCost()) {
                 option.setHasTapCost(true);
@@ -460,10 +460,10 @@ public final class ManaAbilityOption implements Serializable {
         return !conditions.isEmpty();
     }
 
-    public boolean applyConditions(Ability ability, Game game, UUID playerId, ManaCost cost) {
+    public boolean applyConditions(Ability ability, Game game, UUID sourceAbilityId, ManaCost cost) {
         for (Condition condition : conditions) {
             boolean applied = (condition instanceof ManaCondition manaCondition)
-                    ? manaCondition.apply(game, ability, playerId, cost)
+                    ? manaCondition.apply(game, ability, sourceAbilityId, cost)
                     : condition.apply(game, ability);
             if (!applied) {
                 if (scope == Filter.ComparisonScope.All) {

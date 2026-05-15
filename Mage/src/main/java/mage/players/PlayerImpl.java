@@ -3497,10 +3497,6 @@ public abstract class PlayerImpl implements Player, Serializable {
         if (!manaPool.isEmpty()) {
             availableMana.addMana(manaPool.getMana());
         }
-        // conditional mana
-        for (ConditionalMana conditionalMana : manaPool.getConditionalMana()) {
-            availableMana.addMana(conditionalMana);
-        }
 
         List<ActivatedManaAbilityImpl> abilitiesList = new ArrayList<>();
         for (Card card : getHand().getCards(game)) {

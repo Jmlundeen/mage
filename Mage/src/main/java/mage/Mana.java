@@ -34,7 +34,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
     protected boolean anyCombination;
 
     protected List<Condition> conditions = new ArrayList<>();
-    protected Filter.ComparisonScope conditionScope = Filter.ComparisonScope.All;
+    protected Filter.ComparisonScope comparisonScope = Filter.ComparisonScope.All;
     protected String conditionText = "";
     protected UUID manaProducerId;
     protected UUID manaProducerOriginalId;
@@ -97,7 +97,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         this.any = mana.any;
         this.flag = mana.flag;
         this.conditions = new ArrayList<>(mana.conditions);
-        this.conditionScope = mana.conditionScope;
+        this.comparisonScope = mana.comparisonScope;
         this.conditionText = mana.conditionText;
         this.manaProducerId = mana.manaProducerId;
         this.manaProducerOriginalId = mana.manaProducerOriginalId;
@@ -1238,12 +1238,12 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         return conditions;
     }
 
-    public Filter.ComparisonScope getConditionScope() {
-        return conditionScope;
+    public Filter.ComparisonScope getComparisonScope() {
+        return comparisonScope;
     }
 
-    public void setConditionScope(Filter.ComparisonScope conditionScope) {
-        this.conditionScope = conditionScope;
+    public void setComparisonScope(Filter.ComparisonScope conditionScope) {
+        this.comparisonScope = conditionScope;
     }
 
     public void addConditions(List<Condition> conditionsToAdd) {
@@ -1575,7 +1575,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         if (!Objects.equals(this.manaProducerOriginalId, mana.manaProducerOriginalId)) {
             return false;
         }
-        if (!Objects.equals(this.conditionScope, mana.conditionScope)) {
+        if (!Objects.equals(this.comparisonScope, mana.comparisonScope)) {
             return false;
         }
         if (this.conditions == null || mana.conditions == null
@@ -1609,7 +1609,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         result = 31 * result + colorless;
         result = 31 * result + any;
         result = 31 * result + (flag ? 1 : 0);
-        result = 31 * result +  Objects.hash(super.hashCode(), conditions, conditionScope, manaProducerId, manaProducerOriginalId);
+        result = 31 * result +  Objects.hash(super.hashCode(), conditions, comparisonScope, manaProducerId, manaProducerOriginalId);
 
         return Long.hashCode(result);
     }

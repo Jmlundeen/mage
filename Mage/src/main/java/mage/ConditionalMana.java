@@ -1,16 +1,10 @@
 package mage;
 
-import mage.abilities.Ability;
 import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
-import mage.abilities.mana.conditional.ManaCondition;
 import mage.constants.ManaType;
-import mage.filter.Filter;
 import mage.filter.FilterMana;
-import mage.game.Game;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -44,50 +38,10 @@ public class ConditionalMana extends Mana implements Serializable, Emptiable {
     protected ConditionalMana(final ConditionalMana conditionalMana) {
         super(conditionalMana);
         conditions.addAll(conditionalMana.conditions);
-        conditionScope = conditionalMana.conditionScope;
+        comparisonScope = conditionalMana.comparisonScope;
         staticText = conditionalMana.staticText;
         manaProducerId = conditionalMana.manaProducerId;
         manaProducerOriginalId = conditionalMana.manaProducerOriginalId;
-    }
-
-    public void addCondition(Condition condition) {
-        this.conditions.add(condition);
-    }
-
-    public void setComparisonScope(Filter.ComparisonScope scope) {
-        this.conditionScope = scope;
-    }
-
-    public List<Condition> getConditions() {
-        return conditions;
-    }
-
-    public boolean apply(Ability ability, Game game, UUID manaProducerId, Cost costToPay) {
-        if (conditions.isEmpty()) {
-            throw new IllegalStateException("Conditional mana should contain at least one Condition");
-        }
-        for (Condition condition : conditions) {
-            boolean applied = (condition instanceof ManaCondition)
-                    ? ((ManaCondition) condition).apply(game, ability, manaProducerId, costToPay) : condition.apply(game, ability);
-
-            if (!applied) {
-                // if one condition fails, return false only if All conditions should be met
-                // otherwise it may happen that Any other condition will be ok
-                if (conditionScope == Filter.ComparisonScope.All) {
-                    return false;
-                }
-            } else {
-                // if one condition succeeded, return true only if Any conditions should be met
-                // otherwise it may happen that any other condition will fail
-                if (conditionScope == Filter.ComparisonScope.Any) {
-                    return true;
-                }
-            }
-        }
-        // we are here
-        // if All conditions should be met, then it's Ok (return true)
-        // if Any, then it should have already returned true, so returning false here
-        return conditionScope == Filter.ComparisonScope.All;
     }
 
     @Override
@@ -220,7 +174,7 @@ public class ConditionalMana extends Mana implements Serializable, Emptiable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), conditions, staticText, conditionScope, manaProducerId, manaProducerOriginalId);
+        return Objects.hash(super.hashCode(), conditions, staticText, comparisonScope, manaProducerId, manaProducerOriginalId);
     }
 
     @Override
@@ -240,7 +194,7 @@ public class ConditionalMana extends Mana implements Serializable, Emptiable {
         if (!Objects.equals(this.manaProducerOriginalId, that.manaProducerOriginalId)) {
             return false;
         }
-        if (!Objects.equals(this.conditionScope, that.conditionScope)) {
+        if (!Objects.equals(this.comparisonScope, that.comparisonScope)) {
             return false;
         }
         if (this.conditions == null || that.conditions == null

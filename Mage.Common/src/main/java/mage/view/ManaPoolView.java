@@ -1,9 +1,9 @@
 package mage.view;
 
-import mage.ConditionalMana;
 import mage.players.ManaPool;
 import mage.ws.view.ViewProto;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -12,14 +12,15 @@ import java.io.Serializable;
  */
 public class ManaPoolView implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
-    private int red;
-    private int green;
-    private int blue;
-    private int white;
-    private int black;
-    private int colorless;
+    private final int red;
+    private final int green;
+    private final int blue;
+    private final int white;
+    private final int black;
+    private final int colorless;
 
     public ManaPoolView(int red, int green, int blue, int white, int black, int colorless) {
         this.red = red;
@@ -37,14 +38,6 @@ public class ManaPoolView implements Serializable {
         this.white = pool.getWhite();
         this.black = pool.getBlack();
         this.colorless = pool.getColorless();
-        for (ConditionalMana mana : pool.getConditionalMana()) {
-            this.red += mana.getRed();
-            this.green += mana.getGreen();
-            this.blue += mana.getBlue();
-            this.white += mana.getWhite();
-            this.black += mana.getBlack();
-            this.colorless += mana.getColorless();
-        }
     }
 
     public int getRed() {

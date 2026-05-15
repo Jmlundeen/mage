@@ -1,4 +1,4 @@
-package mage.abilities.mana.value;
+package mage.abilities.mana.providers;
 
 import mage.abilities.Ability;
 import mage.abilities.effects.Effect;

@@ -5,10 +5,13 @@ import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.costs.Cost;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.mana.ManaEffect;
-import mage.constants.*;
+import mage.constants.AbilityType;
+import mage.constants.ManaType;
+import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
+import mage.players.Player;
 
 import java.util.*;
 
@@ -20,6 +23,7 @@ public abstract class ActivatedManaAbilityImpl extends ActivatedAbilityImpl impl
     protected List<Mana> netMana = new ArrayList<>();
     protected boolean undoPossible;
     protected boolean poolDependant;
+    protected boolean onlyAsInstant;
 
     public ActivatedManaAbilityImpl(Zone zone, ManaEffect effect, Cost cost) {
         super(AbilityType.ACTIVATED_MANA, zone);
@@ -38,10 +42,17 @@ public abstract class ActivatedManaAbilityImpl extends ActivatedAbilityImpl impl
         this.netMana.addAll(ability.netMana);
         this.undoPossible = ability.undoPossible;
         this.poolDependant = ability.poolDependant;
+        this.onlyAsInstant = ability.onlyAsInstant;
     }
 
     @Override
     public ActivationStatus canActivate(UUID playerId, Game game) {
+        if (onlyAsInstant){
+            Player player = game.getPlayer(playerId);
+            if (player != null && player.isInPayManaMode()) {
+                return ActivationStatus.getFalse();
+            }
+        }
         // check if player is in the process of playing spell costs and they are no longer allowed to use
         // activated mana abilities (e.g. because they started to use improvise or convoke)
         StackObject stackObject = game.getStack().getFirstOrNull();
@@ -142,6 +153,11 @@ public abstract class ActivatedManaAbilityImpl extends ActivatedAbilityImpl impl
 
     public void setUndoPossible(boolean undoPossible) {
         this.undoPossible = undoPossible;
+    }
+
+    public ActivatedManaAbilityImpl setOnlyAsInstant(boolean onlyAsInstant) {
+        this.onlyAsInstant = onlyAsInstant;
+        return this;
     }
 
     @Override

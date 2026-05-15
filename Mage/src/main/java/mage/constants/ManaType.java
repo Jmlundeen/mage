@@ -1,6 +1,7 @@
 package mage.constants;
 
 import mage.Mana;
+import mage.ObjectColor;
 import mage.choices.Choice;
 import mage.choices.ChoiceColor;
 
@@ -146,6 +147,29 @@ public enum ManaType {
         Set<ManaType> manaTypes = new HashSet<>();
         for (Mana mana : manaList) {
             manaTypes.addAll(getManaTypesFromManaList(mana));
+        }
+        return manaTypes;
+    }
+
+    public static Set<ManaType> getManaTypesFromObjectColor(ObjectColor objectColor) {
+        Set<ManaType> manaTypes = EnumSet.noneOf(ManaType.class);
+        if (objectColor == null) {
+            return manaTypes;
+        }
+        if (objectColor.isBlack()) {
+            manaTypes.add(ManaType.BLACK);
+        }
+        if (objectColor.isBlue()) {
+            manaTypes.add(ManaType.BLUE);
+        }
+        if (objectColor.isGreen()) {
+            manaTypes.add(ManaType.GREEN);
+        }
+        if (objectColor.isRed()) {
+            manaTypes.add(ManaType.RED);
+        }
+        if (objectColor.isWhite()) {
+            manaTypes.add(ManaType.WHITE);
         }
         return manaTypes;
     }

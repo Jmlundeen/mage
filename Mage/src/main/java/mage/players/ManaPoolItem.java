@@ -1,14 +1,21 @@
 package mage.players;
 
-import java.io.Serializable;
-import java.util.UUID;
-
-import mage.ConditionalMana;
+import mage.Emptiable;
 import mage.MageObject;
 import mage.Mana;
-import mage.Emptiable;
+import mage.abilities.Ability;
+import mage.abilities.condition.Condition;
+import mage.abilities.costs.Cost;
+import mage.abilities.mana.conditional.ManaCondition;
 import mage.constants.Duration;
 import mage.constants.ManaType;
+import mage.filter.Filter;
+import mage.game.Game;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author BetaSteward_at_googlemail.com
@@ -21,7 +28,8 @@ public class ManaPoolItem implements Serializable, Emptiable {
     private int white = 0;
     private int black = 0;
     private int colorless = 0;
-    private ConditionalMana conditionalMana;
+    protected List<Condition> conditions = new ArrayList<>();
+    protected Filter.ComparisonScope comparisonScope = Filter.ComparisonScope.All;
     private MageObject sourceObject; // source of the mana, can be null (what's use case for null values? JayDi85)
     private UUID originalId; // originalId of the mana producing ability
     private boolean flag = false;
@@ -44,13 +52,20 @@ public class ManaPoolItem implements Serializable, Emptiable {
         this.duration = Duration.EndOfStep;
     }
 
-    public ManaPoolItem(ConditionalMana conditionalMana, MageObject sourceObject, UUID originalId) {
-        this.conditionalMana = conditionalMana;
+    public ManaPoolItem(Mana mana, MageObject sourceObject, UUID originalId) {
+        this.red = mana.getRed();
+        this.green = mana.getGreen();
+        this.blue = mana.getBlue();
+        this.white = mana.getWhite();
+        this.black = mana.getBlack();
+        this.colorless = mana.getColorless() + mana.getGeneric();
         this.sourceObject = sourceObject;
         this.originalId = originalId;
-        this.conditionalMana.setManaProducerId(sourceObject.getId());
-        this.conditionalMana.setManaProducerOriginalId(originalId);
-        this.flag = conditionalMana.getFlag();
+        if (mana.hasConditions()) {
+            this.conditions.addAll(mana.getConditions());
+            this.comparisonScope = mana.getComparisonScope();
+        }
+        this.flag = mana.getFlag();
         this.duration = Duration.EndOfStep;
     }
 
@@ -61,9 +76,8 @@ public class ManaPoolItem implements Serializable, Emptiable {
         this.white = item.white;
         this.black = item.black;
         this.colorless = item.colorless;
-        if (item.conditionalMana != null) {
-            this.conditionalMana = item.conditionalMana.copy();
-        }
+        this.comparisonScope = item.comparisonScope;
+        this.conditions = new ArrayList<>(item.conditions);
         this.sourceObject = item.sourceObject;
         this.originalId = item.originalId;
         this.flag = item.flag;
@@ -155,40 +169,62 @@ public class ManaPoolItem implements Serializable, Emptiable {
     }
 
     public boolean isConditional() {
-        return conditionalMana != null;
+        return !conditions.isEmpty();
     }
 
-    public ConditionalMana getConditionalMana() {
-        return conditionalMana;
+
+    public boolean conditionsApply(Ability ability, Game game, UUID manaProducerId, Cost costToPay) {
+        if (conditions.isEmpty()) {
+            return true;
+        }
+        for (Condition condition : conditions) {
+            boolean applied = (condition instanceof ManaCondition)
+                    ? ((ManaCondition) condition).apply(game, ability, manaProducerId, costToPay) : condition.apply(game, ability);
+
+            if (!applied) {
+                // if one condition fails, return false only if All conditions should be met
+                // otherwise it may happen that Any other condition will be ok
+                if (comparisonScope == Filter.ComparisonScope.All) {
+                    return false;
+                }
+            } else {
+                // if one condition succeeded, return true only if Any conditions should be met
+                // otherwise it may happen that any other condition will fail
+                if (comparisonScope == Filter.ComparisonScope.Any) {
+                    return true;
+                }
+            }
+        }
+        // we are here
+        // if All conditions should be met, then it's Ok (return true)
+        // if Any, then it should have already returned true, so returning false here
+        return comparisonScope == Filter.ComparisonScope.All;
     }
+
 
     public Mana getMana() {
-        return new Mana(white, blue, black, red, green, 0, 0, colorless);
+        Mana mana = new Mana(white, blue, black, red, green, 0, 0, colorless);
+        if (isConditional()) {
+            mana.addConditions(conditions);
+            mana.setComparisonScope(comparisonScope);
+        }
+        return mana;
     }
 
     public int count() {
-        if (conditionalMana == null) {
-            return red + green + blue + white + black + colorless;
-        }
-        return conditionalMana.count();
+        return red + green + blue + white + black + colorless;
     }
 
     public int get(ManaType manaType) {
-        switch (manaType) {
-            case BLACK:
-                return black;
-            case BLUE:
-                return blue;
-            case GREEN:
-                return green;
-            case RED:
-                return red;
-            case WHITE:
-                return white;
-            case COLORLESS:
-                return colorless;
-        }
-        return 0;
+        return switch (manaType) {
+            case BLACK -> black;
+            case BLUE -> blue;
+            case GREEN -> green;
+            case RED -> red;
+            case WHITE -> white;
+            case COLORLESS -> colorless;
+            default -> 0;
+        };
     }
 
     public ManaType getFirstAvailable() {
@@ -204,21 +240,6 @@ public class ManaPoolItem implements Serializable, Emptiable {
             return ManaType.WHITE;
         } else if (colorless > 0) {
             return ManaType.COLORLESS;
-        }
-        if (conditionalMana != null) {
-            if (conditionalMana.getBlack() > 0) {
-                return ManaType.BLACK;
-            } else if (conditionalMana.getBlue() > 0) {
-                return ManaType.BLUE;
-            } else if (conditionalMana.getGreen() > 0) {
-                return ManaType.GREEN;
-            } else if (conditionalMana.getRed() > 0) {
-                return ManaType.RED;
-            } else if (conditionalMana.getWhite() > 0) {
-                return ManaType.WHITE;
-            } else if (conditionalMana.getColorless() > 0) {
-                return ManaType.COLORLESS;
-            }
         }
         return null;
     }

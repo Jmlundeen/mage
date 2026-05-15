@@ -5,6 +5,9 @@ import mage.abilities.condition.Condition;
 import mage.abilities.costs.Cost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
+import mage.abilities.effects.mana.ManaEffect;
+import mage.abilities.mana.providers.ManaPlayerProvider;
+import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.abilities.mana.value.*;
 import mage.constants.ManaType;
 import mage.constants.Zone;
@@ -62,7 +65,10 @@ public class ComposedManaAbilityBuilder {
     private Zone zone = Zone.BATTLEFIELD;
     private String ruleText = null;
     private Condition activationCondition = null;
-    private ComposedManaEffect manaEffect = null;
+    private ManaPlayerProvider manaPlayerProvider = null;
+    private Cost anyPlayerPaysCost = null;
+    private String anyPlayerPaysChooseUseText = null;
+    private ManaEffect manaEffect = null;
 
     public ComposedManaAbilityBuilder() {
     }
@@ -137,6 +143,31 @@ public class ComposedManaAbilityBuilder {
         return this;
     }
 
+    public ComposedManaAbilityBuilder addDynamic(DynamicValue amount, Set<ManaType> manaTypes) {
+        manaValues.add(new DynamicManaValue(amount, manaTypes));
+        return this;
+    }
+
+    /**
+     * Adds mana that gives the same amount to each mana type in the given set.
+     * @param amount the dynamic value that calculates how much of each type to produce
+     * @param manaTypes the set of mana types to produce
+     */
+    public ComposedManaAbilityBuilder addDynamicEach(DynamicValue amount, Set<ManaType> manaTypes) {
+        manaValues.add(new EachManaTypeManaValue(amount, manaTypes));
+        return this;
+    }
+
+    /**
+     * Adds mana that gives the same amount to each runtime-provided mana type.
+     * @param amount the dynamic value that calculates how much of each type to produce
+     * @param manaTypeProvider the provider that supplies the mana types to produce
+     */
+    public ComposedManaAbilityBuilder addDynamicEach(DynamicValue amount, ManaTypeProvider manaTypeProvider) {
+        manaValues.add(new EachManaTypeManaValue(amount, manaTypeProvider));
+        return this;
+    }
+
     /**
      * Adds a dynamic mana value where player chooses one color from the given set.
      * Example: "Add X mana. You may choose one of {B} or {R}."
@@ -203,6 +234,22 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Adds mana equal to the current mana in the player's mana pool.
+     */
+    public ComposedManaAbilityBuilder addCurrentManaPool() {
+        manaValues.add(new CurrentManaPoolManaValue());
+        return this;
+    }
+
+    /**
+     * Adds mana equal to the current mana in the player's mana pool multiplied by the given amount.
+     */
+    public ComposedManaAbilityBuilder addCurrentManaPool(int multiplier) {
+        manaValues.add(new CurrentManaPoolManaValue(multiplier));
+        return this;
+    }
+
+    /**
      * Adds a choice mana value where player chooses the color during activation.
      * 
      * @param choices the set of colors the player can choose from
@@ -212,6 +259,28 @@ public class ComposedManaAbilityBuilder {
     public ComposedManaAbilityBuilder addChoice(Set<ManaType> choices, int amount) {
         manaValues.add(new DynamicManaValue(StaticValue.get(amount), choices, false));
         return this;
+    }
+
+    /**
+     * Adds a static mana value where player chooses from runtime-provided mana types.
+     */
+    public ComposedManaAbilityBuilder addChoice(ManaTypeProvider manaTypeProvider, int amount) {
+        manaValues.add(new DynamicManaValue(StaticValue.get(amount), manaTypeProvider, false));
+        return this;
+    }
+
+    /**
+     * Adds mana that gives the same fixed amount to each mana type in the given set.
+     */
+    public ComposedManaAbilityBuilder addEach(Set<ManaType> manaTypes, int amount) {
+        return addDynamicEach(StaticValue.get(amount), manaTypes);
+    }
+
+    /**
+     * Adds mana that gives the same fixed amount to each runtime-provided mana type.
+     */
+    public ComposedManaAbilityBuilder addEach(ManaTypeProvider manaTypeProvider, int amount) {
+        return addDynamicEach(StaticValue.get(amount), manaTypeProvider);
     }
 
     /**
@@ -297,6 +366,30 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Sets provider for player who receives produced mana and makes any mana choices.
+     */
+    public ComposedManaAbilityBuilder playerProvider(ManaPlayerProvider manaPlayerProvider) {
+        this.manaPlayerProvider = manaPlayerProvider;
+        return this;
+    }
+
+    /**
+     * Prevents mana production unless any player pays the given cost.
+     */
+    public ComposedManaAbilityBuilder addAnyPlayerPaysCost(Cost cost) {
+        return addAnyPlayerPaysCost(cost, "Pay " + cost.getText() + " to prevent mana adding from {this}.");
+    }
+
+    /**
+     * Prevents mana production unless any player pays the given cost.
+     */
+    public ComposedManaAbilityBuilder addAnyPlayerPaysCost(Cost cost, String chooseUseText) {
+        this.anyPlayerPaysCost = cost;
+        this.anyPlayerPaysChooseUseText = chooseUseText;
+        return this;
+    }
+
+    /**
      * Builds the ComposedManaAbility.
      * 
      * @return the composed mana ability
@@ -310,11 +403,17 @@ public class ComposedManaAbilityBuilder {
         return new ComposedManaAbility(this);
     }
 
-    public ComposedManaEffect buildEffect() {
+    public ManaEffect buildEffect() {
         if (manaValues.isEmpty()) {
             throw new IllegalStateException("At least one mana value must be added");
         }
-        ComposedManaEffect effect = new ComposedManaEffect(manaValues, spendingConditions);
+        ManaEffect effect = new ComposedManaEffect(
+                manaValues,
+                spendingConditions,
+                manaPlayerProvider,
+                anyPlayerPaysCost,
+                anyPlayerPaysChooseUseText
+        );
         if (ruleText != null) {
             effect.setText(ruleText);
         }
@@ -359,7 +458,11 @@ public class ComposedManaAbilityBuilder {
         return activationCondition;
     }
 
-    public ComposedManaEffect getManaEffect() {
+    public ManaEffect getManaEffect() {
         return manaEffect;
+    }
+
+    public ManaPlayerProvider getManaPlayerProvider() {
+        return manaPlayerProvider;
     }
 }
