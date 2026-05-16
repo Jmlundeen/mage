@@ -107,6 +107,11 @@ public class ComposedManaAbilityBuilder {
         return this;
     }
 
+    public ComposedManaAbilityBuilder addStatic(Set<ManaType> manaTypes, int amount) {
+        manaValues.add(new StaticManaValue(manaTypes, amount));
+        return this;
+    }
+
     /**
      * Adds a static mana value from a Mana object.
      * 

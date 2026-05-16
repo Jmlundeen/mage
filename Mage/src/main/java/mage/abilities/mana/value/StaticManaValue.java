@@ -17,14 +17,14 @@ import java.util.Set;
  */
 public class StaticManaValue implements ManaValue {
 
-    private final int white;
-    private final int blue;
-    private final int black;
-    private final int red;
-    private final int green;
-    private final int generic;
-    private final int colorless;
-    private final int any;
+    private int white;
+    private int blue;
+    private int black;
+    private int red;
+    private int green;
+    private int generic;
+    private int colorless;
+    private int any;
 
     public StaticManaValue(int white, int blue, int black, int red, int green, int generic, int colorless, int any) {
         this.white = white;
@@ -46,6 +46,19 @@ public class StaticManaValue implements ManaValue {
         this.generic = mana.getGeneric();
         this.colorless = mana.getColorless();
         this.any = mana.getAny();
+    }
+
+    public StaticManaValue(Set<ManaType> manaTypes, int amount) {
+        for (ManaType type : manaTypes) {
+            switch (type) {
+                case WHITE: this.white = amount; break;
+                case BLUE: this.blue = amount; break;
+                case BLACK: this.black = amount; break;
+                case RED: this.red = amount; break;
+                case GREEN: this.green = amount; break;
+                case COLORLESS: this.colorless += amount; break;
+            }
+        }
     }
 
     @Override
