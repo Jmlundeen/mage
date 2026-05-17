@@ -62,6 +62,7 @@ public class ComposedManaAbilityBuilder {
     private int maxActivations = Integer.MAX_VALUE;
     private boolean poolDependant = false;
     private Cost cost = null;
+    private final List<Cost> additionalCosts = new ArrayList<>();
     private Zone zone = Zone.BATTLEFIELD;
     private String ruleText = null;
     private Condition activationCondition = null;
@@ -275,6 +276,13 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Adds a choice mana value where player chooses any one color for the given amount.
+     */
+    public ComposedManaAbilityBuilder addChoiceAnyOneColor(int amount) {
+        return addChoice(EnumSet.of(ManaType.WHITE, ManaType.BLUE, ManaType.BLACK, ManaType.RED, ManaType.GREEN), amount);
+    }
+
+    /**
      * Adds mana that gives the same fixed amount to each mana type in the given set.
      */
     public ComposedManaAbilityBuilder addEach(Set<ManaType> manaTypes, int amount) {
@@ -316,7 +324,11 @@ public class ComposedManaAbilityBuilder {
      * @return this builder
      */
     public ComposedManaAbilityBuilder cost(Cost cost) {
-        this.cost = cost;
+        if (this.cost != null) {
+            additionalCosts.add(cost);
+        } else {
+            this.cost = cost;
+        }
         return this;
     }
 
@@ -469,5 +481,9 @@ public class ComposedManaAbilityBuilder {
 
     public ManaPlayerProvider getManaPlayerProvider() {
         return manaPlayerProvider;
+    }
+
+    public List<Cost> getAdditionalCosts() {
+        return additionalCosts;
     }
 }

@@ -1,5 +1,7 @@
 package mage.abilities.mana;
 
+import mage.abilities.costs.Cost;
+
 /**
  * A consolidated activated mana ability that composes multiple mana values together.
  * 
@@ -21,6 +23,9 @@ public class ComposedManaAbility extends ActivatedManaAbilityImpl {
         this.maxActivationsPerTurn = builder.getMaxActivations();
         this.poolDependant = builder.isPoolDependant();
         this.condition = builder.getActivationCondition();
+        for (Cost additionalCost : builder.getAdditionalCosts()) {
+            this.addCost(additionalCost);
+        }
     }
 
     private ComposedManaAbility(final ComposedManaAbility ability) {
