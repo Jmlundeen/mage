@@ -7,6 +7,7 @@ import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.mana.ManaEffect;
 import mage.abilities.mana.providers.ManaPlayerProvider;
+import mage.abilities.mana.providers.ManaTypeAmountProvider;
 import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.abilities.mana.value.*;
 import mage.constants.ManaType;
@@ -192,6 +193,14 @@ public class ComposedManaAbilityBuilder {
      */
     public ComposedManaAbilityBuilder addDynamicChoice(DynamicValue amount, ManaTypeProvider choicesProvider) {
         manaValues.add(new DynamicManaValue(amount, choicesProvider, false));
+        return this;
+    }
+
+    /**
+     * Adds a dynamic mana value where each runtime-provided mana type has its own associated amount.
+     */
+    public ComposedManaAbilityBuilder addDynamicChoice(ManaTypeAmountProvider manaTypeAmountProvider) {
+        manaValues.add(new TypeAmountManaValue(manaTypeAmountProvider));
         return this;
     }
 
