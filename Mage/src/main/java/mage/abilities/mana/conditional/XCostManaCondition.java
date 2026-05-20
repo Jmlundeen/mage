@@ -2,10 +2,15 @@ package mage.abilities.mana.conditional;
 
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
+import mage.abilities.costs.OptionalAdditionalCost;
+import mage.abilities.costs.OptionalAdditionalCostImpl;
 import mage.abilities.costs.mana.ManaCosts;
 import mage.abilities.costs.mana.VariableManaCost;
+import mage.abilities.keyword.KickerAbility;
+import mage.cards.Card;
 import mage.game.Game;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -28,9 +33,20 @@ public class XCostManaCondition extends ManaCondition {
         } else {
             result = costToPay instanceof VariableManaCost;
         }
-//        if (!result && game != null && game.inCheckPlayableState()) {
-//            return true; // TODO: Check the card if there are related abilities with {X} costs.
-//        }
+        if (!result && game != null && game.inCheckPlayableState()) {
+            Card card = game.getCard(source.getSourceId());
+            if (card == null) {
+                return false;
+            }
+            for (Ability ability : card.getAbilities(game)) {
+                if (ability instanceof KickerAbility kickerAbility) {
+                    List<OptionalAdditionalCost> costs = kickerAbility.getKickerCosts();
+                    if (costs.stream().anyMatch(oppCost -> !((OptionalAdditionalCostImpl) oppCost).getVariableCosts().isEmpty())) {
+                        return true;
+                    }
+                }
+            }
+        }
         return result;
     }
 }
