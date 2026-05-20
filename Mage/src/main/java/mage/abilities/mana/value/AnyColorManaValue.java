@@ -3,8 +3,11 @@ package mage.abilities.mana.value;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.effects.Effect;
+import mage.choices.ChoiceColor;
 import mage.constants.ManaType;
+import mage.constants.Outcome;
 import mage.game.Game;
+import mage.players.Player;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -32,7 +35,24 @@ public class AnyColorManaValue implements ManaValue {
         if (amount <= 0) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(Mana.AnyMana(amount));
+        if (produceMana) {
+            Player controller = getChoicePlayer(game, source, manaEffect);
+            if (controller == null) {
+                return Collections.emptyList();
+            }
+            String mes = String.format("Select a color of mana to add %d of it", this.amount);
+            ChoiceColor choice = new ChoiceColor(true, mes, game.getObject(source));
+            if (controller.choose(Outcome.PutManaInPool, choice, game)) {
+                if (choice.getColor() != null) {
+                    return Collections.singletonList(choice.getMana(amount));
+                }
+            }
+        }
+        int calculatedAmount = calculateAmount(game, source, manaEffect, produceMana, null, amount);
+        if (calculatedAmount <= 0) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(Mana.AnyMana(calculatedAmount));
     }
 
     @Override
