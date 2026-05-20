@@ -1,5 +1,6 @@
 package mage.filter;
 
+import mage.MageObject;
 import mage.ObjectColor;
 import mage.abilities.keyword.FlyingAbility;
 import mage.constants.*;
@@ -1432,5 +1433,19 @@ public final class StaticFilters {
                 TriggeredAbilityPredicate.instance
         ));
         FILTER_ACTIVATED_OR_TRIGGERED_ABILITY.setLockedFilter(true);
+    }
+
+    public static final FilterObject<MageObject> FILTER_OBJECT_ARTIFACT = new FilterObject<>("artifact");
+
+    static {
+        FILTER_OBJECT_ARTIFACT.add(CardType.ARTIFACT.getPredicate());
+        FILTER_OBJECT_ARTIFACT.setLockedFilter(true);
+    }
+
+    public static final FilterObject<MageObject> FILTER_OBJECT_CREATURE = new FilterObject<>("creature");
+
+    static {
+        FILTER_OBJECT_CREATURE.add(CardType.CREATURE.getPredicate());
+        FILTER_OBJECT_CREATURE.setLockedFilter(true);
     }
 }
