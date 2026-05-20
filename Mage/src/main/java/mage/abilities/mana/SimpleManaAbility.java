@@ -39,6 +39,10 @@ public class SimpleManaAbility extends ActivatedManaAbilityImpl {
         this.predictable = predictable;
     }
 
+    public SimpleManaAbility(Effect effect, Cost cost) {
+        this(Zone.BATTLEFIELD, effect, cost);
+    }
+
     public SimpleManaAbility(Zone zone, Effect effect, Cost cost) {
         super(zone, effect, cost);
         this.predictable = true;
