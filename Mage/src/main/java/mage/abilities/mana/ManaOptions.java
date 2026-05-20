@@ -276,7 +276,7 @@ public class ManaOptions extends ArrayList<ManaSourceNode> {
             for (ManaAbilityOption option : node.getAbilityOptions()) {
                 boolean producesType = option.isProducesAny() || option.getProducibleTypes().contains(type);
                 if (producesType) {
-                    int capacity = option.getProducibleMap().getOrDefault(type, 0);
+                    int capacity = option.getProducibleMap().getOrDefault(type, option.isProducesAny() ? option.getCapacity() : 0);
                     totalCapacity += capacity;
                     if (totalCapacity >= amount) {
                         return true;
