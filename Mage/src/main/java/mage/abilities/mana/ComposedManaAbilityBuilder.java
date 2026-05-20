@@ -514,6 +514,9 @@ public class ComposedManaAbilityBuilder {
     }
 
     public ManaEffect getManaEffect() {
+        if (manaEffect == null) {
+            manaEffect = buildEffect();
+        }
         return manaEffect;
     }
 

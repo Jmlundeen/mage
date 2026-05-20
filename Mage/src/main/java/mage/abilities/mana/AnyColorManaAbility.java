@@ -31,7 +31,7 @@ public class AnyColorManaAbility extends ComposedManaAbility {
                 .addAnyColor(1)
                 .capacityOverride(netAmount)
                 .ruleText("Add one mana of any color")
-                .build());
+        );
     }
 
     protected AnyColorManaAbility(final AnyColorManaAbility ability) {
