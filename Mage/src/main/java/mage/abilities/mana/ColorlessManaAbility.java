@@ -2,17 +2,20 @@
 package mage.abilities.mana;
 
 import mage.Mana;
-import mage.abilities.effects.mana.BasicManaEffect;
+import mage.abilities.costs.common.TapSourceCost;
 
 /**
  *
  * @author BetaSteward_at_googlemail.com
  */
-public class ColorlessManaAbility extends BasicManaAbility {
+public class ColorlessManaAbility extends ComposedManaAbility {
 
     public ColorlessManaAbility() {
-        super(new BasicManaEffect(Mana.ColorlessMana(1)));
-        this.netMana.add(Mana.ColorlessMana(1));
+        super(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .ruleText("Add {C}")
+        );
     }
 
     private ColorlessManaAbility(final ColorlessManaAbility ability) {

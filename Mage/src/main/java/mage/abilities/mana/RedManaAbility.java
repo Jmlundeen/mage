@@ -3,18 +3,20 @@
 package mage.abilities.mana;
 
 import mage.Mana;
-import mage.abilities.effects.mana.BasicManaEffect;
-import mage.constants.ColoredManaSymbol;
+import mage.abilities.costs.common.TapSourceCost;
 
 /**
  *
  * @author BetaSteward_at_googlemail.com
  */
-public class RedManaAbility extends BasicManaAbility {
+public class RedManaAbility extends ComposedManaAbility {
 
     public RedManaAbility() {
-        super(new BasicManaEffect(Mana.RedMana(1)));
-        this.netMana.add(new Mana(ColoredManaSymbol.R));
+        super(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.RedMana(1))
+                .ruleText("Add {R}")
+        );
     }
 
     private RedManaAbility(final RedManaAbility ability) {

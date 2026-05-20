@@ -3,18 +3,20 @@
 package mage.abilities.mana;
 
 import mage.Mana;
-import mage.abilities.effects.mana.BasicManaEffect;
-import mage.constants.ColoredManaSymbol;
+import mage.abilities.costs.common.TapSourceCost;
 
 /**
  *
  * @author BetaSteward_at_googlemail.com
  */
-public class WhiteManaAbility extends BasicManaAbility {
+public class WhiteManaAbility extends ComposedManaAbility {
 
     public WhiteManaAbility() {
-        super(new BasicManaEffect(Mana.WhiteMana(1)));
-        this.netMana.add(new Mana(ColoredManaSymbol.W));
+        super(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.WhiteMana(1))
+                .ruleText("Add {W}")
+        );
     }
 
     private WhiteManaAbility(final WhiteManaAbility ability) {
