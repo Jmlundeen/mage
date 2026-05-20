@@ -11,7 +11,6 @@ import mage.abilities.costs.Cost;
  *   <li>DynamicManaAbility</li>
  *   <li>ConditionalManaAbility</li>
  *   <li>LimitedTimesPerTurnActivatedManaAbility</li>
- *   <li>AnyColorManaAbility</li>
  * </ul>
  * 
  * <p>Use {@link ComposedManaAbilityBuilder} to create instances.
@@ -28,7 +27,7 @@ public class ComposedManaAbility extends ActivatedManaAbilityImpl {
         }
     }
 
-    private ComposedManaAbility(final ComposedManaAbility ability) {
+    protected ComposedManaAbility(final ComposedManaAbility ability) {
         super(ability);
     }
 
