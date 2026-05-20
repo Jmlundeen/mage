@@ -19,22 +19,20 @@ public class SpendOrActivateManaCondition extends ManaCondition {
     private final FilterObject<MageObject> filter;
     private final String manaText;
     private final boolean checkChosenCreatureType;
-    private final boolean onlyCheckPermanents;
 
     public SpendOrActivateManaCondition(FilterObject<MageObject> filter, String manaText) {
-        this(filter, manaText, false, false);
+        this(filter, manaText, false);
     }
 
     public SpendOrActivateManaCondition(String manaText) {
-        this(null, manaText, true, false);
+        this(null, manaText, true);
     }
 
     public SpendOrActivateManaCondition(FilterObject<MageObject> filter, String manaText,
-                                        boolean checkChosenCreatureType, boolean onlyCheckPermanents) {
+                                        boolean checkChosenCreatureType) {
         this.filter = filter == null ? null : filter.copy();
         this.manaText = manaText;
         this.checkChosenCreatureType = checkChosenCreatureType;
-        this.onlyCheckPermanents = onlyCheckPermanents;
     }
 
     @Override
@@ -48,9 +46,6 @@ public class SpendOrActivateManaCondition extends ManaCondition {
 
         MageObject object = game.getObject(source);
         if (object == null) {
-            return false;
-        }
-        if (onlyCheckPermanents && !object.isPermanent(game)) {
             return false;
         }
         if (checkChosenCreatureType) {
