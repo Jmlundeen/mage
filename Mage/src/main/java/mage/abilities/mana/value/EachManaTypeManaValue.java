@@ -37,7 +37,7 @@ public class EachManaTypeManaValue implements ManaValue {
 
     @Override
     public List<Mana> evaluate(Game game, Ability source, Effect manaEffect, boolean produceMana) {
-        int calculatedAmount = calculateAmount(game, source, manaEffect);
+        int calculatedAmount = calculateAmount(game, source, manaEffect, produceMana, amount);
         if (calculatedAmount <= 0) {
             return Collections.emptyList();
         }
@@ -54,11 +54,6 @@ public class EachManaTypeManaValue implements ManaValue {
         return Collections.singletonList(mana);
     }
 
-    private int calculateAmount(Game game, Ability source, Effect manaEffect) {
-        return game != null && amount != null
-                ? amount.calculate(game, source, manaEffect)
-                : 0;
-    }
 
     private Set<ManaType> getManaTypes(Game game, Ability source, Effect manaEffect) {
         if (manaTypes != null) {

@@ -3,7 +3,6 @@ package mage.abilities.mana.value;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.effects.Effect;
-import mage.abilities.mana.ComposedManaEffect;
 import mage.abilities.mana.providers.ManaTypeAmountProvider;
 import mage.choices.Choice;
 import mage.constants.ManaType;
@@ -73,13 +72,6 @@ public class TypeAmountManaValue implements ManaValue {
             }
         }
         return result;
-    }
-
-    private Player getChoicePlayer(Game game, Ability source, Effect manaEffect) {
-        if (manaEffect instanceof ComposedManaEffect composedManaEffect) {
-            return composedManaEffect.getChoicePlayer(game, source);
-        }
-        return game.getPlayer(source.getControllerId());
     }
 
     @Override

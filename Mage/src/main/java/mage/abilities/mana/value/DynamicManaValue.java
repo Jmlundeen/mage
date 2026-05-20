@@ -4,7 +4,6 @@ import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
-import mage.abilities.mana.ComposedManaEffect;
 import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.choices.Choice;
 import mage.constants.ManaType;
@@ -119,20 +118,12 @@ public class DynamicManaValue implements ManaValue {
         this.anyCombination = anyCombination;
     }
 
-    private int calculateAmount(Game game, Ability source, Effect manaEffect) {
-        int calculatedAmount = baseAmount;
-        if (game != null && amount != null) {
-            calculatedAmount += amount.calculate(game, source, manaEffect);
-        }
-        return calculatedAmount;
-    }
-
     @Override
     public List<Mana> evaluate(Game game, Ability source, Effect manaEffect, boolean produceMana) {
         if (game == null) {
             return Collections.emptyList();
         }
-        int calculatedAmount = calculateAmount(game, source, manaEffect);
+        int calculatedAmount = calculateAmount(game, source, manaEffect, produceMana, amount, baseAmount);
         if (calculatedAmount <= 0) {
             return Collections.emptyList();
         }
@@ -213,13 +204,6 @@ public class DynamicManaValue implements ManaValue {
 
         // Default: colorless
         return Collections.singletonList(Mana.ColorlessMana(calculatedAmount));
-    }
-
-    private Player getChoicePlayer(Game game, Ability source, Effect manaEffect) {
-        if (manaEffect instanceof ComposedManaEffect composedManaEffect) {
-            return composedManaEffect.getChoicePlayer(game, source);
-        }
-        return game.getPlayer(source.getControllerId());
     }
 
     private static @NonNull Mana getMana(List<String> choiceList, List<Integer> manaList) {
