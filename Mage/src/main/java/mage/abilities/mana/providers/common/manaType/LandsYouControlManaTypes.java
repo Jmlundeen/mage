@@ -1,4 +1,4 @@
-package mage.abilities.mana.value.common;
+package mage.abilities.mana.providers.common.manaType;
 
 import mage.abilities.Abilities;
 import mage.abilities.Ability;

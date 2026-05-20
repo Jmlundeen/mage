@@ -1,4 +1,4 @@
-package mage.abilities.mana.providers.common;
+package mage.abilities.mana.providers.common.player;
 
 import mage.abilities.Ability;
 import mage.abilities.effects.Effect;
