@@ -12,6 +12,7 @@ import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.abilities.mana.value.*;
 import mage.constants.ManaType;
 import mage.constants.Zone;
+import mage.filter.Filter;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -68,9 +69,11 @@ public class ComposedManaAbilityBuilder {
     private String ruleText = null;
     private Condition activationCondition = null;
     private ManaPlayerProvider manaPlayerProvider = null;
+    private Filter.ComparisonScope comparisonScope = Filter.ComparisonScope.All;
     private Cost anyPlayerPaysCost = null;
     private String anyPlayerPaysChooseUseText = null;
     private ManaEffect manaEffect = null;
+    private DynamicValue capacityOverride = null;
 
     public ComposedManaAbilityBuilder() {
     }
@@ -292,6 +295,14 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Adds a choice mana value where player chooses any one color for the given dynamic amount.
+     */
+    public ComposedManaAbilityBuilder addChoiceAnyOneColor(DynamicValue amount) {
+        manaValues.add(new DynamicManaValue(amount, EnumSet.of(ManaType.WHITE, ManaType.BLUE, ManaType.BLACK, ManaType.RED, ManaType.GREEN), false));
+        return this;
+    }
+
+    /**
      * Adds mana that gives the same fixed amount to each mana type in the given set.
      */
     public ComposedManaAbilityBuilder addEach(Set<ManaType> manaTypes, int amount) {
@@ -323,6 +334,14 @@ public class ComposedManaAbilityBuilder {
      */
     public ComposedManaAbilityBuilder condition(Condition condition) {
         spendingConditions.add(condition);
+        return this;
+    }
+
+    /**
+     * Sets how multiple mana conditions are combined.
+     */
+    public ComposedManaAbilityBuilder comparisonScope(Filter.ComparisonScope comparisonScope) {
+        this.comparisonScope = comparisonScope;
         return this;
     }
 
@@ -416,6 +435,14 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Sets playable-calculation-only capacity override for generated mana options.
+     */
+    public ComposedManaAbilityBuilder capacityOverride(DynamicValue capacityOverride) {
+        this.capacityOverride = capacityOverride;
+        return this;
+    }
+
+    /**
      * Builds the ComposedManaAbility.
      * 
      * @return the composed mana ability
@@ -437,8 +464,10 @@ public class ComposedManaAbilityBuilder {
                 manaValues,
                 spendingConditions,
                 manaPlayerProvider,
+                comparisonScope,
                 anyPlayerPaysCost,
-                anyPlayerPaysChooseUseText
+                anyPlayerPaysChooseUseText,
+                capacityOverride
         );
         if (ruleText != null) {
             effect.setText(ruleText);
@@ -492,7 +521,15 @@ public class ComposedManaAbilityBuilder {
         return manaPlayerProvider;
     }
 
+    public Filter.ComparisonScope getComparisonScope() {
+        return comparisonScope;
+    }
+
     public List<Cost> getAdditionalCosts() {
         return additionalCosts;
+    }
+
+    public DynamicValue getCapacityOverride() {
+        return capacityOverride;
     }
 }

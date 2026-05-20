@@ -5,11 +5,13 @@ import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.Cost;
+import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.mana.ManaEffect;
 import mage.abilities.mana.providers.ManaPlayerProvider;
 import mage.abilities.mana.value.ManaValue;
 import mage.constants.ManaType;
 import mage.constants.Outcome;
+import mage.filter.Filter;
 import mage.game.Game;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -24,8 +26,10 @@ public class ComposedManaEffect extends ManaEffect {
         private final List<ManaValue> manaValues = new ArrayList<>();
         private final List<Condition> spendingConditions = new ArrayList<>();
         private final ManaPlayerProvider manaPlayerProvider;
+        private final Filter.ComparisonScope comparisonScope;
         private final Cost anyPlayerPaysCost;
         private final String anyPlayerPaysChooseUseText;
+        private final DynamicValue capacityOverride;
         private transient Mana possibleManaInPool;
 
         private ComposedManaEffect(final ComposedManaEffect effect) {
@@ -33,19 +37,25 @@ public class ComposedManaEffect extends ManaEffect {
             effect.manaValues.stream().map(ManaValue::copy).forEach(this.manaValues::add);
             this.spendingConditions.addAll(effect.spendingConditions);
             this.manaPlayerProvider = effect.manaPlayerProvider == null ? null : effect.manaPlayerProvider.copy();
+            this.comparisonScope = effect.comparisonScope;
             this.anyPlayerPaysCost = effect.anyPlayerPaysCost == null ? null : effect.anyPlayerPaysCost.copy();
             this.anyPlayerPaysChooseUseText = effect.anyPlayerPaysChooseUseText;
+            this.capacityOverride = effect.capacityOverride == null ? null : effect.capacityOverride.copy();
         }
 
         public ComposedManaEffect(List<ManaValue> manaValues, List<Condition> spendingConditions,
-                                  ManaPlayerProvider manaPlayerProvider, Cost anyPlayerPaysCost,
-                                  String anyPlayerPaysChooseUseText) {
+                                  ManaPlayerProvider manaPlayerProvider, Filter.ComparisonScope comparisonScope,
+                                  Cost anyPlayerPaysCost,
+                                  String anyPlayerPaysChooseUseText,
+                                  DynamicValue capacityOverride) {
             super();
             this.manaValues.addAll(manaValues);
             this.spendingConditions.addAll(spendingConditions);
             this.manaPlayerProvider = manaPlayerProvider;
+            this.comparisonScope = comparisonScope;
             this.anyPlayerPaysCost = anyPlayerPaysCost;
             this.anyPlayerPaysChooseUseText = anyPlayerPaysChooseUseText;
+            this.capacityOverride = capacityOverride;
         }
 
         @Override
@@ -77,6 +87,10 @@ public class ComposedManaEffect extends ManaEffect {
             return possibleManaInPool == null ? null : possibleManaInPool.copy();
         }
 
+        public DynamicValue getCapacityOverride() {
+            return capacityOverride;
+        }
+
     @Override
         public List<Mana> getNetMana(Game game, Ability source) {
             List<Mana> netMana = new ArrayList<>();
@@ -90,6 +104,7 @@ public class ComposedManaEffect extends ManaEffect {
                         // Attach conditions to each mana option for playable calculations
                         if (!spendingConditions.isEmpty()) {
                             m.addConditions(spendingConditions);
+                            m.setComparisonScope(comparisonScope);
                             m.setConditionText(buildConditionText());
                         }
                         netMana.add(m);
@@ -165,6 +180,7 @@ public class ComposedManaEffect extends ManaEffect {
             if (manaToAdd.count() > 0) {
                 // Attach conditions directly to Mana instead of using ConditionalMana
                 manaToAdd.addConditions(spendingConditions);
+                manaToAdd.setComparisonScope(comparisonScope);
                 manaToAdd.setConditionText(buildConditionText());
                 checkToFirePossibleEvents(manaToAdd, game, source);
                 addManaToPool(player, manaToAdd, game, source);
