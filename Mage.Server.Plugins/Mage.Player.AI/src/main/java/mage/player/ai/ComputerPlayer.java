@@ -405,6 +405,7 @@ public class ComputerPlayer extends PlayerImpl {
 
     protected boolean playManaHandling(Ability ability, ManaCost unpaid, final Game game) {
 //        log.info("paying for " + unpaid.getText());
+        ManaOptions manaOptions = getManaAvailable(game);
         Set<ApprovingObject> approvingObjects = game.getContinuousEffects().asThough(ability.getSourceId(), AsThoughEffectType.SPEND_OTHER_MANA, ability, ability.getControllerId(), game);
         boolean hasApprovingObject = !approvingObjects.isEmpty();
 
@@ -420,90 +421,62 @@ public class ComputerPlayer extends PlayerImpl {
             producers.addAll(this.getAvailableManaProducersWithCost(game));
         }
 
-        // use fully compatible colored mana producers first TODO: likely not necessary anymore with manaOptions rework
-//        for (MageObject mageObject : producers) {
-//            ManaAbility:
-//            for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-//                boolean canPayColoredMana = false;
-//                ManaSourceNode manaSourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
-//                for (Mana mana : manaAbility.getNetMana(game)) {
-//                    // if mana ability can produce non-useful mana then ignore whole ability here (example: {R} or {G})
-//                    // (AI can't choose a good mana option, so make sure any selection option will be compatible with cost)
-//                    // AI support {Any} choice by lastUnpaidMana, so it can safety used in includesMana
-//                    if (!unpaid.getMana().includesMana(mana)) {
-//                        continue ManaAbility;
-//                    } else if (mana.getAny() > 0) {
-//                        throw new IllegalArgumentException("Wrong mana calculation: AI do not support color choosing from {Any}");
-//                    }
-//                    if (mana.countColored() > 0) {
-//                        canPayColoredMana = true;
-//                    }
-//                }
-//                // found compatible source - try to pay
-//                if (canPayColoredMana && (cost instanceof ColoredManaCost)) {
-//                    ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
-//                    if (cost.testPay(sourceNode)) {
-//                        boolean canActivate = false;
-//                        for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
-//                            if (option.hasConditions() && !option.applyConditions(ability, game, option.getSourceId(), cost)) {
-//                                continue;
-//                            }
-//                            if (hasApprovingObject && !canUseAsThoughManaToPayManaCost(cost, ability, option, manaAbility, mageObject, game)) {
-//                                continue;
-//                            }
-//                            canActivate = true;
-//                            break;
-//                        }
-//                        if (canActivate && activateAbility(manaAbility, game)) {
-//                            return true;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
         // use any other mana produces
         for (MageObject mageObject : producers) {
             // pay all colored costs first
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-                if (cost instanceof ColoredManaCost) {
-                    if (payWithManaAbility(ability, game, mageObject, manaAbility, cost, hasApprovingObject)) return true;
+                for (ManaSourceNode sourceNode : getManaSourceNodesForAbility(manaOptions, manaAbility)) {
+                    if (cost instanceof ColoredManaCost) {
+                        if (payWithManaAbility(ability, game, mageObject, manaAbility, sourceNode, cost, hasApprovingObject)) return true;
+                    }
                 }
             }
             // pay snow covered mana
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-                if (cost instanceof SnowManaCost) {
-                    if (payWithManaAbility(ability, game, mageObject, manaAbility, cost, hasApprovingObject)) return true;
+                for (ManaSourceNode sourceNode : getManaSourceNodesForAbility(manaOptions, manaAbility)) {
+                    if (cost instanceof SnowManaCost) {
+                        if (payWithManaAbility(ability, game, mageObject, manaAbility, sourceNode, cost, hasApprovingObject)) return true;
+                    }
                 }
             }
             // pay colorless - more restrictive than hybrid (think of it like colored)
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-                if (cost instanceof ColorlessManaCost) {
-                    if (payWithManaAbility(ability, game, mageObject, manaAbility, cost, hasApprovingObject)) return true;
+                for (ManaSourceNode sourceNode : getManaSourceNodesForAbility(manaOptions, manaAbility)) {
+                    if (cost instanceof ColorlessManaCost) {
+                        if (payWithManaAbility(ability, game, mageObject, manaAbility, sourceNode, cost, hasApprovingObject)) return true;
+                    }
                 }
             }
             // then pay hybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-                if (cost instanceof HybridManaCost) {
-                    if (payWithManaAbility(ability, game, mageObject, manaAbility, cost, hasApprovingObject)) return true;
+                for (ManaSourceNode sourceNode : getManaSourceNodesForAbility(manaOptions, manaAbility)) {
+                    if (cost instanceof HybridManaCost) {
+                        if (payWithManaAbility(ability, game, mageObject, manaAbility, sourceNode, cost, hasApprovingObject)) return true;
+                    }
                 }
             }
             // then pay colorless hybrid - more restrictive than monohybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-                if (cost instanceof ColorlessHybridManaCost) {
-                    if (payWithManaAbility(ability, game, mageObject, manaAbility, cost, hasApprovingObject)) return true;
+                for (ManaSourceNode sourceNode : getManaSourceNodesForAbility(manaOptions, manaAbility)) {
+                    if (cost instanceof ColorlessHybridManaCost) {
+                        if (payWithManaAbility(ability, game, mageObject, manaAbility, sourceNode, cost, hasApprovingObject)) return true;
+                    }
                 }
             }
             // then pay monohybrid
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-                if (cost instanceof MonoHybridManaCost) {
-                    if (payWithManaAbility(ability, game, mageObject, manaAbility, cost, hasApprovingObject)) return true;
+                for (ManaSourceNode sourceNode : getManaSourceNodesForAbility(manaOptions, manaAbility)) {
+                    if (cost instanceof MonoHybridManaCost) {
+                        if (payWithManaAbility(ability, game, mageObject, manaAbility, sourceNode, cost, hasApprovingObject)) return true;
+                    }
                 }
             }
             // finally pay generic
             for (ActivatedManaAbilityImpl manaAbility : getManaAbilitiesSortedByManaCount(mageObject, game)) {
-                if (cost instanceof GenericManaCost) {
-                    if (payWithManaAbility(ability, game, mageObject, manaAbility, cost, hasApprovingObject)) return true;
+                for (ManaSourceNode sourceNode : getManaSourceNodesForAbility(manaOptions, manaAbility)) {
+                    if (cost instanceof GenericManaCost) {
+                        if (payWithManaAbility(ability, game, mageObject, manaAbility, sourceNode, cost, hasApprovingObject)) return true;
+                    }
                 }
             }
         }
@@ -553,8 +526,7 @@ public class ComputerPlayer extends PlayerImpl {
         return false;
     }
 
-    private boolean payWithManaAbility(Ability ability, Game game, MageObject mageObject, ActivatedManaAbilityImpl manaAbility, ManaCost cost, boolean hasApprovingObject) {
-        ManaSourceNode sourceNode = ManaSourceNode.fromSingleAbility(manaAbility, game, this);
+    private boolean payWithManaAbility(Ability ability, Game game, MageObject mageObject, ActivatedManaAbilityImpl manaAbility, ManaSourceNode sourceNode, ManaCost cost, boolean hasApprovingObject) {
         if (cost.testPay(sourceNode) || hasApprovingObject) {
             boolean canActivate = false;
             for (ManaAbilityOption option : sourceNode.getAbilityOptions()) {
@@ -567,9 +539,48 @@ public class ComputerPlayer extends PlayerImpl {
                 canActivate = true;
                 break;
             }
-            return canActivate && activateAbility(manaAbility, game);
+            ActivatedManaAbilityImpl abilityToActivate = findTriggeringManaAbility(mageObject, manaAbility, sourceNode, game);
+            return canActivate && activateAbility(abilityToActivate, game);
         }
         return false;
+    }
+
+    private List<ManaSourceNode> getManaSourceNodesForAbility(ManaOptions manaOptions, ActivatedManaAbilityImpl manaAbility) {
+        List<ManaSourceNode> result = new ArrayList<>();
+        for (ManaSourceNode manaSourceNode : manaOptions) {
+            List<ManaAbilityOption> matchingOptions = manaSourceNode.getAbilityOptions().stream()
+                    .filter(option -> isManaOptionForAbility(option, manaAbility))
+                    .toList();
+            if (!matchingOptions.isEmpty()) {
+                result.add(ManaSourceNode.ofOptions(matchingOptions));
+            }
+        }
+        result.sort(Comparator.comparing(this::isTriggeredManaSourceNode));
+        return result;
+    }
+
+    private boolean isManaOptionForAbility(ManaAbilityOption option, ActivatedManaAbilityImpl manaAbility) {
+        return manaAbility.getId().equals(option.getAbilityId())
+                || manaAbility.getId().equals(option.getTriggeringAbilityId());
+    }
+
+    private boolean isTriggeredManaSourceNode(ManaSourceNode sourceNode) {
+        return sourceNode.getAbilityOptions().stream().anyMatch(ManaAbilityOption::isTriggeredMana);
+    }
+
+    private ActivatedManaAbilityImpl findTriggeringManaAbility(MageObject mageObject, ActivatedManaAbilityImpl defaultAbility, ManaSourceNode sourceNode, Game game) {
+        UUID triggeringAbilityId = sourceNode.getAbilityOptions().stream()
+                .map(ManaAbilityOption::getTriggeringAbilityId)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+        if (triggeringAbilityId == null || triggeringAbilityId.equals(defaultAbility.getId())) {
+            return defaultAbility;
+        }
+        return getManaAbilitiesSortedByManaCount(mageObject, game).stream()
+                .filter(manaAbility -> triggeringAbilityId.equals(manaAbility.getId()))
+                .findFirst()
+                .orElse(defaultAbility);
     }
 
     boolean canUseAsThoughManaToPayManaCost(ManaCost checkCost, Ability abilityToPay, ManaAbilityOption manaOption, Ability manaAbility, MageObject manaProducer, Game game) {
