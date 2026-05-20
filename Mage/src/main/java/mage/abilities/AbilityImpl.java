@@ -1163,6 +1163,12 @@ public abstract class AbilityImpl implements Ability {
             throw new IllegalArgumentException("Wrong usage of TargetCardInLibrary - you must use it with SearchLibrary only");
         }
 
+        if (abilityType == AbilityType.ACTIVATED_MANA) {
+            // mana abilities can't have targets, ensure it gets the correct type
+            this.usesStack = true;
+            abilityType = AbilityType.ACTIVATED_NONMANA;
+        }
+
         if (target != null) {
             getTargets().add(target);
         }
