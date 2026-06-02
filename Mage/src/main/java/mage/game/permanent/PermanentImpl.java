@@ -4,10 +4,7 @@ import mage.ApprovingObject;
 import mage.MageObject;
 import mage.MageObjectReference;
 import mage.ObjectColor;
-import mage.abilities.Abilities;
-import mage.abilities.AbilitiesImpl;
-import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
+import mage.abilities.*;
 import mage.abilities.common.RoomAbility;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
@@ -485,7 +482,11 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
 
     @Override
     public void removeAllAbilities(UUID sourceId, Game game) {
-        // TODO: what about triggered abilities? See addAbility above -- triggers adds to GameState
+        abilities.forEach(a -> {
+            if (a instanceof TriggeredAbility triggeredAbility) {
+                game.getState().getTriggers().removeAbility(triggeredAbility, sourceId);
+            }
+        });
         abilities.clear();
     }
 
@@ -503,8 +504,12 @@ public abstract class PermanentImpl extends CardImpl implements Permanent {
             }
         });
 
-        // TODO: what about triggered abilities? See addAbility above -- triggers adds to GameState
-        toRemove.forEach(r -> abilities.remove(r));
+        toRemove.forEach(r -> {
+            if (r instanceof TriggeredAbility triggeredAbility) {
+                game.getState().getTriggers().removeAbility(triggeredAbility, sourceId);
+            }
+            abilities.remove(r);
+        });
     }
 
     @Override

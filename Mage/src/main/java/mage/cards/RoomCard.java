@@ -13,6 +13,7 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
+import mage.game.stack.Spell;
 
 import java.util.UUID;
 
@@ -193,9 +194,17 @@ class RoomEnterUnlockEffect extends OneShotEffect {
         RoomCard roomCard = null;
         // Get the parent card to access the lastCastHalf variable
         if (permanent instanceof PermanentToken) {
-            Card mainCard = permanent.getMainCard();
+            Card mainCard = game.getCard((permanent.isCopy() ? permanent.getCopyFrom() : permanent.getMainCard()).getId());
             if (mainCard instanceof RoomCard) {
                 roomCard = (RoomCard) mainCard;
+                // Check if the token was copying a spell and if not, we shouldn't unlock any doors
+                Spell spell = game.getSpellOrLKIStack(roomCard.getLeftHalfCard().getId());
+                if (spell == null) {
+                    spell = game.getSpellOrLKIStack(roomCard.getRightHalfCard().getId());
+                }
+                if (spell == null) {
+                    return true;
+                }
             }
         } else {
             Card card = game.getCard(permanent.getId());
@@ -210,8 +219,6 @@ class RoomEnterUnlockEffect extends OneShotEffect {
         SpellAbilityType lastCastHalf = roomCard.getLastCastHalf();
 
         if (lastCastHalf == SpellAbilityType.SPLIT_LEFT || lastCastHalf == SpellAbilityType.SPLIT_RIGHT) {
-            roomCard.setLastCastHalf(null);
-            ((RoomCard) permanent.getMainCard()).setLastCastHalf(null);
             return permanent.unlockDoor(game, source, lastCastHalf == SpellAbilityType.SPLIT_LEFT);
         }
 
