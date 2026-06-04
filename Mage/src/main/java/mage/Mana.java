@@ -1299,6 +1299,7 @@ public class Mana implements Comparable<Mana>, Serializable, Copyable<Mana> {
         //this.flag = mana.flag;
         this.conditions = new ArrayList<>(mana.conditions);
         this.conditionText = mana.conditionText;
+        this.anyCombination = mana.anyCombination;
     }
 
     /**
