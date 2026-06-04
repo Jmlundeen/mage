@@ -2,7 +2,9 @@ package mage.counters;
 
 import mage.abilities.keyword.*;
 import mage.cards.Card;
+import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.Predicate;
+import mage.filter.predicate.typed.card.ICardPredicate;
 import mage.game.Game;
 
 import java.util.HashMap;
@@ -372,7 +374,7 @@ public enum CounterType {
         return predicate;
     }
 
-    private static class CounterPredicate implements Predicate<Card> {
+    private static class CounterPredicate implements Predicate<Card>, ICardPredicate {
 
         private final CounterType counter;
 
@@ -383,7 +385,7 @@ public enum CounterType {
         @Override
         public boolean apply(Card input, Game game) {
             if (counter == null) {
-                return !input.getCounters(game).keySet().isEmpty();
+                return !input.getCounters(game).isEmpty();
             } else {
                 return input.getCounters(game).containsKey(counter);
             }
@@ -392,6 +394,15 @@ public enum CounterType {
         @Override
         public String toString() {
             return "CounterType(" + counter.getName() + ')';
+        }
+
+        @Override
+        public boolean apply(ObjectSourcePlayer<Card> input, Game game) {
+            if (counter == null) {
+                return !input.getObject().getCounters(game).isEmpty();
+            } else {
+                return input.getObject().getCounters(game).containsKey(counter);
+            }
         }
     }
 }

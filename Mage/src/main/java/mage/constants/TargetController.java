@@ -3,6 +3,7 @@ package mage.constants;
 import mage.cards.Card;
 import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.ObjectSourcePlayerPredicate;
+import mage.filter.predicate.TypedPredicate;
 import mage.game.Controllable;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -35,7 +36,7 @@ public enum TargetController {
     private final PlayerPredicate playerPredicate;
     private final ControllerPredicate controllerPredicate;
 
-    private TargetController() {
+    TargetController() {
         this.ownerPredicate = new OwnerPredicate(this);
         this.playerPredicate = new PlayerPredicate(this);
         this.controllerPredicate = new ControllerPredicate(this);
@@ -53,12 +54,17 @@ public enum TargetController {
         return controllerPredicate;
     }
 
-    public static class OwnerPredicate implements ObjectSourcePlayerPredicate<Card> {
+    public static class OwnerPredicate implements ObjectSourcePlayerPredicate<Card>, TypedPredicate<ObjectSourcePlayer<Card>> {
 
         private final TargetController targetOwner;
 
         private OwnerPredicate(TargetController targetOwner) {
             this.targetOwner = targetOwner;
+        }
+
+        @Override
+        public Class<Card> getObjectClass() {
+            return Card.class;
         }
 
         @Override
@@ -69,32 +75,23 @@ public enum TargetController {
                 return false;
             }
 
-            switch (targetOwner) {
-                case YOU:
-                    return card.isOwnedBy(playerId);
-                case OPPONENT:
-                    return !card.isOwnedBy(playerId)
-                            && game.getPlayer(playerId).hasOpponent(card.getOwnerId(), game);
-                case NOT_YOU:
-                    return !card.isOwnedBy(playerId);
-                case ENCHANTED:
+            return switch (targetOwner) {
+                case YOU -> card.isOwnedBy(playerId);
+                case OPPONENT -> !card.isOwnedBy(playerId)
+                        && game.getPlayer(playerId).hasOpponent(card.getOwnerId(), game);
+                case NOT_YOU -> !card.isOwnedBy(playerId);
+                case ENCHANTED -> {
                     Permanent permanent = input.getSource().getSourcePermanentIfItStillExists(game);
-                    return permanent != null && input.getObject().isOwnedBy(permanent.getAttachedTo());
-                case SOURCE_CONTROLLER:
-                    return card.isOwnedBy(input.getSource().getControllerId());
-                case SOURCE_TARGETS:
-                    return card.isOwnedBy(input.getSource().getFirstTarget());
-                case ACTIVE:
-                    return card.isOwnedBy(game.getActivePlayerId());
-                case INACTIVE:
-                    return !card.isOwnedBy(game.getActivePlayerId());
-                case MONARCH:
-                    return card.isOwnedBy(game.getMonarchId());
-                case ANY:
-                    return true;
-                default:
-                    throw new UnsupportedOperationException("TargetController not supported");
-            }
+                    yield permanent != null && input.getObject().isOwnedBy(permanent.getAttachedTo());
+                }
+                case SOURCE_CONTROLLER -> card.isOwnedBy(input.getSource().getControllerId());
+                case SOURCE_TARGETS -> card.isOwnedBy(input.getSource().getFirstTarget());
+                case ACTIVE -> card.isOwnedBy(game.getActivePlayerId());
+                case INACTIVE -> !card.isOwnedBy(game.getActivePlayerId());
+                case MONARCH -> card.isOwnedBy(game.getMonarchId());
+                case ANY -> true;
+                default -> throw new UnsupportedOperationException("TargetController not supported");
+            };
         }
 
         @Override
@@ -103,12 +100,17 @@ public enum TargetController {
         }
     }
 
-    public static class PlayerPredicate implements ObjectSourcePlayerPredicate<Player> {
+    public static class PlayerPredicate implements ObjectSourcePlayerPredicate<Player>, TypedPredicate<ObjectSourcePlayer<Player>> {
 
         private final TargetController targetPlayer;
 
         private PlayerPredicate(TargetController player) {
             this.targetPlayer = player;
+        }
+
+        @Override
+        public Class<Player> getObjectClass() {
+            return Player.class;
         }
 
         @Override
@@ -119,27 +121,18 @@ public enum TargetController {
                 return false;
             }
 
-            switch (targetPlayer) {
-                case YOU:
-                    return player.getId().equals(playerId);
-                case OPPONENT:
-                    return !player.getId().equals(playerId) &&
-                            game.getPlayer(playerId).hasOpponent(player.getId(), game);
-                case NOT_YOU:
-                    return !player.getId().equals(playerId);
-                case SOURCE_CONTROLLER:
-                    return player.getId().equals(input.getSource().getControllerId());
-                case SOURCE_TARGETS:
-                    return player.getId().equals(input.getSource().getFirstTarget());
-                case ACTIVE:
-                    return game.isActivePlayer(player.getId());
-                case INACTIVE:
-                    return !game.isActivePlayer(player.getId());
-                case MONARCH:
-                    return player.getId().equals(game.getMonarchId());
-                default:
-                    throw new UnsupportedOperationException("TargetController not supported");
-            }
+            return switch (targetPlayer) {
+                case YOU -> player.getId().equals(playerId);
+                case OPPONENT -> !player.getId().equals(playerId) &&
+                        game.getPlayer(playerId).hasOpponent(player.getId(), game);
+                case NOT_YOU -> !player.getId().equals(playerId);
+                case SOURCE_CONTROLLER -> player.getId().equals(input.getSource().getControllerId());
+                case SOURCE_TARGETS -> player.getId().equals(input.getSource().getFirstTarget());
+                case ACTIVE -> game.isActivePlayer(player.getId());
+                case INACTIVE -> !game.isActivePlayer(player.getId());
+                case MONARCH -> player.getId().equals(game.getMonarchId());
+                default -> throw new UnsupportedOperationException("TargetController not supported");
+            };
         }
 
         @Override
@@ -148,7 +141,7 @@ public enum TargetController {
         }
     }
 
-    public static class ControllerPredicate implements ObjectSourcePlayerPredicate<Controllable> {
+    public static class ControllerPredicate implements ObjectSourcePlayerPredicate<Controllable>, TypedPredicate<ObjectSourcePlayer<Controllable>> {
 
         private final TargetController controller;
 
@@ -157,38 +150,33 @@ public enum TargetController {
         }
 
         @Override
+        public Class<Controllable> getObjectClass() {
+            return Controllable.class;
+        }
+
+        @Override
         public boolean apply(ObjectSourcePlayer<Controllable> input, Game game) {
             Controllable object = input.getObject();
             UUID playerId = input.getPlayerId();
 
-            switch (controller) {
-                case YOU:
-                    return object.isControlledBy(playerId);
-                case TEAM:
-                    return !game.getPlayer(playerId).hasOpponent(object.getControllerId(), game);
-                case OPPONENT:
-                    return !object.isControlledBy(playerId)
-                            && game.getPlayer(playerId).hasOpponent(object.getControllerId(), game);
-                case NOT_YOU:
-                    return !object.isControlledBy(playerId);
-                case ACTIVE:
-                    return object.isControlledBy(game.getActivePlayerId());
-                case INACTIVE:
-                    return !object.isControlledBy(game.getActivePlayerId());
-                case ENCHANTED:
+            return switch (controller) {
+                case YOU -> object.isControlledBy(playerId);
+                case TEAM -> !game.getPlayer(playerId).hasOpponent(object.getControllerId(), game);
+                case OPPONENT -> !object.isControlledBy(playerId)
+                        && game.getPlayer(playerId).hasOpponent(object.getControllerId(), game);
+                case NOT_YOU -> !object.isControlledBy(playerId);
+                case ACTIVE -> object.isControlledBy(game.getActivePlayerId());
+                case INACTIVE -> !object.isControlledBy(game.getActivePlayerId());
+                case ENCHANTED -> {
                     Permanent permanent = input.getSource().getSourcePermanentIfItStillExists(game);
-                    return permanent != null && input.getObject().isControlledBy(permanent.getAttachedTo());
-                case SOURCE_CONTROLLER:
-                    return object.isControlledBy(input.getSource().getControllerId());
-                case SOURCE_TARGETS:
-                    return object.isControlledBy(input.getSource().getFirstTarget());
-                case MONARCH:
-                    return object.isControlledBy(game.getMonarchId());
-                case ANY:
-                    return true;
-                default:
-                    throw new UnsupportedOperationException("TargetController not supported");
-            }
+                    yield permanent != null && input.getObject().isControlledBy(permanent.getAttachedTo());
+                }
+                case SOURCE_CONTROLLER -> object.isControlledBy(input.getSource().getControllerId());
+                case SOURCE_TARGETS -> object.isControlledBy(input.getSource().getFirstTarget());
+                case MONARCH -> object.isControlledBy(game.getMonarchId());
+                case ANY -> true;
+                default -> throw new UnsupportedOperationException("TargetController not supported");
+            };
         }
 
         @Override

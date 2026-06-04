@@ -1,7 +1,9 @@
 package mage.constants;
 
 import mage.MageObject;
+import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.Predicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 
 /**
@@ -16,7 +18,7 @@ public enum SuperType {
     SNOW("Snow"),
     WORLD("World");
 
-    public static class SuperTypePredicate implements Predicate<MageObject> {
+    public static class SuperTypePredicate implements Predicate<MageObject>, IMageObjectPredicate {
 
         private final SuperType supertype;
 
@@ -27,6 +29,11 @@ public enum SuperType {
         @Override
         public boolean apply(MageObject input, Game game) {
             return input.getSuperType(game).contains(supertype);
+        }
+
+        @Override
+        public boolean apply(ObjectSourcePlayer<MageObject> input, Game game) {
+            return apply(input.getObject(), game);
         }
 
         @Override

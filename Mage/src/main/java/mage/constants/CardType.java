@@ -1,7 +1,9 @@
 package mage.constants;
 
 import mage.MageObject;
+import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.Predicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 
 import java.util.ArrayList;
@@ -108,7 +110,7 @@ public enum CardType {
         return this.predicate;
     }
 
-    public static class CardTypePredicate implements Predicate<MageObject> {
+    public static class CardTypePredicate implements Predicate<MageObject>, IMageObjectPredicate {
 
         private final CardType cardType;
 
@@ -124,6 +126,11 @@ public enum CardType {
         @Override
         public String toString() {
             return "CardType(" + cardType.toString() + ')';
+        }
+
+        @Override
+        public boolean apply(ObjectSourcePlayer<MageObject> input, Game game) {
+            return apply(input.getObject(), game);
         }
     }
 }
