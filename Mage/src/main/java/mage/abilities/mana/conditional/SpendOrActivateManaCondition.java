@@ -2,12 +2,15 @@ package mage.abilities.mana.conditional;
 
 import mage.MageObject;
 import mage.abilities.Ability;
+import mage.abilities.SpellAbility;
 import mage.abilities.costs.Cost;
-import mage.abilities.effects.common.ChooseCreatureTypeEffect;
+import mage.cards.Card;
 import mage.constants.AbilityType;
-import mage.constants.SubType;
-import mage.filter.FilterObject;
+import mage.filter.FilterTyped;
 import mage.game.Game;
+import mage.game.command.Commander;
+import mage.game.stack.Spell;
+import mage.game.stack.StackObject;
 
 import java.util.UUID;
 
@@ -16,23 +19,16 @@ import java.util.UUID;
  */
 public class SpendOrActivateManaCondition extends ManaCondition {
 
-    private final FilterObject<MageObject> filter;
+    private final FilterTyped filter;
     private final String manaText;
-    private final boolean checkChosenCreatureType;
 
-    public SpendOrActivateManaCondition(FilterObject<MageObject> filter, String manaText) {
-        this(filter, manaText, false);
-    }
-
-    public SpendOrActivateManaCondition(String manaText) {
-        this(null, manaText, true);
-    }
-
-    public SpendOrActivateManaCondition(FilterObject<MageObject> filter, String manaText,
-                                        boolean checkChosenCreatureType) {
+    public SpendOrActivateManaCondition(FilterTyped filter) {
         this.filter = filter == null ? null : filter.copy();
-        this.manaText = manaText;
-        this.checkChosenCreatureType = checkChosenCreatureType;
+        this.manaText = filter != null ? filter.getMessage() : "a creature spell or activated ability of a creature or creature card";
+    }
+
+    public SpendOrActivateManaCondition() {
+        this(null);
     }
 
     @Override
@@ -48,13 +44,25 @@ public class SpendOrActivateManaCondition extends ManaCondition {
         if (object == null) {
             return false;
         }
-        if (checkChosenCreatureType) {
-            SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(originalId, game);
-            if (subType == null || !object.hasSubtype(subType, game)) {
-                return false;
-            }
+
+        // apply to spell or stack ability
+        if (object instanceof StackObject stackObject) {
+            return filter == null ? stackObject.isCreature(game) : filter.match(stackObject, source.getControllerId(), source, game);
         }
-        return filter == null || filter.match(object, game);
+
+        // if not a stack object, check filter against a spell
+        if (game.inCheckPlayableState() && source instanceof SpellAbility spellAbility) {
+            Spell spell = null;
+            if (object instanceof Card card) {
+                spell = new Spell(card, spellAbility, source.getControllerId(), game.getState().getZone(source.getSourceId()), game);
+            } else if (object instanceof Commander commander) {
+                spell = new Spell(commander.getSourceObject(), spellAbility, source.getControllerId(), game.getState().getZone(source.getSourceId()), game);
+            }
+            return spell != null && (filter == null ? spell.isCreature(game) : filter.match(spell, source.getControllerId(), source, game));
+        }
+
+        // fallback to matching the source object or ability
+        return filter == null ? object.isCreature(game) : filter.match(object, source.getControllerId(), source, game) || filter.match(source, source.getControllerId(), source, game);
     }
 
     @Override

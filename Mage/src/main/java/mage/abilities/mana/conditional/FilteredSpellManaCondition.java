@@ -5,13 +5,11 @@ import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.costs.Cost;
 import mage.cards.Card;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
 import mage.game.Game;
 import mage.game.command.Commander;
 import mage.game.stack.Spell;
-import mage.game.stack.StackObject;
 
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -19,23 +17,27 @@ import java.util.UUID;
  */
 public class FilteredSpellManaCondition extends ManaCondition {
 
-    private final FilterSpell filter;
+    private final FilterTyped filter;
     private final String manaText;
 
-    public FilteredSpellManaCondition(FilterSpell filter, String manaText) {
-        this.filter = Objects.requireNonNull(filter);
-        this.manaText = Objects.requireNonNull(manaText);
+    public FilteredSpellManaCondition(FilterTyped filter) {
+        this.filter = filter == null ? null : filter.copy();
+        this.manaText = filter == null ? "a spell" : filter.getMessage();
     }
 
     @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
         if (!(source instanceof SpellAbility spellAbility) || source.isActivated()) {
             return false;
         }
 
         MageObject object = game.getObject(source);
-        if (object instanceof StackObject stackObject) {
-            return filter.match(stackObject, source.getControllerId(), source, game);
+        if (object == null) {
+            return false;
+        }
+
+        if (object instanceof Spell stackObject) {
+            return filter == null || filter.match(stackObject, source.getControllerId(), source, game);
         }
 
         if (game.inCheckPlayableState()) {
@@ -45,15 +47,10 @@ public class FilteredSpellManaCondition extends ManaCondition {
             } else if (object instanceof Commander commander) {
                 spell = new Spell(commander.getSourceObject(), spellAbility, source.getControllerId(), game.getState().getZone(source.getSourceId()), game);
             }
-            return spell != null && filter.match(spell, source.getControllerId(), source, game);
+            return spell != null && (filter == null || filter.match(spell, source.getControllerId(), source, game));
         }
 
         return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        return apply(game, source);
     }
 
     @Override

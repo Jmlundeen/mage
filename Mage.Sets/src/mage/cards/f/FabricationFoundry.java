@@ -1,25 +1,23 @@
 package mage.cards.f;
 
-import mage.ConditionalMana;
-import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.ReturnFromGraveyardToBattlefieldTargetEffect;
 import mage.abilities.hint.HintUtils;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.SpendOrActivateManaCondition;
 import mage.cards.*;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterControlledArtifactPermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.game.Game;
@@ -43,9 +41,14 @@ public final class FabricationFoundry extends CardImpl {
     public FabricationFoundry(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{1}{W}");
 
-
         // {T}: Add {W}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source.
-        this.addAbility(new ConditionalColoredManaAbility(Mana.WhiteMana(1), new ArtifactManaBuilder()));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.WhiteMana(1))
+                .condition(new SpendOrActivateManaCondition(StaticTypedFilters.AN_ARTIFACT))
+                .ruleText("Add {W}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source.")
+                .build()
+        );
 
         // {2}{W}, {T}, Exile one or more other artifacts you control with total mana value X: Return target artifact card with mana value X or less from your graveyard to the battlefield. Activate only as a sorcery.
         Ability ability = new ActivateAsSorceryActivatedAbility(new ReturnFromGraveyardToBattlefieldTargetEffect(), new ManaCostsImpl<>("{2}{W}"));
@@ -64,38 +67,6 @@ public final class FabricationFoundry extends CardImpl {
     @Override
     public FabricationFoundry copy() {
         return new FabricationFoundry(this);
-    }
-}
-
-//Mana based on Oaken Siren
-class ArtifactManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new ArtifactConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast an artifact spell or activate an ability of an artifact source";
-    }
-}
-
-class ArtifactConditionalMana extends ConditionalMana {
-
-    ArtifactConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(ArtifactSpellOrActivatedAbilityCondition.instance);
-    }
-}
-
-enum ArtifactSpellOrActivatedAbilityCondition implements Condition {
-    instance;
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = game.getObject(source);
-        return object != null && object.isArtifact(game) && !source.isActivated();
     }
 }
 

@@ -1,28 +1,26 @@
 package mage.cards.l;
 
-import mage.ConditionalMana;
-import mage.MageObject;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.LoyaltyAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.dynamicvalue.common.GreatestAmongPermanentsValue;
-import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DamageMultiEffect;
 import mage.abilities.keyword.CompleatedAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.SpendOrActivateManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
+import mage.constants.ManaType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
+import mage.filter.StaticTypedFilters;
 import mage.game.Game;
 import mage.game.permanent.token.PhyrexianBeastToxicToken;
-import mage.players.Player;
 import mage.target.common.TargetCreatureOrPlaneswalkerAmount;
 import mage.target.targetadjustment.TargetAdjuster;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -41,7 +39,11 @@ public class LukkaBoundToRuin extends CardImpl {
         this.addAbility(CompleatedAbility.getInstance());
 
         // +1: Add {R}{G}. Spend this mana only to cast creature spells or activate abilities of creatures.
-        Ability ability = new LoyaltyAbility(new LukkaBoundToRuinManaEffect(), 1);
+        Ability ability = new LoyaltyAbility(new ComposedManaAbilityBuilder()
+                .addStatic(Set.of(ManaType.RED, ManaType.GREEN), 1)
+                .condition(new SpendOrActivateManaCondition(StaticTypedFilters.A_CREATURE_CARD))
+                .ruleText("Add {R}{G}. Spend this mana only to cast creature spells or activate abilities of creatures")
+                .buildEffect(), 1);
         this.addAbility(ability);
 
         // −1: Create a 3/3 green Phyrexian Beast creature token with toxic 1.
@@ -67,56 +69,6 @@ public class LukkaBoundToRuin extends CardImpl {
     @Override
     public LukkaBoundToRuin copy() {
         return new LukkaBoundToRuin(this);
-    }
-}
-
-class LukkaBoundToRuinManaEffect extends OneShotEffect {
-
-    LukkaBoundToRuinManaEffect() {
-        super(Outcome.Benefit);
-        staticText = "Add {R}{G}. Spend this mana only to cast creature spells or activate abilities of creatures.";
-    }
-
-    private LukkaBoundToRuinManaEffect(final LukkaBoundToRuinManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public LukkaBoundToRuinManaEffect copy() {
-        return new LukkaBoundToRuinManaEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return false;
-        }
-        ConditionalMana mana = new LukkaBoundToRuinConditionalMana();
-        player.getManaPool().addMana(mana, game, source);
-        return true;
-    }
-}
-
-class LukkaBoundToRuinConditionalMana extends ConditionalMana {
-
-    // Add {R}{G}
-    private static Mana mana = new Mana(0, 0, 0, 1, 1, 0, 0, 0);
-
-    public LukkaBoundToRuinConditionalMana() {
-        super(mana);
-        addCondition(LukkaBoundToRuinManaCondition.instance);
-    }
-}
-
-enum LukkaBoundToRuinManaCondition implements Condition {
-    instance;
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = game.getObject(source);
-        // Spend this mana only to cast creature spells or activate abilities of creatures.
-        return object != null && object.isCreature(game);
     }
 }
 

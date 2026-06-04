@@ -2,24 +2,24 @@ package mage.abilities.mana.conditional;
 
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
-import mage.filter.FilterAbility;
+import mage.filter.FilterTyped;
 import mage.game.Game;
 
 import java.util.UUID;
 
 public class FilteredAbilityManaCondition extends ManaCondition {
 
-    private final FilterAbility filter;
+    private final FilterTyped filter;
     private final String manaText;
 
-    public FilteredAbilityManaCondition(FilterAbility filter, String manaText) {
+    public FilteredAbilityManaCondition(FilterTyped filter) {
         this.filter = filter.copy();
-        this.manaText = manaText;
+        this.manaText = filter.getMessage();
     }
 
     @Override
     public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        return filter.match(source, game);
+        return filter.match(source, source.getControllerId(), source, game);
     }
 
     @Override

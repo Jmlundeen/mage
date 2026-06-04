@@ -1,20 +1,17 @@
 package mage.cards.o;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.condition.Condition;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.VigilanceAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.SpendOrActivateManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.game.Game;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -38,7 +35,13 @@ public final class OakenSiren extends CardImpl {
         this.addAbility(VigilanceAbility.getInstance());
 
         // {T}: Add {U}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source.
-        this.addAbility(new ConditionalColoredManaAbility(Mana.BlueMana(1), new OakenSirenManaBuilder()));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.BlueMana(1))
+                .condition(new SpendOrActivateManaCondition(StaticTypedFilters.AN_ARTIFACT))
+                .ruleText("Add {U}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source.")
+                .build()
+        );
     }
 
     private OakenSiren(final OakenSiren card) {
@@ -48,36 +51,5 @@ public final class OakenSiren extends CardImpl {
     @Override
     public OakenSiren copy() {
         return new OakenSiren(this);
-    }
-}
-
-class OakenSirenManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new OakenSirenConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast an artifact spell or activate an ability of an artifact source";
-    }
-}
-
-class OakenSirenConditionalMana extends ConditionalMana {
-
-    OakenSirenConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(OakenSirenCondition.instance);
-    }
-}
-
-enum OakenSirenCondition implements Condition {
-    instance;
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = game.getObject(source);
-        return object != null && object.isArtifact(game) && !source.isActivated();
     }
 }

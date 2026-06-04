@@ -1,12 +1,8 @@
 package mage.cards.d;
 
-import mage.ConditionalMana;
-import mage.MageObject;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.AttachEffect;
@@ -14,11 +10,12 @@ import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.LoseLifeSourceControllerEffect;
 import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
 import mage.abilities.keyword.EnchantAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.SpendOrActivateManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterTyped;
 import mage.filter.predicate.mageobject.OutlawPredicate;
 import mage.game.Game;
 import mage.game.events.GameEvent;
@@ -30,12 +27,14 @@ import mage.watchers.common.SpellsCastWatcher;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author Susucr
  */
 public final class DiscreetRetreat extends CardImpl {
+
+    static final FilterTyped filter = new FilterTyped("outlaw")
+            .add(mage.filter.predicate.typed.mageObject.object.OutlawPredicate.instance);
 
     public DiscreetRetreat(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{3}{B}");
@@ -50,12 +49,14 @@ public final class DiscreetRetreat extends CardImpl {
         this.addAbility(ability);
 
         // Enchanted land has "{T}: Add two mana of any one color. Spend this mana only to cast outlaw spells or activate abilities of outlaw sources."
-        Ability gainedAbility = new ConditionalAnyColorManaAbility(
-                new TapSourceCost(), 2, new DiscreetRetreatManaBuilder()
-        );
+        Ability gainedAbility = new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addChoiceAnyOneColor(2)
+                .condition(new SpendOrActivateManaCondition(filter))
+                .ruleText("Add two mana of any one color. Spend this mana only to cast outlaw spells or activate abilities of outlaw sources")
+                .build();
         Effect effect = new GainAbilityAttachedEffect(gainedAbility, AttachmentType.AURA);
-        effect.setText("Enchanted land has \"{T}: Add two mana of any one color. "
-                + "Spend this mana only to cast outlaw spells or activate abilities of outlaw sources.\"");
+        effect.setText(String.format("Enchanted land has \"%s\"", gainedAbility.getRule()));
         this.addAbility(new SimpleStaticAbility(effect));
 
         // Whenever you cast your first outlaw spell each turn, you draw a card and you lose 1 life.
@@ -108,37 +109,7 @@ class DiscreetRetreatTriggeredAbility extends TriggeredAbilityImpl {
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(s -> OutlawPredicate.instance.apply(s, game))
-                .collect(Collectors.toList());
-        return outlawSpells.size() == 1 && outlawSpells.get(0).getId().equals(event.getTargetId());
-    }
-}
-
-class DiscreetRetreatManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new DiscreetRetreatConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast outlaw spells or activate abilities from outlaw sources";
-    }
-}
-
-class DiscreetRetreatConditionalMana extends ConditionalMana {
-    public DiscreetRetreatConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(DiscreetRetreatCondition.instance);
-    }
-}
-
-enum DiscreetRetreatCondition implements Condition {
-    instance;
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = game.getObject(source);
-        return object != null && OutlawPredicate.instance.apply(object, game);
+                .toList();
+        return outlawSpells.size() == 1 && outlawSpells.getFirst().getId().equals(event.getTargetId());
     }
 }

@@ -1,28 +1,27 @@
 package mage.cards.g;
 
-import java.util.UUID;
-
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.MageObject;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
-import mage.abilities.condition.Condition;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.UntapSourceEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.constants.ComparisonType;
-import mage.constants.SubType;
-import mage.constants.SuperType;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.SpendOrActivateManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ComparisonType;
+import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.counters.CounterType;
+import mage.filter.FilterObject;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterCreatureSpell;
 import mage.filter.predicate.mageobject.PowerPredicate;
-import mage.game.Game;
+
+import java.util.UUID;
 
 /**
  *
@@ -32,9 +31,11 @@ public final class GwennaEyesOfGaea extends CardImpl {
 
     private static final FilterCreatureSpell filter
             = new FilterCreatureSpell("a creature spell with power 5 or greater");
+    private static final FilterObject<MageObject> creatureFilter = new FilterObject<>("creature");
 
     static {
         filter.add(new PowerPredicate(ComparisonType.MORE_THAN, 4));
+        creatureFilter.add(CardType.CREATURE.getPredicate());
     }
 
     public GwennaEyesOfGaea(UUID ownerId, CardSetInfo setInfo) {
@@ -48,7 +49,13 @@ public final class GwennaEyesOfGaea extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {T}: Add two mana in any combination of colors. Spend this mana only to cast creature spells or activate abilities of a creature or creature card.
-        this.addAbility(new ConditionalAnyColorManaAbility(2, new GwennaEyesOfGaeaManaBuilder()));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addAnyCombination(2)
+                .condition(new SpendOrActivateManaCondition(StaticTypedFilters.A_CREATURE_CARD))
+                .ruleText("Add two mana in any combination of colors. Spend this mana only to cast creature spells or activate abilities of a creature or creature card")
+                .build()
+        );
 
         // Whenever you cast a creature spell with power 5 or greater, put a +1/+1 counter on Gwenna, Eyes of Gaea and untap it.
         Ability ability = new SpellCastControllerTriggeredAbility(
@@ -66,37 +73,5 @@ public final class GwennaEyesOfGaea extends CardImpl {
     @Override
     public GwennaEyesOfGaea copy() {
         return new GwennaEyesOfGaea(this);
-    }
-}
-
-class GwennaEyesOfGaeaManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new GwennaEyesOfGaeaConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast creature spells or activate abilities of a creature or creature card";
-    }
-}
-
-class GwennaEyesOfGaeaConditionalMana extends ConditionalMana {
-
-    public GwennaEyesOfGaeaConditionalMana(Mana mana) {
-        super(mana);
-        this.staticText = "Spend this mana only to cast creature spells or activate abilities of a creature or creature card";
-        addCondition(GwennaEyesOfGaeaManaCondition.instance);
-    }
-}
-
-enum GwennaEyesOfGaeaManaCondition implements Condition {
-    instance;
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = game.getObject(source);
-        return object != null && object.isCreature(game);
     }
 }
