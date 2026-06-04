@@ -66,22 +66,27 @@ public class HybridManaCost extends ManaCostImpl {
                 if (testSource.getBlack() > 0 || testSource.getAny() > 0) {
                     return true;
                 }
+                break;
             case U:
                 if (testSource.getBlue() > 0 || testSource.getAny() > 0) {
                     return true;
                 }
+                break;
             case R:
                 if (testSource.getRed() > 0 || testSource.getAny() > 0) {
                     return true;
                 }
+                break;
             case W:
                 if (testSource.getWhite() > 0 || testSource.getAny() > 0) {
                     return true;
                 }
+                break;
             case G:
                 if (testSource.getGreen() > 0 || testSource.getAny() > 0) {
                     return true;
                 }
+                break;
             default:
                 if (testSource.getColorless() > 0) {
                     return true;
