@@ -3,6 +3,7 @@ package mage.game;
 import mage.abilities.Ability;
 import mage.cards.Card;
 import mage.filter.FilterCard;
+import mage.filter.FilterTyped;
 import mage.util.Copyable;
 
 import java.io.Serializable;
@@ -100,6 +101,16 @@ public class Exile implements Serializable, Copyable<Exile> {
      * Returns all cards in exile matching the filter, owned by the specified player
      */
     public Set<Card> getCardsOwned(FilterCard filter, UUID playerId, Ability source, Game game) {
+        return getCardsOwned(game, playerId)
+                .stream()
+                .filter(card -> filter.match(card, playerId, source, game))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Returns all cards in exile matching the filter, owned by the specified player
+     */
+    public Set<Card> getCardsOwned(FilterTyped filter, UUID playerId, Ability source, Game game) {
         return getCardsOwned(game, playerId)
                 .stream()
                 .filter(card -> filter.match(card, playerId, source, game))
