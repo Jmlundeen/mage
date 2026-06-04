@@ -6,10 +6,13 @@ import mage.abilities.costs.Cost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.mana.ManaEffect;
+import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.providers.ManaConditionProvider;
 import mage.abilities.mana.providers.ManaPlayerProvider;
 import mage.abilities.mana.providers.ManaTypeAmountProvider;
 import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.abilities.mana.value.*;
+import mage.constants.Duration;
 import mage.constants.ManaType;
 import mage.constants.Zone;
 import mage.filter.Filter;
@@ -61,6 +64,7 @@ public class ComposedManaAbilityBuilder {
 
     private final List<ManaValue> manaValues = new ArrayList<>();
     private final List<Condition> spendingConditions = new ArrayList<>();
+    private final List<ManaConditionProvider> runtimeSpendingConditionProviders = new ArrayList<>();
     private int maxActivations = Integer.MAX_VALUE;
     private boolean poolDependant = false;
     private Cost cost = null;
@@ -74,6 +78,7 @@ public class ComposedManaAbilityBuilder {
     private String anyPlayerPaysChooseUseText = null;
     private ManaEffect manaEffect = null;
     private DynamicValue capacityOverride = null;
+    private Duration manaPoolDuration = null;
 
     public ComposedManaAbilityBuilder() {
     }
@@ -229,14 +234,34 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
-     * Adds a dynamic mana value where player chooses any combination of all five colors.
-     * Example: "Add X mana in any combination of colors."
+     * Adds a set amount of mana where player chooses any combination of all five colors.
+     * Example: "Add two mana in any combination of colors."
      * 
      * @param amount the dynamic value that calculates how much mana to produce
      * @return this builder
      */
+    public ComposedManaAbilityBuilder addAnyCombination(int amount) {
+        return addDynamicAnyCombination(StaticValue.get(amount));
+    }
+
+    /**
+     * Adds a dynamic amount of mana where player chooses any combination of all five colors.
+     * Example: "Add X mana in any combination of colors."
+     */
     public ComposedManaAbilityBuilder addDynamicAnyCombination(DynamicValue amount) {
         manaValues.add(DynamicManaValue.anyCombination(amount));
+        return this;
+    }
+
+    /**
+     * Adds a dynamic mana value where player chooses one color and produces the given amount of that color.
+     * Example: "Add X mana of any one color."
+     */
+    public ComposedManaAbilityBuilder addDynamicAnyColor(DynamicValue amount) {
+        manaValues.add(new DynamicManaValue(amount,
+                EnumSet.of(ManaType.WHITE, ManaType.BLUE, ManaType.BLACK, ManaType.RED, ManaType.GREEN),
+                false)
+        );
         return this;
     }
 
@@ -317,23 +342,21 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
-     * Adds a choice mana value where player chooses any one color.
-     * 
-     * @param amount the amount of mana of the chosen color
-     * @return this builder
-     */
-    public ComposedManaAbilityBuilder addChoiceAnyColor(int amount) {
-        return addChoice(EnumSet.of(ManaType.WHITE, ManaType.BLUE, ManaType.BLACK, ManaType.RED, ManaType.GREEN), amount);
-    }
-
-    /**
      * Adds a spending condition to restrict when the produced mana can be spent.
      * 
      * @param condition the condition that must be met to spend the mana
      * @return this builder
      */
-    public ComposedManaAbilityBuilder condition(Condition condition) {
+    public ComposedManaAbilityBuilder condition(ManaCondition condition) {
         spendingConditions.add(condition);
+        return this;
+    }
+
+    /**
+     * Adds spending conditions resolved at mana evaluation/production time.
+     */
+    public ComposedManaAbilityBuilder runtimeCondition(ManaConditionProvider conditionProvider) {
+        runtimeSpendingConditionProviders.add(conditionProvider);
         return this;
     }
 
@@ -443,6 +466,14 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Sets how long produced mana stays in the mana pool.
+     */
+    public ComposedManaAbilityBuilder duration(Duration manaPoolDuration) {
+        this.manaPoolDuration = manaPoolDuration;
+        return this;
+    }
+
+    /**
      * Builds the ComposedManaAbility.
      * 
      * @return the composed mana ability
@@ -463,11 +494,13 @@ public class ComposedManaAbilityBuilder {
         ManaEffect effect = new ComposedManaEffect(
                 manaValues,
                 spendingConditions,
+                runtimeSpendingConditionProviders,
                 manaPlayerProvider,
                 comparisonScope,
                 anyPlayerPaysCost,
                 anyPlayerPaysChooseUseText,
-                capacityOverride
+                capacityOverride,
+                manaPoolDuration
         );
         if (ruleText != null) {
             effect.setText(ruleText);
@@ -487,6 +520,10 @@ public class ComposedManaAbilityBuilder {
 
     public List<Condition> getSpendingConditions() {
         return spendingConditions;
+    }
+
+    public List<ManaConditionProvider> getRuntimeSpendingConditionProviders() {
+        return runtimeSpendingConditionProviders;
     }
 
     public int getMaxActivations() {
@@ -534,5 +571,9 @@ public class ComposedManaAbilityBuilder {
 
     public DynamicValue getCapacityOverride() {
         return capacityOverride;
+    }
+
+    public Duration getManaPoolDuration() {
+        return manaPoolDuration;
     }
 }

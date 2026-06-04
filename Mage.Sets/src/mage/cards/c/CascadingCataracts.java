@@ -4,7 +4,6 @@ package mage.cards.c;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.keyword.IndestructibleAbility;
 import mage.abilities.mana.ColorlessManaAbility;
 import mage.abilities.mana.ComposedManaAbilityBuilder;
@@ -31,7 +30,7 @@ public final class CascadingCataracts extends CardImpl {
 
         // {5}, {T}: Add five mana in any combination of colors.
         Ability manaAbility = new ComposedManaAbilityBuilder()
-                .addDynamicAnyCombination(StaticValue.get(5))
+                .addAnyCombination(5)
                 .cost(new GenericManaCost(5))
                 .ruleText("Add five mana in any combination of colors.")
                 .build();
