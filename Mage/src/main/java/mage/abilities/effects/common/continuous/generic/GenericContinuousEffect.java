@@ -13,17 +13,14 @@ import mage.abilities.effects.common.ChooseCreatureTypeEffect;
 import mage.abilities.mana.*;
 import mage.cards.Card;
 import mage.constants.*;
-import mage.filter.FilterCard;
-import mage.filter.FilterPermanent;
-import mage.filter.FilterStackObject;
+import mage.filter.FilterTyped;
 import mage.game.ExileZone;
 import mage.game.Game;
-import mage.game.command.Commander;
 import mage.game.permanent.Permanent;
-import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTargets;
 import mage.util.CardUtil;
+import mage.util.ObjectQuery;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,29 +33,25 @@ import java.util.stream.Collectors;
  *
  * @author Jmlundeen
  */
-@Deprecated
-public class ContinuousEffectBuilder extends ContinuousEffectImpl {
+public class GenericContinuousEffect extends ContinuousEffectImpl {
 
-    protected FilterStackObject stackObjectFilter;
-    protected FilterPermanent permanentFilter;
-    protected FilterCard cardFilter;
-    protected TargetController cardsControlledBy = TargetController.YOU;
-    protected ContinuousAffected affected = ContinuousAffected.STATIC_OR_DYNAMIC;
-    protected List<Zone> affectedZones;
+    protected FilterTyped filter;
+    protected ContinuousAffected affected;
+    protected EnumSet<Zone> affectedZones;
     protected List<Ability> gainedAbilities;
-    protected List<Layer> additionalLayers;
-    protected List<SubLayer> additionalSublayers;
+    protected EnumSet<Layer> additionalLayers;
+    protected EnumSet<SubLayer> additionalSublayers;
     protected DynamicValue powerModifier;
     protected DynamicValue toughnessModifier;
     protected DynamicValue basePower;
     protected DynamicValue baseToughness;
-    protected List<CardType> addedCardTypes;
-    protected List<CardType> removedCardTypes;
-    protected List<SuperType> addedSuperTypes;
-    protected List<SuperType> removedSuperTypes;
-    protected List<SubType> addedSubTypes;
-    protected List<SubType> removedSubTypes;
-    protected List<SubTypeSet> removedSubTypeSets;
+    protected EnumSet<CardType> addedCardTypes;
+    protected EnumSet<CardType> removedCardTypes;
+    protected EnumSet<SuperType> addedSuperTypes;
+    protected EnumSet<SuperType> removedSuperTypes;
+    protected EnumSet<SubType> addedSubTypes;
+    protected EnumSet<SubType> removedSubTypes;
+    protected EnumSet<SubTypeSet> removedSubTypeSets;
     protected ObjectColor addedColor;
     protected boolean removeOtherAbilities;
     protected boolean removeOtherCardTypes = true;
@@ -68,113 +61,49 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     protected boolean useEveryLandType;
     protected boolean removeOtherColors;
     protected MakeAbilityFunction makeAbilityFunction;
-    protected Map<UUID, Ability> createdAbilities; // cache created abilities to reduce ability creation
-    protected int cachedAbilityZcc; // reset created abilities cache if source ZCC changes
+    protected Map<UUID, Ability> createdAbilities;
+    protected int cachedAbilityZcc;
     protected List<Class<? extends Ability>> abilitiesToRemove;
 
-    /**
-     * Creates a new standard ContinuousEffectBuilder. For abilities that affect cards of the controller
-     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets
-     */
-    public ContinuousEffectBuilder(Duration duration, Outcome outcome) {
-        super(duration, outcome);
+    public GenericContinuousEffect(Duration duration, Outcome outcome, FilterTyped filter, Zone... affectedZones) {
+        this(duration, outcome, filter, ContinuousAffected.STATIC_OR_DYNAMIC, affectedZones);
     }
 
-    /**
-     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object or permanent source is attached to.
-     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets or a specific affected, such as
-     * {@link ContinuousAffected#SOURCE} or {@link ContinuousAffected#ATTACHED_TO}
-     */
-    public ContinuousEffectBuilder(Duration duration, Outcome outcome, ContinuousAffected affected) {
+    public GenericContinuousEffect(Outcome outcome, FilterTyped filter, Zone... affectedZones) {
+        this(Duration.WhileOnBattlefield, outcome, filter, affectedZones);
+    }
+
+    public GenericContinuousEffect(Outcome outcome, FilterTyped filter, ContinuousAffected affected, Zone... affectedZones) {
+        this(Duration.WhileOnBattlefield, outcome, filter, affected, affectedZones);
+    }
+
+    public GenericContinuousEffect(Duration duration, Outcome outcome, FilterTyped filter, ContinuousAffected affected, Zone... affectedZones) {
         super(duration, outcome);
+        this.filter = filter;
         this.affected = affected;
+        setAffectedZonesInternal(affectedZones == null || affectedZones.length == 0 ? new Zone[]{Zone.BATTLEFIELD} : affectedZones);
     }
 
-    /**
-     * Creates a new ContinuousEffectBuilder. Use this for effects that work on the source object or permanent source is attached to.
-     * Zones need to be set separately using {@link #setAffectedZones(Zone...)} if not using targets or a specific affected, such as
-     * {@link ContinuousAffected#SOURCE} or {@link ContinuousAffected#ATTACHED_TO}
-     */
-    public ContinuousEffectBuilder(Outcome outcome, ContinuousAffected affected) {
-        this(Duration.WhileOnBattlefield, outcome, affected);
-    }
-
-    /**
-     * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller.
-     * Make sure to set the affected zones using {@link #setAffectedZones(Zone...)}
-     */
-    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController objectController) {
-        super(duration, outcome);
-        this.cardsControlledBy = objectController;
-    }
-
-    /**
-     * Creates a new ContinuousEffectBuilder that applies to objects controlled by the specified controller on the battlefield.
-     * @param objectController the controller whose objects are affected. Use {@link TargetController#YOU}, {@link TargetController#OPPONENT}, {@link TargetController#EACH_PLAYER}
-     */
-    public ContinuousEffectBuilder(Outcome outcome, TargetController objectController, FilterPermanent permanentFilter) {
-        super(Duration.WhileOnBattlefield, outcome);
-        this.permanentFilter = permanentFilter;
-        this.cardsControlledBy = objectController;
-        this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
-    }
-
-    /**
-     * Creates a new ContinuousEffectBuilder that applies to permanents on the battlefield the controlling player controls
-     */
-    public ContinuousEffectBuilder(Outcome outcome, FilterPermanent permanentFilter) {
-        super(Duration.WhileOnBattlefield, outcome);
-        this.permanentFilter = permanentFilter;
-        this.cardsControlledBy = TargetController.YOU;
-        this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
-    }
-
-    /**
-     * Creates a new ContinuousEffectBuilder that applies to permanents on the battlefield
-     * @param cardsControlledBy the controller whose objects are affected. Use {@link TargetController#YOU}, {@link TargetController#OPPONENT}, {@link TargetController#EACH_PLAYER}
-     */
-    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController cardsControlledBy, FilterPermanent permanentFilter) {
-        super(duration, outcome);
-        this.permanentFilter = permanentFilter;
-        this.cardsControlledBy = cardsControlledBy;
-        this.affectedZones = Collections.singletonList(Zone.BATTLEFIELD);
-    }
-
-    /**
-     * Creates a new ContinuousEffectBuilder that applies to Cards in the specified zones
-     */
-    public ContinuousEffectBuilder(Duration duration, Outcome outcome, TargetController cardsControlledBy,
-                                   FilterCard cardFilter, Zone... affectedZones) {
-        super(duration, outcome);
-        this.cardFilter = cardFilter;
-        this.cardsControlledBy = cardsControlledBy;
-        this.affectedZones = new ArrayList<>();
-        Collections.addAll(this.affectedZones, affectedZones);
-    }
-
-    protected ContinuousEffectBuilder(final ContinuousEffectBuilder effect) {
+    protected GenericContinuousEffect(final GenericContinuousEffect effect) {
         super(effect);
-        this.stackObjectFilter = effect.stackObjectFilter;
-        this.permanentFilter = effect.permanentFilter;
-        this.cardFilter = effect.cardFilter;
-        this.cardsControlledBy = effect.cardsControlledBy;
+        this.filter = effect.filter == null ? null : effect.filter.copy();
         this.affected = effect.affected;
-        this.affectedZones = effect.affectedZones;
-        this.gainedAbilities = effect.gainedAbilities;
-        this.additionalLayers = effect.additionalLayers;
-        this.additionalSublayers = effect.additionalSublayers;
+        this.affectedZones = effect.affectedZones == null ? null : EnumSet.copyOf(effect.affectedZones);
+        this.gainedAbilities = effect.gainedAbilities == null ? null : new ArrayList<>(effect.gainedAbilities);
+        this.additionalLayers = effect.additionalLayers == null ? null : EnumSet.copyOf(effect.additionalLayers);
+        this.additionalSublayers = effect.additionalSublayers == null ? null : EnumSet.copyOf(effect.additionalSublayers);
         this.powerModifier = effect.powerModifier;
         this.toughnessModifier = effect.toughnessModifier;
         this.basePower = effect.basePower;
         this.baseToughness = effect.baseToughness;
-        this.addedCardTypes = effect.addedCardTypes;
-        this.removedCardTypes = effect.removedCardTypes;
-        this.addedSuperTypes = effect.addedSuperTypes;
-        this.removedSuperTypes = effect.removedSuperTypes;
-        this.addedSubTypes = effect.addedSubTypes;
-        this.removedSubTypes = effect.removedSubTypes;
-        this.removedSubTypeSets = effect.removedSubTypeSets;
-        this.addedColor = effect.addedColor;
+        this.addedCardTypes = effect.addedCardTypes == null ? null : EnumSet.copyOf(effect.addedCardTypes);
+        this.removedCardTypes = effect.removedCardTypes == null ? null : EnumSet.copyOf(effect.removedCardTypes);
+        this.addedSuperTypes = effect.addedSuperTypes == null ? null : EnumSet.copyOf(effect.addedSuperTypes);
+        this.removedSuperTypes = effect.removedSuperTypes == null ? null : EnumSet.copyOf(effect.removedSuperTypes);
+        this.addedSubTypes = effect.addedSubTypes == null ? null : EnumSet.copyOf(effect.addedSubTypes);
+        this.removedSubTypes = effect.removedSubTypes == null ? null : EnumSet.copyOf(effect.removedSubTypes);
+        this.removedSubTypeSets = effect.removedSubTypeSets == null ? null : EnumSet.copyOf(effect.removedSubTypeSets);
+        this.addedColor = effect.addedColor == null ? null : new ObjectColor(effect.addedColor);
         this.removeOtherAbilities = effect.removeOtherAbilities;
         this.removeOtherCardTypes = effect.removeOtherCardTypes;
         this.removeOtherSubtypes = effect.removeOtherSubtypes;
@@ -183,27 +112,31 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         this.useEveryLandType = effect.useEveryLandType;
         this.removeOtherColors = effect.removeOtherColors;
         this.makeAbilityFunction = effect.makeAbilityFunction;
-        this.createdAbilities = effect.createdAbilities;
-        this.abilitiesToRemove = effect.abilitiesToRemove;
+        this.createdAbilities = effect.createdAbilities == null ? null : new HashMap<>(effect.createdAbilities);
+        this.abilitiesToRemove = effect.abilitiesToRemove == null ? null : new ArrayList<>(effect.abilitiesToRemove);
         this.cachedAbilityZcc = effect.cachedAbilityZcc;
     }
 
+    public GenericContinuousEffect(Duration duration, Outcome outcome) {
+        super(duration, outcome);
+        this.affected = ContinuousAffected.SOURCE;
+    }
+
     @Override
-    public ContinuousEffectBuilder copy() {
-        return new ContinuousEffectBuilder(this);
+    public GenericContinuousEffect copy() {
+        return new GenericContinuousEffect(this);
     }
 
     @Override
     public void init(Ability source, Game game) {
         super.init(source, game);
         if (getAffectedObjectsSet() && affected == ContinuousAffected.STATIC_OR_DYNAMIC && getTargetPointer().getTargets(game, source).isEmpty()) {
-            // for static affected objects, set affected objects only once at init
-
             List<MageItem> affectedObjects = new ArrayList<>();
             queryAffectedObjects(layer, source, game, affectedObjects);
             this.setTargetPointer(new FixedTargets(affectedObjects.stream()
-                    .filter(mageItem -> mageItem instanceof MageObject)
-                    .map(mageItem -> new MageObjectReference((MageObject) mageItem, game))
+                    .filter(MageObject.class::isInstance)
+                    .map(MageObject.class::cast)
+                    .map(mageObject -> new MageObjectReference(mageObject, game))
                     .collect(Collectors.toList()))
             );
         }
@@ -222,7 +155,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     ((Permanent) mageObject).changeControllerId(source.getControllerId(), game, source);
                     break;
                 case TextChangingEffects_3:
-                    // TODO: implement
                     break;
                 case TypeChangingEffects_4:
                     handleCardTypes(game, mageObject);
@@ -253,14 +185,13 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                         ((Permanent) mageObject).switchPowerToughness();
                         break;
                     }
+                    break;
+                default:
+                    break;
             }
         }
     }
 
-    /**
-     * Clean up stale entries from the createdAbilities map by removing abilities
-     * for objects that are no longer affected by this continuous effect.
-     */
     private void cleanupStaleCreatedAbilities(Game game, Ability source, List<MageItem> currentAffectedObjects) {
         if (createdAbilities == null || createdAbilities.isEmpty() || cachedAbilityZcc == game.getState().getZoneChangeCounter(source.getSourceId())) {
             return;
@@ -273,24 +204,14 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
         }
 
-        // Remove abilities for objects that are no longer affected
-        Iterator<Map.Entry<UUID, Ability>> iterator = createdAbilities.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<UUID, Ability> entry = iterator.next();
-            UUID objectId = entry.getKey();
-
-            if (!currentAffectedIds.contains(objectId)) {
-                iterator.remove();
-            }
-        }
+        createdAbilities.entrySet().removeIf(entry -> !currentAffectedIds.contains(entry.getKey()));
     }
 
     private void addPowerAndToughness(Ability source, Game game, MageObject mageObject) {
         if (powerModifier == null || toughnessModifier == null) {
-            throw new IllegalArgumentException("Power and/or toughness modifier not set in ContinuousEffectBuilder");
+            throw new IllegalArgumentException("Power and/or toughness modifier not set in GenericContinuousEffect");
         }
-        if (mageObject instanceof Permanent) {
-            Permanent permanent = (Permanent) mageObject;
+        if (mageObject instanceof Permanent permanent) {
             permanent.addPower(powerModifier.calculate(game, source, this, permanent));
             permanent.addToughness(toughnessModifier.calculate(game, source, this, permanent));
         }
@@ -298,7 +219,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
     private void setBasePowerAndToughness(Ability source, Game game, MageObject mageObject) {
         if (basePower == null && baseToughness == null) {
-            throw new IllegalArgumentException("Power and toughness not set in ContinuousEffectBuilder");
+            throw new IllegalArgumentException("Power and toughness not set in GenericContinuousEffect");
         }
         if (basePower != null) {
             mageObject.getPower().setModifiedBaseValue(basePower.calculate(game, source, this, mageObject));
@@ -314,7 +235,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                 addAbilityToObject(source, game, mageObject, abilityToAdd);
             }
         }
-        if (makeAbilityFunction != null && mageObject instanceof Card) {
+        if (makeAbilityFunction != null && mageObject instanceof Card card) {
             if (cachedAbilityZcc != game.getState().getZoneChangeCounter(source.getSourceId())) {
                 if (createdAbilities != null) {
                     createdAbilities.clear();
@@ -326,7 +247,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
 
             Ability abilityToAdd = createdAbilities != null && createdAbilities.containsKey(mageObject.getId())
                     ? createdAbilities.get(mageObject.getId())
-                    : makeAbilityFunction.makeAbility((Card) mageObject, source, game);
+                    : makeAbilityFunction.makeAbility(card, source, game);
 
             if (abilityToAdd != null) {
                 createdAbilities.put(mageObject.getId(), abilityToAdd);
@@ -336,17 +257,17 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     protected void addAbilityToObject(Ability source, Game game, MageObject mageObject, Ability abilityToAdd) {
-        if (mageObject instanceof Permanent) {
-            ((Permanent) mageObject).addAbility(abilityToAdd, source.getSourceId(), game);
-        } else if (mageObject instanceof Card) {
-            game.getState().addOtherAbility((Card) mageObject, abilityToAdd);
+        if (mageObject instanceof Permanent permanent) {
+            permanent.addAbility(abilityToAdd, source.getSourceId(), game);
+        } else if (mageObject instanceof Card card) {
+            game.getState().addOtherAbility(card, abilityToAdd);
         }
     }
 
     private void removeAbilities(Ability source, Game game, MageObject mageObject) {
         if (removeOtherAbilities) {
-            if (mageObject instanceof Permanent) {
-                ((Permanent) mageObject).removeAllAbilities(source.getSourceId(), game);
+            if (mageObject instanceof Permanent permanent) {
+                permanent.removeAllAbilities(source.getSourceId(), game);
             } else if (mageObject instanceof Card) {
                 game.getState().getCardState(mageObject.getId()).getAbilities().clear();
             }
@@ -359,10 +280,15 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                         .forEach(toRemove::add);
             }
             for (Ability ability : toRemove) {
-                if (mageObject instanceof Permanent) {
-                    ((Permanent) mageObject).removeAbility(ability, source.getSourceId(), game);
+                if (mageObject instanceof Permanent permanent) {
+                    permanent.removeAbility(ability, source.getSourceId(), game);
                 } else if (mageObject instanceof Card) {
-                    game.getState().getCardState(mageObject.getId()).getAbilities().remove(ability);
+                    Iterator<Ability> iterator = game.getState().getCardState(mageObject.getId()).getAbilities().iterator();
+                    while (iterator.hasNext()) {
+                        if (iterator.next().equals(ability)) {
+                            iterator.remove();
+                        }
+                    }
                 }
             }
         }
@@ -378,6 +304,17 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                     mageObject.setIsAllNonbasicLandTypes(game, false);
                 }
                 mageObject.removeSubType(game, subType);
+            }
+        }
+        if (removedSubTypeSets != null) {
+            for (SubTypeSet subTypeSet : removedSubTypeSets) {
+                if (subTypeSet == SubTypeSet.CreatureType) {
+                    mageObject.setIsAllCreatureTypes(game, false);
+                }
+                if (subTypeSet == SubTypeSet.NonBasicLandType) {
+                    mageObject.setIsAllNonbasicLandTypes(game, false);
+                }
+                mageObject.removeAllSubTypes(game, subTypeSet);
             }
         }
         if (useEveryCreatureType) {
@@ -396,19 +333,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
         }
         if (addedSubTypes != null) {
-            List<SubType> addedBasicLandTypes = new ArrayList<>();
+            EnumSet<SubType> addedBasicLandTypes = EnumSet.noneOf(SubType.class);
             Set<SubTypeSet> setsToRemove = new HashSet<>();
             for (SubType subType : addedSubTypes) {
                 setsToRemove.add(subType.getSubTypeSet());
             }
-            // 205.1a. ...Similarly, when an effect sets one or more of an object's subtypes,
-            // the new subtype(s) replaces any existing subtypes from the appropriate set
-            // (creature types, land types, artifact types, enchantment types, planeswalker types, or spell types).
-            // 205.1b. Some effects change an object's card type, supertype, or subtype but specify that the object
-            // retains a prior card type, supertype, or subtype. In such cases, all the object's prior card types, supertypes, and subtypes are retained.
-            // This rule applies to effects that use phrases such as "in addition to its other types" or that state that something is "still a [type, supertype, or subtype]."
-            // Some effects state that an object becomes an "artifact creature"; these effects also allow the object to retain all of its prior card types and subtypes.
-            // Some effects state that an object becomes a "[creature type or types] artifact creature"; these effects also allow the object to retain all of its prior card types and subtypes other than creature types, but replace any existing creature types.
             boolean artifactCreatureCondition = addedCardTypes != null
                     && addedCardTypes.contains(CardType.ARTIFACT)
                     && addedCardTypes.contains(CardType.CREATURE);
@@ -430,14 +359,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         }
     }
 
-    private static void checkManaAbilities(Ability source, Game game, MageObject mageObject, List<SubType> addedBasicLandTypes) {
-        if (!(mageObject instanceof Permanent)) {
+    private static void checkManaAbilities(Ability source, Game game, MageObject mageObject, EnumSet<SubType> addedBasicLandTypes) {
+        if (!(mageObject instanceof Permanent permanent)) {
             return;
         }
 
-        Permanent permanent = (Permanent) mageObject;
-
-        // check if types being added + existing types include all basic land types
         Set<SubType> allBasicLandTypes = EnumSet.noneOf(SubType.class);
         for (SubType subType : addedBasicLandTypes) {
             if (subType.getSubTypeSet() == SubTypeSet.BasicLandType) {
@@ -450,7 +376,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
         }
         if (allBasicLandTypes.size() == 5) {
-            // all basic land types are present, remove basic mana abilities and add AnyColorManaAbility
             for (Ability basicManaAbility : Arrays.asList(
                     new WhiteManaAbility(),
                     new BlueManaAbility(),
@@ -463,7 +388,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             }
             permanent.addAbility(new AnyColorManaAbility(), source.getSourceId(), game);
         } else {
-            // not all basic land types are present, add basic mana abilities for added basic land types
             for (SubType subType : addedBasicLandTypes) {
                 switch (subType) {
                     case FOREST:
@@ -491,6 +415,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                             permanent.addAbility(new WhiteManaAbility(), source.getSourceId(), game);
                         }
                         break;
+                    default:
+                        break;
                 }
             }
         }
@@ -510,27 +436,21 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     }
 
     private void handleCardTypes(Game game, MageObject mageObject) {
-        List<CardType> toRemove = new ArrayList<>();
+        EnumSet<CardType> toRemove = EnumSet.noneOf(CardType.class);
 
         if (removedCardTypes != null) {
             toRemove.addAll(removedCardTypes);
         }
         if (addedCardTypes != null) {
             if (removeOtherCardTypes) {
-            // 205.1a. Some effects set an object's card type. In most such cases, the new card type(s)
-            // replaces any existing card types. However, an object with either the instant or sorcery card type retains that type.
-            mageObject.getCardType(game).stream()
-                    .filter(cardType -> cardType != CardType.INSTANT && cardType != CardType.SORCERY)
-                    .forEach(toRemove::add);
+                mageObject.getCardType(game).stream()
+                        .filter(cardType -> cardType != CardType.INSTANT && cardType != CardType.SORCERY)
+                        .forEach(toRemove::add);
             }
             mageObject.addCardType(game, addedCardTypes.toArray(new CardType[0]));
         }
         for (CardType cardType : toRemove) {
             mageObject.removeCardType(game, cardType);
-            // if removing card type, also remove related subtypes
-            // 205.1a. ...If an object's card type is removed, the subtypes correlated with that card type will
-            // remain if they are also the subtypes of a card type the object currently has;
-            // otherwise, they are also removed for the entire time the object's card type is removed.
             if (cardType == CardType.CREATURE && mageObject.getCardType(game).contains(CardType.KINDRED)
                     || cardType == CardType.KINDRED && mageObject.getCardType(game).contains(CardType.CREATURE)) {
                 continue;
@@ -546,7 +466,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             return false;
         }
         if (!source.getAffectedObjects().isEmpty()) {
-            // re-use already affected objects across multiple layers CR 613.6
             affectedObjects.addAll(source.getAffectedObjects());
             return true;
         }
@@ -570,7 +489,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             return false;
         }
         for (Zone zone : affectedZones) {
-            getObjectsFromZone(game, zone, controller, source, affectedObjects);
+            ObjectQuery.getObjectsFromZone(game, zone, controller, source, affectedObjects, filter);
         }
         if (additionalLayers != null && !additionalLayers.isEmpty()) {
             source.getAffectedObjects().addAll(affectedObjects);
@@ -592,8 +511,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                 ));
                 if (exileZone != null && !exileZone.isEmpty()) {
                     affectedObjects.addAll(exileZone.getCards(game).stream()
-                            .filter(card -> cardFilter == null || cardFilter.match(card, controller.getId(), source, game))
-                            .collect(Collectors.toList()));
+                            .filter(card -> filter == null || filter.match(card, controller.getId(), source, game))
+                            .toList());
                 }
                 break;
             case ATTACHED_TO:
@@ -608,7 +527,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
                 break;
             case TOP_OF_LIBRARY:
                 Card topCard = controller.getLibrary().getFromTop(game);
-                if (topCard != null && (cardFilter == null || cardFilter.match(topCard, controller.getId(), source, game))) {
+                if (topCard != null && (filter == null || filter.match(topCard, controller.getId(), source, game))) {
                     affectedObjects.add(topCard);
                 }
                 break;
@@ -618,147 +537,89 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return !affectedObjects.isEmpty();
     }
 
-    protected void getObjectsFromZone(Game game, Zone zone, Player controller, Ability source, List<MageItem> affectedObjects) {
-        if (this.cardsControlledBy.equals(TargetController.YOU)) {
-            getPlayersObjectsFromZone(game, zone, controller, source, affectedObjects);
-            return;
-        }
-
-        for (UUID playerId : game.getOpponents(controller.getId(), true)) {
-            Player opponent = game.getPlayer(playerId);
-            if (opponent == null) {
-                continue;
+    void addLayerInternal(Layer layer) {
+        if (this.layer == null) {
+            this.layer = layer;
+        } else {
+            if (additionalLayers == null) {
+                additionalLayers = EnumSet.noneOf(Layer.class);
             }
-            getPlayersObjectsFromZone(game, zone, opponent, source, affectedObjects);
-        }
-        if (this.cardsControlledBy.equals(TargetController.EACH_PLAYER)) {
-            getPlayersObjectsFromZone(game, zone, controller, source, affectedObjects);
+            additionalLayers.add(layer);
         }
     }
 
-    protected void getPlayersObjectsFromZone(Game game, Zone zone, Player player, Ability source, List<MageItem> affectedObjects) {
-        switch (zone) {
-            case GRAVEYARD:
-                affectedObjects.addAll(player.getGraveyard().getCards(game).stream()
-                        .filter(card -> cardFilter == null || cardFilter.match(card, player.getId(), source, game))
-                        .collect(Collectors.toList()));
-                break;
-            case HAND:
-                affectedObjects.addAll(player.getHand().getCards(game).stream()
-                        .filter(card -> cardFilter == null || cardFilter.match(card, player.getId(), source, game))
-                        .collect(Collectors.toList()));
-                break;
-            case LIBRARY:
-                affectedObjects.addAll(player.getLibrary().getCards(game).stream()
-                        .filter(card -> cardFilter == null || cardFilter.match(card, player.getId(), source, game))
-                        .collect(Collectors.toList()));
-                break;
-            case EXILED:
-                affectedObjects.addAll(game.getExile().getCardsOwned(cardFilter, player.getId(), source, game));
-                break;
-            case COMMAND:
-                for (Object commObj : game.getState().getCommand()) {
-                    if (commObj instanceof Commander) {
-                        Card card = game.getCard(((Commander) commObj).getId());
-                        if (card != null && card.getControllerOrOwnerId().equals(player.getId()) &&
-                                (cardFilter == null || cardFilter.match(card, player.getId(), source, game))) {
-                            affectedObjects.add(card);
-                        }
-                    }
-                }
-                break;
-            case STACK:
-                affectedObjects.addAll(game.getStack().stream()
-                        .filter(stackObject -> stackObject.getControllerId().equals(player.getId()))
-                        .filter(stackObject -> stackObjectFilter != null ? stackObjectFilter.match(stackObject, player.getId(), source, game)
-                                : cardFilter == null || (stackObject instanceof Spell && cardFilter.match(((Spell) stackObject), player.getId(), source, game)))
-                                .map(stackObject -> game.getCard(stackObject.getSourceId()))
-                        .collect(Collectors.toList())
-                );
-                break;
-            case BATTLEFIELD:
-                if (permanentFilter == null) {
-                    throw new IllegalArgumentException("Permanent filter must be defined for battlefield zone");
-                }
-                for (Permanent permanent : game.getBattlefield().getAllActivePermanents(player.getId())) {
-                    if (permanentFilter.match(permanent, player.getId(), source, game)) {
-                        affectedObjects.add(permanent);
-                    }
-                }
-                break;
+    void addSubLayerInternal(SubLayer sublayer) {
+        if (this.sublayer == null) {
+            this.sublayer = sublayer;
+        } else {
+            if (additionalSublayers == null) {
+                additionalSublayers = EnumSet.noneOf(SubLayer.class);
+            }
+            additionalSublayers.add(sublayer);
+        }
+    }
+
+    private void setAffectedZonesInternal(Zone... zones) {
+        this.affectedZones = EnumSet.noneOf(Zone.class);
+        if (zones != null) {
+            Collections.addAll(this.affectedZones, zones);
         }
     }
 
     /**
-     * Set the controller whose objects are affected by this effect.
+     * Set the filter for this effect, restricting which objects are affected.
      */
-    public ContinuousEffectBuilder setCardsControlledBy(TargetController cardsControlledBy) {
-        this.cardsControlledBy = cardsControlledBy;
+    public GenericContinuousEffect setFilter(FilterTyped filter) {
+        this.filter = filter;
         return this;
     }
 
     /**
-     * Set the zones the effect applies to.
+     * Set which objects are affected by this effect. The default is {@link ContinuousAffected#STATIC_OR_DYNAMIC}
      */
-    public ContinuousEffectBuilder setAffectedZones(Zone... affectedZones) {
-        this.affectedZones = new ArrayList<>();
-        Collections.addAll(this.affectedZones, affectedZones);
+    public GenericContinuousEffect setAffected(ContinuousAffected affected) {
+        this.affected = affected;
         return this;
     }
 
     /**
-     * Set the filter for stack objects (spells and abilities on the stack) that will be affected
+     * Set the zones in which this effect applies. Only necessary if affected is set to {@link ContinuousAffected#STATIC_OR_DYNAMIC}.
+     * supports {@link Zone#ALL}
      */
-    public ContinuousEffectBuilder setStackObjectFilter(FilterStackObject stackObjectFilter) {
-        this.stackObjectFilter = stackObjectFilter;
+    public GenericContinuousEffect setAffectedZones(Zone... affectedZones) {
+        setAffectedZonesInternal(affectedZones);
         return this;
     }
 
     /**
-     * Set the filter for permanents that will be affected on the battlefield
+     * Set the abilities to be gained by the affected objects.
      */
-    public ContinuousEffectBuilder setPermanentFilter(FilterPermanent permanentFilter) {
-        this.permanentFilter = permanentFilter;
-        return this;
-    }
-
-    /**
-     * Set the filter for cards that will be affected in zones other than the battlefield
-     */
-    public ContinuousEffectBuilder setCardFilter(FilterCard cardFilter) {
-        this.cardFilter = cardFilter;
-        return this;
-    }
-
-    /**
-     * Add abilities to the affected objects
-     */
-    public ContinuousEffectBuilder withGainedAbilities(Ability... gainedAbilities) {
+    public GenericContinuousEffect withGainedAbilities(Ability... gainedAbilities) {
         this.gainedAbilities = new ArrayList<>();
         Collections.addAll(this.gainedAbilities, gainedAbilities);
-        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
+        addLayerInternal(Layer.AbilityAddingRemovingEffects_6);
         return this;
     }
 
     /**
-     * Used to add abilities like Flashback where cost is equal to the card's mana cost.
+     * Used to add abilities that require runtime modifications, like Flashback where cost is equal to the card's mana cost.
      * <br>
      * e.g. (card) -> new FlashbackAbility(card, card.getManaCost())
      * <br>
      * See SnapCaster Mage for an example.
      */
-    public ContinuousEffectBuilder withGainedAbility(MakeAbilityFunction function) {
+    public GenericContinuousEffect withGainedAbility(MakeAbilityFunction function) {
         this.makeAbilityFunction = function;
-        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
+        addLayerInternal(Layer.AbilityAddingRemovingEffects_6);
         return this;
     }
 
     /**
      * Remove all other abilities, not gained from this effect, from the affected objects
      */
-    public ContinuousEffectBuilder withRemoveOtherAbilities() {
+    public GenericContinuousEffect withRemoveOtherAbilities() {
         this.removeOtherAbilities = true;
-        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
+        addLayerInternal(Layer.AbilityAddingRemovingEffects_6);
         return this;
     }
 
@@ -766,29 +627,32 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * Remove the specified abilities from the affected objects with the matching classes
      */
     @SafeVarargs
-    public final ContinuousEffectBuilder withRemoveAbilities(Class<? extends Ability>... abilitiesToRemove) {
+    public final GenericContinuousEffect withRemoveAbilities(Class<? extends Ability>... abilitiesToRemove) {
         if (this.abilitiesToRemove == null) {
             this.abilitiesToRemove = new ArrayList<>();
         }
         Collections.addAll(this.abilitiesToRemove, abilitiesToRemove);
-        this.addLayer(Layer.AbilityAddingRemovingEffects_6);
+        addLayerInternal(Layer.AbilityAddingRemovingEffects_6);
         return this;
     }
 
     /**
      * Add power to the affected objects.
      */
-    public ContinuousEffectBuilder withAddPower(int power) {
+    public GenericContinuousEffect withAddPower(int power) {
         return withAddPower(StaticValue.get(power));
     }
 
     /**
      * Add power to the affected objects.
      */
-    public ContinuousEffectBuilder withAddPower(DynamicValue power) {
-        setPowerModifier(power);
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.ModifyPT_7c);
+    public GenericContinuousEffect withAddPower(DynamicValue power) {
+        this.powerModifier = power;
+        if (this.toughnessModifier == null) {
+            this.toughnessModifier = StaticValue.get(0);
+        }
+        addLayerInternal(Layer.PTChangingEffects_7);
+        addSubLayerInternal(SubLayer.ModifyPT_7c);
         return this;
     }
 
@@ -799,7 +663,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * <br>
      * 7b - Set PT for all other cases
      */
-    public ContinuousEffectBuilder withSetPower(int power) {
+    public GenericContinuousEffect withSetPower(int power) {
         return withSetPower(StaticValue.get(power));
     }
 
@@ -810,27 +674,32 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * <br>
      * 7b - Set PT for all other cases
      */
-    public ContinuousEffectBuilder withSetPower(DynamicValue power) {
+    public GenericContinuousEffect withSetPower(DynamicValue power) {
         this.basePower = power;
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(affected == ContinuousAffected.SOURCE ? SubLayer.CharacteristicDefining_7a : SubLayer.SetPT_7b);
+        addLayerInternal(Layer.PTChangingEffects_7);
+        addSubLayerInternal(this.affected == ContinuousAffected.SOURCE
+                ? SubLayer.CharacteristicDefining_7a
+                : SubLayer.SetPT_7b);
         return this;
     }
 
     /**
      * Add toughness to the affected objects.
      */
-    public ContinuousEffectBuilder withAddToughness(int toughness) {
+    public GenericContinuousEffect withAddToughness(int toughness) {
         return withAddToughness(StaticValue.get(toughness));
     }
 
     /**
      * Add toughness to the affected objects.
      */
-    public ContinuousEffectBuilder withAddToughness(DynamicValue toughness) {
-        setToughnessModifier(toughness);
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.ModifyPT_7c);
+    public GenericContinuousEffect withAddToughness(DynamicValue toughness) {
+        this.toughnessModifier = toughness;
+        if (this.powerModifier == null) {
+            this.powerModifier = StaticValue.get(0);
+        }
+        addLayerInternal(Layer.PTChangingEffects_7);
+        addSubLayerInternal(SubLayer.ModifyPT_7c);
         return this;
     }
 
@@ -841,7 +710,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * <br>
      * 7b - Set PT for all other cases
      */
-    public ContinuousEffectBuilder withSetToughness(int toughness) {
+    public GenericContinuousEffect withSetToughness(int toughness) {
         return withSetToughness(StaticValue.get(toughness));
     }
 
@@ -852,42 +721,30 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * <br>
      * 7b - Set PT for all other cases
      */
-    public ContinuousEffectBuilder withSetToughness(DynamicValue toughness) {
+    public GenericContinuousEffect withSetToughness(DynamicValue toughness) {
         this.baseToughness = toughness;
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(affected == ContinuousAffected.SOURCE ? SubLayer.CharacteristicDefining_7a : SubLayer.SetPT_7b);
+        addLayerInternal(Layer.PTChangingEffects_7);
+        addSubLayerInternal(this.affected == ContinuousAffected.SOURCE
+                ? SubLayer.CharacteristicDefining_7a
+                : SubLayer.SetPT_7b);
         return this;
     }
 
     /**
      * Set power and toughness to the affected objects. Use for non-CDA effects only.
      */
-    public ContinuousEffectBuilder withSetPowerAndToughness(int power, int toughness) {
+    public GenericContinuousEffect withSetPowerAndToughness(int power, int toughness) {
         this.basePower = StaticValue.get(power);
         this.baseToughness = StaticValue.get(toughness);
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.SetPT_7b);
+        addLayerInternal(Layer.PTChangingEffects_7);
+        addSubLayerInternal(SubLayer.SetPT_7b);
         return this;
-    }
-
-    private void setPowerModifier(DynamicValue powerModifier) {
-        this.powerModifier = powerModifier;
-        if (toughnessModifier == null) {
-            this.toughnessModifier = StaticValue.get(0);
-        }
-    }
-
-    private void setToughnessModifier(DynamicValue toughnessModifier) {
-        this.toughnessModifier = toughnessModifier;
-        if (powerModifier == null) {
-            this.powerModifier = StaticValue.get(0);
-        }
     }
 
     /**
      * Add card types to the affected objects and defaults to remove other card types.
      */
-    public ContinuousEffectBuilder withAddedCardTypes(CardType... cardTypes) {
+    public GenericContinuousEffect withAddedCardTypes(CardType... cardTypes) {
         return withAddedCardTypes(true, cardTypes);
     }
 
@@ -897,12 +754,11 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * If the effect sets Artifact and Creature, it should also be false. This is handled by the function.
      * @param removeOtherCardTypes if true, removes other card types and related subtypes
      */
-    public ContinuousEffectBuilder withAddedCardTypes(boolean removeOtherCardTypes, CardType... cardTypes) {
-        addedCardTypes = Arrays.asList(cardTypes);
-        this.addLayer(Layer.TypeChangingEffects_4);
-        if (addedCardTypes.contains(CardType.CREATURE) && addedCardTypes.contains(CardType.ARTIFACT)) {
-            // 205.1a. ...Some effects state that an object becomes an "artifact creature";
-            // these effects also allow the object to retain all of its prior card types and subtypes.
+    public GenericContinuousEffect withAddedCardTypes(boolean removeOtherCardTypes, CardType... cardTypes) {
+        this.addedCardTypes = EnumSet.noneOf(CardType.class);
+        Collections.addAll(this.addedCardTypes, cardTypes);
+        addLayerInternal(Layer.TypeChangingEffects_4);
+        if (this.addedCardTypes.contains(CardType.CREATURE) && this.addedCardTypes.contains(CardType.ARTIFACT)) {
             this.removeOtherCardTypes = false;
             this.removeOtherSubtypes = false;
         } else {
@@ -911,21 +767,33 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return this;
     }
 
-    public ContinuousEffectBuilder withRemovedCardTypes(CardType... cardTypes) {
-        removedCardTypes = Arrays.asList(cardTypes);
-        this.addLayer(Layer.TypeChangingEffects_4);
+    /**
+     * Remove card types from the affected objects.
+     */
+    public GenericContinuousEffect withRemovedCardTypes(CardType... cardTypes) {
+        this.removedCardTypes = EnumSet.noneOf(CardType.class);
+        Collections.addAll(this.removedCardTypes, cardTypes);
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
-    public ContinuousEffectBuilder withAddedSuperTypes(SuperType... superTypes) {
-        addedSuperTypes = Arrays.asList(superTypes);
-        this.addLayer(Layer.TypeChangingEffects_4);
+    /**
+     * Add supertypes to the affected objects.
+     */
+    public GenericContinuousEffect withAddedSuperTypes(SuperType... superTypes) {
+        this.addedSuperTypes = EnumSet.noneOf(SuperType.class);
+        Collections.addAll(this.addedSuperTypes, superTypes);
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
-    public ContinuousEffectBuilder withRemovedSuperTypes(SuperType... superTypes) {
-        removedSuperTypes = Arrays.asList(superTypes);
-        this.addLayer(Layer.TypeChangingEffects_4);
+    /**
+     * Remove supertypes from the affected objects.
+     */
+    public GenericContinuousEffect withRemovedSuperTypes(SuperType... superTypes) {
+        this.removedSuperTypes = EnumSet.noneOf(SuperType.class);
+        Collections.addAll(this.removedSuperTypes, superTypes);
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
@@ -933,7 +801,7 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * Add subtypes to the affected objects. If the effect says "in addition to its other types" or
      * "still a [subtype]." then set removeOtherSubTypes to false.
      */
-    public ContinuousEffectBuilder withAddedSubTypes(SubType... subTypes) {
+    public GenericContinuousEffect withAddedSubTypes(SubType... subTypes) {
         return withAddedSubTypes(true, subTypes);
     }
 
@@ -942,97 +810,119 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
      * "still a [subtype]." then set removeOtherSubTypes to false.
      * @param removeOtherSubTypes if true, removes other subtypes in the same SubTypeSet(s) as the added subtypes
      */
-    public ContinuousEffectBuilder withAddedSubTypes(boolean removeOtherSubTypes, SubType... subTypes) {
-        addedSubTypes = Arrays.asList(subTypes);
-        this.addLayer(Layer.TypeChangingEffects_4);
+    public GenericContinuousEffect withAddedSubTypes(boolean removeOtherSubTypes, SubType... subTypes) {
+        this.addedSubTypes = EnumSet.noneOf(SubType.class);
+        Collections.addAll(this.addedSubTypes, subTypes);
+        addLayerInternal(Layer.TypeChangingEffects_4);
         this.removeOtherSubtypes = removeOtherSubTypes;
         return this;
     }
 
-    public ContinuousEffectBuilder withRemovedSubTypes(SubType... subTypes) {
-        removedSubTypes = Arrays.asList(subTypes);
-        this.addLayer(Layer.TypeChangingEffects_4);
+    /**
+     * Remove subtypes from the affected objects.
+     */
+    public GenericContinuousEffect withRemovedSubTypes(SubType... subTypes) {
+        this.removedSubTypes = EnumSet.noneOf(SubType.class);
+        Collections.addAll(this.removedSubTypes, subTypes);
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
-    public ContinuousEffectBuilder withRemovedSubTypeSets(SubTypeSet... subTypeSets) {
-        removedSubTypeSets = Arrays.asList(subTypeSets);
-        this.addLayer(Layer.TypeChangingEffects_4);
+    /**
+     * Remove subtypes from the affected objects based on SubTypeSets
+     */
+    public GenericContinuousEffect withRemovedSubTypeSets(SubTypeSet... subTypeSets) {
+        this.removedSubTypeSets = EnumSet.noneOf(SubTypeSet.class);
+        Collections.addAll(this.removedSubTypeSets, subTypeSets);
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
-    public ContinuousEffectBuilder withGainChosenCreatureType(boolean removeOtherSubTypes) {
+    /**
+     * Adds the chosen creature type from {@link mage.abilities.effects.common.ChooseCreatureTypeEffect}
+     */
+    public GenericContinuousEffect withGainChosenCreatureType(boolean removeOtherSubTypes) {
         this.removeOtherSubtypes = removeOtherSubTypes;
-        this.addLayer(Layer.TypeChangingEffects_4);
         this.useChosenCreatureType = true;
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
-    public ContinuousEffectBuilder setRemoveOtherSubtypes(boolean removeOtherSubtypes) {
+    /**
+     * Sets to other subtypes from affected objects
+     */
+    public GenericContinuousEffect setRemoveOtherSubtypes(boolean removeOtherSubtypes) {
         this.removeOtherSubtypes = removeOtherSubtypes;
         return this;
     }
 
-    public ContinuousEffectBuilder withIsEveryCreatureType() {
-        this.addLayer(Layer.TypeChangingEffects_4);
+    /**
+     * Gives affected objects the all creature types flag
+     */
+    public GenericContinuousEffect withIsEveryCreatureType() {
         this.useEveryCreatureType = true;
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
-    public ContinuousEffectBuilder withIsEveryLandType() {
-        this.addLayer(Layer.TypeChangingEffects_4);
+    /**
+     * Gives affected objects the all land types flag
+     */
+    public GenericContinuousEffect withIsEveryLandType() {
         this.useEveryLandType = true;
+        addLayerInternal(Layer.TypeChangingEffects_4);
         return this;
     }
 
-    public ContinuousEffectBuilder withAddedColor(boolean removeOtherColors, ObjectColor color) {
-        addedColor = new ObjectColor(color);
-        this.addLayer(Layer.ColorChangingEffects_5);
+    /**
+     * Add color to the affected objects. If the effect says "in addition to its other colors" then set removeOtherColors to false.
+     */
+    public GenericContinuousEffect withAddedColor(boolean removeOtherColors, ObjectColor color) {
+        this.addedColor = new ObjectColor(color);
         this.removeOtherColors = removeOtherColors;
+        addLayerInternal(Layer.ColorChangingEffects_5);
         return this;
     }
 
     /**
-     * Gain control of affected permanents
+     * Gain control of the affected objects
      */
-    public ContinuousEffectBuilder withGainControl() {
-        this.addLayer(Layer.ControlChangingEffects_2);
+    public GenericContinuousEffect withGainControl() {
+        addLayerInternal(Layer.ControlChangingEffects_2);
         return this;
     }
 
     /**
-     * Switch power and toughness of affected permanents
+     * Switch power and toughness of the affected permanents
      */
-    public ContinuousEffectBuilder withSwitchPT() {
-        this.addLayer(Layer.PTChangingEffects_7);
-        this.addSubLayer(SubLayer.SwitchPT_e);
+    public GenericContinuousEffect withSwitchPT() {
+        addLayerInternal(Layer.PTChangingEffects_7);
+        addSubLayerInternal(SubLayer.SwitchPT_e);
         return this;
     }
 
-    public void addLayer(Layer layer) {
-        if (this.layer == null) {
-            this.layer = layer;
-        } else {
-            if (additionalLayers == null) {
-                additionalLayers = new java.util.ArrayList<>();
-            }
-            if (!additionalLayers.contains(layer)) {
-                additionalLayers.add(layer);
-            }
-        }
+    /**
+     * Adds a layer to this effect.
+     */
+    public GenericContinuousEffect addLayer(Layer layer) {
+        addLayerInternal(layer);
+        return this;
     }
 
-    public void addSubLayer(SubLayer sublayer) {
-        if (this.sublayer == null) {
-            this.sublayer = sublayer;
-        } else {
-            if (additionalSublayers == null) {
-                additionalSublayers = new java.util.ArrayList<>();
-            }
-            if (!additionalSublayers.contains(sublayer)) {
-                additionalSublayers.add(sublayer);
-            }
-        }
+    /**
+     * Adds a sublayer to this effect.
+     */
+    public GenericContinuousEffect addSubLayer(SubLayer sublayer) {
+        addSubLayerInternal(sublayer);
+        return this;
+    }
+
+    /**
+     * Set the static text for this effect.
+     */
+    public GenericContinuousEffect setText(String staticText) {
+        this.staticText = staticText;
+        return this;
     }
 
     @Override
@@ -1049,11 +939,10 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
     public String getText(Mode mode) {
         String result = staticText;
 
-        if (permanentFilter != null) {
-            result = result.replace("{permFilter}", permanentFilter.getMessage());
-        }
-        if (cardFilter != null) {
-            result = result.replace("{cardFilter}", cardFilter.getMessage());
+        if (filter != null) {
+            result = result.replace("{filter}", filter.getMessage())
+                    .replace("{permFilter}", filter.getMessage())
+                    .replace("{cardFilter}", filter.getMessage());
         }
         if (affectedZones != null) {
             result = result.replace("{affectedZones}", affectedZones.stream()
@@ -1064,8 +953,8 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
             String abilitiesText = gainedAbilities.stream()
                     .map(Ability::getRule)
                     .collect(Collectors.joining(", "));
-            result = result.replace("{gainedAbilitiesQuotes}", "\"" + abilitiesText + "\"")
-                           .replace("{gainedAbilities}", abilitiesText);
+            result = result.replace("{gainedAbilitiesQuotes}", '"' + abilitiesText + '"')
+                    .replace("{gainedAbilities}", abilitiesText);
         }
         if (powerModifier != null && toughnessModifier != null) {
             result = result.replace("{ptMod}", CardUtil.getBoostCountAsStr(powerModifier, toughnessModifier));
@@ -1077,3 +966,6 @@ public class ContinuousEffectBuilder extends ContinuousEffectImpl {
         return result;
     }
 }
+
+
+
