@@ -13,7 +13,9 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
 import mage.target.common.TargetCardInYourGraveyard;
 
 import java.util.UUID;
@@ -22,6 +24,10 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class PatchworkCrawler extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("activated abilities of a creature card")
+            .add(ActivatedAbilityPredicate.instance)
+            .add(CardType.CREATURE.getPredicate());
 
     public PatchworkCrawler(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}");
@@ -38,9 +44,10 @@ public final class PatchworkCrawler extends CardImpl {
         this.addAbility(ability);
 
         // Patchwork Crawler has all activated abilities of all creature cards exiled with it.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of all creature cards exiled with it")
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
                 .fromSourceExiled()
+                .setAbilityFilter(filter)
+                .setText("{this} has all activated abilities of all creature cards exiled with it")
         ));
     }
 

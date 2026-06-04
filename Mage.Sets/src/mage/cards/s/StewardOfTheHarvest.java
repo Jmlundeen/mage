@@ -8,9 +8,13 @@ import mage.abilities.effects.common.ExileTargetEffect;
 import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
-import mage.filter.StaticFilters;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.SubType;
+import mage.filter.FilterTyped;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterLandCard;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
 import mage.target.common.TargetCardInYourGraveyard;
 
 import java.util.UUID;
@@ -22,6 +26,9 @@ import java.util.UUID;
 public final class StewardOfTheHarvest extends CardImpl {
 
     private static final FilterLandCard filter = new FilterLandCard("land cards from your graveyard");
+    private static final FilterTyped abilityFilter = new FilterTyped("activated abilities of a land")
+            .add(CardType.LAND.getPredicate())
+            .add(ActivatedAbilityPredicate.instance);
 
     public StewardOfTheHarvest(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{3}{G}");
@@ -37,13 +44,10 @@ public final class StewardOfTheHarvest extends CardImpl {
         this.addAbility(ability);
 
         // Creatures you control have all activated abilities of all land cards exiled with this creature.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield, ContinuousAffected.STATIC_OR_DYNAMIC,
-                StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "Creatures you control have all activated abilities of all land cards exiled with this creature")
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield, StaticTypedFilters.CREATURE_YOU_CONTROL)
+                .setAbilityFilter(abilityFilter)
                 .fromSourceExiled()
-                .setCardWithAbilityFilter(StaticFilters.FILTER_CARD_LAND)
-                .setAffectedZones(Zone.BATTLEFIELD)
-                .setPermanentFilter(StaticFilters.FILTER_PERMANENT_CREATURE)
+                .setText("Creatures you control have all activated abilities of all land cards exiled with {this}")
         ));
     }
 

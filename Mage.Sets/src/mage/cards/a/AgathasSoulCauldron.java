@@ -15,9 +15,8 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
-import mage.filter.FilterPermanent;
-import mage.filter.StaticFilters;
-import mage.filter.common.FilterControlledCreaturePermanent;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
 import mage.game.Game;
 import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
@@ -34,11 +33,15 @@ import java.util.UUID;
  */
 public final class AgathasSoulCauldron extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterControlledCreaturePermanent();
-
-    static {
-        filter.add(CounterType.P1P1.getPredicate());
-    }
+    private static final FilterTyped controlledCreatureFilter = new FilterTyped("creatures you control with +1/+1 counters on them")
+            .addAll(
+                    CardType.CREATURE.getPredicate(),
+                    TargetController.YOU.getControllerPredicate(),
+                    CounterType.P1P1.getPredicate()
+            );
+    private static final FilterTyped abilityFilter = new FilterTyped("activated abilities of all creature cards")
+            .add(CardType.CREATURE.getPredicate())
+            .add(ActivatedAbilityPredicate.instance);
 
     public AgathasSoulCauldron(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{2}");
@@ -51,13 +54,10 @@ public final class AgathasSoulCauldron extends CardImpl {
         // Creatures you control with +1/+1 counters on them have all activated abilities of all creature cards exiled with Agatha's Soul Cauldron.
         this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
                 Duration.WhileOnBattlefield,
-                ContinuousAffected.STATIC_OR_DYNAMIC,
-                StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "creatures you control with +1/+1 counters on them have all activated abilities of all creature cards exiled with {this}")
+                controlledCreatureFilter)
                 .fromSourceExiled()
-                .setCardWithAbilityFilter(StaticFilters.FILTER_CARD_CREATURE)
-                .setAffectedZones(Zone.BATTLEFIELD)
-                .setPermanentFilter(filter)
+                .setAbilityFilter(abilityFilter)
+                .setText("creatures you control with +1/+1 counters on them have all activated abilities of all creature cards exiled with {this}")
         ));
 
         // {T}: Exile target card from a graveyard. When a creature card is exiled this way, put a +1/+1 counter on target creature you control.

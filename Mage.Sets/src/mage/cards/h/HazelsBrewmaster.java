@@ -11,8 +11,8 @@ import mage.abilities.keyword.MenaceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.StaticFilters;
-import mage.filter.common.FilterControlledPermanent;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
 import mage.game.permanent.token.FoodToken;
 import mage.target.common.TargetCardInGraveyard;
 
@@ -23,7 +23,14 @@ import java.util.UUID;
  */
 public final class HazelsBrewmaster extends CardImpl {
 
-    private static final FilterControlledPermanent filter = new FilterControlledPermanent(SubType.FOOD, "Foods you control");
+    private static final FilterTyped filter = new FilterTyped("Foods you control")
+            .addAll(
+                    SubType.FOOD.getPredicate(),
+                    TargetController.YOU.getControllerPredicate()
+            );
+    private static final FilterTyped abilityFilter = new FilterTyped("activated abilities of all creature cards")
+            .add(CardType.CREATURE.getPredicate())
+            .add(ActivatedAbilityPredicate.instance);
 
     public HazelsBrewmaster(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{3}{B}");
@@ -43,13 +50,12 @@ public final class HazelsBrewmaster extends CardImpl {
         // Foods you control have all activated abilities of all creature cards exiled with Hazel's Brewmaster.
         this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
                 Duration.WhileOnBattlefield,
+                filter,
                 ContinuousAffected.STATIC_OR_DYNAMIC,
-                StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "Foods you control have all activated abilities of all creature cards exiled with {this}")
+                Zone.BATTLEFIELD)
                 .fromSourceExiled()
-                .setCardWithAbilityFilter(StaticFilters.FILTER_CARD_CREATURE)
-                .setAffectedZones(Zone.BATTLEFIELD)
-                .setPermanentFilter(filter)
+                .setAbilityFilter(abilityFilter)
+                .setText("Foods you control have all activated abilities of all creature cards exiled with {this}")
         ));
     }
 

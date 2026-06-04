@@ -14,7 +14,12 @@ import mage.abilities.keyword.VanishingAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.TriggeredAbilityPredicate;
+import mage.filter.predicate.typed.card.CardPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -29,6 +34,15 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class IdrisSoulOfTheTARDIS extends CardImpl {
+
+    static final FilterTyped filter = new FilterTyped("activated or triggered abilities")
+            .add(CardPredicate.instance)
+            .add(
+                    LogicalPredicate.or(
+                            ActivatedAbilityPredicate.instance,
+                            TriggeredAbilityPredicate.instance
+                    )
+            );
 
     public IdrisSoulOfTheTARDIS(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}{R}");
@@ -46,11 +60,12 @@ public final class IdrisSoulOfTheTARDIS extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new IdrisSoulOfTheTARDISExileEffect()).setAbilityWord(AbilityWord.IMPRINT));
 
         // Idris has all activated and triggered abilities of the exiled card and gets +X/+X, where X is the exiled card's mana value.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_OR_TRIGGERED_ABILITY,
-                "Idris has all activated and triggered abilities of the exiled card and gets +X/+X, where X is the exiled card's mana value")
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter)
                 .fromSourceExiled()
                 .withAddPower(ExiledCardManaValue.instance)
                 .withAddToughness(ExiledCardManaValue.instance)
+                .setText("Idris has all activated and triggered abilities of the exiled card and gets +X/+X, where X is the exiled card's mana value")
         ));
     }
 

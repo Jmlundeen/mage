@@ -13,8 +13,10 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
-import mage.filter.StaticFilters;
+import mage.filter.FilterTyped;
 import mage.filter.predicate.Predicates;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.card.CardPredicate;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.Target;
@@ -29,11 +31,12 @@ import java.util.UUID;
  */
 public final class MairsilThePretender extends CardImpl {
 
-    private static final FilterCard filter = new FilterCard();
-
-    static {
-        filter.add(CounterType.CAGE.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("activated abilities of cards you own in exile with cage counters on them")
+            .addAll(
+                    CardPredicate.instance,
+                    CounterType.CAGE.getPredicate()
+            )
+            .add(ActivatedAbilityPredicate.instance);
 
     public MairsilThePretender(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}{B}{R}");
@@ -50,13 +53,11 @@ public final class MairsilThePretender extends CardImpl {
 
         // Mairsil, the Pretender has all activated abilities of all cards you own in exile with cage counters on them. 
         // You may activate each of those abilities only once each turn.
-        Ability ability = new SimpleStaticAbility(new GainAbilitiesOfEffect(
-                StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of all cards you own in exile with cage counters on them. You may activate each of those abilities only once each turn")
-                .fromCardsInZones(filter, Zone.EXILED)
-                .modifyAbilities((newAbility) -> ((ActivatedAbility) newAbility).setMaxActivationsPerTurn(1)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.EXILED)
+                .modifyAbilities((newAbility) -> ((ActivatedAbility) newAbility).setMaxActivationsPerTurn(1))
+                .setText("{this} has all activated abilities of all cards you own in exile with cage counters on them. You may activate each of those abilities only once each turn")
         ));
-        this.addAbility(ability);
     }
 
     private MairsilThePretender(final MairsilThePretender card) {

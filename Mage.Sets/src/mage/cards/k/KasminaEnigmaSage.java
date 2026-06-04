@@ -12,13 +12,12 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.FilterAbility;
 import mage.filter.FilterCard;
-import mage.filter.FilterPermanent;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterInstantOrSorceryCard;
-import mage.filter.predicate.ability.LoyaltyAbilityPredicate;
-import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.mageobject.SharesColorPredicate;
+import mage.filter.predicate.typed.ability.LoyaltyAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.object.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.game.permanent.token.FractalToken;
@@ -32,13 +31,14 @@ import java.util.UUID;
  */
 public final class KasminaEnigmaSage extends CardImpl {
 
-    private static final FilterAbility abilityFilter = new FilterAbility("the loyalty abilities of {this}");
-    private static final FilterPermanent permanentFilter = new FilterPermanent("each other planeswalker you control");
-    static {
-        abilityFilter.add(LoyaltyAbilityPredicate.instance);
-        permanentFilter.add(AnotherPredicate.instance);
-        permanentFilter.add(CardType.PLANESWALKER.getPredicate());
-    }
+    private static final FilterTyped abilityFilter = new FilterTyped("loyalty abilities")
+            .add(LoyaltyAbilityPredicate.instance);
+    private static final FilterTyped permanentFilter = new FilterTyped("each other planeswalker you control")
+            .addAll(
+                    AnotherPredicate.instance,
+                    TargetController.YOU.getControllerPredicate(),
+                    CardType.PLANESWALKER.getPredicate()
+            );
 
     public KasminaEnigmaSage(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.PLANESWALKER}, "{1}{G}{U}");
@@ -48,12 +48,13 @@ public final class KasminaEnigmaSage extends CardImpl {
         this.setStartingLoyalty(2);
 
         // Each other planeswalker you control has the loyalty abilities of Kasmina, Enigma Sage.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(Duration.WhileOnBattlefield,
-                ContinuousAffected.STATIC_OR_DYNAMIC, abilityFilter,
-                "each other planeswalker you control has the loyalty abilities of {this}")
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
+                Duration.WhileOnBattlefield,
+                abilityFilter,
+                ContinuousAffected.STATIC_OR_DYNAMIC,
+                Zone.BATTLEFIELD)
                 .fromSource()
-                .setAffectedZones(Zone.BATTLEFIELD)
-                .setPermanentFilter(permanentFilter)
+                .setText("each other planeswalker you control has the loyalty abilities of {this}")
         ));
 
         // +2: Scry 1.

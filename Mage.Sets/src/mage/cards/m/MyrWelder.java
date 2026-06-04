@@ -14,8 +14,10 @@ import mage.constants.AbilityWord;
 import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
-import mage.filter.StaticFilters;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterArtifactCard;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.card.CardPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.common.TargetCardInGraveyard;
@@ -28,6 +30,9 @@ import java.util.UUID;
 public final class MyrWelder extends CardImpl {
 
     private static final FilterArtifactCard filter = new FilterArtifactCard("artifact card from a graveyard");
+    static final FilterTyped abilityFilter = new FilterTyped("activated ability of a card")
+            .add(CardPredicate.instance)
+            .add(ActivatedAbilityPredicate.instance);
 
     public MyrWelder(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{3}");
@@ -41,10 +46,10 @@ public final class MyrWelder extends CardImpl {
         this.addAbility(ability.setAbilityWord(AbilityWord.IMPRINT));
 
         // Myr Welder has all activated abilities of all cards exiled with it
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(
-                StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of all cards exiled with it")
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(abilityFilter)
                 .fromSourceImprinted()
+                .setText("{this} has all activated abilities of all cards exiled with it")
         ));
 
     }

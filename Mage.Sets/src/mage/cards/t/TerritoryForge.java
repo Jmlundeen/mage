@@ -10,8 +10,10 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.filter.FilterPermanent;
-import mage.filter.StaticFilters;
+import mage.filter.FilterTyped;
 import mage.filter.predicate.Predicates;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.card.CardPredicate;
 import mage.target.TargetPermanent;
 
 import java.util.UUID;
@@ -22,6 +24,9 @@ import java.util.UUID;
 public final class TerritoryForge extends CardImpl {
 
     private static final FilterPermanent filter = new FilterPermanent("artifact or land");
+    private static final FilterTyped abilityFilter = new FilterTyped("activated ability of a card")
+            .add(CardPredicate.instance)
+            .add(ActivatedAbilityPredicate.instance);
 
     static {
         filter.add(Predicates.or(CardType.ARTIFACT.getPredicate(), CardType.LAND.getPredicate()));
@@ -37,9 +42,10 @@ public final class TerritoryForge extends CardImpl {
         this.addAbility(ability);
 
         // Territory Forge has all activated abilities of the exiled card.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of the exiled card")
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(abilityFilter)
                 .fromSourceExiled()
+                .setText("{this} has all activated abilities of the exiled card")
         ));
     }
 

@@ -12,7 +12,8 @@ import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.StaticFilters;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
@@ -24,6 +25,13 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class DranaAndLinvala extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("activated abilities of creatures your opponents control")
+            .addAll(
+                    CardType.CREATURE.getPredicate(),
+                    TargetController.OPPONENT.getControllerPredicate()
+            )
+            .add(ActivatedAbilityPredicate.instance);
 
     public DranaAndLinvala(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{W}{W}{B}");
@@ -44,12 +52,10 @@ public final class DranaAndLinvala extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new DranaAndLinvalaCantActivateEffect()));
 
         // Drana and Linvala has all activated abilities of all creatures your opponents control. You may spend mana as though it were mana of any color to activate those abilities.
-        Ability ability = new SimpleStaticAbility(new GainAbilitiesOfEffect(
-                StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of all creatures your opponents control")
-                .fromPermanents(StaticFilters.FILTER_PERMANENT_CREATURE)
-                .fromCardsControlledBy(TargetController.OPPONENT)
+        Ability ability = new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.BATTLEFIELD)
                 .modifyAbilities((newAbility) -> newAbility.getEffects().setValue("dranaLinvalaFlag", true))
+                .setText("{this} has all activated abilities of all creatures your opponents control")
         );
         ability.addEffect(new DranaAndLinvalaManaEffect());
         this.addAbility(ability);
