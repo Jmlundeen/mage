@@ -5,13 +5,19 @@ import mage.Mana;
 import mage.ManaSymbol;
 import mage.ObjectColor;
 import mage.abilities.Ability;
+import mage.abilities.condition.Condition;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.VariableCostType;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.*;
+import mage.abilities.decorator.ConditionalManaEffect;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.Effect;
+import mage.abilities.effects.mana.AddConditionalManaChosenColorEffect;
+import mage.abilities.effects.mana.AddConditionalManaEffect;
+import mage.abilities.effects.mana.AddConditionalManaOfAnyColorEffect;
+import mage.abilities.effects.mana.AddConditionalManaOfTwoDifferentColorsEffect;
 import mage.abilities.mana.*;
 import mage.cards.Card;
 import mage.cards.CardWithParts;
@@ -24,6 +30,8 @@ import mage.game.permanent.token.Token;
 import mage.players.Player;
 
 import java.util.*;
+
+import static mage.constants.ManaType.countSharedColors;
 
 /**
  * @author noxx, JayDi85
@@ -50,7 +58,8 @@ public final class ManaUtil {
      * No need to ask what player wants to choose. {W} mana ability should be
      * left only.
      * <p>
-     * But we CAN do auto choice only in case we have basic mana abilities.
+     * But we CAN do auto choice only in case all abilities are safe to narrow
+     * by color production.
      * Example: we should pay {1} and we have Cavern of Souls that can produce
      * {1} or any mana of creature type choice. We can't simply auto choose {1}
      * as the second mana ability also makes spell uncounterable.
@@ -64,18 +73,24 @@ public final class ManaUtil {
      * for unpaid mana
      */
     public static Map<UUID, ActivatedManaAbilityImpl> tryToAutoPay(ManaCost unpaid, Map<UUID, ActivatedManaAbilityImpl> useableAbilities) {
+        return tryToAutoPay(unpaid, useableAbilities, null, null);
+    }
 
-        // first check if we have only basic mana abilities
+    public static Map<UUID, ActivatedManaAbilityImpl> tryToAutoPay(ManaCost unpaid, Map<UUID, ActivatedManaAbilityImpl> useableAbilities, Game game, Ability sourceAbility) {
+
+        // first check if we have only abilities safe for color-based auto selection
         for (ActivatedManaAbilityImpl ability : useableAbilities.values()) {
-            if (!(ability instanceof BasicManaAbility)) {
-                // return map as-is without any modification
-                if (!(ability instanceof AnyColorManaAbility)) {
-                    return useableAbilities;
-                }
+            if (!isSafeAutoPayAbility(ability, unpaid, game, sourceAbility)) {
+                return useableAbilities;
             }
         }
 
         if (unpaid != null) {
+            ActivatedManaAbilityImpl chosenByColor = tryChooseManaAbilityByProducibleColors(useableAbilities, unpaid, game, sourceAbility);
+            if (chosenByColor != null) {
+                return replace(useableAbilities, chosenByColor);
+            }
+
             ManaSymbols symbols = ManaSymbols.buildFromManaCost(unpaid);
             Mana unpaidMana = unpaid.getMana();
 
@@ -87,6 +102,156 @@ public final class ManaUtil {
         }
 
         return useableAbilities;
+    }
+
+    /**
+     * Check if mana ability is safe to be used for auto-pay. It is safe if it produces only one color or if it produces multiple colors but only one of them is needed to pay the cost.
+     * @param ability ability to check
+     * @param unpaid unpaid mana cost to pay. Can be null (it is for X costs now).
+     * @param game game to check conditional mana options. Can be null, but then all conditional options will be treated as not applicable.
+     * @param sourceAbility ability that requires mana payment. Needed to check conditional mana options. Can be null, but then all conditional options will be treated as not applicable.
+     */
+    private static boolean isSafeAutoPayAbility(ActivatedManaAbilityImpl ability, ManaCost unpaid, Game game, Ability sourceAbility) {
+        List<ManaAbilityOption> verifiedOptions = getVerifiedManaAbilityOptions(ability, unpaid, game, sourceAbility);
+        if (verifiedOptions.isEmpty()) {
+            return false;
+        }
+
+        Set<ManaType> producibleColors = getProducibleColors(verifiedOptions);
+        if (producibleColors.size() <= 1) {
+            return true;
+        }
+        if (unpaid == null) {
+            return false;
+        }
+        return countSharedColors(producibleColors, ManaType.getManaTypesFromManaCost(unpaid)) == 1;
+    }
+
+    /**
+     * Try to find a single ability that produces only one color that is needed to pay the cost. If there are more such abilities or there are no such abilities, return null.
+     * @param useableAbilities abilities to choose from
+     * @param unpaid unpaid mana cost to pay. Can be null (it is for X costs now).
+     * @param game game to check conditional mana options. Can be null, but then all conditional options will be treated as not applicable.
+     * @param sourceAbility ability that requires mana payment. Needed to check conditional mana options. Can be null, but then all conditional options will be treated as not applicable.
+     */
+    private static ActivatedManaAbilityImpl tryChooseManaAbilityByProducibleColors(Map<UUID, ActivatedManaAbilityImpl> useableAbilities, ManaCost unpaid, Game game, Ability sourceAbility) {
+        Set<ManaType> unpaidColors = ManaType.getManaTypesFromManaCost(unpaid);
+        if (unpaidColors.isEmpty()) {
+            return null;
+        }
+
+        ActivatedManaAbilityImpl chosen = null;
+        for (ActivatedManaAbilityImpl ability : useableAbilities.values()) {
+            List<ManaAbilityOption> verifiedOptions = getVerifiedManaAbilityOptions(ability, unpaid, game, sourceAbility);
+            if (!verifiedOptions.isEmpty() && countSharedColors(getProducibleColors(verifiedOptions), unpaidColors) == 1) {
+                if (chosen != null) {
+                    return null;
+                }
+                chosen = ability;
+            }
+        }
+        return chosen;
+    }
+
+    /**
+     * Get mana ability options that are applicable for current payment.
+     * If ability has conditional mana options, they are checked for applicability and only applicable options are returned.
+     * If ability doesn't have conditional mana options, all options are returned.
+     * @param ability mana ability to get options for
+     * @param unpaid unpaid mana cost to pay. Can be null (it is for X costs now).
+     * @param game game to check conditional mana options. Can be null, but then all conditional options will be treated as not applicable.
+     * @param sourceAbility ability that requires mana payment. Needed to check conditional mana options. Can be null, but then all conditional options will be treated as not applicable.
+     */
+    private static List<ManaAbilityOption> getVerifiedManaAbilityOptions(ActivatedManaAbilityImpl ability, ManaCost unpaid, Game game, Ability sourceAbility) {
+        List<ManaAbilityOption> options = buildManaAbilityOptionsForCheck(ability, game);
+        if (options.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        boolean needsConditionalVerification = hasConditionalManaRestrictions(ability, options);
+        boolean hasConditionalOptions = options.stream().anyMatch(ManaAbilityOption::hasConditions);
+        if (!needsConditionalVerification) {
+            return options;
+        }
+
+        if (game == null) {
+            return Collections.emptyList();
+        }
+        if (!hasConditionalOptions) {
+            return options;
+        }
+        if (sourceAbility == null || unpaid == null) {
+            return Collections.emptyList();
+        }
+
+        List<ManaAbilityOption> verifiedOptions = new ArrayList<>();
+        for (ManaAbilityOption option : options) {
+            if (!option.hasConditions() || option.applyConditions(sourceAbility, game, option.getSourceId(), unpaid)) {
+                verifiedOptions.add(option);
+            }
+        }
+        return verifiedOptions;
+    }
+
+    private static List<ManaAbilityOption> buildManaAbilityOptionsForCheck(ActivatedManaAbilityImpl ability, Game game) {
+        if (ability == null) {
+            return Collections.emptyList();
+        }
+
+        Game playableGame = game == null ? null : game.createSimulationForPlayableCalc();
+        List<Mana> netManas = ability.getNetMana(playableGame);
+        List<Condition> conditions = netManas.stream()
+                .filter(Mana::hasConditions)
+                .flatMap(mana -> mana.getConditions().stream())
+                .toList();
+        return ManaAbilityOption.fromAbility(ability, netManas, conditions, null);
+    }
+
+    /**
+     * Check if ability has conditional mana options or if it has effects that add conditional mana.
+     * @param ability mana ability to check
+     * @param options ability options to check. If options are not provided, only effects will be checked, otherwise both options and effects will be checked.
+     */
+    private static boolean hasConditionalManaRestrictions(ActivatedManaAbilityImpl ability, List<ManaAbilityOption> options) {
+        if (options.stream().anyMatch(ManaAbilityOption::hasConditions)) {
+            return true;
+        }
+        for (Effect effect : ability.getEffects()) {
+            if (effect instanceof ConditionalManaEffect
+                    || effect instanceof AddConditionalManaEffect
+                    || effect instanceof AddConditionalManaOfAnyColorEffect
+                    || effect instanceof AddConditionalManaChosenColorEffect
+                    || effect instanceof AddConditionalManaOfTwoDifferentColorsEffect) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get colors that can be produced by ability options
+     */
+    private static Set<ManaType> getProducibleColors(List<ManaAbilityOption> options) {
+        EnumSet<ManaType> res = EnumSet.noneOf(ManaType.class);
+        outerloop:
+        for (ManaAbilityOption option : options) {
+            if (res.size() == 5) {
+                break;
+            }
+            if (option.isProducesAny()) {
+                res.addAll(ManaType.getColorManaTypes());
+                continue;
+            }
+            for (ManaType manaType : option.getProducibleTypes()) {
+                if (res.size() == 5) {
+                    break outerloop;
+                }
+                if (manaType.isColor()) {
+                    res.add(manaType);
+                }
+            }
+        }
+        return res;
     }
 
     /**
