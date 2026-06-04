@@ -1,7 +1,5 @@
 package mage.players;
 
-import mage.Emptiable;
-import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
@@ -15,6 +13,7 @@ import mage.filter.FilterMana;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.events.GameEvent.EventType;
+import mage.game.events.LoseUnspentManaEvent;
 import mage.game.events.ManaEvent;
 import mage.game.events.ManaPaidEvent;
 import mage.game.stack.Spell;
@@ -39,19 +38,6 @@ public class ManaPool implements Serializable {
 
     // empty mana pool effects
     private final Set<ManaType> doNotEmptyManaTypes = new HashSet<>(); // keep some colors
-    private boolean manaBecomesBlack = false; // replace all pool by black
-    private boolean manaBecomesRed = false; // replace all pool by red
-    private boolean manaBecomesColorless = false; // replace all pool by colorless
-
-    private static final class ConditionalManaInfo {
-        private final ManaType manaType;
-        private final MageObject sourceObject;
-
-        private ConditionalManaInfo(ManaType conditionalMana, MageObject sourceObject) {
-            this.manaType = conditionalMana;
-            this.sourceObject = sourceObject;
-        }
-    }
 
     public ManaPool(UUID playerId) {
         this.playerId = playerId;
@@ -74,9 +60,6 @@ public class ManaPool implements Serializable {
             poolBookmark.add(item.copy());
         }
         this.doNotEmptyManaTypes.addAll(pool.doNotEmptyManaTypes);
-        this.manaBecomesBlack = pool.manaBecomesBlack;
-        this.manaBecomesRed = pool.manaBecomesRed;
-        this.manaBecomesColorless = pool.manaBecomesColorless;
     }
 
     public int getRed() {
@@ -189,112 +172,114 @@ public class ManaPool implements Serializable {
 
     public void clearEmptyManaPoolRules() {
         doNotEmptyManaTypes.clear();
-        this.manaBecomesBlack = false;
-        this.manaBecomesRed = false;
-        this.manaBecomesColorless = false;
     }
 
     public void addDoNotEmptyManaType(ManaType manaType) {
         doNotEmptyManaTypes.add(manaType);
     }
 
-    public void setManaBecomesBlack(boolean manaBecomesBlack) {
-        this.manaBecomesBlack = manaBecomesBlack;
-    }
-
-    public void setManaBecomesRed(boolean manaBecomesRed) {
-        this.manaBecomesRed = manaBecomesRed;
-    }
-
-    public void setManaBecomesColorless(boolean manaBecomesColorless) {
-        this.manaBecomesColorless = manaBecomesColorless;
-    }
-
     public void init() {
         manaItems.clear();
     }
 
-    public boolean canLostManaOnEmpty() {
+    /**
+     * Checks if there is any mana that would be lost on emptying the pool.
+     * Used to check whether to warn the player about mana loss on passing.
+     * @return true if mana would be lost
+     */
+    public boolean canLoseManaOnEmpty() {
         for (ManaPoolItem item : manaItems) {
-            for (ManaType manaType : ManaType.values()) {
-                if (item.get(manaType) == 0) {
-                    continue;
-                }
-                if (doNotEmptyManaTypes.contains(manaType)) {
-                    continue;
-                }
-                if (manaBecomesBlack) {
-                    continue;
-                }
-                if (manaBecomesRed) {
-                    continue;
-                }
-                if (manaBecomesColorless) {
-                    continue;
-                }
-                // found real mana to empty
+            if (extractManaToEmpty(item, null, null).count() > 0) {
                 return true;
             }
         }
         return false;
     }
 
-    public int emptyPool(Game game) {
-        int total = 0;
-        Iterator<ManaPoolItem> it = manaItems.iterator();
-        while (it.hasNext()) {
-            ManaPoolItem item = it.next();
-            for (ManaType manaType : ManaType.values()) {
-                if (doNotEmptyManaTypes.contains(manaType)) {
-                    continue;
-                }
-                if (item.get(manaType) > 0) {
-                    total += emptyItem(item, item, game, manaType);
-                }
-            }
-            if (item.count() == 0) {
-                it.remove();
-            }
+    /**
+     * Empties the mana pool, checks replacement effects, and finally removes items from the pool.
+     * If the event is replaced, pending items are added back to the pool. So, replacement effects should
+     * modify the event items to be placed in the pool if replacing the event.
+     * @param game current game instance
+     * @param source ability that is causing the pool to empty
+     * @return the total amount of mana removed from the pool
+     */
+    public int emptyPool(Game game, Ability source) {
+        List<ManaPoolItem> pendingEmptyMana = collectPendingEmptyMana(game, source);
+        if (pendingEmptyMana.isEmpty()) {
+            return 0;
         }
-        return total;
+
+        LoseUnspentManaEvent event = new LoseUnspentManaEvent(
+                playerId,
+                source,
+                pendingEmptyMana
+        );
+        if (game.replaceEvent(event)) {
+            manaItems.addAll(event.getManaItems());
+            return 0;
+        }
+        game.fireEvent(event);
+        return pendingEmptyMana.stream().mapToInt(ManaPoolItem::count).sum();
     }
 
-    private int emptyItem(ManaPoolItem item, Emptiable toEmpty, Game game, ManaType manaType) {
-        switch (item.getDuration()) {
-            case EndOfTurn:
-                if (game.getTurnPhaseType() != TurnPhase.END) {
-                    return 0;
+    private List<ManaPoolItem> collectPendingEmptyMana(Game game, Ability source) {
+        List<ManaPoolItem> result = new ArrayList<>();
+        for (ManaPoolItem item : new ArrayList<>(manaItems)) {
+            ManaPoolItem toEmpty = extractManaToEmpty(item, game, source);
+            if (toEmpty.count() > 0) {
+                ManaPoolItem eventItem;
+                if (toEmpty.count() == item.count()) {
+                    eventItem = item;
+                } else {
+                    clearMana(item, toEmpty);
+                    eventItem = toEmpty.copy();
                 }
-                break;
-            case EndOfCombat:
-                if (game.getTurnPhaseType() != TurnPhase.COMBAT
-                        || game.getTurnStepType() != PhaseStep.END_COMBAT) {
-                    return 0;
-                }
+                result.add(eventItem);
+                manaItems.remove(eventItem);
+            }
+        }
+        return result;
+    }
+
+    private ManaPoolItem extractManaToEmpty(ManaPoolItem item, Game game, Ability source) {
+        ManaPoolItem result = item.copy();
+        clearMana(result, result.copy());
+
+        if (source == null && !shouldEmptyNow(item, game)) {
+            return result;
         }
 
-        // TODO: This should be reimplemented as replacement effects instead, so you can choose which applies.
-        if (manaBecomesBlack) {
-            int amount = toEmpty.get(manaType);
-            toEmpty.clear(manaType);
-            toEmpty.add(ManaType.BLACK, amount);
-            return 0;
+        for (ManaType manaType : ManaType.values()) {
+            if (doNotEmptyManaTypes.contains(manaType) && source == null) {
+                continue;
+            }
+            int amount = item.get(manaType);
+            if (amount > 0) {
+                result.add(manaType, amount);
+            }
         }
-        if (manaBecomesRed) {
-            int amount = toEmpty.get(manaType);
-            toEmpty.clear(manaType);
-            toEmpty.add(ManaType.RED, amount);
-            return 0;
+        return result;
+    }
+
+    private boolean shouldEmptyNow(ManaPoolItem item, Game game) {
+        if (game == null) {
+            return true;
         }
-        if (manaBecomesColorless) {
-            int amount = toEmpty.get(manaType);
-            toEmpty.clear(manaType);
-            toEmpty.add(ManaType.COLORLESS, amount);
-            return 0;
+        return switch (item.getDuration()) {
+            case EndOfTurn -> game.getTurnPhaseType() == TurnPhase.END;
+            case EndOfCombat -> game.getTurnPhaseType() == TurnPhase.COMBAT
+                    && game.getTurnStepType() == PhaseStep.END_COMBAT;
+            default -> true;
+        };
+    }
+
+    private void clearMana(ManaPoolItem item, ManaPoolItem manaToClear) {
+        for (ManaType manaType : ManaType.values()) {
+            if (manaToClear.get(manaType) > 0) {
+                item.clear(manaType);
+            }
         }
-        int amount = toEmpty.get(manaType);
-        toEmpty.clear(manaType);
-        return amount;
     }
 
     public Mana getMana() {

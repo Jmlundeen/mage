@@ -61,7 +61,7 @@ public class GameEvent implements Serializable {
         END_PHASE, END_PHASE_PRE, END_PHASE_POST,
         END_TURN_STEP_PRE, END_TURN_STEP, END_TURN_STEP_POST,
         CLEANUP_STEP_PRE, CLEANUP_STEP, CLEANUP_STEP_POST,
-        EMPTY_MANA_POOL,
+        LOSE_UNSPENT_MANA,
         AT_END_OF_TURN,
         //player events
         /* ZONE_CHANGE

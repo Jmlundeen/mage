@@ -1,16 +1,15 @@
 package mage.cards.o;
 
 import mage.MageInt;
-import mage.MageItem;
 import mage.Mana;
 import mage.ObjectColor;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfFirstMainTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCost;
-import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.mana.AddManaInAnyCombinationEffect;
+import mage.abilities.effects.mana.ReplaceManaEffect;
+import mage.abilities.triggers.BeginningOfFirstMainTriggeredAbility;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -19,7 +18,6 @@ import mage.constants.*;
 import mage.game.Game;
 import mage.players.Player;
 
-import java.util.List;
 import java.util.UUID;
 
 public class OmnathLocusOfAll extends CardImpl {
@@ -32,8 +30,11 @@ public class OmnathLocusOfAll extends CardImpl {
         this.power = new MageInt(4);
         this.toughness = new MageInt(4);
 
-        // If you would lose unspent mana, that mana becomes black instead.
-        this.addAbility(new SimpleStaticAbility(new OmnathLocusOfAllManaEffect()));
+        // If unspent mana would empty from your mana pool, that mana becomes black instead.
+        this.addAbility(new SimpleStaticAbility(
+                ReplaceManaEffect.unspent(Duration.WhileOnBattlefield, Outcome.Benefit, ReplaceManaEffect.changeUnspentManaToType(ManaType.BLACK))
+                        .setText("if you would lose unspent mana, that mana becomes black instead")
+        ));
 
         // At the beginning of your precombat main phase, look at the top card of your library. You may reveal that card
         // if it has three or more colored mana symbols in its mana cost. If you do, add three mana in any combination of
@@ -50,41 +51,6 @@ public class OmnathLocusOfAll extends CardImpl {
     @Override
     public OmnathLocusOfAll copy() {
         return new OmnathLocusOfAll(this);
-    }
-}
-
-class OmnathLocusOfAllManaEffect extends ContinuousEffectImpl {
-
-    OmnathLocusOfAllManaEffect() {
-        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
-        staticText = "if you would lose unspent mana, that mana becomes black instead";
-    }
-
-    private OmnathLocusOfAllManaEffect(final OmnathLocusOfAllManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public OmnathLocusOfAllManaEffect copy() {
-        return new OmnathLocusOfAllManaEffect(this);
-    }
-
-    @Override
-    public void applyToObjects(Layer layer, SubLayer sublayer, Ability source, Game game, List<MageItem> affectedObjects) {
-        for (MageItem object : affectedObjects) {
-            ((Player) object).getManaPool().setManaBecomesBlack(true);
-        }
-    }
-
-    @Override
-    public boolean queryAffectedObjects(Layer layer, Ability source, Game game, List<MageItem> affectedObjects) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player != null) {
-            affectedObjects.add(player);
-            return true;
-        } else {
-            return false;
-        }
     }
 }
 

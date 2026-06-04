@@ -1727,7 +1727,7 @@ public class HumanPlayer extends PlayerImpl {
 
                 // Don't auto-pay if the spell cares about the color
                 if (!caresAboutManaColor) {
-                    useableAbilities = ManaUtil.tryToAutoPay(unpaid, useableAbilities); // eliminates other abilities if one fits perfectly
+                    useableAbilities = ManaUtil.tryToAutoPay(unpaid, useableAbilities, game, abilityToCast); // eliminates other abilities if one fits perfectly
                 }
                 currentlyUnpaidMana = unpaid;
                 activateAbility(useableAbilities, object, game);
@@ -2855,7 +2855,7 @@ public class HumanPlayer extends PlayerImpl {
 
     protected boolean passWithManaPoolCheck(Game game) {
         if (userData.confirmEmptyManaPool()
-                && game.getStack().isEmpty() && getManaPool().count() > 0 && getManaPool().canLostManaOnEmpty()) {
+                && game.getStack().isEmpty() && getManaPool().count() > 0 && getManaPool().canLoseManaOnEmpty()) {
             String message = GameLog.getPlayerConfirmColoredText("You still have mana in your mana pool and it will be lost. Pass anyway?");
             if (!chooseUse(Outcome.Detriment, message, null, game)) {
                 sendPlayerAction(PlayerAction.PASS_PRIORITY_CANCEL_ALL_ACTIONS, game, null);

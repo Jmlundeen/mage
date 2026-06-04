@@ -1942,7 +1942,7 @@ public abstract class GameImpl implements Game {
     @Override
     public void emptyManaPools(Ability source) {
         for (Player player : getPlayers().values()) {
-            int amount = player.getManaPool().emptyPool(this);
+            int amount = player.getManaPool().emptyPool(this, source);
             if (state.isManaBurn() && amount > 0) {
                 player.loseLife(amount, this, source, false);
             }

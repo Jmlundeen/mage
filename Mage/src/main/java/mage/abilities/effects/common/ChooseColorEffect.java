@@ -7,6 +7,7 @@ import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.choices.ChoiceColor;
 import mage.constants.Outcome;
+import mage.constants.TargetController;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -21,25 +22,36 @@ import java.util.UUID;
 public class ChooseColorEffect extends OneShotEffect {
 
     private final String exceptColor;
+    private final TargetController targetController;
 
     public ChooseColorEffect(Outcome outcome) {
-        this(outcome, null);
+        this(outcome, null, TargetController.YOU);
+    }
+
+    public ChooseColorEffect(Outcome outcome, TargetController targetController) {
+        this(outcome, null, targetController);
     }
 
     public ChooseColorEffect(Outcome outcome, String exceptColor) {
+        this(outcome, exceptColor, TargetController.YOU);
+    }
+
+    public ChooseColorEffect(Outcome outcome, String exceptColor, TargetController targetController) {
         super(outcome);
         this.exceptColor = exceptColor;
+        this.targetController = targetController;
         staticText = "choose a color" + (exceptColor != null ? " other than " + exceptColor.toLowerCase(Locale.ENGLISH) : "");
     }
 
     protected ChooseColorEffect(final ChooseColorEffect effect) {
         super(effect);
         this.exceptColor = effect.exceptColor;
+        this.targetController = effect.targetController;
     }
 
     @Override
     public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
+        Player controller = getChoicePlayer(game, source);
         MageObject mageObject = game.getPermanentEntering(source.getSourceId());
         if (mageObject == null) {
             mageObject = game.getObject(source);
@@ -57,6 +69,18 @@ public class ChooseColorEffect extends OneShotEffect {
             ((Permanent) mageObject).addInfo("chosen color", CardUtil.addToolTipMarkTags("Chosen color: " + choice.getChoice()), game);
         }
         return true;
+    }
+
+    private Player getChoicePlayer(Game game, Ability source) {
+        switch (targetController) {
+            case ACTIVE -> {
+                return game.getPlayer(game.getActivePlayerId());
+            }
+            case YOU -> {
+                return game.getPlayer(source.getControllerId());
+            }
+            default -> throw new IllegalStateException("Unknown target controller: " + targetController);
+        }
     }
 
     @Override

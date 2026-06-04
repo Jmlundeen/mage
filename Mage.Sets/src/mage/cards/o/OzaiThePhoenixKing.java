@@ -1,18 +1,20 @@
 package mage.cards.o;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.ContinuousEffectImpl;
+import mage.abilities.effects.mana.ReplaceManaEffect;
 import mage.abilities.keyword.*;
-import mage.constants.*;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPool;
 import mage.players.Player;
+
+import java.util.UUID;
 
 /**
  *
@@ -39,7 +41,10 @@ public final class OzaiThePhoenixKing extends CardImpl {
         this.addAbility(HasteAbility.getInstance());
 
         // If you would lose unspent mana, that mana becomes red instead.
-        this.addAbility(new SimpleStaticAbility(new OzaiThePhoenixKingManaEffect()));
+        this.addAbility(new SimpleStaticAbility(
+                ReplaceManaEffect.unspent(Duration.WhileOnBattlefield, Outcome.Benefit, ReplaceManaEffect.changeUnspentManaToType(ManaType.RED))
+                        .setText("if you would lose unspent mana, that mana becomes red instead")
+        ));
         
         // Ozai has flying and indestructible as long as you have six or more unspent mana.
         this.addAbility(new SimpleStaticAbility(new OzaiThePhoenixKingBoostEffect()));
@@ -52,32 +57,6 @@ public final class OzaiThePhoenixKing extends CardImpl {
     @Override
     public OzaiThePhoenixKing copy() {
         return new OzaiThePhoenixKing(this);
-    }
-}
-
-class OzaiThePhoenixKingManaEffect extends ContinuousEffectImpl {
-
-    OzaiThePhoenixKingManaEffect() {
-        super(Duration.WhileOnBattlefield, Layer.RulesEffects, SubLayer.NA, Outcome.Benefit);
-        staticText = "if you would lose unspent mana, that mana becomes red instead";
-    }
-
-    private OzaiThePhoenixKingManaEffect(final OzaiThePhoenixKingManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public OzaiThePhoenixKingManaEffect copy() {
-        return new OzaiThePhoenixKingManaEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(source.getControllerId());
-        if (player != null) {
-            player.getManaPool().setManaBecomesRed(true);
-        }
-        return true;
     }
 }
 

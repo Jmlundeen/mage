@@ -1,21 +1,18 @@
 
 package mage.cards.f;
 
-import java.util.UUID;
-
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.effects.AsThoughEffectImpl;
 import mage.abilities.effects.AsThoughManaEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
+import mage.abilities.effects.mana.ReplaceManaEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.events.ManaEvent;
 import mage.players.ManaPoolItem;
+
+import java.util.UUID;
 
 /**
  *
@@ -26,7 +23,10 @@ public final class FalseDawn extends CardImpl {
     public FalseDawn(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.SORCERY},"{1}{W}");
 
-        this.getSpellAbility().addEffect(new FalseDawnManaAddEffect());
+        // Until end of turn, spells and abilities you control that would add colored mana instead add that much white mana. Until end of turn, you may spend white mana as though it were mana of any color. Draw a card.
+        this.getSpellAbility().addEffect(ReplaceManaEffect.produced(Duration.EndOfTurn, Outcome.Neutral, ReplaceManaEffect.replaceAllWithColor(ManaType.WHITE))
+                .setProducedMatcher(context -> context.game().getControllerId(context.eventSourceId()).equals(context.source().getControllerId()))
+                .setText("Until end of turn, spells and abilities you control that would add colored mana instead add that much white mana."));
         this.getSpellAbility().addEffect(new FalseDawnManaSpendEffect());
         this.getSpellAbility().addEffect(new DrawCardSourceControllerEffect(1).concatBy("<br>"));
     }
@@ -40,44 +40,7 @@ public final class FalseDawn extends CardImpl {
         return new FalseDawn(this);
     }
 }
-class FalseDawnManaAddEffect extends ReplacementEffectImpl {
 
-    FalseDawnManaAddEffect() {
-        super(Duration.EndOfTurn, Outcome.Neutral);
-        staticText = "Until end of turn, spells and abilities you control that would add colored mana instead add "+
-                "that much white mana.";
-    }
-
-    private FalseDawnManaAddEffect(final FalseDawnManaAddEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public FalseDawnManaAddEffect copy() {
-        return new FalseDawnManaAddEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        Mana mana = ((ManaEvent) event).getMana();
-        mana.setWhite(mana.countColored());
-        mana.setBlue(0);
-        mana.setBlack(0);
-        mana.setRed(0);
-        mana.setGreen(0);
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.ADD_MANA;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        return game.getControllerId(event.getSourceId()).equals(source.getControllerId());
-    }
-}
 //Based on Celestial Dawn
 class FalseDawnManaSpendEffect extends AsThoughEffectImpl implements AsThoughManaEffect {
 

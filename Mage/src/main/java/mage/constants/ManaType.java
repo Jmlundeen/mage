@@ -2,6 +2,7 @@ package mage.constants;
 
 import mage.Mana;
 import mage.ObjectColor;
+import mage.abilities.costs.mana.ManaCost;
 import mage.choices.Choice;
 import mage.choices.ChoiceColor;
 
@@ -12,23 +13,29 @@ import java.util.*;
  */
 public enum ManaType {
 
-    BLACK("black"),
-    BLUE("blue"),
-    GREEN("green"),
-    RED("red"),
-    WHITE("white"),
-    GENERIC("generic"),
-    COLORLESS("colorless");
+    BLACK("black", true),
+    BLUE("blue", true),
+    GREEN("green", true),
+    RED("red", true),
+    WHITE("white", true),
+    GENERIC("generic", false),
+    COLORLESS("colorless", false);
 
     private final String text;
+    private final boolean isColor;
 
-    ManaType(String text) {
+    ManaType(String text, boolean isColor) {
         this.text = text;
+        this.isColor = isColor;
     }
 
     @Override
     public String toString() {
         return text;
+    }
+
+    public boolean isColor() {
+        return isColor;
     }
 
     public static Choice getChoiceOfManaTypes(Collection<ManaType> types, boolean onlyColors) {
@@ -116,6 +123,33 @@ public enum ManaType {
     }
 
     /**
+     * Utility function to get the mana types represented in a mana cost.
+     */
+    public static Set<ManaType> getManaTypesFromManaCost(ManaCost manaCost) {
+        EnumSet<ManaType> res = EnumSet.noneOf(ManaType.class);
+        if (manaCost == null) {
+            return res;
+        }
+
+        if (manaCost.containsColor(ColoredManaSymbol.W)) {
+            res.add(ManaType.WHITE);
+        }
+        if (manaCost.containsColor(ColoredManaSymbol.U)) {
+            res.add(ManaType.BLUE);
+        }
+        if (manaCost.containsColor(ColoredManaSymbol.B)) {
+            res.add(ManaType.BLACK);
+        }
+        if (manaCost.containsColor(ColoredManaSymbol.R)) {
+            res.add(ManaType.RED);
+        }
+        if (manaCost.containsColor(ColoredManaSymbol.G)) {
+            res.add(ManaType.GREEN);
+        }
+        return res;
+    }
+
+    /**
      * Utility function to find the ManaType associated with a name without needing to have the if-statements
      * cluttering up the code.
      * <p>
@@ -176,5 +210,19 @@ public enum ManaType {
 
     public static Set<ManaType> getTrueManaTypes() {
         return EnumSet.of(BLACK, BLUE, GREEN, RED, WHITE, COLORLESS);
+    }
+
+    public static Set<ManaType> getColorManaTypes() {
+        return EnumSet.of(BLACK, BLUE, GREEN, RED, WHITE);
+    }
+
+    public static int countSharedColors(Set<ManaType> first, Set<ManaType> second) {
+        int count = 0;
+        for (ManaType manaType : first) {
+            if (second.contains(manaType)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

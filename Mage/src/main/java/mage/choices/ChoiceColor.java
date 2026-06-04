@@ -3,9 +3,11 @@ package mage.choices;
 import mage.MageObject;
 import mage.Mana;
 import mage.ObjectColor;
+import mage.constants.ManaType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author BetaSteward_at_googlemail.com, JayDi85
@@ -123,6 +125,22 @@ public class ChoiceColor extends ChoiceImpl {
             mana.increaseWhite();
         } else {
             mana.increaseColorless();
+        }
+    }
+
+    public Set<ManaType> getManaTypes() {
+        if (getColor().isBlack()) {
+            return Set.of(ManaType.BLACK);
+        } else if (getColor().isBlue()) {
+            return Set.of(ManaType.BLUE);
+        } else if (getColor().isRed()) {
+            return Set.of(ManaType.RED);
+        } else if (getColor().isGreen()) {
+            return Set.of(ManaType.GREEN);
+        } else if (getColor().isWhite()) {
+            return Set.of(ManaType.WHITE);
+        } else {
+            return Set.of(ManaType.COLORLESS);
         }
     }
 }

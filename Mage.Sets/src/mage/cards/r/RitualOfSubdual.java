@@ -1,21 +1,16 @@
 package mage.cards.r;
 
 import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.ReplacementEffectImpl;
+import mage.abilities.effects.mana.ReplaceManaEffect;
 import mage.abilities.keyword.CumulativeUpkeepAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.Outcome;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.events.ManaEvent;
-import mage.game.events.TappedForManaEvent;
-import mage.game.permanent.Permanent;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -31,7 +26,10 @@ public final class RitualOfSubdual extends CardImpl {
         this.addAbility(new CumulativeUpkeepAbility(new ManaCostsImpl<>("{2}")));
 
         // If a land is tapped for mana, it produces colorless mana instead of any other type.
-        this.addAbility(new SimpleStaticAbility(new RitualOfSubdualReplacementEffect()));
+        this.addAbility(new SimpleStaticAbility(ReplaceManaEffect.produced(Duration.WhileOnBattlefield, Outcome.Neutral, ReplaceManaEffect.replaceAllProducedMana(Mana.ColorlessMana(1)))
+                .setProducedMatcher(StaticTypedFilters.A_LAND)
+                .setText("If a land is tapped for mana, it produces colorless mana instead of any other type")
+        ));
     }
 
     private RitualOfSubdual(final RitualOfSubdual card) {
@@ -41,41 +39,5 @@ public final class RitualOfSubdual extends CardImpl {
     @Override
     public RitualOfSubdual copy() {
         return new RitualOfSubdual(this);
-    }
-}
-
-class RitualOfSubdualReplacementEffect extends ReplacementEffectImpl {
-
-    RitualOfSubdualReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Neutral);
-        staticText = "If a land is tapped for mana, it produces colorless mana instead of any other type.";
-    }
-
-    private RitualOfSubdualReplacementEffect(final RitualOfSubdualReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public RitualOfSubdualReplacementEffect copy() {
-        return new RitualOfSubdualReplacementEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        ManaEvent manaEvent = (ManaEvent) event;
-        Mana mana = manaEvent.getMana();
-        mana.setToMana(Mana.ColorlessMana(mana.count()));
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.TAPPED_FOR_MANA;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Permanent permanent = ((TappedForManaEvent) event).getPermanent();
-        return permanent != null && permanent.isLand(game);
     }
 }

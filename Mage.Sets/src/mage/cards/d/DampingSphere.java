@@ -3,8 +3,8 @@ package mage.cards.d;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.cost.SpellsCostIncreasingAllEffect;
+import mage.abilities.effects.mana.ReplaceManaEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -13,10 +13,6 @@ import mage.constants.Outcome;
 import mage.constants.TargetController;
 import mage.filter.FilterCard;
 import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.events.ManaEvent;
-import mage.game.events.TappedForManaEvent;
-import mage.game.permanent.Permanent;
 import mage.util.CardUtil;
 import mage.watchers.common.CastSpellLastTurnWatcher;
 
@@ -31,7 +27,11 @@ public final class DampingSphere extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{2}");
 
         // If a land is tapped for two or more mana, it produces {C} instead of any other type and amount.
-        this.addAbility(new SimpleStaticAbility(new DampingSphereReplacementEffect()));
+        this.addAbility(new SimpleStaticAbility(
+                ReplaceManaEffect.produced(Duration.WhileOnBattlefield, Outcome.Neutral, ReplaceManaEffect.replaceAllProducedMana(Mana.ColorlessMana(1)))
+                        .setProducedMatcher(context -> context.mana().count() > 1 && context.producerPermanent() != null && context.producerPermanent().isLand(context.game()))
+                        .setText("If a land is tapped for two or more mana, it produces {C} instead of any other type and amount")
+        ));
 
         // Each spell a player casts costs {1} more to cast for each other spell that player has cast this turn.
         this.addAbility(new SimpleStaticAbility(new DampingSphereIncreasementAllEffect()));
@@ -44,44 +44,6 @@ public final class DampingSphere extends CardImpl {
     @Override
     public DampingSphere copy() {
         return new DampingSphere(this);
-    }
-}
-
-class DampingSphereReplacementEffect extends ReplacementEffectImpl {
-
-    DampingSphereReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Neutral);
-        staticText = "If a land is tapped for two or more mana, it produces {C} instead of any other type and amount";
-    }
-
-    private DampingSphereReplacementEffect(final DampingSphereReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public DampingSphereReplacementEffect copy() {
-        return new DampingSphereReplacementEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        ManaEvent manaEvent = (ManaEvent) event;
-        Mana mana = manaEvent.getMana();
-        mana.setToMana(Mana.ColorlessMana(1));
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.TAPPED_FOR_MANA;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        TappedForManaEvent manaEvent = (TappedForManaEvent) event;
-        Permanent land = manaEvent.getPermanent();
-        Mana mana = manaEvent.getMana();
-        return land != null && land.isLand(game) && mana.count() > 1;
     }
 }
 

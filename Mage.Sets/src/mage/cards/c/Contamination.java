@@ -1,21 +1,18 @@
 package mage.cards.c;
 
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.SacrificeSourceUnlessPaysEffect;
+import mage.abilities.effects.mana.ReplaceManaEffect;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.Outcome;
 import mage.filter.StaticFilters;
-import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.events.ManaEvent;
-import mage.game.events.TappedForManaEvent;
-import mage.game.permanent.Permanent;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -33,7 +30,11 @@ public final class Contamination extends CardImpl {
         );
 
         // If a land is tapped for mana, it produces {B} instead of any other type and amount.
-        this.addAbility(new SimpleStaticAbility(new ContaminationReplacementEffect()));
+        this.addAbility(new SimpleStaticAbility(
+                ReplaceManaEffect.produced(Duration.WhileOnBattlefield, Outcome.Neutral, ReplaceManaEffect.replaceAllProducedMana(Mana.BlackMana(1)))
+                        .setProducedMatcher(StaticTypedFilters.A_LAND)
+                        .setText("If a land is tapped for mana, it produces {B} instead of any other type and amount")
+        ));
     }
 
     private Contamination(final Contamination card) {
@@ -43,41 +44,5 @@ public final class Contamination extends CardImpl {
     @Override
     public Contamination copy() {
         return new Contamination(this);
-    }
-}
-
-class ContaminationReplacementEffect extends ReplacementEffectImpl {
-
-    ContaminationReplacementEffect() {
-        super(Duration.WhileOnBattlefield, Outcome.Neutral);
-        staticText = "If a land is tapped for mana, it produces {B} instead of any other type and amount";
-    }
-
-    private ContaminationReplacementEffect(final ContaminationReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public ContaminationReplacementEffect copy() {
-        return new ContaminationReplacementEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        ManaEvent manaEvent = (ManaEvent) event;
-        Mana mana = manaEvent.getMana();
-        mana.setToMana(Mana.BlackMana(1));
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.TAPPED_FOR_MANA;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Permanent permanent = ((TappedForManaEvent) event).getPermanent();
-        return permanent != null && permanent.isLand(game);
     }
 }
