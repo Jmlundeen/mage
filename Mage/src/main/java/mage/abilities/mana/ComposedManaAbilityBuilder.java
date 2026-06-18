@@ -74,6 +74,7 @@ public class ComposedManaAbilityBuilder {
     private Condition activationCondition = null;
     private ManaPlayerProvider manaPlayerProvider = null;
     private Filter.ComparisonScope comparisonScope = Filter.ComparisonScope.All;
+    private boolean chooseManaValue = false;
     private Cost anyPlayerPaysCost = null;
     private String anyPlayerPaysChooseUseText = null;
     private ManaEffect manaEffect = null;
@@ -328,6 +329,15 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Makes configured mana values mutually exclusive instead of additive.
+     * Example: add {U} or {1}{U}.
+     */
+    public ComposedManaAbilityBuilder chooseManaValue() {
+        this.chooseManaValue = true;
+        return this;
+    }
+
+    /**
      * Adds mana that gives the same fixed amount to each mana type in the given set.
      */
     public ComposedManaAbilityBuilder addEach(Set<ManaType> manaTypes, int amount) {
@@ -497,6 +507,7 @@ public class ComposedManaAbilityBuilder {
                 runtimeSpendingConditionProviders,
                 manaPlayerProvider,
                 comparisonScope,
+                chooseManaValue,
                 anyPlayerPaysCost,
                 anyPlayerPaysChooseUseText,
                 capacityOverride,
@@ -563,6 +574,10 @@ public class ComposedManaAbilityBuilder {
 
     public Filter.ComparisonScope getComparisonScope() {
         return comparisonScope;
+    }
+
+    public boolean isChooseManaValue() {
+        return chooseManaValue;
     }
 
     public List<Cost> getAdditionalCosts() {

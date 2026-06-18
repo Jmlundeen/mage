@@ -10,6 +10,8 @@ import mage.abilities.effects.mana.ManaEffect;
 import mage.abilities.mana.providers.ManaConditionProvider;
 import mage.abilities.mana.providers.ManaPlayerProvider;
 import mage.abilities.mana.value.ManaValue;
+import mage.choices.Choice;
+import mage.choices.ChoiceImpl;
 import mage.constants.Duration;
 import mage.constants.ManaType;
 import mage.constants.Outcome;
@@ -30,6 +32,7 @@ public class ComposedManaEffect extends ManaEffect {
         private final List<ManaConditionProvider> spendingConditionProviders = new ArrayList<>();
         private final ManaPlayerProvider manaPlayerProvider;
         private final Filter.ComparisonScope comparisonScope;
+        private final boolean chooseManaValue;
         private final Cost anyPlayerPaysCost;
         private final String anyPlayerPaysChooseUseText;
         private final DynamicValue capacityOverride;
@@ -43,6 +46,7 @@ public class ComposedManaEffect extends ManaEffect {
             effect.spendingConditionProviders.stream().map(ManaConditionProvider::copy).forEach(this.spendingConditionProviders::add);
             this.manaPlayerProvider = effect.manaPlayerProvider == null ? null : effect.manaPlayerProvider.copy();
             this.comparisonScope = effect.comparisonScope;
+            this.chooseManaValue = effect.chooseManaValue;
             this.anyPlayerPaysCost = effect.anyPlayerPaysCost == null ? null : effect.anyPlayerPaysCost.copy();
             this.anyPlayerPaysChooseUseText = effect.anyPlayerPaysChooseUseText;
             this.capacityOverride = effect.capacityOverride == null ? null : effect.capacityOverride.copy();
@@ -52,6 +56,7 @@ public class ComposedManaEffect extends ManaEffect {
         public ComposedManaEffect(List<ManaValue> manaValues, List<Condition> spendingConditions,
                                   List<ManaConditionProvider> spendingConditionProviders,
                                   ManaPlayerProvider manaPlayerProvider, Filter.ComparisonScope comparisonScope,
+                                  boolean chooseManaValue,
                                   Cost anyPlayerPaysCost,
                                   String anyPlayerPaysChooseUseText,
                                   DynamicValue capacityOverride,
@@ -62,6 +67,7 @@ public class ComposedManaEffect extends ManaEffect {
             this.spendingConditionProviders.addAll(spendingConditionProviders);
             this.manaPlayerProvider = manaPlayerProvider;
             this.comparisonScope = comparisonScope;
+            this.chooseManaValue = chooseManaValue;
             this.anyPlayerPaysCost = anyPlayerPaysCost;
             this.anyPlayerPaysChooseUseText = anyPlayerPaysChooseUseText;
             this.capacityOverride = capacityOverride;
@@ -107,23 +113,11 @@ public class ComposedManaEffect extends ManaEffect {
 
     @Override
         public List<Mana> getNetMana(Game game, Ability source) {
-            List<Mana> netMana = new ArrayList<>();
             List<Condition> resolvedSpendingConditions = getSpendingConditions(game, source);
-            for (ManaValue mv : manaValues) {
-                List<Mana> evaluated = mv.evaluate(game, source, this, false);
-                if (evaluated != null) {
-                    for (Mana m : evaluated) {
-                        // Attach conditions to each mana option for playable calculations
-                        if (!resolvedSpendingConditions.isEmpty()) {
-                            m.addConditions(resolvedSpendingConditions);
-                            m.setComparisonScope(comparisonScope);
-                            m.setConditionText(buildConditionText(resolvedSpendingConditions));
-                        }
-                        netMana.add(m);
-                    }
-                }
-            }
-            return netMana;
+            List<Mana> netMana = chooseManaValue
+                    ? getChoiceNetMana(game, source)
+                    : getCombinedNetMana(game, source);
+            return applySpendingConditions(netMana, resolvedSpendingConditions);
         }
 
         @Override
@@ -150,6 +144,9 @@ public class ComposedManaEffect extends ManaEffect {
             if (isPreventedByAnyPlayerPaying(game, source)) {
                 return new Mana();
             }
+            if (chooseManaValue) {
+                return chooseProducedMana(game, source);
+            }
             Mana result = new Mana();
             for (ManaValue mv : manaValues) {
                 List<Mana> evaluated = mv.evaluate(game, source, this, true);
@@ -160,6 +157,141 @@ public class ComposedManaEffect extends ManaEffect {
                 }
             }
             return result;
+        }
+
+        private List<Mana> getChoiceNetMana(Game game, Ability source) {
+            List<Mana> options = new ArrayList<>();
+            for (ManaValue manaValue : manaValues) {
+                List<Mana> evaluated = manaValue.evaluate(game, source, this, false);
+                if (evaluated != null) {
+                    for (Mana mana : evaluated) {
+                        if (mana != null && mana.count() > 0) {
+                            options.add(mana);
+                        }
+                    }
+                }
+            }
+            return distinct(options);
+        }
+
+        private List<Mana> getCombinedNetMana(Game game, Ability source) {
+            List<Mana> combined = new ArrayList<>();
+            combined.add(new Mana());
+
+            for (ManaValue manaValue : manaValues) {
+                List<Mana> evaluated = manaValue.evaluate(game, source, this, false);
+                if (evaluated == null || evaluated.isEmpty()) {
+                    continue;
+                }
+
+                List<Mana> next = new ArrayList<>();
+                for (Mana baseMana : combined) {
+                    for (Mana addedMana : evaluated) {
+                        if (addedMana == null) {
+                            continue;
+                        }
+                        Mana mana = baseMana.copy();
+                        mana.add(addedMana);
+                        next.add(mana);
+                    }
+                }
+                combined = distinct(next);
+            }
+
+            combined.removeIf(mana -> mana == null || mana.count() <= 0);
+            return combined;
+        }
+
+        private Mana chooseProducedMana(Game game, Ability source) {
+            Map<String, ManaValue> manaValueChoices = new LinkedHashMap<>();
+            for (ManaValue manaValue : manaValues) {
+                List<Mana> evaluated = manaValue.evaluate(game, source, this, false);
+                String choiceText = describeManaValue(evaluated);
+                if (choiceText != null) {
+                    manaValueChoices.putIfAbsent(choiceText, manaValue);
+                }
+            }
+
+            if (manaValueChoices.isEmpty()) {
+                return new Mana();
+            }
+            if (manaValueChoices.size() == 1) {
+                return produceMana(manaValueChoices.values().iterator().next(), game, source);
+            }
+
+            Player player = getChoicePlayer(game, source);
+            if (player == null) {
+                return new Mana();
+            }
+
+            Choice choice = new ChoiceImpl(true);
+            choice.setMessage("Choose mana to add");
+            choice.getChoices().addAll(manaValueChoices.keySet());
+            if (!player.choose(Outcome.PutManaInPool, choice, game)) {
+                return new Mana();
+            }
+
+            ManaValue chosenManaValue = manaValueChoices.get(choice.getChoice());
+            if (chosenManaValue != null) {
+                return produceMana(chosenManaValue, game, source);
+            }
+            return new Mana();
+        }
+
+        private Mana produceMana(ManaValue manaValue, Game game, Ability source) {
+            Mana result = new Mana();
+            List<Mana> evaluated = manaValue.evaluate(game, source, this, true);
+            if (evaluated != null) {
+                for (Mana mana : evaluated) {
+                    if (mana != null) {
+                        result.add(mana);
+                    }
+                }
+            }
+            return result;
+        }
+
+        private String describeManaValue(List<Mana> evaluated) {
+            if (evaluated == null || evaluated.isEmpty()) {
+                return null;
+            }
+
+            List<String> descriptions = evaluated.stream()
+                    .filter(Objects::nonNull)
+                    .filter(mana -> mana.count() > 0)
+                    .map(Mana::toString)
+                    .distinct()
+                    .toList();
+            if (descriptions.isEmpty()) {
+                return null;
+            }
+            return descriptions.size() == 1 ? descriptions.getFirst() : CardUtil.concatWithOr(descriptions);
+        }
+
+        private List<Mana> applySpendingConditions(List<Mana> manaOptions, List<Condition> resolvedSpendingConditions) {
+            if (manaOptions.isEmpty()) {
+                return manaOptions;
+            }
+
+            List<Mana> result = new ArrayList<>(manaOptions.size());
+            String conditionText = resolvedSpendingConditions.isEmpty() ? null : buildConditionText(resolvedSpendingConditions);
+            for (Mana mana : manaOptions) {
+                if (mana == null || mana.count() <= 0) {
+                    continue;
+                }
+                Mana manaWithConditions = mana.copy();
+                if (!resolvedSpendingConditions.isEmpty()) {
+                    manaWithConditions.addConditions(resolvedSpendingConditions);
+                    manaWithConditions.setComparisonScope(comparisonScope);
+                    manaWithConditions.setConditionText(conditionText);
+                }
+                result.add(manaWithConditions);
+            }
+            return result;
+        }
+
+        private List<Mana> distinct(List<Mana> manaOptions) {
+            return new ArrayList<>(new LinkedHashSet<>(manaOptions));
         }
 
         @Override
