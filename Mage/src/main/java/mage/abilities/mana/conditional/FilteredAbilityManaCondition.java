@@ -19,7 +19,7 @@ public class FilteredAbilityManaCondition extends ManaCondition {
 
     @Override
     public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        return filter.match(source, source.getControllerId(), source, game);
+        return !source.isActivated() && filter.match(source, source.getControllerId(), source, game);
     }
 
     @Override
