@@ -1,12 +1,15 @@
 package mage.cards.v;
 
 import mage.MageInt;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.common.InstantOrSorcerySpellManaBuilder;
+import mage.Mana;
+import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -24,7 +27,13 @@ public final class VodalianArcanist extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {T}: Add {C}. Spend this mana only to cast an instant or sorcery spell.
-        this.addAbility(new ConditionalColorlessManaAbility(1, new InstantOrSorcerySpellManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText("Add {C}. Spend this mana only to cast an instant or sorcery spell")
+                .build()
+        );
     }
 
     private VodalianArcanist(final VodalianArcanist card) {

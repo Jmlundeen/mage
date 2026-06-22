@@ -1,13 +1,16 @@
 package mage.cards.m;
 
-import java.util.UUID;
+import mage.Mana;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
+
+import java.util.UUID;
 
 /**
  *
@@ -15,18 +18,23 @@ import mage.filter.FilterSpell;
  */
 public final class MishrasWorkshop extends CardImpl {
 
-    private static final FilterSpell filter = new FilterSpell("artifact spells");
-    static {
-        filter.add(CardType.ARTIFACT.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("artifact spells")
+            .addAll(
+                    SpellPredicate.instance,
+                    CardType.ARTIFACT.getPredicate()
+            );
 
     public MishrasWorkshop(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.LAND},"");
 
         // {tap}: Add {C}{C}{C}. Spend this mana only to cast artifact spells.
-        this.addAbility(new ConditionalColorlessManaAbility(new TapSourceCost(), 3,
-                new ConditionalSpellManaBuilder(filter)));
-
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(3))
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add {C}{C}{C}. Spend this mana only to cast artifact spells.")
+                .build()
+        );
     }
 
     private MishrasWorkshop(final MishrasWorkshop card) {

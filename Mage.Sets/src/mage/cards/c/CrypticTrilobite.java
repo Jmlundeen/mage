@@ -7,17 +7,21 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
+import mage.abilities.dynamicvalue.MultipliedValue;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.GetXValue;
+import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.common.ActivatedAbilityManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ManaType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -36,12 +40,15 @@ public final class CrypticTrilobite extends CardImpl {
         // Cryptic Trilobite enters the battlefield with X +1/+1 counters on it.
         this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.P1P1, GetXValue.instance)));
 
-        // Remove a +1/+1 counter from Cryptic Trilobite: Add {C}{C}. Spend this mana only to activate abilities.        
-        this.addAbility(new ConditionalColorlessManaAbility(
-                new RemoveCountersSourceCost(CounterType.P1P1.createInstance()),
-                2, new ActivatedAbilityManaBuilder(),
-                new CountersSourceCount(CounterType.P1P1)
-        ));
+        // Remove a +1/+1 counter from Cryptic Trilobite: Add {C}{C}. Spend this mana only to activate abilities.
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new RemoveCountersSourceCost(CounterType.P1P1.createInstance()))
+                .capacityOverride(new MultipliedValue(new CountersSourceCount(CounterType.P1P1), 2))
+                .addDynamic(StaticValue.get(2), ManaType.COLORLESS)
+                .condition(new FilteredAbilityManaCondition(StaticTypedFilters.ACTIVATED_ABILITY))
+                .ruleText("Add {C}{C}. Spend this mana only to activate abilities")
+                .build()
+        );
 
         // {1}, {T}: Put a +1/+1 counter on Cryptic Trilobite.
         Ability ability = new SimpleActivatedAbility(

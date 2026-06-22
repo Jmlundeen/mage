@@ -1,7 +1,6 @@
 
 package mage.cards.c;
 
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.MageObject;
 import mage.Mana;
@@ -12,8 +11,7 @@ import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.keyword.DevoidAbility;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.conditional.ManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -38,8 +36,15 @@ public final class CultivatorDrone extends CardImpl {
 
         // Devoid
         this.addAbility(new DevoidAbility(this.color));
+
         // {T}: Add {C}. Spend this mana only to cast a colorless spell, activate an ability of a colorless permanent, or pay a cost that contains {C}.
-        this.addAbility(new ConditionalColorlessManaAbility(new TapSourceCost(), 1, new CultivatorDroneManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new CultivatorDroneManaCondition())
+                .ruleText("Add {C}. Spend this mana only to cast a colorless spell, activate an ability of a colorless permanent, or pay a cost that contains {C}")
+                .build()
+        );
     }
 
     private CultivatorDrone(final CultivatorDrone card) {
@@ -49,28 +54,6 @@ public final class CultivatorDrone extends CardImpl {
     @Override
     public CultivatorDrone copy() {
         return new CultivatorDrone(this);
-    }
-}
-
-class CultivatorDroneManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new CultivatorDroneConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a colorless spell, activate an ability of a colorless permanent, or pay a cost that contains {C}";
-    }
-}
-
-class CultivatorDroneConditionalMana extends ConditionalMana {
-
-    public CultivatorDroneConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast a colorless spell, activate an ability of a colorless permanent, or pay a cost that contains {C}";
-        addCondition(new CultivatorDroneManaCondition());
     }
 }
 

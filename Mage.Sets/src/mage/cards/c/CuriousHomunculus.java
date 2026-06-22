@@ -1,5 +1,6 @@
 package mage.cards.c;
 
+import mage.Mana;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.CardsInControllerGraveyardCondition;
@@ -10,8 +11,8 @@ import mage.abilities.effects.common.cost.SpellsCostReductionControllerEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
 import mage.abilities.keyword.ProwessAbility;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.common.InstantOrSorcerySpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
@@ -19,6 +20,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterCard;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterInstantOrSorceryCard;
 
 import java.util.UUID;
@@ -42,7 +44,13 @@ public final class CuriousHomunculus extends TransformingDoubleFacedCard {
         this.getLeftHalfCard().setPT(1, 1);
 
         // {T}: Add {C}. Spend this mana only to cast an instant or sorcery spell.
-        this.getLeftHalfCard().addAbility(new ConditionalColorlessManaAbility(new TapSourceCost(), 1, new InstantOrSorcerySpellManaBuilder()));
+        this.getLeftHalfCard().addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText("Add {C}. Spend this mana only to cast an instant or sorcery spell")
+                .build()
+        );
 
         // At the beginning of your upkeep, if there are three or more instant and/or sorcery cards in your graveyard, transform Curious Homunculus.
         this.getLeftHalfCard().addAbility(new BeginningOfUpkeepTriggeredAbility(new TransformSourceEffect()).withInterveningIf(condition).addHint(hint));

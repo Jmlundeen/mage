@@ -1,22 +1,19 @@
 package mage.cards.s;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.SpendOrActivateManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.game.Game;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.color.ColorlessPredicate;
 
 import java.util.UUID;
 
@@ -24,6 +21,15 @@ import java.util.UUID;
  * @author Susucr
  */
 public final class SageOfTheUnknowable extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("colorless spell or activated ability")
+            .addAny(
+                    LogicalPredicate.and(
+                            ColorlessPredicate.instance,
+                            SpellPredicate.instance
+                    ),
+                    ActivatedAbilityPredicate.instance
+            );
 
     public SageOfTheUnknowable(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}");
@@ -34,7 +40,13 @@ public final class SageOfTheUnknowable extends CardImpl {
         this.toughness = new MageInt(4);
 
         // {T}: Add {C}. Spend this mana only to cast a colorless spell or to activate an ability.
-        this.addAbility(new ConditionalColorlessManaAbility(new TapSourceCost(), 1, new SageOfTheUnknowableManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new SpendOrActivateManaCondition(filter))
+                .ruleText("Add {C}. Spend this mana only to cast a colorless spell or to activate an ability")
+                .build()
+        );
     }
 
     private SageOfTheUnknowable(final SageOfTheUnknowable card) {
@@ -44,39 +56,5 @@ public final class SageOfTheUnknowable extends CardImpl {
     @Override
     public SageOfTheUnknowable copy() {
         return new SageOfTheUnknowable(this);
-    }
-}
-
-class SageOfTheUnknowableManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new SageOfTheUnknowableConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a colorless spell or to activate an ability";
-    }
-}
-
-class SageOfTheUnknowableConditionalMana extends ConditionalMana {
-
-    public SageOfTheUnknowableConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast a colorless spell or to activate an ability";
-        addCondition(new SageOfTheUnknowableManaCondition());
-    }
-}
-
-class SageOfTheUnknowableManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        if (source instanceof SpellAbility && !source.isActivated()) {
-            MageObject object = game.getObject(source);
-            return object != null && object.getColor(game).isColorless();
-        }
-        return source.isActivatedAbility();
     }
 }

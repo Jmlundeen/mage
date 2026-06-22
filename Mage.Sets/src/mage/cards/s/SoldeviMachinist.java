@@ -1,21 +1,18 @@
 package mage.cards.s;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.game.Game;
+import mage.filter.FilterTyped;
+import mage.filter.StaticTypedFilters;
+import mage.filter.predicate.typed.ability.source.AbilitySourcePredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 
 import java.util.UUID;
 
@@ -23,6 +20,10 @@ import java.util.UUID;
  * @author hanasu
  */
 public final class SoldeviMachinist extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("activated ability of an artifact")
+            .addAll(new AbilitySourcePredicate(StaticTypedFilters.AN_ARTIFACT),
+                    ActivatedAbilityPredicate.instance);
 
     public SoldeviMachinist(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}");
@@ -32,8 +33,14 @@ public final class SoldeviMachinist extends CardImpl {
         this.power = new MageInt(1);
         this.toughness = new MageInt(1);
 
-        // {tap}: Add {C}{C}. Spend this mana only to activate abilities of artifacts.
-        this.addAbility(new ConditionalColorlessManaAbility(new TapSourceCost(), 2, new SoldeviMachinistManaBuilder()));
+        // {T}: Add {C}{C}. Spend this mana only to activate abilities of artifacts.
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(2))
+                .condition(new FilteredAbilityManaCondition(filter))
+                .ruleText("Add {C}{C}. Spend this mana only to activate abilities")
+                .build()
+        );
     }
 
     private SoldeviMachinist(final SoldeviMachinist card) {
@@ -43,44 +50,5 @@ public final class SoldeviMachinist extends CardImpl {
     @Override
     public SoldeviMachinist copy() {
         return new SoldeviMachinist(this);
-    }
-}
-
-class SoldeviMachinistManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new ArtifactAbilityConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to activate abilities of artifacts";
-    }
-}
-
-class ArtifactAbilityConditionalMana extends ConditionalMana {
-
-    public ArtifactAbilityConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to activate abilities of artifacts";
-        addCondition(new ArtifactAbilityManaCondition());
-    }
-}
-
-class ArtifactAbilityManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (!source.isActivatedAbility()) {
-            return false;
-        }
-        MageObject object = game.getObject(source);
-        return object != null && object.isArtifact(game) && !source.isActivated();
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costsToPay) {
-        return apply(game, source);
     }
 }

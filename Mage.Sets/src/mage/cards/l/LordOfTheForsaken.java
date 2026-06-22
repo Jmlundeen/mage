@@ -1,31 +1,26 @@
 package mage.cards.l;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
 import mage.abilities.common.SimpleActivatedAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.PayLifeCost;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.MillCardsTargetEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.TrampleAbility;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
-import mage.game.Game;
-import mage.game.stack.Spell;
+import mage.filter.predicate.typed.Spell.SpellCastFromZonePredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.target.TargetPlayer;
-import mage.target.common.TargetControlledPermanent;
 
 import java.util.UUID;
 
@@ -33,6 +28,12 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class LordOfTheForsaken extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("a spell from your graveyard")
+            .addAll(
+                    SpellPredicate.instance,
+                    SpellCastFromZonePredicate.GRAVEYARD
+            );
 
     public LordOfTheForsaken(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{4}{B}{B}");
@@ -56,9 +57,13 @@ public final class LordOfTheForsaken extends CardImpl {
         this.addAbility(ability);
 
         // Pay 1 life: Add {C}. Spend this mana only to cast a spell from your graveyard.
-        this.addAbility(new ConditionalColorlessManaAbility(
-                new PayLifeCost(1), 1, new LordOfTheForsakenManaBuilder()
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new PayLifeCost(1))
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add {C}. Spend this mana only to cast a spell from your graveyard")
+                .build()
+        );
     }
 
     private LordOfTheForsaken(final LordOfTheForsaken card) {
@@ -68,47 +73,5 @@ public final class LordOfTheForsaken extends CardImpl {
     @Override
     public LordOfTheForsaken copy() {
         return new LordOfTheForsaken(this);
-    }
-}
-
-class LordOfTheForsakenManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new LordOfTheForsakenConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a spell from your graveyard";
-    }
-}
-
-class LordOfTheForsakenConditionalMana extends ConditionalMana {
-
-    public LordOfTheForsakenConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast a spell from your graveyard";
-        addCondition(LordOfTheForsakenManaCondition.instance);
-    }
-}
-
-enum LordOfTheForsakenManaCondition implements Condition {
-    instance;
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (!(source instanceof SpellAbility)) {
-            return false;
-        }
-        MageObject object = game.getObject(source);
-        if (!source.isControlledBy(game.getOwnerId(object))) {
-            return false;
-        }
-        if (object instanceof Spell) {
-            return ((Spell) object).getFromZone() == Zone.GRAVEYARD;
-        }
-        // checking mana without real cast
-        return game.inCheckPlayableState() && game.getState().getZone(source.getSourceId()) == Zone.GRAVEYARD;
     }
 }

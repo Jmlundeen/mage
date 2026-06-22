@@ -1,6 +1,7 @@
 package mage.cards.p;
 
 import mage.MageInt;
+import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -10,13 +11,14 @@ import mage.abilities.effects.common.CopyTargetStackObjectEffect;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.keyword.DefenderAbility;
 import mage.abilities.keyword.ExhaustAbility;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.common.ActivatedAbilityManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.StackObject;
@@ -40,7 +42,13 @@ public final class PitAutomaton extends CardImpl {
         this.addAbility(DefenderAbility.getInstance());
 
         // {T}: Add {C}{C}. Spend this mana only to activate abilities.
-        this.addAbility(new ConditionalColorlessManaAbility(2, new ActivatedAbilityManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(2))
+                .condition(new FilteredAbilityManaCondition(StaticTypedFilters.ACTIVATED_ABILITY))
+                .ruleText("Add {C}{C}. Spend this mana only to activate abilities")
+                .build()
+        );
 
         // {2}, {T}: When you next activate an exhaust ability this turn, copy it. You may choose new targets for the copy.
         Ability ability = new SimpleActivatedAbility(

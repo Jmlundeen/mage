@@ -1,15 +1,14 @@
 package mage.cards.q;
 
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.SpellAbility;
 import mage.abilities.common.TurnFaceUpAbility;
-import mage.abilities.condition.Condition;
+import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.ManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -33,7 +32,13 @@ public final class QarsiDeceiver extends CardImpl {
         this.toughness = new MageInt(4);
 
         // {T}: Add {C}. Spend this mana only to cast a face-down creature spell, pay a mana cost to turn a manifested creature face up, or pay a morph cost. <i.(A megamorph cost is a morph cost.)</i>
-        this.addAbility(new ConditionalColorlessManaAbility(new TapSourceCost(), 1, new QarsiDeceiverManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new QarsiDeceiverManaCondition())
+                .ruleText("Add {C}. Spend this mana only to cast a face-down creature spell, pay a mana cost to turn a manifested creature face up, or pay a morph cost. <i>(A megamorph cost is a morph cost.)</i>")
+                .build()
+        );
     }
 
     private QarsiDeceiver(final QarsiDeceiver card) {
@@ -46,31 +51,10 @@ public final class QarsiDeceiver extends CardImpl {
     }
 }
 
-class QarsiDeceiverManaBuilder extends ConditionalManaBuilder {
+class QarsiDeceiverManaCondition extends ManaCondition {
 
     @Override
-    public ConditionalMana build(Object... options) {
-        return new QarsiDeceiverConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a face-down creature spell, pay a mana cost to turn a manifested creature face up, or pay a morph cost. <i>(A megamorph cost is a morph cost.)</i>";
-    }
-}
-
-class QarsiDeceiverConditionalMana extends ConditionalMana {
-
-    public QarsiDeceiverConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(new QarsiDeceiverManaCondition());
-    }
-}
-
-class QarsiDeceiverManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
         if (source instanceof SpellAbility) {
             return ((SpellAbility) source).getSpellAbilityCastMode().isFaceDown()
                     && ((SpellAbility) source).getCharacteristics(game).isCreature(game);

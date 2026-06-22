@@ -2,6 +2,7 @@ package mage.cards.t;
 
 import mage.MageItem;
 import mage.MageObject;
+import mage.Mana;
 import mage.abilities.Abilities;
 import mage.abilities.AbilitiesImpl;
 import mage.abilities.Ability;
@@ -9,16 +10,18 @@ import mage.abilities.ActivatedAbility;
 import mage.abilities.common.ActivateAbilityTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTappedAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.ContinuousEffectImpl;
 import mage.abilities.effects.common.CopyStackObjectEffect;
 import mage.abilities.keyword.CraftAbility;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.common.ActivatedAbilityManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
 import mage.filter.FilterStackObject;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterActivatedOrTriggeredAbility;
 import mage.filter.predicate.Predicate;
 import mage.filter.predicate.other.NotManaAbilityPredicate;
@@ -53,7 +56,13 @@ public final class TheEnigmaJewel extends TransformingDoubleFacedCard {
         this.getLeftHalfCard().addAbility(new EntersBattlefieldTappedAbility());
 
         // {T}: Add {C}{C}. Spend this mana only to activate abilities.
-        this.getLeftHalfCard().addAbility(new ConditionalColorlessManaAbility(2, new ActivatedAbilityManaBuilder()));
+        this.getLeftHalfCard().addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(2))
+                .condition(new FilteredAbilityManaCondition(StaticTypedFilters.ACTIVATED_ABILITY))
+                .ruleText("Add {C}{C}. Spend this mana only to activate abilities")
+                .build()
+        );
 
         // Craft with four or more nonlands with activated abilities {8}{U}
         this.getLeftHalfCard().addAbility(new CraftAbility(

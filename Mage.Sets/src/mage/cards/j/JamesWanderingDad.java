@@ -1,22 +1,17 @@
 package mage.cards.j;
 
-import mage.ConditionalMana;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.keyword.InvestigateEffect;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
 import mage.cards.AdventureCard;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.game.Game;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -35,9 +30,13 @@ public final class JamesWanderingDad extends AdventureCard {
         this.getLeftHalfCard().setPT(2, 4);
 
         // {T}: Add {C}{C}. Spend this mana only to activate abilities.
-        this.getLeftHalfCard().addAbility(new ConditionalColorlessManaAbility(
-                new TapSourceCost(), 2, new JamesWanderingDadManaBuilder()
-        ));
+        this.getLeftHalfCard().addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(2))
+                .condition(new FilteredAbilityManaCondition(StaticTypedFilters.ACTIVATED_ABILITY))
+                .ruleText("Add {C}{C}. Spend this mana only to activate abilities")
+                .build()
+        );
 
         // Follow Him
         // {X}{U}{U}
@@ -60,42 +59,3 @@ public final class JamesWanderingDad extends AdventureCard {
         return new JamesWanderingDad(this);
     }
 }
-
-// Mana building same as Cryptic Trilobite
-class JamesWanderingDadManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new JamesWanderingDadConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to activate abilities";
-    }
-}
-
-class JamesWanderingDadConditionalMana extends ConditionalMana {
-
-    JamesWanderingDadConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to activate abilities";
-        addCondition(new JamesWanderingDadManaCondition());
-    }
-}
-
-class JamesWanderingDadManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        return source != null
-                && !source.isActivated()
-                && source.isActivatedAbility();
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costsToPay) {
-        return apply(game, source);
-    }
-}
-
