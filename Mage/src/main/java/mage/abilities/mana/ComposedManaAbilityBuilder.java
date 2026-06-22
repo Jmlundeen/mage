@@ -85,6 +85,15 @@ public class ComposedManaAbilityBuilder {
     }
 
     /**
+     * Adds a mana value directly
+     * @param manaValue
+     */
+    public ComposedManaAbilityBuilder addManaValue(ManaValue manaValue) {
+        manaValues.add(manaValue);
+        return this;
+    }
+
+    /**
      * Adds a static mana value with individual color amounts.
      * 
      * @param white white mana amount
