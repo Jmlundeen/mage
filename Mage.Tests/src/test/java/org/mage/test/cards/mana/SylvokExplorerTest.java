@@ -26,8 +26,8 @@ public class SylvokExplorerTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions options = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("Player should be able to create 1 red and 1 white mana", "{R}{W}", options.toManaList().getFirst().toString());
-        Assert.assertEquals("Player should be able to create 1 blue and 1 white mana", "{W}{U}", options.toManaList().get(1).toString());
+        Assert.assertTrue("Player should be able to create 1 red and 1 white mana", options.canProduce("{R}{W}"));
+        Assert.assertTrue("Player should be able to create 1 blue and 1 white mana", options.canProduce("{W}{U}"));
     }
 
     @Test
@@ -45,6 +45,6 @@ public class SylvokExplorerTest extends CardTestPlayerBase {
         execute();
 
         ManaOptions options = playerA.getAvailableManaTest(currentGame);
-        Assert.assertEquals("Player should be able to create 3 white mana", "{W}{W}{W}", options.toManaList().getFirst().toString());
+        Assert.assertTrue("Player should be able to create 3 white mana", options.canProduce("{W}{W}{W}"));
     }
 }

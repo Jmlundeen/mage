@@ -1,15 +1,16 @@
 package mage.cards.s;
 
 import mage.abilities.common.EntersBattlefieldTappedAbility;
+import mage.abilities.mana.AnyColorAmongManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SuperType;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterControlledLandPermanent;
 import mage.filter.common.FilterControlledPermanent;
+
 import java.util.UUID;
-import mage.abilities.mana.AnyColorLandsProduceManaAbility;
-import mage.constants.TargetController;
 
 /**
  * @author anonymous
@@ -29,7 +30,12 @@ public final class StarCompass extends CardImpl {
         this.addAbility(new EntersBattlefieldTappedAbility());
         
         // {T}: Add one mana of any color that a basic land you control could produce.
-        this.addAbility(new AnyColorLandsProduceManaAbility(TargetController.YOU, true, filter));
+        this.addAbility(AnyColorAmongManaAbility.builder(StaticTypedFilters.BASIC_LAND_YOU_CONTROL)
+                .onlyColors(true)
+                .onlyProducibleManaTypes(true)
+                .ruleText("Add one mana of any color that a basic land you control could produce)")
+                .build()
+        );
     }
 
     private StarCompass(final StarCompass card) {

@@ -8,12 +8,12 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.PutCardFromHandOntoBattlefieldEffect;
-import mage.abilities.mana.AnyColorLandsProduceManaAbility;
+import mage.abilities.mana.AnyColorAmongManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.TargetController;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -26,12 +26,15 @@ public final class HorizonOfProgress extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
 
         // {T}, Pay 1 life: Add one mana of any type that a land you control could produce.
-        Ability ability = new AnyColorLandsProduceManaAbility(TargetController.YOU, false);
-        ability.addCost(new PayLifeCost(1));
-        this.addAbility(ability);
+        this.addAbility(new AnyColorAmongManaAbility.Builder(StaticTypedFilters.LAND_YOU_CONTROL)
+                .onlyProducibleManaTypes(true)
+                .cost(new PayLifeCost(1))
+                .ruleText("Add one mana of any type that a land you control could produce.")
+                .build()
+        );
 
         // {3}, {T}: You may put a land card from your hand onto the battlefield tapped.
-        ability = new SimpleActivatedAbility(
+        Ability ability = new SimpleActivatedAbility(
                 new PutCardFromHandOntoBattlefieldEffect(StaticFilters.FILTER_CARD_LAND_A, false, true), new GenericManaCost(3)
         );
         ability.addCost(new TapSourceCost());

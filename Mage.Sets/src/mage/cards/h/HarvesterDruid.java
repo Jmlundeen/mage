@@ -1,14 +1,15 @@
 
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.MageInt;
-import mage.abilities.mana.AnyColorLandsProduceManaAbility;
+import mage.abilities.mana.AnyColorAmongManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.TargetController;
+import mage.filter.StaticTypedFilters;
+
+import java.util.UUID;
 
 /**
  *
@@ -24,7 +25,11 @@ public final class HarvesterDruid extends CardImpl {
         this.toughness = new MageInt(1);
 
         // {tap}: Add one mana of any color that a land you control could produce.
-        this.addAbility(new AnyColorLandsProduceManaAbility(TargetController.YOU));
+        this.addAbility(new AnyColorAmongManaAbility.Builder(StaticTypedFilters.LAND_YOU_CONTROL)
+                .onlyProducibleManaTypes(true)
+                .ruleText("Add one mana of any type that a land you control could produce.")
+                .build()
+        );
     }
 
     private HarvesterDruid(final HarvesterDruid card) {

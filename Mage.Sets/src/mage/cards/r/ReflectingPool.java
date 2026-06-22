@@ -1,12 +1,13 @@
 
 package mage.cards.r;
 
-import java.util.UUID;
-import mage.abilities.mana.AnyColorLandsProduceManaAbility;
+import mage.abilities.mana.AnyColorAmongManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.TargetController;
+import mage.filter.StaticTypedFilters;
+
+import java.util.UUID;
 
 /**
  *
@@ -18,7 +19,11 @@ public final class ReflectingPool extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
 
         // {T}: Add one mana of any type that a land you control could produce.
-        this.addAbility(new AnyColorLandsProduceManaAbility(TargetController.YOU, false));
+        this.addAbility(AnyColorAmongManaAbility.builder(StaticTypedFilters.LAND_YOU_CONTROL)
+                .onlyProducibleManaTypes(true)
+                .ruleText("Add one mana of any type that a land you control could produce.")
+                .build()
+        );
     }
 
     private ReflectingPool(final ReflectingPool card) {

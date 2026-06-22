@@ -3,7 +3,6 @@ package mage.cards.m;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.mana.AnyColorLandsProduceManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -15,6 +14,7 @@ import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.events.TappedForManaEvent;
 import mage.game.permanent.Permanent;
+import mage.util.PermanentUtil;
 
 import java.util.Collections;
 import java.util.Set;
@@ -108,13 +108,13 @@ class ManaWebeffect extends OneShotEffect {
         if (permanent == null) {
             return false;
         }
-        Set<ManaType> manaTypesSource = AnyColorLandsProduceManaAbility.getManaTypesFromPermanent(permanent, game);
+        Set<ManaType> manaTypesSource = PermanentUtil.getProducibleMana(permanent, game);
         boolean tappedLands = false;
         for (Permanent opponentPermanent : game.getBattlefield().getActivePermanents(
                 StaticFilters.FILTER_CONTROLLED_PERMANENT_LAND,
                 permanent.getControllerId(), source, game
         )) {
-            Set<ManaType> manaTypes = AnyColorLandsProduceManaAbility.getManaTypesFromPermanent(opponentPermanent, game);
+            Set<ManaType> manaTypes = PermanentUtil.getProducibleMana(opponentPermanent, game);
             if (!Collections.disjoint(manaTypes, manaTypesSource)) {
                 opponentPermanent.tap(source, game);
             }

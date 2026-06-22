@@ -8,14 +8,19 @@ import mage.abilities.dynamicvalue.common.CommanderGreatestManaValue;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.continuous.BecomesCreatureSourceEffect;
 import mage.abilities.keyword.ReachAbility;
-import mage.abilities.mana.AnyColorLandsProduceManaAbility;
+import mage.abilities.mana.AnyColorAmongManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.Outcome;
+import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
 import mage.game.Game;
 import mage.game.permanent.token.custom.CreatureToken;
 
 import java.util.UUID;
+
 
 /**
  * @author Susucr
@@ -31,7 +36,11 @@ public final class CactusPreserve extends CardImpl {
         this.addAbility(new EntersBattlefieldTappedAbility());
 
         // {T}: Add one mana of any type that a land you control could produce.
-        this.addAbility(new AnyColorLandsProduceManaAbility(TargetController.YOU, false));
+        this.addAbility(new AnyColorAmongManaAbility.Builder(StaticTypedFilters.LAND_YOU_CONTROL)
+                .onlyProducibleManaTypes(true)
+                .ruleText("Add one mana of any type that a land you control could produce.")
+                .build()
+        );
 
         // {3}: Until end of turn, Cactus Preserve becomes an X/X green Plant creature with reach, where X is the greatest mana value among your commanders. It's still a land.
         this.addAbility(new SimpleActivatedAbility(new CactusPreserveEffect(), new ManaCostsImpl<>("{3}")));
