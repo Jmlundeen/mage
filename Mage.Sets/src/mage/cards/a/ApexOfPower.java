@@ -1,13 +1,13 @@
 package mage.cards.a;
 
-import java.util.Set;
-import java.util.UUID;
 import mage.MageObject;
 import mage.abilities.Ability;
+import mage.abilities.condition.common.IsBeingCastFromHandCondition;
+import mage.abilities.decorator.ConditionalOneShotEffect;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.asthought.PlayFromNotOwnHandZoneTargetEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -16,9 +16,11 @@ import mage.constants.Duration;
 import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.game.Game;
-import mage.game.stack.Spell;
 import mage.players.Player;
 import mage.target.targetpointer.FixedTarget;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -33,7 +35,13 @@ public final class ApexOfPower extends CardImpl {
         this.getSpellAbility().addEffect(new ApexOfPowerSpellEffect());
 
         // If this spell was cast from your hand, add ten mana of any one color.
-        this.getSpellAbility().addEffect(new ApexOfPowerManaEffect().concatBy("<br>"));
+        this.getSpellAbility().addEffect(new ConditionalOneShotEffect(
+                    ComposedManaAbilityBuilder.builder()
+                            .addAnyColor(10)
+                            .buildEffect(),
+                IsBeingCastFromHandCondition.instance,
+                "If this spell was cast from your hand, add ten mana of any one color")
+        );
     }
 
     private ApexOfPower(final ApexOfPower card) {
@@ -84,31 +92,5 @@ class ApexOfPowerSpellEffect extends OneShotEffect {
             game.addEffect(effect, source);
         }
         return true;
-    }
-}
-
-class ApexOfPowerManaEffect extends OneShotEffect {
-
-    ApexOfPowerManaEffect() {
-        super(Outcome.Benefit);
-        this.staticText = "If this spell was cast from your hand, add ten mana of any one color.";
-    }
-
-    private ApexOfPowerManaEffect(final ApexOfPowerManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public ApexOfPowerManaEffect copy() {
-        return new ApexOfPowerManaEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Spell spell = game.getStack().getSpell(source.getSourceId());
-        if (spell == null || spell.getFromZone() != Zone.HAND) {
-            return false;
-        }
-        return new AddManaOfAnyColorEffect(10).apply(game, source);
     }
 }

@@ -38,7 +38,7 @@ public final class CrystallineCrawler extends CardImpl {
 
         // Remove a +1/+1 counter from Crystalline Crawler: Add one mana of any color.
         this.addAbility(new AnyColorManaAbility(new RemoveCountersSourceCost(CounterType.P1P1.createInstance(1)),
-                new CountersSourceCount(CounterType.P1P1), false));
+                new CountersSourceCount(CounterType.P1P1)));
 
         // {T}: Put a +1/+1 counter on Crystalline Crawler.
         this.addAbility(new SimpleActivatedAbility(new AddCountersSourceEffect(CounterType.P1P1.createInstance(1)), new TapSourceCost()));

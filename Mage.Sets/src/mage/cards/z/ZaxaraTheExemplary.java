@@ -3,11 +3,9 @@ package mage.cards.z;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.TriggeredAbilityImpl;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.DeathtouchAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -43,8 +41,7 @@ public final class ZaxaraTheExemplary extends CardImpl {
         this.addAbility(DeathtouchAbility.getInstance());
 
         // {T}: Add two mana of any one color.
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost());
-        this.addAbility(ability);
+        this.addAbility(new AnyColorManaAbility(2));
 
         // Whenever you cast a spell with {X} in its mana cost, create a 0/0 green Hydra creature token, then put X +1/+1 counters on it.
         this.addAbility(new ZaxaraTheExemplaryHydraTokenAbility());

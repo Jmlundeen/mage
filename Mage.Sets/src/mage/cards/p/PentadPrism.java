@@ -1,6 +1,5 @@
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.keyword.SunburstAbility;
@@ -9,6 +8,8 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -23,7 +24,7 @@ public final class PentadPrism extends CardImpl {
         this.addAbility(new SunburstAbility(this));
         // Remove a charge counter from Pentad Prism: Add one mana of any color.
         this.addAbility(new AnyColorManaAbility(new RemoveCountersSourceCost(CounterType.CHARGE.createInstance(1)),
-                new CountersSourceCount(CounterType.CHARGE), false));
+                new CountersSourceCount(CounterType.CHARGE)));
     }
 
     private PentadPrism(final PentadPrism card) {

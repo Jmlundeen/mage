@@ -1,16 +1,16 @@
 
 package mage.cards.i;
 
-import java.util.UUID;
 import mage.abilities.costs.common.SacrificeSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.costs.mana.GenericManaCost;
+import mage.abilities.mana.AnyColorManaAbility;
+import mage.abilities.mana.ComposedManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
+
+import java.util.UUID;
 
 /**
  *
@@ -22,7 +22,7 @@ public final class ImplementsOfSacrifice extends CardImpl {
         super(ownerId,setInfo,new CardType[]{CardType.ARTIFACT},"{2}");
 
         // {1}, {tap}, Sacrifice Implements of Sacrifice: Add two mana of any one color.
-        SimpleManaAbility ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new ManaCostsImpl<>("{1}"));
+        ComposedManaAbility ability = new AnyColorManaAbility(2, new GenericManaCost(1));
         ability.addCost(new TapSourceCost());
         ability.addCost(new SacrificeSourceCost());
         this.addAbility(ability);

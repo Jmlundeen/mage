@@ -1,25 +1,20 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.Effect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.common.AttachEffect;
-import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
 import mage.abilities.keyword.EnchantAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AttachmentType;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetLandPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -39,9 +34,10 @@ public final class ShelteredAerie extends CardImpl {
         this.addAbility(ability);
 
         // Enchanted land has "{T}: Add two mana of any one color."
-        Ability gainedAbility = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost());
-        Effect effect = new GainAbilityAttachedEffect(gainedAbility, AttachmentType.AURA);
-        effect.setText("Enchanted land has \"{T}: Add two mana of any one color.\"");
+        ContinuousEffect effect = new GenericContinuousEffect(Duration.WhileOnBattlefield, Outcome.AddAbility)
+                .setAffected(ContinuousAffected.ATTACHED_TO)
+                .withGainedAbilities(new AnyColorManaAbility(2))
+                .setText("Enchanted land has \"{T}: Add two mana of any one color.\"");
         this.addAbility(new SimpleStaticAbility(effect));
 
     }

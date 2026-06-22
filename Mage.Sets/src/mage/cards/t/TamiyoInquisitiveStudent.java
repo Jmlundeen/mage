@@ -14,8 +14,8 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.*;
 import mage.abilities.effects.common.continuous.BoostTargetEffect;
 import mage.abilities.effects.keyword.InvestigateEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.FlyingAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
@@ -121,7 +121,10 @@ class TamiyoSeasonedScholarMinus3Effect extends OneShotEffect {
         effect.setTargetPointer(getTargetPointer().copy());
         effect.apply(game, source);
         if (card.getColor(game).isGreen()) {
-            new AddManaOfAnyColorEffect().apply(game, source);
+            ComposedManaAbilityBuilder.builder()
+                    .addAnyColor(1)
+                    .buildEffect()
+                    .apply(game, source);
         }
         return true;
     }

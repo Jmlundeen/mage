@@ -4,7 +4,7 @@ import mage.abilities.LoyaltyAbility;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.search.SearchLibraryPutInPlayEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -37,10 +37,15 @@ public final class SarkhanUnbroken extends CardImpl {
 
         // +1: Draw a card, then add one mana of any color.
         LoyaltyAbility loyaltyAbility = new LoyaltyAbility(new DrawCardSourceControllerEffect(1), 1);
-        loyaltyAbility.addEffect(new AddManaOfAnyColorEffect().concatBy(", then"));
+        loyaltyAbility.addEffect(ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText(", then add one mana of any color")
+                .buildEffect());
         this.addAbility(loyaltyAbility);
+
         // -2: Create a 4/4 red Dragon creature token with flying.
         this.addAbility(new LoyaltyAbility(new CreateTokenEffect(new DragonToken(), 1), -2));
+
         // -8: Search your library for any number of Dragon creature cards and put them onto the battlefield. Then shuffle your library.
         this.addAbility(new LoyaltyAbility(new SearchLibraryPutInPlayEffect(new TargetCardInLibrary(0, Integer.MAX_VALUE, dragonFilter)), -8));
     }

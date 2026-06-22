@@ -5,9 +5,10 @@ import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.GainLifeEffect;
-import mage.abilities.effects.mana.AddManaAnyColorAttachedControllerEffect;
 import mage.abilities.keyword.EnchantAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.EnchantedTappedTriggeredManaAbility;
+import mage.abilities.mana.providers.common.player.TargetPointerManaPlayerProvider;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -38,7 +39,12 @@ public final class VerdantHaven extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new GainLifeEffect(2)));
 
         // Whenever enchanted land is tapped for mana, its controller adds one mana of any color.
-        this.addAbility(new EnchantedTappedTriggeredManaAbility(new AddManaAnyColorAttachedControllerEffect()));
+        this.addAbility(new EnchantedTappedTriggeredManaAbility(new ComposedManaAbilityBuilder()
+                .addAnyCombination(1)
+                .playerProvider(TargetPointerManaPlayerProvider.instance)
+                .ruleText("its controller adds an additional one mana of any color")
+                .buildEffect())
+        );
     }
 
     private VerdantHaven(final VerdantHaven card) {

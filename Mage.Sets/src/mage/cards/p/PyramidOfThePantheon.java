@@ -1,20 +1,19 @@
 
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.Ability;
+import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -32,10 +31,10 @@ public final class PyramidOfThePantheon extends CardImpl {
         this.addAbility(ability);
 
         // {T}: Add three mana of any one color. Activate this ability only of there are three or more brick counters on Pyramid of the Pantheon.
-        this.addAbility(new ActivateIfConditionManaAbility(Zone.BATTLEFIELD,
-                new AddManaOfAnyColorEffect(3),
-                new TapSourceCost(),
-                new SourceHasCounterCondition(CounterType.BRICK, 3)));
+        ActivatedAbilityImpl manaAbility = new AnyColorManaAbility(3)
+                .setCondition(new SourceHasCounterCondition(CounterType.BRICK, 3));
+        manaAbility.appendToRule(" Activate this ability only of there are three or more brick counters on {this}.");
+        this.addAbility(manaAbility);
     }
 
     private PyramidOfThePantheon(final PyramidOfThePantheon card) {

@@ -5,7 +5,7 @@ import mage.abilities.Ability;
 import mage.abilities.common.LandfallAbility;
 import mage.abilities.effects.common.IfAbilityHasResolvedXTimesEffect;
 import mage.abilities.effects.common.RevealCardsFromLibraryUntilEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -39,7 +39,10 @@ public final class NissaResurgentAnimist extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Landfall--Whenever a land you control enters, add one mana of any color. Then if this is the second time this ability has resolved this turn, reveal cards from the top of your library until you reveal an Elf or Elemental card. Put that card into your hand and the rest on the bottom of your library in a random order.
-        Ability ability = new LandfallAbility(new AddManaOfAnyColorEffect());
+        Ability ability = new LandfallAbility(ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText("add one mana of any color")
+                .buildEffect());
         ability.addEffect(new IfAbilityHasResolvedXTimesEffect(
                 Outcome.DrawCard, 2,
                 new RevealCardsFromLibraryUntilEffect(filter, PutCards.HAND, PutCards.BOTTOM_RANDOM)

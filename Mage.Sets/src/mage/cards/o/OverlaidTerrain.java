@@ -2,17 +2,16 @@ package mage.cards.o;
 
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.SacrificeAllControllerEffect;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.Outcome;
 import mage.constants.Zone;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -28,8 +27,10 @@ public final class OverlaidTerrain extends CardImpl {
         this.addAbility(new AsEntersBattlefieldAbility(new SacrificeAllControllerEffect(StaticFilters.FILTER_LANDS)));
 
         // Lands you control have "{T}: Add two mana of any one color."
-        SimpleManaAbility manaAbility = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost());
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(manaAbility, Duration.WhileOnBattlefield, StaticFilters.FILTER_LANDS, false)));
+        this.addAbility(new SimpleStaticAbility(new GenericContinuousEffect(Outcome.AddAbility, StaticTypedFilters.LAND_YOU_CONTROL, Zone.BATTLEFIELD)
+                .withGainedAbilities(new AnyColorManaAbility(2))
+                .setText("Lands you control have \"{T}: Add two mana of any one color.\"")
+        ));
     }
 
     private OverlaidTerrain(final OverlaidTerrain card) {

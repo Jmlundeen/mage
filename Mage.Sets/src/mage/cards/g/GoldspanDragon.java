@@ -7,18 +7,16 @@ import mage.abilities.common.BecomesTargetSourceTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.SacrificeSourceCost;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.CreateTokenEffect;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.HasteAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.abilities.meta.OrTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.FilterPermanent;
@@ -55,11 +53,13 @@ public final class GoldspanDragon extends CardImpl {
                 new BecomesTargetSourceTriggeredAbility(null, StaticFilters.FILTER_SPELL_A)));
 
         // Treasures you control have "{T}, Sacrifice this artifact: Add two mana of any one color."
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost());
+        Ability ability = new AnyColorManaAbility(2);
         Cost cost = new SacrificeSourceCost();
-        cost.setText("sacrifice this artifact");
         ability.addCost(cost);
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(ability, Duration.WhileOnBattlefield, filter)));
+        this.addAbility(new SimpleStaticAbility( new ContinuousEffectBuilder(Outcome.AddAbility, filter)
+                .withGainedAbilities(ability)
+                .setText("Treasures you control have \"{T}, Sacrifice this artifact: Add two mana of any one color.\""))
+        );
     }
 
     private GoldspanDragon(final GoldspanDragon card) {

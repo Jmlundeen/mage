@@ -10,7 +10,7 @@ import org.mage.test.serverside.base.CardTestPlayerBase;
 import static org.mage.test.utils.ManaOptionsTestUtils.assertManaOptions;
 
 /**
- * These tests check that {@link mage.abilities.mana.AnyColorLandsProduceManaAbility AnyColorLandsProduceManaAbility}
+ * These tests check that {@link mage.abilities.mana.AnyColorAmongManaAbility AnyColorAmongManaAbility}
  * works properly abilities where Colorless isn't a valid option.
  * <p>
  * The test for ensuring that it works with colorless mana is handled in {@link org.mage.test.cards.mana.ReflectingPoolTest}.

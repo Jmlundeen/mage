@@ -1,7 +1,7 @@
 package mage.cards.r;
 
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.mana.AnyColorManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.AdventureCard;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -28,7 +28,11 @@ public final class RosethornAcolyte extends AdventureCard {
 
         // Seasonal Ritual
         // Add one mana of any color.
-        this.getRightHalfCard().getSpellAbility().addEffect(new AddManaOfAnyColorEffect());
+        this.getRightHalfCard().getSpellAbility().addEffect(ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText("Add one mana of any color")
+                .buildEffect()
+        );
 
         finalizeCard();
     }

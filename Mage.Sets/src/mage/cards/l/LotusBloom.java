@@ -1,18 +1,16 @@
 
 package mage.cards.l;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.SacrificeSourceCost;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.SuspendAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
+
+import java.util.UUID;
 
 /**
  *
@@ -27,7 +25,7 @@ public final class LotusBloom extends CardImpl {
         this.addAbility(new SuspendAbility(3, new GenericManaCost(0), this));
 
         // {tap}, Sacrifice Lotus Bloom: Add three mana of any one color.
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(3), new TapSourceCost());
+        Ability ability = new AnyColorManaAbility(3);
         ability.addCost(new SacrificeSourceCost());
         this.addAbility(ability);
 

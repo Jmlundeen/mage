@@ -4,9 +4,10 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.AttachEffect;
 import mage.abilities.effects.common.continuous.AddCardSuperTypeAttachedEffect;
-import mage.abilities.effects.mana.AddManaAnyColorAttachedControllerEffect;
 import mage.abilities.keyword.EnchantAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.EnchantedTappedTriggeredManaAbility;
+import mage.abilities.mana.providers.common.player.TargetPointerManaPlayerProvider;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -39,8 +40,12 @@ public final class GlitteringFrost extends CardImpl {
         ).setText("enchanted land is snow")));
 
         // Whenever enchanted land is tapped for mana, its controller adds an additional one mana of any color.
-        this.addAbility(new EnchantedTappedTriggeredManaAbility(new AddManaAnyColorAttachedControllerEffect()
-                .setText("its controller adds an additional one mana of any color")));
+        this.addAbility(new EnchantedTappedTriggeredManaAbility(new ComposedManaAbilityBuilder()
+                .addAnyCombination(1)
+                .playerProvider(TargetPointerManaPlayerProvider.instance)
+                .ruleText("its controller adds an additional one mana of any color")
+                .buildEffect())
+        );
     }
 
     private GlitteringFrost(final GlitteringFrost card) {

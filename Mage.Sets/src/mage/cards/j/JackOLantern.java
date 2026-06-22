@@ -6,7 +6,6 @@ import mage.abilities.costs.common.ExileSourceFromGraveCost;
 import mage.abilities.costs.common.SacrificeSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.ExileTargetEffect;
 import mage.abilities.mana.AnyColorManaAbility;
@@ -35,7 +34,7 @@ public final class JackOLantern extends CardImpl {
         this.addAbility(ability);
 
         // {1}, Exile Jack-o'-Lantern from your graveyard: Add one mana of any color.
-        ability = new AnyColorManaAbility(Zone.GRAVEYARD, new GenericManaCost(1), StaticValue.get(1), false);
+        ability = new AnyColorManaAbility(Zone.GRAVEYARD, new GenericManaCost(1));
         ability.addCost(new ExileSourceFromGraveCost());
         this.addAbility(ability);
     }

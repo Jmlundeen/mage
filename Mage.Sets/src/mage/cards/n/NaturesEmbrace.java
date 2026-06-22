@@ -1,16 +1,15 @@
 package mage.cards.n;
 
 import mage.abilities.Ability;
+import mage.abilities.ActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.decorator.ConditionalContinuousEffect;
+import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.common.AttachEffect;
-import mage.abilities.effects.common.continuous.BoostEnchantedEffect;
-import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
 import mage.abilities.keyword.EnchantAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -39,16 +38,22 @@ public final class NaturesEmbrace extends CardImpl {
         this.addAbility(ability);
 
         // As long as enchanted permanent is a creature, it gets +2/+2.
+        ContinuousEffect boostEffect = new GenericContinuousEffect(Duration.WhileOnBattlefield, Outcome.BoostCreature)
+                .setAffected(ContinuousAffected.ATTACHED_TO)
+                .withAddPower(2)
+                .withAddToughness(2);
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
-                new BoostEnchantedEffect(2, 2), NaturesEmbraceCondition.CREATURE,
+                boostEffect, NaturesEmbraceCondition.CREATURE,
                 "as long as enchanted permanent is a creature, it gets +2/+2"
         )));
 
         // As long as enchanted permanent is a land, it has "{T}: Add two mana of any one color."
+        ActivatedAbility manaAbility = new AnyColorManaAbility(2);
+        ContinuousEffect gainAbilityEffect = new GenericContinuousEffect(Duration.WhileOnBattlefield, Outcome.AddAbility)
+                .setAffected(ContinuousAffected.ATTACHED_TO)
+                .withGainedAbilities(manaAbility);
         this.addAbility(new SimpleStaticAbility(new ConditionalContinuousEffect(
-                new GainAbilityAttachedEffect(new SimpleManaAbility(
-                        Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost()
-                ), AttachmentType.AURA), NaturesEmbraceCondition.LAND, "as long as enchanted permanent " +
+                gainAbilityEffect, NaturesEmbraceCondition.LAND, "as long as enchanted permanent " +
                 "is a land, it has \"{T}: Add two mana of any one color.\""
         )));
     }

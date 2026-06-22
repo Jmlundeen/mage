@@ -1,16 +1,14 @@
 
 package mage.cards.b;
 
-import java.util.UUID;
-import mage.abilities.Ability;
 import mage.abilities.costs.common.SacrificeSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
+
+import java.util.UUID;
 
 /**
  *
@@ -22,9 +20,13 @@ public final class BlackLotus extends CardImpl {
         super(ownerId,setInfo,new CardType[]{CardType.ARTIFACT},"{0}");
 
         // {tap}, Sacrifice Black Lotus: Add three mana of any one color.
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(3), new TapSourceCost());
-        ability.addCost(new SacrificeSourceCost());
-        this.addAbility(ability);
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                        .cost(new TapSourceCost())
+                        .cost(new SacrificeSourceCost())
+                        .addAnyColor(3)
+                        .ruleText("Add three mana of any one color")
+                .build()
+        );
     }
 
     private BlackLotus(final BlackLotus card) {

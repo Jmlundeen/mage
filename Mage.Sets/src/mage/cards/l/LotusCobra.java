@@ -2,7 +2,7 @@ package mage.cards.l;
 
 import mage.MageInt;
 import mage.abilities.common.LandfallAbility;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -23,7 +23,12 @@ public final class LotusCobra extends CardImpl {
         this.toughness = new MageInt(1);
 
         // Landfall — Whenever a land you control enters, you may add one mana of any color.
-        this.addAbility(new LandfallAbility(new AddManaOfAnyColorEffect(), false));
+        this.addAbility(new LandfallAbility(ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText("add one mana of any color")
+                .buildEffect()
+                ,false)
+        );
     }
 
     private LotusCobra(final LotusCobra card) {

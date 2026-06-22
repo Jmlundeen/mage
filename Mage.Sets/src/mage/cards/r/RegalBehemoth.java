@@ -3,9 +3,9 @@ package mage.cards.r;
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.common.BecomesMonarchSourceEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.hint.common.MonarchHint;
 import mage.abilities.keyword.TrampleAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.TriggeredManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -54,7 +54,9 @@ public final class RegalBehemoth extends CardImpl {
 class RegalBehemothTriggeredManaAbility extends TriggeredManaAbility {
 
     RegalBehemothTriggeredManaAbility() {
-        super(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect());
+        super(Zone.BATTLEFIELD, ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .buildEffect());
     }
 
     private RegalBehemothTriggeredManaAbility(RegalBehemothTriggeredManaAbility ability) {

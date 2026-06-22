@@ -3,16 +3,17 @@ package mage.cards.g;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.AttachEffect;
-import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.EnchantAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
+import mage.constants.Outcome;
+import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
 import mage.target.TargetPermanent;
@@ -44,9 +45,10 @@ public final class GraftedGrowth extends CardImpl {
         this.addAbility(ability);
 
         // Enchanted land has "{T}: Add two mana of any one color."
-        this.addAbility(new SimpleStaticAbility(new GainAbilityAttachedEffect(new SimpleManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost()
-        ), AttachmentType.AURA).setText("enchanted land has \"{T}: Add two mana of any one color.\"")));
+        this.addAbility(new SimpleStaticAbility(new ContinuousEffectBuilder(Outcome.AddAbility, ContinuousAffected.ATTACHED_TO)
+                .withGainedAbilities(new AnyColorManaAbility(2))
+                .setText("enchanted land has \"{T}: Add two mana of any one color.\"")
+        ));
     }
 
     private GraftedGrowth(final GraftedGrowth card) {

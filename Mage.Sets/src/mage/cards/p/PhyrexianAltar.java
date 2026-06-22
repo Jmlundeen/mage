@@ -1,6 +1,5 @@
 package mage.cards.p;
 
-import java.util.UUID;
 import mage.abilities.costs.common.SacrificeTargetCost;
 import mage.abilities.dynamicvalue.common.CreaturesYouControlCount;
 import mage.abilities.mana.AnyColorManaAbility;
@@ -8,6 +7,8 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.filter.StaticFilters;
+
+import java.util.UUID;
 
 /**
  *
@@ -21,8 +22,7 @@ public final class PhyrexianAltar extends CardImpl {
         // Sacrifice a creature: Add one mana of any color.
         this.addAbility(new AnyColorManaAbility(
                 new SacrificeTargetCost(StaticFilters.FILTER_PERMANENT_CREATURE),
-                CreaturesYouControlCount.PLURAL,
-                false
+                CreaturesYouControlCount.PLURAL
         ));
     }
 

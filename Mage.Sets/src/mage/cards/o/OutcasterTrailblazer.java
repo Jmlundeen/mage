@@ -4,8 +4,8 @@ import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldAllTriggeredAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.PlotAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -40,7 +40,11 @@ public final class OutcasterTrailblazer extends CardImpl {
         this.toughness = new MageInt(2);
 
         // When Outcaster Trailblazer enters the battlefield, add one mana of any color.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new AddManaOfAnyColorEffect()));
+        this.addAbility(new EntersBattlefieldTriggeredAbility(ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText("add one mana of any color")
+                .buildEffect()
+        ));
 
         // Whenever another creature with power 4 or greater you control enters, draw a card.
         this.addAbility(new EntersBattlefieldAllTriggeredAbility(new DrawCardSourceControllerEffect(1), filter));

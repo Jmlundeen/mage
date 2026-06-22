@@ -6,17 +6,15 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.SacrificeSourceCost;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DamagePlayersEffect;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.effects.common.continuous.GainClassAbilitySourceEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.ClassLevelAbility;
 import mage.abilities.keyword.ClassReminderAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -49,13 +47,13 @@ public final class AlchemistsTalent extends CardImpl {
         this.addAbility(new ClassLevelAbility(2, "{1}{R}"));
 
         // Treasures you control have "{T}, Sacrifice this artifact: Add two mana of any one color."
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost());
-        ability.addCost(new SacrificeSourceCost().setText("sacrifice this artifact"));
+        Ability ability = new AnyColorManaAbility(2);
+        ability.addCost(new SacrificeSourceCost());
         this.addAbility(new SimpleStaticAbility(new GainClassAbilitySourceEffect(
-                new GainAbilityControlledEffect(
-                        ability, Duration.WhileOnBattlefield,
-                        new FilterPermanent(SubType.TREASURE, "Treasures")
-                ), 2
+                new ContinuousEffectBuilder(Outcome.AddAbility, new FilterPermanent(SubType.TREASURE, "Treasures"))
+                        .withGainedAbilities(ability)
+                        .setText("Treasures you control have \"{T}, Sacrifice this artifact: Add two mana of any one color.\"")
+                , 2
         )));
 
         // {4}{R}: Level 3

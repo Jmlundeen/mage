@@ -6,8 +6,8 @@ import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.ExileSagaAndReturnTransformedEffect;
 import mage.abilities.effects.common.ExileTopXMayPlayUntilEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.FirebendingAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
@@ -38,7 +38,11 @@ public final class TheLegendOfRoku extends TransformingDoubleFacedCard {
         );
 
         // II -- Add one mana of any color.
-        sagaAbility.addChapterEffect(this.getLeftHalfCard(), SagaChapter.CHAPTER_II, new AddManaOfAnyColorEffect(1));
+        sagaAbility.addChapterEffect(this.getLeftHalfCard(), SagaChapter.CHAPTER_II, ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText("add one mana of any color")
+                .buildEffect()
+        );
 
         // III -- Exile this Saga, then return it to the battlefield transformed under your control.
         sagaAbility.addChapterEffect(this.getLeftHalfCard(), SagaChapter.CHAPTER_III, new ExileSagaAndReturnTransformedEffect());

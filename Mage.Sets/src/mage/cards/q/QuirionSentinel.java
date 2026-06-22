@@ -1,14 +1,15 @@
 
 package mage.cards.q;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
+
+import java.util.UUID;
 
 /**
  *
@@ -25,7 +26,11 @@ public final class QuirionSentinel extends CardImpl {
         this.toughness = new MageInt(1);
 
         // When Quirion Sentinel enters the battlefield, add one mana of any color.
-        this.addAbility(new EntersBattlefieldTriggeredAbility(new AddManaOfAnyColorEffect()));
+        this.addAbility(new EntersBattlefieldTriggeredAbility(ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText("add one mana of any color")
+                .buildEffect()
+        ));
     }
 
     private QuirionSentinel(final QuirionSentinel card) {

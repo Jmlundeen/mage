@@ -4,17 +4,17 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
+import mage.abilities.dynamicvalue.common.CountersSourceCount;
 import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.ReturnToHandSourceEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.ActivatedManaAbilityImpl;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ComparisonType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 
 import java.util.UUID;
@@ -33,10 +33,11 @@ public final class ManaBloom extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.CHARGE, GetXValue.instance)));
 
         // Remove a charge counter from Mana Bloom: Add one mana of any color. Activate this ability only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(),
-                new RemoveCountersSourceCost(CounterType.CHARGE.createInstance())
-        ));
+        ActivatedManaAbilityImpl ability = new AnyColorManaAbility(
+                new RemoveCountersSourceCost(CounterType.CHARGE.createInstance()), new CountersSourceCount(CounterType.CHARGE)
+        );
+        ability.setMaxActivationsPerTurn(1);
+        this.addAbility(ability);
 
         // At the beginning of your upkeep, if Mana Bloom has no charge counters on it, return it to its owner's hand.
         this.addAbility(new BeginningOfUpkeepTriggeredAbility(

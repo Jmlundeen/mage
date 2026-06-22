@@ -111,9 +111,12 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
         // Remove a +1/+1 counter from Crystalline Crawler: Add one mana of any color.
         // {T}: Put a +1/+1 counter on Crystalline Crawler.
         addCard(Zone.BATTLEFIELD, playerA, "Crystalline Crawler", 1);
+        addCard(Zone.HAND, playerA, "Balduvian Bears");
         addCounters(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Crystalline Crawler", CounterType.P1P1, 2);
 
-        setStopAt(1, PhaseStep.BEGIN_COMBAT);
+        checkPlayableAbility(String.format("Can cast %s with 2 counters", "Balduvian Bears"), 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Cast Balduvian Bears", true);
+
+        setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
         execute();
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
@@ -211,7 +214,7 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
         Assert.assertEquals("mana variations don't fit", 5, manaOptions.size());
         assertTrue("Expected to be able to produce 3 Green", manaOptions.canProduce(ManaType.GREEN, 3));
-        assertTrue("Expected to be able to produce 3 Blue", manaOptions.canProduce(ManaType.BLUE, 3));
+        assertTrue("Expected to be able to produce 2 Blue", manaOptions.canProduce(ManaType.BLUE, 2));
         assertTrue("Expected to be able to produce 2 Red", manaOptions.canProduce(ManaType.RED, 2));
         assertTrue("Expected to be able to produce 2 Colorless", manaOptions.canProduce(ManaType.COLORLESS, 2));
         assertTrue("Expected to be able to produce 1 White", manaOptions.canProduce(ManaType.WHITE, 1));
@@ -265,7 +268,7 @@ public class NonTappingManaAbilitiesTest extends CardTestPlayerBase {
 
         ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
         Assert.assertEquals("mana variations don't fit", 3, manaOptions.size());
-        assertTrue("Expected to be able to produce 4 Black", manaOptions.canProduce(ManaType.BLACK, 4));
+        assertTrue("Expected to be able to produce 3 Black", manaOptions.canProduce(ManaType.BLACK, 3));
     }
     
    @Test

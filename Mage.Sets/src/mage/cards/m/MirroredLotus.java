@@ -6,12 +6,10 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.delayed.ReflexiveTriggeredAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.ExileSourceCost;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.CreateTokenCopyTargetEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -38,7 +36,7 @@ public final class MirroredLotus extends CardImpl {
         this.addAbility(new MirroredLotusAbility());
 
         // {tap}, Exile Black Lotus: Add three mana of any one color.
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(3), new TapSourceCost());
+        Ability ability = new AnyColorManaAbility(3);
         ability.addCost(new ExileSourceCost());
         this.addAbility(ability);
     }

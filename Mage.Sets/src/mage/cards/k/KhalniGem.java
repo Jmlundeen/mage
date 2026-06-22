@@ -2,10 +2,8 @@ package mage.cards.k;
 
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.cards.CardsImpl;
@@ -31,9 +29,7 @@ public final class KhalniGem extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new KhalniGemReturnToHandTargetEffect()));
 
         // {tap}: Add two mana of any one color.
-        this.addAbility(new SimpleManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost()
-        ));
+        this.addAbility(new AnyColorManaAbility(2));
     }
 
     private KhalniGem(final KhalniGem card) {

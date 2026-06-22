@@ -1,29 +1,24 @@
 
 package mage.cards.n;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.effects.common.AttachEffect;
-import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
 import mage.abilities.effects.common.counter.AddCountersTargetEffect;
 import mage.abilities.keyword.EnchantAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AttachmentType;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetControlledCreaturePermanent;
 import mage.target.common.TargetLandPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -48,10 +43,12 @@ public final class NewHorizons extends CardImpl {
         ability.addTarget(new TargetControlledCreaturePermanent());
         this.addAbility(ability);
 
-        // Enchanted land has "{T]: Add two mana of any one color."
-        Ability gainedAbility = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost());
-        Effect effect = new GainAbilityAttachedEffect(gainedAbility, AttachmentType.AURA);
-        effect.setText("Enchanted land has \"{T}: Add two mana of any one color.\"");
+        // Enchanted land has "{T}: Add two mana of any one color."
+        Ability gainedAbility = new AnyColorManaAbility(2);
+        Effect effect = new GenericContinuousEffect(Duration.WhileOnBattlefield, Outcome.AddAbility)
+                .setAffected(ContinuousAffected.ATTACHED_TO)
+                .withGainedAbilities(gainedAbility)
+                .setText("Enchanted land has \"{T}: Add two mana of any one color.\"");
         this.addAbility(new SimpleStaticAbility(effect));
     }
 

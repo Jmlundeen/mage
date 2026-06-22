@@ -2,13 +2,11 @@ package mage.cards.c;
 
 import mage.abilities.TriggeredAbilityImpl;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.DrawCardTargetEffect;
 import mage.abilities.effects.common.TargetPlayerGainControlSourceEffect;
 import mage.abilities.effects.common.UntapSourceEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -35,11 +33,7 @@ public final class CovetedJewel extends CardImpl {
         ));
 
         // {T}: Add three mana of any one color.
-        this.addAbility(new SimpleManaAbility(
-                Zone.BATTLEFIELD,
-                new AddManaOfAnyColorEffect(3),
-                new TapSourceCost()
-        ));
+        this.addAbility(new AnyColorManaAbility(3));
 
         // Whenever one or more creatures an opponent controls attack you and aren't blocked, that player draws three cards and gains control of Coveted Jewel. Untap it.
         this.addAbility(new CovetedJewelTriggeredAbility());

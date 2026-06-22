@@ -1,7 +1,6 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
@@ -11,8 +10,9 @@ import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
+
+import java.util.UUID;
 
 /**
  *
@@ -27,7 +27,7 @@ public final class GemstoneArray extends CardImpl {
         this.addAbility(new SimpleActivatedAbility(new AddCountersSourceEffect(CounterType.CHARGE.createInstance(1)), new ManaCostsImpl<>("{2}")));
         // Remove a charge counter from Gemstone Array: Add one mana of any color.
         this.addAbility(new AnyColorManaAbility(new RemoveCountersSourceCost(CounterType.CHARGE.createInstance(1)),
-                new CountersSourceCount(CounterType.CHARGE), false));
+                new CountersSourceCount(CounterType.CHARGE)));
     }
 
     private GemstoneArray(final GemstoneArray card) {

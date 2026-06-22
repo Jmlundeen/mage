@@ -31,8 +31,8 @@ public final class Biophagus extends CardImpl {
 
         // Genomic Enhancement — {T}: Add one mana of any color. If this mana is spent to cast a creature spell,
         // that creature enters the battlefield with an additional +1/+1 counter on it.
-        Ability ability = new AnyColorManaAbility(new TapSourceCost(), true).withFlavorWord("Genomic Enhancement");
-        ability.getEffects().get(0).setText("Add one mana of any color. If this mana is spent to cast a creature spell, " +
+        Ability ability = new AnyColorManaAbility(new TapSourceCost()).withFlavorWord("Genomic Enhancement");
+        ability.getEffects().getFirst().setText("Add one mana of any color. If this mana is spent to cast a creature spell, " +
                 "that creature enters the battlefield with an additional +1/+1 counter on it.");
         this.addAbility(ability, new BiophagusWatcher());
     }

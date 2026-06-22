@@ -5,8 +5,8 @@ import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.effects.common.UntapSourceEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.mana.AnyColorManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.triggers.BeginningOfEndStepTriggeredAbility;
 import mage.abilities.triggers.BeginningOfFirstMainTriggeredAbility;
 import mage.cards.CardSetInfo;
@@ -51,7 +51,13 @@ public final class ForebodingStatue extends TransformingDoubleFacedCard {
         this.getRightHalfCard().setPT(5, 5);
 
         // At the beginning of your precombat main phase, add one mana of any color.
-        this.getRightHalfCard().addAbility(new BeginningOfFirstMainTriggeredAbility(new AddManaOfAnyColorEffect()));
+        this.getRightHalfCard().addAbility(new BeginningOfFirstMainTriggeredAbility(
+                ComposedManaAbilityBuilder.builder()
+                        .addAnyColor(1)
+                        .ruleText("add one mana of any color")
+                        .buildEffect()
+                )
+        );
     }
 
     private ForebodingStatue(final ForebodingStatue card) {

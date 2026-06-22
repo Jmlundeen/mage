@@ -1,18 +1,17 @@
 
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.SimpleManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.AnyColorManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
-import mage.filter.FilterSpell;
-import mage.filter.predicate.mageobject.MulticoloredPredicate;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.color.MultiColoredPredicate;
+
+import java.util.UUID;
 
 /**
  *
@@ -20,20 +19,23 @@ import mage.filter.predicate.mageobject.MulticoloredPredicate;
  */
 public final class AncientHolocron extends CardImpl {
 
-    private static final FilterSpell filter = new FilterSpell("multicolored spells");
-
-    static {
-        filter.add(MulticoloredPredicate.instance);
-    }
+    private static final FilterTyped filter = new FilterTyped("multicolored spells")
+            .add(MultiColoredPredicate.instance);
 
     public AncientHolocron(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.ARTIFACT},"{3}");
 
         // {T}: Add one mana of any color to your manapool.
-        this.addAbility(new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(1), new TapSourceCost()));
+        this.addAbility(new AnyColorManaAbility());
 
-        // {T}: Add to mana of any color to your manapool. Spend this mana only to cast multicolored spells.
-        this.addAbility(new ConditionalAnyColorManaAbility(2, new ConditionalSpellManaBuilder(filter)));
+        // {T}: Add two mana of any color to your manapool. Spend this mana only to cast multicolored spells.
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(2)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add two mana of any color. Spend this mana only to cast multicolored spells.")
+                .build()
+        );
 
     }
 

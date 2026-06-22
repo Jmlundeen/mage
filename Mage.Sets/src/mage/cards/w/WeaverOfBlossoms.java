@@ -1,16 +1,12 @@
 package mage.cards.w;
 
-import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.DayboundAbility;
 import mage.abilities.keyword.NightboundAbility;
 import mage.abilities.mana.AnyColorManaAbility;
-import mage.abilities.mana.SimpleManaAbility;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 
 import java.util.UUID;
 
@@ -39,9 +35,7 @@ public final class WeaverOfBlossoms extends TransformingDoubleFacedCard {
         this.getRightHalfCard().setPT(3, 4);
 
         // {T}: Add two mana of any one color.
-        this.getRightHalfCard().addAbility(new SimpleManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost()
-        ));
+        this.getRightHalfCard().addAbility(new AnyColorManaAbility(2));
 
         // Nightbound
         this.getRightHalfCard().addAbility(new NightboundAbility());

@@ -2,15 +2,12 @@ package mage.cards.l;
 
 import mage.abilities.common.EntersBattlefieldTappedAbility;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.SacrificeControllerEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.HexproofAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Zone;
 import mage.filter.StaticFilters;
 
 import java.util.UUID;
@@ -35,9 +32,7 @@ public final class LotusField extends CardImpl {
         ));
 
         // {T}: Add three mana of any color.
-        this.addAbility(new SimpleManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(3), new TapSourceCost()
-        ));
+        this.addAbility(new AnyColorManaAbility(3));
     }
 
     private LotusField(final LotusField card) {

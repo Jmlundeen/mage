@@ -34,7 +34,7 @@ public final class GuildmagesForum extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {1}, {T}: Add one mana of any color. If that mana is spent on a multicolored creature spell, that creature enters the battlefield with an additional +1/+1 counter on it.
-        Ability ability = new AnyColorManaAbility(new GenericManaCost(1), true);
+        Ability ability = new AnyColorManaAbility(new GenericManaCost(1));
         ability.getEffects().get(0).setText("Add one mana of any color. If that mana is spent on a multicolored creature spell, that creature enters the battlefield with an additional +1/+1 counter on it");
         ability.addCost(new TapSourceCost());
         this.addAbility(ability, new GuildmagesForumWatcher());

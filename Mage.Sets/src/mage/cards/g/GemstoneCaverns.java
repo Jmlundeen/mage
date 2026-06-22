@@ -1,35 +1,33 @@
 package mage.cards.g;
 
-import java.util.UUID;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.OpeningHandAction;
 import mage.abilities.StaticAbility;
+import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.SourceHasCounterCondition;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.ExileFromHandCost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.decorator.ConditionalManaEffect;
 import mage.abilities.effects.ContinuousEffect;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.EntersBattlefieldEffect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.effects.mana.BasicManaEffect;
-import mage.abilities.mana.ConditionalManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.Outcome;
-import mage.constants.SuperType;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetCardInHand;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -45,14 +43,13 @@ public final class GemstoneCaverns extends CardImpl {
         this.addAbility(new GemstoneCavernsAbility());
 
         // {T}: Add {C}. If Gemstone Caverns has a luck counter on it, instead add one mana of any color.
-        Ability ability = new ConditionalManaAbility(Zone.BATTLEFIELD,
-                new ConditionalManaEffect(
-                        new AddManaOfAnyColorEffect(),
-                        new BasicManaEffect(Mana.ColorlessMana(1)),
-                        new SourceHasCounterCondition(CounterType.LUCK),
-                        "Add {C}. If {this} has a luck counter on it, instead add one mana of any color."),
-                new TapSourceCost());
-        this.addAbility(ability);
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addChoice(GemstoneCavernsManaProvider.instance, 1)
+                .ruleText("Add {C}. If {this} has a luck counter on it, instead add one mana of any color." +
+                        " (This ability functions differently if {this} has a luck counter on it.)")
+                .build()
+        );
     }
 
     private GemstoneCaverns(final GemstoneCaverns card) {
@@ -62,6 +59,28 @@ public final class GemstoneCaverns extends CardImpl {
     @Override
     public GemstoneCaverns copy() {
         return new GemstoneCaverns(this);
+    }
+}
+
+enum GemstoneCavernsManaProvider implements ManaTypeProvider {
+    instance;
+
+    private static final Condition condition = new SourceHasCounterCondition(CounterType.LUCK);
+
+    @Override
+    public Set<ManaType> getManaTypes(Game game, Ability source, Effect effect) {
+        Set<ManaType> manaTypes = new HashSet<>();
+        if (condition.apply(game, source)) {
+            manaTypes.addAll(ManaType.getColorManaTypes());
+        } else {
+            manaTypes.add(ManaType.COLORLESS);
+        }
+        return manaTypes;
+    }
+
+    @Override
+    public ManaTypeProvider copy() {
+        return instance;
     }
 }
 

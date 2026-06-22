@@ -30,7 +30,7 @@ public final class Morselhoarder extends CardImpl {
         this.addAbility(new SimpleStaticAbility(new EntersWithCountersEffect(CounterType.M1M1.createInstance(2))));
 
         // Remove a -1/-1 counter from Morselhoarder: Add one mana of any color.
-        this.addAbility(new AnyColorManaAbility(new RemoveCountersSourceCost(CounterType.M1M1.createInstance()), new CountersSourceCount(CounterType.M1M1), false));
+        this.addAbility(new AnyColorManaAbility(new RemoveCountersSourceCost(CounterType.M1M1.createInstance()), new CountersSourceCount(CounterType.M1M1)));
 
     }
 

@@ -5,12 +5,11 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.dynamicvalue.LimitedDynamicValue;
-import mage.abilities.dynamicvalue.common.CardsInControllerGraveyardCount;
 import mage.abilities.effects.common.ExileTargetEffect;
 import mage.abilities.effects.common.GainLifeEffect;
 import mage.abilities.effects.common.LoseLifeOpponentsEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.SimpleManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -46,10 +45,12 @@ public final class DeathriteShaman extends CardImpl {
         this.toughness = new MageInt(2);
 
         // {T}: Exile target land card from a graveyard. Add one mana of any color.
-        Ability ability = new SimpleActivatedAbility(new ExileTargetEffect(), new TapSourceCost());
+        Ability ability = new SimpleManaAbility(new ExileTargetEffect(), new TapSourceCost());
         // Because this is no mana ability, this mana will not be calculated during available mana calculation
-        ability.addEffect(new AddManaOfAnyColorEffect(1, new LimitedDynamicValue(1,
-                new CardsInControllerGraveyardCount(StaticFilters.FILTER_CARD_LAND)), false));
+        ability.addEffect(ComposedManaAbilityBuilder.builder()
+                .addAnyColor(1)
+                .ruleText("Add one mana of any color")
+                .buildEffect());
         ability.addTarget(new TargetCardInGraveyard(new FilterLandCard("land card from a graveyard")));
         this.addAbility(ability);
 

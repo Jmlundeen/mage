@@ -1,18 +1,16 @@
 
 package mage.cards.v;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.PayLifeCost;
-import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
+
+import java.util.UUID;
 
 /**
  *
@@ -27,8 +25,8 @@ public final class VesperGhoul extends CardImpl {
         this.power = new MageInt(1);
         this.toughness = new MageInt(1);
 
-        // {tap}, Pay 1 life: Add one mana of any color.
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(), new TapSourceCost());
+        // {T}, Pay 1 life: Add one mana of any color.
+        Ability ability = new AnyColorManaAbility();
         ability.addCost(new PayLifeCost(1));
         this.addAbility(ability);
     }

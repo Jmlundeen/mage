@@ -9,9 +9,8 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.FightTargetSourceEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
 import mage.abilities.keyword.DefenderAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
@@ -52,7 +51,7 @@ public final class GoldenGuardian extends TransformingDoubleFacedCard {
 
         // Gold-Forge Garrison
         // {T}: Add two mana of any one color.
-        this.getRightHalfCard().addAbility(new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(2), new TapSourceCost()));
+        this.getRightHalfCard().addAbility(new AnyColorManaAbility(2));
 
         // {4}, {T}: Create a 4/4 colorless Golem artifact creature token.
         Ability backAbility = new SimpleActivatedAbility(new CreateTokenEffect(new GoldForgeGarrisonGolemToken(), 1), new GenericManaCost(4));

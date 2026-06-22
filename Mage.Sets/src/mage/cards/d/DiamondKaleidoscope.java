@@ -1,6 +1,5 @@
 package mage.cards.d;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.SacrificeTargetCost;
@@ -13,11 +12,11 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.permanent.TokenPredicate;
 import mage.game.permanent.token.PrismToken;
-import mage.target.common.TargetControlledPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -42,8 +41,8 @@ public final class DiamondKaleidoscope extends CardImpl {
 
         // Sacrifice a Prism token: Add one mana of any color.
         ability = new AnyColorManaAbility(new SacrificeTargetCost(filter),
-                new PermanentsOnBattlefieldCount(filter),
-                false);
+                new PermanentsOnBattlefieldCount(filter)
+        );
         this.addAbility(ability);
     }
 

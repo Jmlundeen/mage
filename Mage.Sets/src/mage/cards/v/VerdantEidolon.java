@@ -7,8 +7,7 @@ import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.costs.common.SacrificeSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.ReturnSourceFromGraveyardToHandEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -31,9 +30,10 @@ public final class VerdantEidolon extends CardImpl {
         this.toughness = new MageInt(2);
 
         // {G}, Sacrifice Verdant Eidolon: Add three mana of any one color.
-        Ability ability = new SimpleManaAbility(Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(3), new ManaCostsImpl<>("{G}"));
+        Ability ability = new AnyColorManaAbility(3, new ManaCostsImpl<>("{G}"));
         ability.addCost(new SacrificeSourceCost());
         this.addAbility(ability);
+
         // Whenever you cast a multicolored spell, you may return Verdant Eidolon from your graveyard to your hand.
         this.addAbility(new SpellCastControllerTriggeredAbility(
                 Zone.GRAVEYARD,

@@ -4,18 +4,18 @@ import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.CostImpl;
-import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.effects.ContinuousEffect;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
 import mage.abilities.keyword.HexproofAbility;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
 import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterControlledLandPermanent;
 import mage.filter.predicate.permanent.CanBeSacrificedPredicate;
 import mage.game.Game;
@@ -40,10 +40,10 @@ public final class TectonicSplit extends CardImpl {
         this.addAbility(HexproofAbility.getInstance());
 
         // Lands you control have "{T}: Add three mana of any one color."
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
-                new SimpleManaAbility(new AddManaOfAnyColorEffect(3), new TapSourceCost()),
-                Duration.WhileOnBattlefield, StaticFilters.FILTER_LANDS
-        )));
+        ContinuousEffect effect = new GenericContinuousEffect(Outcome.AddAbility, StaticTypedFilters.LAND_YOU_CONTROL, Zone.BATTLEFIELD)
+                .withGainedAbilities(new AnyColorManaAbility(3))
+                .setText("lands you control have \"{T}: Add three mana of any one color.\"");
+        this.addAbility(new SimpleStaticAbility(effect));
     }
 
     private TectonicSplit(final TectonicSplit card) {
