@@ -1,27 +1,21 @@
 package mage.cards.t;
 
-import mage.ConditionalMana;
-import mage.MageObject;
-import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.condition.common.CorruptedCondition;
-import mage.abilities.costs.Cost;
-import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
+import mage.abilities.condition.common.CorruptedCondition;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.continuous.BoostTargetEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.PowerPredicate;
 import mage.filter.predicate.mageobject.ToughnessPredicate;
-import mage.game.Game;
 import mage.target.TargetPermanent;
-import mage.target.common.TargetCreaturePermanent;
 
 import java.util.UUID;
 
@@ -31,6 +25,11 @@ import java.util.UUID;
 public final class TheSeedcore extends CardImpl {
 
     private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("1/1 creature");
+    private static final FilterTyped manaFilter = new FilterTyped("Phyrexian creature spell")
+            .addAll(
+                    SubType.PHYREXIAN.getPredicate(),
+                    CardType.CREATURE.getPredicate()
+            );
 
     static {
         filter.add(new PowerPredicate(ComparisonType.EQUAL_TO, 1));
@@ -46,7 +45,13 @@ public final class TheSeedcore extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add one mana of any color. Spend this mana only to cast Phyrexian creature spells.
-        this.addAbility(new ConditionalAnyColorManaAbility(new TapSourceCost(), 1, new TheSeedcoreManaBuilder(), true));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(manaFilter))
+                .ruleText("Add one mana of any color. Spend this mana only to cast Phyrexian creature spells")
+                .build()
+        );
 
         // Corrupted -- {T}: Target 1/1 creature gets +2/+1 until end of turn. Activate only if an opponent has three or more poison counters.
         Ability ability = new ActivateIfConditionActivatedAbility(
@@ -64,43 +69,5 @@ public final class TheSeedcore extends CardImpl {
     @Override
     public TheSeedcore copy() {
         return new TheSeedcore(this);
-    }
-}
-
-class TheSeedcoreManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        this.mana.setFlag(true); // indicates that the mana is from second ability
-        return new mage.cards.t.TheSeedcoreConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast Phyrexian creature spells.";
-    }
-}
-
-class TheSeedcoreConditionalMana extends ConditionalMana {
-
-    TheSeedcoreConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast Phyrexian creature spells.";
-        addCondition(new mage.cards.t.TheSeedcoreManaCondition());
-    }
-}
-
-class TheSeedcoreManaCondition extends CreatureCastManaCondition {
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID manaProducer, Cost costToPay) {
-        if (super.apply(game, source)) {
-            MageObject object = game.getObject(source);
-            if (object != null && object.hasSubtype(SubType.PHYREXIAN, game)
-                    && object.isCreature(game)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

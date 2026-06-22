@@ -1,16 +1,15 @@
 package mage.cards.i;
 
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
 import mage.abilities.keyword.VigilanceAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastConditionalMana;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -19,6 +18,7 @@ import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.filter.FilterSpell;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterCreatureSpell;
 import mage.filter.predicate.Predicate;
 import mage.game.Game;
@@ -49,14 +49,21 @@ public final class IngaAndEsika extends CardImpl {
         this.toughness = new MageInt(4);
 
         // Creatures you control have vigilance and "{T}: Add one mana of any color. Spend this mana only to cast a creature spell."
+        String ruleText = "Add one mana of any color. Spend this mana only to cast a creature spell";
+        Ability manaAbility = ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText(ruleText)
+                .build();
         Ability ability = new SimpleStaticAbility(new GainAbilityControlledEffect(
                 VigilanceAbility.getInstance(), Duration.WhileOnBattlefield,
                 StaticFilters.FILTER_PERMANENT_CREATURES
         ));
         ability.addEffect(new GainAbilityControlledEffect(
-                new ConditionalAnyColorManaAbility(1, new IngaAndEsikaManaBuilder()),
+                manaAbility,
                 Duration.WhileOnBattlefield, StaticFilters.FILTER_PERMANENT_CREATURE
-        ).setText("and \"{T}: Add one mana of any color. Spend this mana only to cast a creature spell.\""));
+        ).setText(String.format("and \"%s\"", ruleText)));
         this.addAbility(ability);
 
         // Whenever you cast a creature spell, if three or more mana from creatures was spent to cast it, draw a card.
@@ -72,19 +79,6 @@ public final class IngaAndEsika extends CardImpl {
     @Override
     public IngaAndEsika copy() {
         return new IngaAndEsika(this);
-    }
-}
-
-class IngaAndEsikaManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new CreatureCastConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a creature spell";
     }
 }
 

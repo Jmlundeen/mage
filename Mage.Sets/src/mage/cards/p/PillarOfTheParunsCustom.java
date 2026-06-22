@@ -1,14 +1,15 @@
 
 package mage.cards.p;
 
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.keyword.HexproofAbility;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -32,7 +33,13 @@ public final class PillarOfTheParunsCustom extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add one mana of any color. Spend this mana only to cast a multicolored spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(1, new ConditionalSpellManaBuilder(StaticFilters.FILTER_SPELL_A_MULTICOLORED)));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_MULTICOLORED_SPELL))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a multicolored spell.")
+                .build()
+        );
     }
 
     private PillarOfTheParunsCustom(final PillarOfTheParunsCustom card) {

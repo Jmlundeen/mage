@@ -4,18 +4,20 @@ import mage.abilities.common.TransformIntoSourceTriggeredAbility;
 import mage.abilities.common.TransformsOrEntersTriggeredAbility;
 import mage.abilities.costs.common.DiscardCardCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.TransformSourceEffect;
-import mage.abilities.effects.mana.AddConditionalManaOfAnyColorEffect;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.abilities.meta.OrTriggeredAbility;
 import mage.abilities.triggers.BeginningOfFirstMainTriggeredAbility;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.*;
-import mage.filter.FilterSpell;
-import mage.filter.predicate.mageobject.ManaValuePredicate;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.value.ManaValuePredicate;
 
 import java.util.UUID;
 
@@ -24,11 +26,9 @@ import java.util.UUID;
  */
 public final class AshlingRekindled extends TransformingDoubleFacedCard {
 
-    private static final FilterSpell filter = new FilterSpell("spells with mana value 4 or greater");
-
-    static {
-        filter.add(new ManaValuePredicate(ComparisonType.MORE_THAN, 3));
-    }
+    private static final FilterTyped filter = new FilterTyped("spells with mana value 4 or greater")
+            .addAll(SpellPredicate.instance,
+                    new ManaValuePredicate(ComparisonType.MORE_THAN, 3));
 
     public AshlingRekindled(UUID ownerId, CardSetInfo setInfo) {
         super(
@@ -52,9 +52,14 @@ public final class AshlingRekindled extends TransformingDoubleFacedCard {
 
         // Ashling, Rimebound
         // Whenever this creature transforms into Ashling, Rimebound and at the beginning of your first main phase, add two mana of any one color. Spend this mana only to cast spells with mana value 4 or greater.
+        Effect manaEffect = ComposedManaAbilityBuilder.builder()
+                .addAnyColor(2)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("add two mana of any one color. Spend this mana only to cast spells with mana value 4 or greater.")
+                .buildEffect();
         this.getRightHalfCard().addAbility(new OrTriggeredAbility(
                 Zone.BATTLEFIELD,
-                new AddConditionalManaOfAnyColorEffect(2, new ConditionalSpellManaBuilder(filter)),
+                manaEffect,
                 new TransformIntoSourceTriggeredAbility(null),
                 new BeginningOfFirstMainTriggeredAbility(null)
         ));

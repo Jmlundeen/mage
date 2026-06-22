@@ -1,21 +1,20 @@
 package mage.cards.t;
 
-import mage.ConditionalMana;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
-import mage.abilities.condition.common.KickedCondition;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.counters.CounterType;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.Spell.object.KickedSpellPredicate;
 
 import java.util.UUID;
 
@@ -23,6 +22,9 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class ThroneOfMakindi extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("kicked spell")
+            .add(KickedSpellPredicate.instance);
 
     public ThroneOfMakindi(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
@@ -38,11 +40,14 @@ public final class ThroneOfMakindi extends CardImpl {
         this.addAbility(ability);
 
         // {T}, Remove a charge counter from Throne of Makindi: Add two mana of any one color. Spend this mana only to cast kicked spells.
-        ability = new ConditionalAnyColorManaAbility(
-                new TapSourceCost(), 2, new ThroneOfMakindiManaBuilder(), true
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .cost(new RemoveCountersSourceCost(CounterType.CHARGE.createInstance()))
+                .addAnyColor(2)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add two mana of any one color. Spend this mana only to cast kicked spells")
+                .build()
         );
-        ability.addCost(new RemoveCountersSourceCost(CounterType.CHARGE.createInstance()));
-        this.addAbility(ability);
     }
 
     private ThroneOfMakindi(final ThroneOfMakindi card) {
@@ -52,26 +57,5 @@ public final class ThroneOfMakindi extends CardImpl {
     @Override
     public ThroneOfMakindi copy() {
         return new ThroneOfMakindi(this);
-    }
-}
-
-class ThroneOfMakindiManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new ThroneOfMakindiConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast kicked spells";
-    }
-}
-
-class ThroneOfMakindiConditionalMana extends ConditionalMana {
-
-    ThroneOfMakindiConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(KickedCondition.ONCE);
     }
 }

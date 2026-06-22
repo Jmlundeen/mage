@@ -1,21 +1,22 @@
 package mage.cards.s;
 
-import java.util.UUID;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.costs.common.DiscardCardCost;
-import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.effects.common.DoIfCostPaid;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.mana.AddConditionalManaOfAnyColorEffect;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.game.permanent.token.DragonToken2;
+
+import java.util.UUID;
 
 /**
  *
@@ -23,11 +24,11 @@ import mage.game.permanent.token.DragonToken2;
  */
 public final class SarkhanFireblood extends CardImpl {
 
-    private static final FilterSpell filter = new FilterSpell("Dragon spells");
-
-    static {
-        filter.add(SubType.DRAGON.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("Dragon spells")
+            .addAll(
+                    SpellPredicate.instance,
+                    SubType.DRAGON.getPredicate()
+            );
 
     public SarkhanFireblood(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.PLANESWALKER}, "{1}{R}{R}");
@@ -44,12 +45,12 @@ public final class SarkhanFireblood extends CardImpl {
 
         // +1: Add two mana of any combination of colors. Spend this mana only to cast Dragon spells.
         this.addAbility(new LoyaltyAbility(
-                new AddConditionalManaOfAnyColorEffect(
-                        StaticValue.get(2),
-                        StaticValue.get(2),
-                        new ConditionalSpellManaBuilder(filter),
-                        false
-                ), 1
+                ComposedManaAbilityBuilder.builder()
+                        .addAnyCombination(2)
+                        .condition(new FilteredSpellManaCondition(filter))
+                        .ruleText("Add two mana of any combination of colors. Spend this mana only to cast Dragon spells.")
+                        .buildEffect(),
+                1
         ));
 
         // -7: Create four 5/5 red Dragon creature tokens with flying.

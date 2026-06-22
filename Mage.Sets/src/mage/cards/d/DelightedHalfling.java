@@ -1,33 +1,36 @@
 package mage.cards.d;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-import mage.*;
+import mage.MageInt;
+import mage.MageObject;
+import mage.MageObjectReference;
 import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.ContinuousRuleModifyingEffectImpl;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
-import mage.constants.*;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
+import mage.constants.*;
+import mage.filter.FilterTyped;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
 import mage.watchers.Watcher;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
  * @author Susucr
  */
 public final class DelightedHalfling extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("a legendary spell")
+            .add(SuperType.LEGENDARY.getPredicate());
 
     public DelightedHalfling(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{G}");
@@ -39,8 +42,14 @@ public final class DelightedHalfling extends CardImpl {
 
         // {T}: Add {C}.
         this.addAbility(new ColorlessManaAbility());
+
         // {T}: Add one mana of any color. Spend this mana only to cast a legendary spell, and that spell can't be countered.
-        Ability ability = new ConditionalAnyColorManaAbility(new TapSourceCost(), 1, new DelightedHalflingManaBuilder(), true);
+        Ability ability = ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a legendary spell, and that spell can't be countered")
+                .build();
         this.addAbility(ability, new DelightedHalflingWatcher(ability.getOriginalId()));
         this.addAbility(new SimpleStaticAbility(Zone.ALL, new DelightedHalflingCantCounterEffect()).setRuleVisible(false));
     }
@@ -52,52 +61,6 @@ public final class DelightedHalfling extends CardImpl {
     @Override
     public DelightedHalfling copy() {
         return new DelightedHalfling(this);
-    }
-}
-
-
-class DelightedHalflingManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new DelightedHalflingConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a legendary spell, and that spell can't be countered";
-    }
-
-}
-
-class DelightedHalflingConditionalMana extends ConditionalMana {
-    public DelightedHalflingConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast a legendary spell, and that spell can't be countered";
-        addCondition(new DelightedHalflingManaCondition());
-    }
-}
-
-class DelightedHalflingManaCondition extends ManaCondition {
-
-    DelightedHalflingManaCondition() { }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        // check: ... to cast a spell
-        if (source instanceof SpellAbility && !source.isActivated()) {
-            MageObject object = game.getObject(source);
-            // check: ... that is legendary
-            if (object != null && object.isLegendary(game)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        return apply(game, source);
     }
 }
 

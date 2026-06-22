@@ -6,12 +6,13 @@ import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.MillCardsTargetEffect;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.common.InstantOrSorcerySpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
 import mage.target.TargetPlayer;
 
 import java.util.UUID;
@@ -30,7 +31,13 @@ public final class PelargirSurvivor extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(1, new InstantOrSorcerySpellManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText("Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.")
+                .build()
+        );
 
         // {5}{U}, {T}: Target player mills three cards.
         Ability ability = new SimpleActivatedAbility(

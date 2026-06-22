@@ -1,22 +1,22 @@
 
 package mage.cards.k;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.CreateTokenEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
 import mage.game.permanent.token.TrooperToken;
+
+import java.util.UUID;
 
 /**
  *
@@ -24,11 +24,9 @@ import mage.game.permanent.token.TrooperToken;
  */
 public final class KaminoCloningFacility extends CardImpl {
 
-    private static final FilterSpell FILTER = new FilterSpell("a Trooper spell");
+    private static final FilterTyped FILTER = new FilterTyped("a Trooper spell")
+            .add(SubType.TROOPER.getPredicate());
 
-    static {
-        FILTER.add(SubType.TROOPER.getPredicate());
-    }
 
     public KaminoCloningFacility(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.LAND},"");
@@ -37,7 +35,13 @@ public final class KaminoCloningFacility extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T} Add one mana of any color. Spend this mana only to cast a Trooper spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(new TapSourceCost(), 1, new ConditionalSpellManaBuilder(FILTER), true));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(FILTER))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a Trooper spell")
+                .build()
+        );
 
         // {5}, {T}: Create a 1/1 white Trooper creature tokens.
         Ability ability = new SimpleActivatedAbility(new CreateTokenEffect(new TrooperToken(), 1), new ManaCostsImpl<>("{5}"));

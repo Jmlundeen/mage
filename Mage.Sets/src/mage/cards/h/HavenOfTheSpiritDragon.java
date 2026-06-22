@@ -1,6 +1,5 @@
 package mage.cards.h;
 
-import java.util.UUID;
 import mage.ConditionalMana;
 import mage.MageObject;
 import mage.Mana;
@@ -12,20 +11,23 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.ReturnFromGraveyardToHandTargetEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.conditional.CreatureCastManaCondition;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.filter.FilterCard;
+import mage.filter.FilterTyped;
 import mage.filter.predicate.Predicate;
 import mage.filter.predicate.Predicates;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
+
+import java.util.UUID;
 
 /**
  *
@@ -34,6 +36,11 @@ import mage.target.common.TargetCardInYourGraveyard;
 public final class HavenOfTheSpiritDragon extends CardImpl {
 
     private static final FilterCard filter = new FilterCard("Dragon creature card or Ugin planeswalker card from your graveyard");
+    private static final FilterTyped manaFilter = new FilterTyped("Dragon")
+            .addAll(
+                    SubType.DRAGON.getPredicate(),
+                    SpellPredicate.instance
+            );
 
     static {
         filter.add(Predicates.or(new DragonCreatureCardPredicate(),
@@ -47,7 +54,13 @@ public final class HavenOfTheSpiritDragon extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: add one mana of any color. Spend this mana only to cast a Dragon creature spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(new TapSourceCost(), 1, new HavenOfTheSpiritManaBuilder(), true));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(manaFilter))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a Dragon creature spell.")
+                .build()
+        );
 
         // {2}, {T}, Sacrifice Haven of the Spirit Dragon: Return target Dragon creature card or Ugin planeswalker card from your graveyard to your hand.
         Ability ability = new SimpleActivatedAbility(new ReturnFromGraveyardToHandTargetEffect(), new ManaCostsImpl<>("{2}"));
@@ -65,20 +78,6 @@ public final class HavenOfTheSpiritDragon extends CardImpl {
     @Override
     public HavenOfTheSpiritDragon copy() {
         return new HavenOfTheSpiritDragon(this);
-    }
-}
-
-class HavenOfTheSpiritManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        this.mana.setFlag(true); // indicates that the mana is from second ability
-        return new HavenOfTheSpiritConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a Dragon creature spell.";
     }
 }
 

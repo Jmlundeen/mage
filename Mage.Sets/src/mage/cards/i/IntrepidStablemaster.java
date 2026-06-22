@@ -3,15 +3,16 @@ package mage.cards.i;
 import mage.MageInt;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.keyword.ReachAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.GreenManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.filter.FilterSpell;
-import mage.filter.predicate.Predicates;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 
 import java.util.UUID;
 
@@ -20,11 +21,10 @@ import java.util.UUID;
  */
 public final class IntrepidStablemaster extends CardImpl {
 
-    private static final FilterSpell filter = new FilterSpell("Mount or Vehicle spells");
-
-    static {
-        filter.add(Predicates.or(SubType.MOUNT.getPredicate(), SubType.VEHICLE.getPredicate()));
-    }
+    private static final FilterTyped filter = new FilterTyped("Mount or Vehicle spells")
+            .addAll(SpellPredicate.instance,
+                    LogicalPredicate.or(SubType.MOUNT.getPredicate(), SubType.VEHICLE.getPredicate())
+            );
 
     public IntrepidStablemaster(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{G}");
@@ -41,10 +41,13 @@ public final class IntrepidStablemaster extends CardImpl {
         this.addAbility(new GreenManaAbility());
 
         // {T}: Add two mana of any one color. Spend this mana only to cast Mount or Vehicle spells.
-        this.addAbility(new ConditionalAnyColorManaAbility(
-                new TapSourceCost(), 2,
-                new ConditionalSpellManaBuilder(filter), true
-        ));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addAnyColor(2)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add two mana of any one color. Spend this mana only to cast Mount or Vehicle spells.")
+                .build()
+        );
     }
 
     private IntrepidStablemaster(final IntrepidStablemaster card) {

@@ -1,24 +1,17 @@
 package mage.cards.p;
 
-import mage.ConditionalMana;
-import mage.MageObject;
-import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
 import mage.abilities.common.SimpleActivatedAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.ExileSourceCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
 import mage.abilities.keyword.HexproofAbility;
 import mage.abilities.keyword.IndestructibleAbility;
-import mage.abilities.mana.AnyColorPermanentTypesManaAbility;
+import mage.abilities.mana.AnyColorAmongManaAbility;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -26,9 +19,9 @@ import mage.constants.Duration;
 import mage.constants.SuperType;
 import mage.constants.TargetController;
 import mage.filter.FilterPermanent;
-import mage.filter.common.FilterControlledPermanent;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreaturePermanent;
-import mage.game.Game;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.target.TargetPermanent;
 
 import java.util.UUID;
@@ -38,12 +31,15 @@ import java.util.UUID;
  */
 public final class PlazaOfHeroes extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterCreaturePermanent("legendary creature");
-    private static final FilterPermanent filter2 = new FilterControlledPermanent("legendary permanents");
+    private static final FilterPermanent legendaryCreatureFilter = new FilterCreaturePermanent("legendary creature");
+    private static final FilterTyped legendaryPermFilter = new FilterTyped("legendary permanents you control")
+            .add(TargetController.YOU.getControllerPredicate())
+            .add(SuperType.LEGENDARY.getPredicate());
+    private static final FilterTyped spellFilter = new FilterTyped("legendary spell")
+            .addAll(SpellPredicate.instance, SuperType.LEGENDARY.getPredicate());
 
     static {
-        filter.add(SuperType.LEGENDARY.getPredicate());
-        filter2.add(SuperType.LEGENDARY.getPredicate());
+        legendaryCreatureFilter.add(SuperType.LEGENDARY.getPredicate());
     }
 
     public PlazaOfHeroes(UUID ownerId, CardSetInfo setInfo) {
@@ -53,10 +49,19 @@ public final class PlazaOfHeroes extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add one mana of any color. Spend this mana only to cast a legendary spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(1, new PlazaOfHeroesManaBuilder()));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(spellFilter))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a legendary spell.")
+                .build()
+        );
 
         // {T}: Add one mana of any color among legendary permanents you control.
-        this.addAbility(new AnyColorPermanentTypesManaAbility(TargetController.YOU, filter2));
+        this.addAbility(AnyColorAmongManaAbility.builder(legendaryPermFilter)
+                .onlyColors(true)
+                .ruleText("Add one mana of any color among legendary permanents you control.")
+                .build()
+        );
 
         // {3}, {T}, Exile Plaza of Heroes: Target legendary creature gains hexproof and indestructible until end of turn.
         Ability ability = new SimpleActivatedAbility(new GainAbilityTargetEffect(
@@ -65,7 +70,7 @@ public final class PlazaOfHeroes extends CardImpl {
         ability.addEffect(new GainAbilityTargetEffect(
                 IndestructibleAbility.getInstance(), Duration.EndOfTurn
         ).setText("and indestructible until end of turn"));
-        ability.addTarget(new TargetPermanent(filter));
+        ability.addTarget(new TargetPermanent(legendaryCreatureFilter));
         ability.addCost(new TapSourceCost());
         ability.addCost(new ExileSourceCost());
         this.addAbility(ability);
@@ -78,46 +83,5 @@ public final class PlazaOfHeroes extends CardImpl {
     @Override
     public PlazaOfHeroes copy() {
         return new PlazaOfHeroes(this);
-    }
-}
-
-class PlazaOfHeroesManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new PlazaOfHeroesConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a legendary spell";
-    }
-}
-
-class PlazaOfHeroesConditionalMana extends ConditionalMana {
-
-    public PlazaOfHeroesConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast a legendary spell";
-        addCondition(new PlazaOfHeroesManaCondition());
-    }
-}
-
-class PlazaOfHeroesManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (source instanceof SpellAbility && !source.isActivated()) {
-            MageObject object = game.getObject(source);
-            if (object != null && object.isLegendary(game)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costsToPay) {
-        return apply(game, source);
     }
 }

@@ -1,17 +1,17 @@
 
 package mage.cards.s;
 
-import java.util.UUID;
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastConditionalMana;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
+
+import java.util.UUID;
 
 
 /**
@@ -28,7 +28,13 @@ public final class SomberwaldSage extends CardImpl {
         this.toughness = new MageInt(1);
 
         // {tap}: Add three mana of any one color. Spend this mana only to cast creature spells.
-        this.addAbility(new ConditionalAnyColorManaAbility(new TapSourceCost(), 3, new SomberwaldSageManaBuilder(), true));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(3)
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText("Add three mana of any one color. Spend this mana only to cast creature spells.")
+                .build()
+        );
     }
 
     private SomberwaldSage(final SomberwaldSage card) {
@@ -38,17 +44,5 @@ public final class SomberwaldSage extends CardImpl {
     @Override
     public SomberwaldSage copy() {
         return new SomberwaldSage(this);
-    }
-}
-
-class SomberwaldSageManaBuilder extends ConditionalManaBuilder {
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new CreatureCastConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast creature spells";
     }
 }

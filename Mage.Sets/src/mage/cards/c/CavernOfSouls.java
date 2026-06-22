@@ -1,35 +1,38 @@
 package mage.cards.c;
 
-import java.util.*;
-import mage.ConditionalMana;
 import mage.MageObject;
 import mage.MageObjectReference;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.ContinuousRuleModifyingEffectImpl;
 import mage.abilities.effects.common.ChooseCreatureTypeEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.providers.ChosenCreatureTypeConditionProvider;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.SpellAbilityPredicate;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
-import mage.players.Player;
 import mage.watchers.Watcher;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
  * @author noxx
  */
 public final class CavernOfSouls extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("spell ability")
+            .add(SpellAbilityPredicate.instance);
 
     public CavernOfSouls(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
@@ -41,7 +44,12 @@ public final class CavernOfSouls extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered.
-        Ability ability = new ConditionalAnyColorManaAbility(new TapSourceCost(), 1, new CavernOfSoulsManaBuilder(), true);
+        Ability ability = ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .runtimeCondition(new ChosenCreatureTypeConditionProvider(filter))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered")
+                .build();
         this.addAbility(ability, new CavernOfSoulsWatcher(ability.getOriginalId()));
         this.addAbility(new SimpleStaticAbility(Zone.ALL, new CavernOfSoulsCantCounterEffect()).setRuleVisible(false));
     }
@@ -53,81 +61,6 @@ public final class CavernOfSouls extends CardImpl {
     @Override
     public CavernOfSouls copy() {
         return new CavernOfSouls(this);
-    }
-}
-
-class CavernOfSoulsManaBuilder extends ConditionalManaBuilder {
-
-    SubType creatureType;
-
-    @Override
-    public ConditionalManaBuilder setMana(Mana mana, Ability source, Game game) {
-        SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
-        if (subType != null) {
-            creatureType = subType;
-        }
-        Player controller = game.getPlayer(source.getControllerId());
-        MageObject sourceObject = game.getObject(source);
-        if (controller != null && sourceObject != null && mana.getAny() == 0) {
-            game.informPlayers(controller.getLogName() + " produces " + mana.toString() + " with " + sourceObject.getLogName()
-                    + " (can only be spend to cast for creatures of type " + creatureType + " and that spell can't be countered)");
-        }
-        return super.setMana(mana, source, game);
-    }
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new CavernOfSoulsConditionalMana(this.mana, creatureType);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered";
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.creatureType);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-
-        return this.creatureType == ((CavernOfSoulsManaBuilder) obj).creatureType;
-    }
-}
-
-class CavernOfSoulsConditionalMana extends ConditionalMana {
-
-    public CavernOfSoulsConditionalMana(Mana mana, SubType creatureType) {
-        super(mana);
-        staticText = "Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered";
-        addCondition(new CavernOfSoulsManaCondition(creatureType));
-    }
-}
-
-class CavernOfSoulsManaCondition extends CreatureCastManaCondition {
-
-    SubType creatureType;
-
-    CavernOfSoulsManaCondition(SubType creatureType) {
-        this.creatureType = creatureType;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        // check: ... to cast a creature spell
-        if (super.apply(game, source)) {
-            // check: ... of the chosen type
-            MageObject object = game.getObject(source);
-            if (creatureType != null && object != null && object.hasSubtype(creatureType, game)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 

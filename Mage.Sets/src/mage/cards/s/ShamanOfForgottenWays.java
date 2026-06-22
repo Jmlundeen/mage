@@ -1,6 +1,5 @@
 package mage.cards.s;
 
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.ActivateIfConditionActivatedAbility;
@@ -8,9 +7,8 @@ import mage.abilities.condition.common.FormidableCondition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastConditionalMana;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.AbilityWord;
@@ -18,6 +16,7 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.filter.FilterPermanent;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.game.Game;
 import mage.players.Player;
@@ -37,7 +36,13 @@ public final class ShamanOfForgottenWays extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {T}:Add two mana in any combination of colors. Spend this mana only to cast creature spells.
-        this.addAbility(new ConditionalAnyColorManaAbility(2, new ShamanOfForgottenWaysManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(2)
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText("Add two mana in any combination of colors. Spend this mana only to cast creature spells")
+                .build()
+        );
 
         // <i>Formidable</i> &mdash; {9}{G}{G},{T}:Each player's life total becomes the number of creatures they control. Activate the ability only if creatures you control have total power 8 or greater.
         Ability ability = new ActivateIfConditionActivatedAbility(
@@ -54,19 +59,6 @@ public final class ShamanOfForgottenWays extends CardImpl {
     @Override
     public ShamanOfForgottenWays copy() {
         return new ShamanOfForgottenWays(this);
-    }
-}
-
-class ShamanOfForgottenWaysManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new CreatureCastConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast creature spells";
     }
 }
 

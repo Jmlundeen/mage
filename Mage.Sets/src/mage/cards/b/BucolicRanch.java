@@ -6,8 +6,8 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -17,7 +17,8 @@ import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.FilterCard;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.game.Game;
 import mage.players.Player;
 
@@ -28,11 +29,8 @@ import java.util.UUID;
  */
 public final class BucolicRanch extends CardImpl {
 
-    private static final FilterSpell filter = new FilterSpell("a Mount spell");
-
-    static {
-        filter.add(SubType.MOUNT.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("a Mount spell")
+            .addAll(SpellPredicate.instance, SubType.MOUNT.getPredicate());
 
     public BucolicRanch(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
@@ -43,10 +41,13 @@ public final class BucolicRanch extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add one mana of any color. Spend this mana only to cast a Mount spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(
-                new TapSourceCost(), 1,
-                new ConditionalSpellManaBuilder(filter), true
-        ));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a Mount spell")
+                .build()
+        );
 
         // {3}, {T}: Look at the top card of your library. If it's a Mount card, you may reveal it and put it into your hand. If you don't put it into your hand, you may put it on the bottom of your library.
         Ability ability = new SimpleActivatedAbility(new BucolicRanchEffect(), new GenericManaCost(3));

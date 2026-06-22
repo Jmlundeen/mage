@@ -1,30 +1,32 @@
 package mage.cards.s;
 
-import java.util.Objects;
-import java.util.UUID;
-import mage.ConditionalMana;
-import mage.MageObject;
-import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.ChooseCreatureTypeEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.providers.ChosenCreatureTypeConditionProvider;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Outcome;
-import mage.constants.SubType;
-import mage.game.Game;
-import mage.players.Player;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.SpellAbilityPredicate;
+
+import java.util.UUID;
 
 /**
  * @author jeffwadsworth
  */
 public final class SecludedCourtyard extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("spell or activated ability")
+            .add(LogicalPredicate.or(
+                    SpellAbilityPredicate.instance,
+                    ActivatedAbilityPredicate.instance
+            ));
 
     public SecludedCourtyard(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
@@ -32,11 +34,17 @@ public final class SecludedCourtyard extends CardImpl {
         // As Secluded Courtyard enters the battlefield, choose a creature type.
         this.addAbility(new AsEntersBattlefieldAbility(new ChooseCreatureTypeEffect(Outcome.Benefit)));
 
-        // // {T}: Add {C}.
+        // {T}: Add {C}.
         this.addAbility(new ColorlessManaAbility());
 
-        // Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature or creature card of the chosen type. 
-        this.addAbility(new ConditionalAnyColorManaAbility(new TapSourceCost(), 1, new SecludedCourtyardManaBuilder(), true));
+        // {T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature or creature card of the chosen type.
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .addAnyColor(1)
+                .runtimeCondition(new ChosenCreatureTypeConditionProvider(filter))
+                .cost(new TapSourceCost())
+                .ruleText("Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature or creature card of the chosen type")
+                .build()
+        );
     }
 
     private SecludedCourtyard(final SecludedCourtyard card) {
@@ -46,81 +54,5 @@ public final class SecludedCourtyard extends CardImpl {
     @Override
     public SecludedCourtyard copy() {
         return new SecludedCourtyard(this);
-    }
-}
-
-class SecludedCourtyardManaBuilder extends ConditionalManaBuilder {
-
-    SubType creatureType;
-
-    @Override
-    public ConditionalManaBuilder setMana(Mana mana, Ability source, Game game) {
-        SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
-        if (subType != null) {
-            creatureType = subType;
-        }
-        Player controller = game.getPlayer(source.getControllerId());
-        MageObject sourceObject = game.getObject(source);
-        if (controller != null
-                && sourceObject != null
-                && mana.getAny() == 0) {
-            game.informPlayers(controller.getLogName() + " produces " + mana.toString() + " with " + sourceObject.getLogName()
-                    + " (can only be spent to cast creatures of type " + creatureType + " and activate an ability of a creature or creature card of the chosen type)");
-        }
-        return super.setMana(mana, source, game);
-    }
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new SecludedCourtyardConditionalMana(this.mana, creatureType);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature or creature card of the chosen type";
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.creatureType);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-
-        return this.creatureType == ((SecludedCourtyardManaBuilder) obj).creatureType;
-    }
-}
-
-class SecludedCourtyardConditionalMana extends ConditionalMana {
-
-    public SecludedCourtyardConditionalMana(Mana mana, SubType creatureType) {
-        super(mana);
-        staticText = "Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature or creature card of the chosen type";
-        addCondition(new SecludedCourtyardManaCondition(creatureType));
-    }
-}
-
-class SecludedCourtyardManaCondition implements Condition {
-
-    SubType creatureType;
-
-    SecludedCourtyardManaCondition(SubType creatureType) {
-        this.creatureType = creatureType;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = game.getObject(source);
-        // casting a creature card or using its ability
-        if (creatureType != null
-                && object != null
-                && object.hasSubtype(creatureType, game)) {
-            return true;
-        }
-        return false;
     }
 }

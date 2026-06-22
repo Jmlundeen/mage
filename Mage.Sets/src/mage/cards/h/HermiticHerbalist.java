@@ -3,13 +3,14 @@ package mage.cards.h;
 import mage.MageInt;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.mana.AnyColorManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 
 import java.util.UUID;
 
@@ -18,11 +19,8 @@ import java.util.UUID;
  */
 public final class HermiticHerbalist extends CardImpl {
 
-    private static final FilterSpell filter = new FilterSpell("Lesson spells");
-
-    static {
-        filter.add(SubType.LESSON.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("Lesson spells")
+            .addAll(SpellPredicate.instance, SubType.LESSON.getPredicate());
 
     public HermiticHerbalist(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{G}{U}");
@@ -37,9 +35,13 @@ public final class HermiticHerbalist extends CardImpl {
         this.addAbility(new AnyColorManaAbility());
 
         // {T}: Add two mana in any combination of colors. Spend this mana only to cast Lesson spells.
-        this.addAbility(new ConditionalAnyColorManaAbility(
-                new TapSourceCost(), 2, new ConditionalSpellManaBuilder(filter), false
-        ));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addAnyCombination(2)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add two mana in any combination of colors. Spend this mana only to cast Lesson spells")
+                .build()
+        );
     }
 
     private HermiticHerbalist(final HermiticHerbalist card) {

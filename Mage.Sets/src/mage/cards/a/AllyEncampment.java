@@ -1,6 +1,5 @@
 package mage.cards.a;
 
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.SacrificeSourceCost;
@@ -8,16 +7,18 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.ReturnToHandTargetEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.target.common.TargetControlledPermanent;
+
+import java.util.UUID;
 
 /**
  *
@@ -25,12 +26,9 @@ import mage.target.common.TargetControlledPermanent;
  */
 public final class AllyEncampment extends CardImpl {
 
-    private static final FilterSpell filterSpell = new FilterSpell("an Ally spell");
+    private static final FilterTyped filterSpell = new FilterTyped("an Ally spell")
+            .addAll(SpellPredicate.instance, SubType.ALLY.getPredicate());
     private static final FilterControlledPermanent filterPermanent = new FilterControlledPermanent(SubType.ALLY, "Ally you control");
-
-    static {
-        filterSpell.add(SubType.ALLY.getPredicate());
-    }
 
     public AllyEncampment(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.LAND},"");
@@ -39,7 +37,13 @@ public final class AllyEncampment extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T} Add one mana of any color. Spend this mana only to cast an Ally spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(new TapSourceCost(), 1, new ConditionalSpellManaBuilder(filterSpell), true));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(filterSpell))
+                .ruleText("Add one mana of any color. Spend this mana only to cast an Ally spell.")
+                .build()
+        );
 
         // {1}, {T}, Sacrifice Ally Encampment: Return target Ally you control to its owner's hand.
         Ability ability = new SimpleActivatedAbility(new ReturnToHandTargetEffect(), new GenericManaCost(1));

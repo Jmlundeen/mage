@@ -4,17 +4,20 @@ import mage.MageInt;
 import mage.abilities.common.CastFromGraveyardOnceDuringEachOfYourTurnAbility;
 import mage.abilities.common.DiesSourceTriggeredAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.ExileSourceEffect;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
 import mage.abilities.keyword.MenaceAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.common.FilterCreatureSpell;
 import mage.filter.predicate.card.CastFromZonePredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 
 import java.util.UUID;
 
@@ -23,12 +26,16 @@ import java.util.UUID;
  */
 public final class RivazOfTheClaw extends CardImpl {
 
-    private static final FilterCreatureSpell manaAbilityFilter = new FilterCreatureSpell("Dragon creature spells");
+    private static final FilterTyped manaAbilityFilter = new FilterTyped("Dragon creature spells")
+            .addAll(
+                    SpellPredicate.instance,
+                    SubType.DRAGON.getPredicate(),
+                    CardType.CREATURE.getPredicate()
+            );
     private static final FilterCreatureCard staticAbilityFilter = new FilterCreatureCard("a Dragon creature spell");
     private static final FilterCreatureSpell spellCastFilter = new FilterCreatureSpell("a Dragon creature spell from your graveyard");
 
     static {
-        manaAbilityFilter.add(SubType.DRAGON.getPredicate());
         staticAbilityFilter.add(SubType.DRAGON.getPredicate());
         spellCastFilter.add(SubType.DRAGON.getPredicate());
         spellCastFilter.add(new CastFromZonePredicate(Zone.GRAVEYARD));
@@ -47,7 +54,13 @@ public final class RivazOfTheClaw extends CardImpl {
         this.addAbility(new MenaceAbility(false));
 
         // {T}: Add two mana in any combination of colors. Spend this mana only to cast Dragon creature spells.
-        this.addAbility(new ConditionalAnyColorManaAbility(2, new ConditionalSpellManaBuilder(manaAbilityFilter)));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyCombination(2)
+                .condition(new FilteredSpellManaCondition(manaAbilityFilter))
+                .ruleText("Add two mana in any combination of colors. Spend this mana only to cast Dragon creature spells.")
+                .build()
+        );
 
         // Once during each of your turns, you may cast a Dragon creature spell from your graveyard.
         this.addAbility(new CastFromGraveyardOnceDuringEachOfYourTurnAbility(staticAbilityFilter));
