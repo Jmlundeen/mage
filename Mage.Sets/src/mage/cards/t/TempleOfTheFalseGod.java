@@ -5,13 +5,11 @@ import mage.Mana;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.BasicManaEffect;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ComparisonType;
-import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterControlledLandPermanent;
 
@@ -30,10 +28,14 @@ public final class TempleOfTheFalseGod extends CardImpl {
     public TempleOfTheFalseGod(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
 
-        // {tap}: Add {C}{C}. Activate this ability only if you control five or more lands.
-        this.addAbility(new ActivateIfConditionManaAbility(
-                Zone.BATTLEFIELD, new BasicManaEffect(Mana.ColorlessMana(2)), new TapSourceCost(), condition
-        ));
+        // {T}: Add {C}{C}. Activate this ability only if you control five or more lands.
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(2))
+                .activationCondition(condition)
+                .ruleText("add {C}{C}. Activate this ability only if you control five or more lands")
+                .build()
+        );
     }
 
     private TempleOfTheFalseGod(final TempleOfTheFalseGod card) {

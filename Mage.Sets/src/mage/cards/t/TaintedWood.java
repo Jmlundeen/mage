@@ -1,19 +1,18 @@
 
 package mage.cards.t;
 
-import mage.Mana;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.BasicManaEffect;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
 import mage.abilities.mana.ColorlessManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ManaType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.filter.common.FilterLandPermanent;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -30,20 +29,17 @@ public final class TaintedWood extends CardImpl {
     public TaintedWood(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.LAND},"");
 
-        // {tap}: Add {C}.
+        // {T}: Add {C}.
         this.addAbility(new ColorlessManaAbility());
 
-        // {tap}: Add {B} or {G}. Activate this ability only if you control a Swamp.
-        this.addAbility(new ActivateIfConditionManaAbility(
-                Zone.BATTLEFIELD,
-                new BasicManaEffect(Mana.BlackMana(1)),
-                new TapSourceCost(),
-                new PermanentsOnTheBattlefieldCondition(filter)));
-        this.addAbility(new ActivateIfConditionManaAbility(
-                Zone.BATTLEFIELD,
-                new BasicManaEffect(Mana.GreenMana(1)),
-                new TapSourceCost(),
-                new PermanentsOnTheBattlefieldCondition(filter)));
+        // {T}: Add {B} or {G}. Activate this ability only if you control a Swamp.
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addChoice(Set.of(ManaType.BLACK, ManaType.GREEN), 1)
+                .activationCondition(new PermanentsOnTheBattlefieldCondition(filter))
+                .ruleText("add {B} or {G}. Activate this ability only if you control a Swamp")
+                .build()
+        );
     }
 
     private TaintedWood(final TaintedWood card) {

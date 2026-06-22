@@ -3,16 +3,13 @@ package mage.cards.s;
 import com.google.common.base.Functions;
 import mage.MageObject;
 import mage.abilities.Ability;
+import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.condition.Condition;
-import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
 import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SuperType;
-import mage.constants.Zone;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 
@@ -33,10 +30,10 @@ public final class SceptreOfEternalGlory extends CardImpl {
         this.addAbility(new AnyColorManaAbility());
 
         // {T}: Add three mana of any one color. Activate only if you control three or more lands with the same name.
-        this.addAbility(new ActivateIfConditionManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(3),
-                new TapSourceCost(), SceptreOfEternalGloryCondition.instance
-        ));
+        ActivatedAbilityImpl ability = new AnyColorManaAbility(3)
+                .setCondition(SceptreOfEternalGloryCondition.instance);
+        ability.appendToRule(" Activate only if you control three or more lands with the same name.");
+        this.addAbility(ability);
     }
 
     private SceptreOfEternalGlory(final SceptreOfEternalGlory card) {

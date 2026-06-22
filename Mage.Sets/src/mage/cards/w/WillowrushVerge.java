@@ -4,16 +4,14 @@ import mage.Mana;
 import mage.abilities.condition.Condition;
 import mage.abilities.condition.common.PermanentsOnTheBattlefieldCondition;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.BasicManaEffect;
 import mage.abilities.hint.ConditionHint;
 import mage.abilities.hint.Hint;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
 import mage.abilities.mana.BlueManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 import mage.filter.FilterPermanent;
 import mage.filter.predicate.Predicates;
 
@@ -43,9 +41,14 @@ public final class WillowrushVerge extends CardImpl {
         this.addAbility(new BlueManaAbility());
 
         // {T}: Add {G}. Activate only if you control a Forest or an Island.
-        this.addAbility(new ActivateIfConditionManaAbility(
-                Zone.BATTLEFIELD, new BasicManaEffect(Mana.GreenMana(1)), new TapSourceCost(), condition
-        ).addHint(hint));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.GreenMana(1))
+                .activationCondition(condition)
+                .ruleText("add {G}. Activate only if you control a Forest or an Island")
+                .build()
+                .addHint(hint)
+        );
     }
 
     private WillowrushVerge(final WillowrushVerge card) {

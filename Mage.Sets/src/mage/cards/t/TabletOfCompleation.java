@@ -10,13 +10,10 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
-import mage.abilities.effects.mana.BasicManaEffect;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.ManaType;
-import mage.constants.Zone;
 import mage.counters.CounterType;
 
 import java.util.UUID;
@@ -38,9 +35,13 @@ public final class TabletOfCompleation extends CardImpl {
         ));
 
         // {T}: Add {C}. Activate only if Tablet of Compleation has two or more oil counters on it.
-        this.addAbility(new ActivateIfConditionManaAbility(
-                Zone.BATTLEFIELD, new BasicManaEffect(new Mana(ManaType.COLORLESS)), new TapSourceCost(), condition1
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .activationCondition(condition1)
+                .ruleText("add {C}. Activate only if {this} has two or more oil counters on it.")
+                .build()
+        );
 
         // {1}, {T}: Draw a card. Activate only if Tablet of Compleation has five or more oil counters on it.
         Ability ability = new ActivateIfConditionActivatedAbility(

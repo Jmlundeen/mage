@@ -2,19 +2,15 @@ package mage.cards.w;
 
 import mage.MageInt;
 import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.condition.common.FerociousCondition;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.BasicManaEffect;
 import mage.abilities.hint.common.FerociousHint;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.GreenManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.AbilityWord;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 
 import java.util.UUID;
 
@@ -34,10 +30,14 @@ public final class WhispererOfTheWilds extends CardImpl {
         this.addAbility(new GreenManaAbility());
 
         // Ferocious - {T}: Add {G}{G}. Activate this ability only if you control a creature with power 4 or greater.
-        Ability ability = new ActivateIfConditionManaAbility(Zone.BATTLEFIELD, new BasicManaEffect(Mana.GreenMana(2)), new TapSourceCost(), FerociousCondition.instance);
-        ability.setAbilityWord(AbilityWord.FEROCIOUS);
-        ability.addHint(FerociousHint.instance);
-        this.addAbility(ability);
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.GreenMana(2))
+                .activationCondition(FerociousCondition.instance)
+                .ruleText("add {G}{G}. Activate this ability only if you control a creature with power 4 or greater")
+                .build()
+                .addHint(FerociousHint.instance)
+        );
     }
 
     private WhispererOfTheWilds(final WhispererOfTheWilds card) {
