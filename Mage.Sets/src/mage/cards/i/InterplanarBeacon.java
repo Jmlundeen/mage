@@ -1,24 +1,21 @@
 package mage.cards.i;
 
-import mage.ConditionalMana;
-import mage.MageObject;
-import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.GainLifeEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
+import mage.abilities.mana.value.TwoDifferentColorsManaValue;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.filter.FilterSpell;
-import mage.game.Game;
-import mage.game.stack.Spell;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
+
 import java.util.UUID;
-import mage.abilities.mana.conditional.ConditionalAddManaOfTwoDifferentColorsAbility;
 
 /**
  * @author TheElk801
@@ -26,7 +23,11 @@ import mage.abilities.mana.conditional.ConditionalAddManaOfTwoDifferentColorsAbi
 public final class InterplanarBeacon extends CardImpl {
 
     private static final FilterSpell filter = new FilterSpell("a planeswalker spell");
-
+    private static final FilterTyped manaFilter = new FilterTyped("a planeswalker spell")
+            .addAll(
+                    SpellPredicate.instance,
+                    CardType.PLANESWALKER.getPredicate()
+            );
     static {
         filter.add(CardType.PLANESWALKER.getPredicate());
     }
@@ -43,12 +44,14 @@ public final class InterplanarBeacon extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {1}, {T}: Add two mana of different colors. Spend this mana only to cast planeswalker spells.
-        Ability ability = new ConditionalAddManaOfTwoDifferentColorsAbility(
-                new GenericManaCost(1),
-                new InterplanarBeaconManaBuilder()
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new GenericManaCost(1))
+                .cost(new TapSourceCost())
+                .addManaValue(new TwoDifferentColorsManaValue())
+                .condition(new FilteredSpellManaCondition(manaFilter))
+                .ruleText("Add two mana of different colors. Spend this mana only to cast planeswalker spells")
+                .build()
         );
-        ability.addCost(new TapSourceCost());
-        this.addAbility(ability);
     }
 
     private InterplanarBeacon(final InterplanarBeacon card) {
@@ -58,37 +61,5 @@ public final class InterplanarBeacon extends CardImpl {
     @Override
     public InterplanarBeacon copy() {
         return new InterplanarBeacon(this);
-    }
-}
-
-class InterplanarBeaconManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new InterplanarBeaconConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast planeswalker spells";
-    }
-}
-
-class InterplanarBeaconConditionalMana extends ConditionalMana {
-
-    InterplanarBeaconConditionalMana(Mana mana) {
-        super(mana);
-        this.staticText = "Spend this mana only to cast planeswalker spells";
-        this.addCondition(new InterplanarBeaconManaCondition());
-    }
-}
-
-class InterplanarBeaconManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = source.getSourceObject(game);
-        return object instanceof Spell
-                && object.isPlaneswalker(game);
     }
 }
