@@ -1,18 +1,17 @@
 
 package mage.cards.g;
 
-import java.util.UUID;
 import mage.MageInt;
-import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.costs.common.ReturnToHandFromBattlefieldSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.mana.ActivateAsSorceryManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.TimingRule;
+
+import java.util.UUID;
 
 /**
  *
@@ -28,9 +27,14 @@ public final class GrinningIgnus extends CardImpl {
         this.toughness = new MageInt(2);
 
         // {R}, Return Grinning Ignus to its owner's hand: Add {C}{C}{R}. Activate this ability only any time you could cast a sorcery.
-        Ability ability = new ActivateAsSorceryManaAbility(Zone.BATTLEFIELD, new Mana(0, 0, 0, 1, 0, 0, 0, 2), new ManaCostsImpl<>("{R}"));
-        ability.addCost(new ReturnToHandFromBattlefieldSourceCost());
-        this.addAbility(ability);
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new ManaCostsImpl<>("{R}"))
+                .cost(new ReturnToHandFromBattlefieldSourceCost())
+                .addStatic(0, 0, 0, 1, 0, 2, 0)
+                .ruleText("add {C}{C}{R}. Activate this ability only any time you could cast a sorcery")
+                .build()
+                .setTiming(TimingRule.SORCERY)
+        );
     }
 
     private GrinningIgnus(final GrinningIgnus card) {
