@@ -72,7 +72,7 @@ class PygmyHippoEffect extends OneShotEffect {
         new TargetPlayerActivatesAllManaAbilitiesEffect().setTargetPointer(this.getTargetPointer().copy())
                 .apply(game, source);
         int amountToAdd = targetPlayer.getManaPool().count();
-        targetPlayer.getManaPool().emptyPool(game);
+        targetPlayer.getManaPool().emptyPool(game, source);
 
         game.addEffect(new AssignNoCombatDamageSourceEffect(Duration.EndOfTurn, true), source);
 

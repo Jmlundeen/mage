@@ -68,15 +68,13 @@ class DrainPowerEffect extends OneShotEffect {
         // This empties the former player's mana pool and causes the mana emptied this way to be put into the latter player's mana pool. Which permanents, spells, and/or
         // abilities produced that mana are unchanged, as are any restrictions or additional effects associated with any of that mana.
         List<ManaPoolItem> manaItems = targetPlayer.getManaPool().getManaItems();
-        targetPlayer.getManaPool().emptyPool(game);
+        targetPlayer.getManaPool().emptyPool(game, source);
         Player controller = game.getPlayer(source.getControllerId());
         if (controller == null) {
             return true;
         }
         for (ManaPoolItem manaPoolItem : manaItems) {
-            controller.getManaPool().addMana(
-                    manaPoolItem.isConditional() ? manaPoolItem.getConditionalMana() : manaPoolItem.getMana(),
-                    game, source, Duration.EndOfTurn.equals(manaPoolItem.getDuration()));
+            controller.getManaPool().addMana(manaPoolItem.getMana(), game, source, Duration.EndOfTurn.equals(manaPoolItem.getDuration()));
         }
         return true;
     }
