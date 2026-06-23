@@ -1853,16 +1853,14 @@ public class TestPlayer implements Player {
     }
 
     private void assertManaPoolInner(PlayerAction action, Player player, ManaType manaType, Integer amount) {
-        Integer normal = player.getManaPool().getMana().get(manaType);
-        Integer conditional = player.getManaPool().getConditionalMana().stream().mapToInt(a -> a.get(manaType)).sum(); // calcs FULL conditional mana, not real conditions
-        Integer current = normal + conditional;
+        Integer current = player.getManaPool().getMana().get(manaType);
         Assert.assertEquals(action.getActionName() + " - mana pool must contain [" + amount.toString() + " " + manaType + "], but found [" + current + "]", amount, current);
     }
 
     private void assertManaPool(PlayerAction action, Game game, Player player, String colors, Integer amount) {
         Assert.assertNotEquals(action.getActionName() + " - must setup color", "", colors);
 
-        // Can't use ObjectColor -- it's doesn't contain colorless -- need to use custom parse
+        // Can't use ObjectColor -- it doesn't contain colorless -- need to use custom parse
         for (int i = 0; i < colors.length(); i++) {
             switch (colors.charAt(i)) {
                 case 'W':
