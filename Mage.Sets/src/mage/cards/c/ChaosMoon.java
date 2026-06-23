@@ -1,28 +1,24 @@
 package mage.cards.c;
 
 import mage.Mana;
-import mage.ObjectColor;
 import mage.abilities.Ability;
-import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.ReplacementEffectImpl;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
-import mage.abilities.effects.common.continuous.BoostAllEffect;
-import mage.abilities.effects.mana.AddManaToManaPoolTargetControllerEffect;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
+import mage.abilities.effects.mana.ReplaceManaEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.DelayedTriggeredManaAbility;
+import mage.abilities.mana.providers.common.player.TargetPointerManaPlayerProvider;
+import mage.abilities.triggers.BeginningOfUpkeepTriggeredAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
+import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
-import mage.filter.common.FilterCreaturePermanent;
-import mage.filter.predicate.mageobject.ColorPredicate;
+import mage.filter.StaticTypedFilters;
+import mage.filter.predicate.typed.mageObject.color.ColorPredicate;
 import mage.game.Game;
-import mage.game.events.GameEvent;
-import mage.game.events.ManaEvent;
-import mage.game.events.TappedForManaEvent;
-import mage.game.permanent.Permanent;
 import mage.players.Player;
-import mage.target.targetpointer.FixedTarget;
 
 import java.util.UUID;
 
@@ -50,11 +46,11 @@ public final class ChaosMoon extends CardImpl {
 
 class ChaosMoonEffect extends OneShotEffect {
 
-    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("red creatures");
-
-    static {
-        filter.add(new ColorPredicate(ObjectColor.RED));
-    }
+    private static final FilterTyped filter = new FilterTyped("red creatures")
+            .addAll(
+                    CardType.CREATURE.getPredicate(),
+                    ColorPredicate.RED
+            );
 
     ChaosMoonEffect() {
         super(Outcome.Neutral);
@@ -84,87 +80,35 @@ class ChaosMoonEffect extends OneShotEffect {
                 StaticFilters.FILTER_PERMANENT, source.getControllerId(), source, game
         );
         // Odd
+        GenericContinuousEffect boostEffect = new GenericContinuousEffect(Duration.EndOfTurn, Outcome.BoostCreature, filter);
         if (permanentsInPlay % 2 == 1) {
-            game.addEffect(new BoostAllEffect(1, 1, Duration.EndOfTurn, filter, false), source);
-            new CreateDelayedTriggeredAbilityEffect(new ChaosMoonOddTriggeredAbility()).apply(game, source);
+            game.addEffect(boostEffect
+                    .withAddPower(1)
+                    .withAddToughness(1),
+                    source);
+            new CreateDelayedTriggeredAbilityEffect(
+                    new DelayedTriggeredManaAbility(
+                            "whenever a player taps a Mountain for mana, ",
+                            StaticTypedFilters.A_MOUNTAIN,
+                            ComposedManaAbilityBuilder.builder()
+                                    .addStatic(Mana.RedMana(1))
+                                    .playerProvider(TargetPointerManaPlayerProvider.instance)
+                                    .ruleText("that player adds an additional {R}")
+                                    .buildEffect(),
+                            Duration.EndOfTurn,
+                            false
+                    )
+                            .withSetTargetPointer(SetTargetPointer.TRIGGERED_CONTROLLER)
+            ).apply(game, source);
         } // Even
         else {
-            game.addEffect(new BoostAllEffect(-1, -1, Duration.EndOfTurn, filter, false), source);
-            game.addEffect(new ChaosMoonEvenReplacementEffect(), source);
+            game.addEffect(boostEffect
+                    .withAddPower(-1)
+                    .withAddToughness(-1),
+                    source);
+            game.addEffect(ReplaceManaEffect.produced(Duration.EndOfTurn,
+                    Outcome.Neutral, ReplaceManaEffect.replaceAllWithColor(ManaType.COLORLESS)), source);
         }
         return true;
-    }
-}
-
-class ChaosMoonOddTriggeredAbility extends DelayedTriggeredManaAbility {
-
-    ChaosMoonOddTriggeredAbility() {
-        super(new AddManaToManaPoolTargetControllerEffect(new Mana(ColoredManaSymbol.R), "their"), Duration.EndOfTurn, false);
-        this.usesStack = false;
-    }
-
-    private ChaosMoonOddTriggeredAbility(ChaosMoonOddTriggeredAbility ability) {
-        super(ability);
-    }
-
-    @Override
-    public boolean checkEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.TAPPED_FOR_MANA;
-    }
-
-    @Override
-    public boolean checkTrigger(GameEvent event, Game game) {
-        Permanent land = ((TappedForManaEvent) event).getPermanent();
-        if (land == null || !land.hasSubtype(SubType.MOUNTAIN, game)) {
-            return false;
-        }
-        this.getEffects().setTargetPointer(new FixedTarget(land.getControllerId()));
-        return true;
-    }
-
-    @Override
-    public ChaosMoonOddTriggeredAbility copy() {
-        return new ChaosMoonOddTriggeredAbility(this);
-    }
-
-    @Override
-    public String getRule() {
-        return "Until end of turn, whenever a player taps a Mountain for mana, that player adds {R}";
-    }
-}
-
-class ChaosMoonEvenReplacementEffect extends ReplacementEffectImpl {
-
-    ChaosMoonEvenReplacementEffect() {
-        super(Duration.EndOfTurn, Outcome.Neutral);
-        staticText = "Until end of turn, if a Mountain is tapped for mana, it produces colorless mana instead of any other type.";
-    }
-
-    private ChaosMoonEvenReplacementEffect(final ChaosMoonEvenReplacementEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public ChaosMoonEvenReplacementEffect copy() {
-        return new ChaosMoonEvenReplacementEffect(this);
-    }
-
-    @Override
-    public boolean replaceEvent(GameEvent event, Ability source, Game game) {
-        ManaEvent manaEvent = (ManaEvent) event;
-        Mana mana = manaEvent.getMana();
-        mana.setToMana(Mana.ColorlessMana(mana.count()));
-        return false;
-    }
-
-    @Override
-    public boolean checksEventType(GameEvent event, Game game) {
-        return event.getType() == GameEvent.EventType.TAPPED_FOR_MANA;
-    }
-
-    @Override
-    public boolean applies(GameEvent event, Ability source, Game game) {
-        Permanent land = ((TappedForManaEvent) event).getPermanent();
-        return land != null && land.hasSubtype(SubType.MOUNTAIN, game);
     }
 }

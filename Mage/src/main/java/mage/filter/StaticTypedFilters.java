@@ -1,6 +1,7 @@
 package mage.filter;
 
 import mage.constants.CardType;
+import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.constants.TargetController;
 import mage.filter.predicate.typed.LogicalPredicate;
@@ -37,6 +38,30 @@ public class StaticTypedFilters {
 
     public static final FilterTyped LAND_AN_OPPONENT_CONTROLS = new FilterTyped("a land an opponent controls")
             .addAll(CardType.LAND.getPredicate(), TargetController.OPPONENT.getControllerPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped A_SWAMP = new FilterTyped("a Swamp")
+            .addAll(CardType.LAND.getPredicate(), SubType.SWAMP.getPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped SWAMP_YOU_CONTROL = new FilterTyped("a Swamp you control")
+            .addAll(CardType.LAND.getPredicate(), SubType.SWAMP.getPredicate(), TargetController.YOU.getControllerPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped A_FOREST = new FilterTyped("a Forest")
+            .addAll(CardType.LAND.getPredicate(), SubType.FOREST.getPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped FOREST_YOU_CONTROL = new FilterTyped("a Forest you control")
+            .addAll(CardType.LAND.getPredicate(), SubType.FOREST.getPredicate(), TargetController.YOU.getControllerPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped AN_ISLAND = new FilterTyped("an Island")
+            .addAll(CardType.LAND.getPredicate(), SubType.ISLAND.getPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped A_MOUNTAIN = new FilterTyped("a Mountain")
+            .addAll(CardType.LAND.getPredicate(), SubType.MOUNTAIN.getPredicate())
             .setLocked(true);
 
     public static final FilterTyped AN_INSTANT_OR_SORCERY_SPELL = new FilterTyped("an instant or sorcery spell")
