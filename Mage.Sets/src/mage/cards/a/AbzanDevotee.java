@@ -1,12 +1,12 @@
 package mage.cards.a;
 
 import mage.MageInt;
+import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.ReturnSourceFromGraveyardToHandEffect;
-import mage.abilities.effects.mana.AddManaFromColorChoicesEffect;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -14,6 +14,7 @@ import mage.constants.ManaType;
 import mage.constants.SubType;
 import mage.constants.Zone;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -30,9 +31,13 @@ public final class AbzanDevotee extends CardImpl {
         this.toughness = new MageInt(1);
 
         // {1}: Add {W}, {B}, or {G}. Activate only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                new AddManaFromColorChoicesEffect(ManaType.WHITE, ManaType.BLACK, ManaType.GREEN), new GenericManaCost(1)
-        ));
+        ActivatedAbilityImpl ability = ComposedManaAbilityBuilder.builder()
+                .cost(new GenericManaCost(1))
+                .addChoice(Set.of(ManaType.WHITE, ManaType.BLACK, ManaType.GREEN), 1)
+                .ruleText("Add {W}, {B}, or {G}. Activate only once each turn.")
+                .maxActivations(1)
+                .build();
+        this.addAbility(ability);
 
         // {2}{B}: Return this card from your graveyard to your hand.
         this.addAbility(new SimpleActivatedAbility(

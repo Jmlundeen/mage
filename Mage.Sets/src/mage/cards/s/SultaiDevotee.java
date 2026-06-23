@@ -2,15 +2,15 @@ package mage.cards.s;
 
 import mage.MageInt;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.mana.AddManaFromColorChoicesEffect;
 import mage.abilities.keyword.DeathtouchAbility;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ManaType;
 import mage.constants.SubType;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -31,9 +31,13 @@ public final class SultaiDevotee extends CardImpl {
         this.addAbility(DeathtouchAbility.getInstance());
 
         // {1}: Add {B}, {G}, or {U}. Activate only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                new AddManaFromColorChoicesEffect(ManaType.BLACK, ManaType.GREEN, ManaType.BLUE), new GenericManaCost(1)
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new GenericManaCost(1))
+                .addChoice(Set.of(ManaType.BLACK, ManaType.GREEN, ManaType.BLUE), 1)
+                .maxActivations(1)
+                .ruleText("Add {B}, {G}, or {U}. Activate only once each turn.")
+                .build()
+        );
     }
 
     private SultaiDevotee(final SultaiDevotee card) {

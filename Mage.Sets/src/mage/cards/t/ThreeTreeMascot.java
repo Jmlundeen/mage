@@ -1,15 +1,13 @@
 package mage.cards.t;
 
 import mage.MageInt;
-import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
+import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.keyword.ChangelingAbility;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 
 import java.util.UUID;
 
@@ -29,9 +27,10 @@ public final class ThreeTreeMascot extends CardImpl {
         this.addAbility(new ChangelingAbility());
 
         // {1}: Add one mana of any color. Activate only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(), new GenericManaCost(1)
-        ));
+        ActivatedAbilityImpl ability = new AnyColorManaAbility();
+        ability.setMaxActivationsPerTurn(1);
+        ability.appendToRule(" Activate only once each turn.");
+        this.addAbility(ability);
     }
 
     private ThreeTreeMascot(final ThreeTreeMascot card) {

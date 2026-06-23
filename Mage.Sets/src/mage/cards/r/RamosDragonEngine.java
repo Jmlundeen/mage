@@ -2,14 +2,12 @@
 package mage.cards.r;
 
 import mage.MageInt;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
 import mage.abilities.costs.common.RemoveCountersSourceCost;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.mana.BasicManaEffect;
 import mage.abilities.keyword.FlyingAbility;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
@@ -37,6 +35,7 @@ public final class RamosDragonEngine extends CardImpl {
 
         // Flying
         this.addAbility(FlyingAbility.getInstance());
+
         // Whenever you cast a spell, put a +1/+1 counter on Ramos, Dragon Engine for each of that spell's colors.
         this.addAbility(new SpellCastControllerTriggeredAbility(
                 new RamosDragonEngineAddCountersEffect(),
@@ -44,12 +43,14 @@ public final class RamosDragonEngine extends CardImpl {
                 false, SetTargetPointer.SPELL
         ));
 
-        // Remove five +1/+1 counters from Ramos: Add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}. Activate this ability only once each turn.        
-        Ability ability = new LimitedTimesPerTurnActivatedManaAbility(
-                Zone.BATTLEFIELD, new BasicManaEffect(new Mana(2, 2, 2, 2, 2, 0, 0, 0)),
-                new RemoveCountersSourceCost(CounterType.P1P1.createInstance(5))
+        // Remove five +1/+1 counters from Ramos: Add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}. Activate this ability only once each turn.
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new RemoveCountersSourceCost(CounterType.P1P1.createInstance(5)))
+                .addStatic(2, 2, 2, 2, 2, 0, 0, 0)
+                .maxActivations(1)
+                .ruleText("add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}. Activate this ability only once each turn")
+                .build()
         );
-        this.addAbility(ability);
     }
 
     private RamosDragonEngine(final RamosDragonEngine card) {

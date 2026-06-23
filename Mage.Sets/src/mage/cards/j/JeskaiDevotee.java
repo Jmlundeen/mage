@@ -1,11 +1,11 @@
 package mage.cards.j;
 
 import mage.MageInt;
+import mage.abilities.ActivatedAbility;
 import mage.abilities.common.FlurryAbility;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.continuous.BoostSourceEffect;
-import mage.abilities.effects.mana.AddManaFromColorChoicesEffect;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -13,6 +13,7 @@ import mage.constants.Duration;
 import mage.constants.ManaType;
 import mage.constants.SubType;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -32,9 +33,13 @@ public final class JeskaiDevotee extends CardImpl {
         this.addAbility(new FlurryAbility(new BoostSourceEffect(1, 1, Duration.EndOfTurn)));
 
         // {1}: Add {U}, {R}, or {W}. Activate only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                new AddManaFromColorChoicesEffect(ManaType.BLUE, ManaType.RED, ManaType.WHITE), new GenericManaCost(1)
-        ));
+        ActivatedAbility ability = ComposedManaAbilityBuilder.builder()
+                .cost(new GenericManaCost(1))
+                .addChoice(Set.of(ManaType.BLUE, ManaType.RED, ManaType.WHITE), 1)
+                .ruleText("Add {U}, {R}, or {W}. Activate only once each turn.")
+                .maxActivations(1)
+                .build();
+        this.addAbility(ability);
     }
 
     private JeskaiDevotee(final JeskaiDevotee card) {

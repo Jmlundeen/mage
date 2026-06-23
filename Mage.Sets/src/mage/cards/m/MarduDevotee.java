@@ -4,14 +4,14 @@ import mage.MageInt;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.keyword.ScryEffect;
-import mage.abilities.effects.mana.AddManaFromColorChoicesEffect;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ManaType;
 import mage.constants.SubType;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -31,9 +31,13 @@ public final class MarduDevotee extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new ScryEffect(2)));
 
         // {1}: Add {R}, {W}, or {B}. Activate only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                new AddManaFromColorChoicesEffect(ManaType.RED, ManaType.WHITE, ManaType.BLACK), new GenericManaCost(1)
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new GenericManaCost(1))
+                .addChoice(Set.of(ManaType.RED, ManaType.WHITE, ManaType.BLACK), 1)
+                .maxActivations(1)
+                .ruleText("Add {R}, {W}, or {B}. Activate only once each turn.")
+                .build()
+        );
     }
 
     private MarduDevotee(final MarduDevotee card) {

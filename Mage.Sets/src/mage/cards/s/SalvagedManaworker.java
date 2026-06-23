@@ -1,14 +1,13 @@
 package mage.cards.s;
 
 import mage.MageInt;
+import mage.abilities.ActivatedAbilityImpl;
 import mage.abilities.costs.mana.GenericManaCost;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.Zone;
 
 import java.util.UUID;
 
@@ -26,11 +25,10 @@ public final class SalvagedManaworker extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {1}: Add one mana of any color. Activate only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                Zone.BATTLEFIELD,
-                new AddManaOfAnyColorEffect(),
-                new GenericManaCost(1)
-        ));
+        ActivatedAbilityImpl ability = new AnyColorManaAbility(new GenericManaCost(1));
+        ability.setMaxActivationsPerTurn(1);
+        ability.appendToRule(" Activate only once each turn.");
+        this.addAbility(ability);
     }
 
     private SalvagedManaworker(final SalvagedManaworker card) {

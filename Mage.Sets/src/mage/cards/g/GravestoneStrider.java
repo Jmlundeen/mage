@@ -2,12 +2,12 @@ package mage.cards.g;
 
 import mage.MageInt;
 import mage.abilities.Ability;
+import mage.abilities.ActivatedAbility;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.ExileSourceFromGraveCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.ExileTargetEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.mana.LimitedTimesPerTurnActivatedManaAbility;
+import mage.abilities.mana.AnyColorManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -30,9 +30,9 @@ public final class GravestoneStrider extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {1}: Add one mana of any color. Activate only once each turn.
-        this.addAbility(new LimitedTimesPerTurnActivatedManaAbility(
-                Zone.BATTLEFIELD, new AddManaOfAnyColorEffect(), new GenericManaCost(1)
-        ));
+        ActivatedAbility manaAbility = new AnyColorManaAbility();
+        manaAbility.setMaxActivationsPerTurn(1);
+        this.addAbility(manaAbility);
 
         // {2}, Exile Gravestone Strider from your graveyard: Exile target card from a graveyard.
         Ability ability = new SimpleActivatedAbility(Zone.GRAVEYARD, new ExileTargetEffect(), new GenericManaCost(2));
