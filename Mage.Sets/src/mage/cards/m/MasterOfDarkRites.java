@@ -1,29 +1,34 @@
 package mage.cards.m;
 
-import java.util.UUID;
 import mage.MageInt;
 import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.costs.common.SacrificeTargetCost;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
-import mage.filter.predicate.Predicates;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
+
+import java.util.UUID;
 
 /**
  * @author arcox
  */
 public final class MasterOfDarkRites extends CardImpl {
-    private static final FilterSpell filter = new FilterSpell("Vampire, Cleric, and/or Demon spells");
-
-    static {
-        filter.add(Predicates.or(SubType.VAMPIRE.getPredicate(), SubType.CLERIC.getPredicate(), SubType.DEMON.getPredicate()));
-    }
+    private static final FilterTyped filter = new FilterTyped("Vampire, Cleric, and/or Demon spells")
+            .addAll(
+                    SpellPredicate.instance,
+                    LogicalPredicate.or(
+                    SubType.VAMPIRE.getPredicate(),
+                    SubType.CLERIC.getPredicate(),
+                    SubType.DEMON.getPredicate()
+            ));
 
     public MasterOfDarkRites(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{B}");
@@ -34,9 +39,14 @@ public final class MasterOfDarkRites extends CardImpl {
         this.toughness = new MageInt(1);
 
         // {T}, Sacrifice another creature: Add {B}{B}{B}. Spend this mana only to cast Vampire, Cleric, and/or Demon spells.
-        Ability ability = new ConditionalColoredManaAbility(Mana.BlackMana(3), new ConditionalSpellManaBuilder(filter));
-        ability.addCost(new SacrificeTargetCost(StaticFilters.FILTER_CONTROLLED_ANOTHER_CREATURE));
-        this.addAbility(ability);
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .cost(new SacrificeTargetCost(StaticFilters.FILTER_CONTROLLED_ANOTHER_CREATURE))
+                .addStatic(Mana.BlackMana(3))
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add {B}{B}{B}. Spend this mana only to cast Vampire, Cleric, and/or Demon spells.")
+                .build()
+        );
     }
 
     private MasterOfDarkRites(final MasterOfDarkRites card) {

@@ -9,8 +9,8 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.keyword.CraftAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.common.InstantOrSorcerySpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.Card;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
@@ -18,6 +18,7 @@ import mage.constants.CardType;
 import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.game.Game;
@@ -47,7 +48,13 @@ public class OreRichStalactite extends TransformingDoubleFacedCard {
 
         // Ore-Rich Stalactite
         // {T}: Add {R}. Spend this mana only to cast an instant or sorcery spell.
-        this.getLeftHalfCard().addAbility(new ConditionalColoredManaAbility(Mana.RedMana(1), new InstantOrSorcerySpellManaBuilder()));
+        this.getLeftHalfCard().addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.RedMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText("Add {R}. Spend this mana only to cast an instant or sorcery spell")
+                .build()
+        );
 
         // Craft with four or more red instant and/or sorcery cards {3}{R}{R}
         this.getLeftHalfCard().addAbility(new CraftAbility("{3}{R}{R}", "four or more red instant and/or sorcery cards",

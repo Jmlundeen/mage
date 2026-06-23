@@ -1,22 +1,20 @@
 package mage.cards.s;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.keyword.FlyingAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.game.Game;
+import mage.filter.FilterTyped;
+import mage.filter.StaticTypedFilters;
+import mage.filter.predicate.typed.ability.source.AbilitySourcePredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 
 import java.util.UUID;
 
@@ -24,6 +22,11 @@ import java.util.UUID;
  * @author Susucr
  */
 public final class SteelswarmOperator extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("activated ability of artifact source")
+            .addAll(ActivatedAbilityPredicate.instance,
+                    new AbilitySourcePredicate(StaticTypedFilters.AN_ARTIFACT)
+            );
 
     public SteelswarmOperator(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{1}{U}");
@@ -37,10 +40,22 @@ public final class SteelswarmOperator extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
 
         // {T}: Add {U}. Spend this mana only to cast an artifact spell.
-        this.addAbility(new ConditionalColoredManaAbility(Mana.BlueMana(1), new SteelswarmOperatorSpellManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                        .cost(new TapSourceCost())
+                        .addStatic(Mana.BlueMana(1))
+                        .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_ARTIFACT_SPELL))
+                        .ruleText("Add {U}. Spend this mana only to cast an artifact spell")
+                        .build()
+        );
 
         // {T}: Add {U}{U}. Spend this mana only to activate abilities of artifact sources.
-        this.addAbility(new ConditionalColoredManaAbility(Mana.BlueMana(2), new SteelswarmOperatorAbilitiesManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                        .cost(new TapSourceCost())
+                        .addStatic(Mana.BlueMana(2))
+                        .condition(new FilteredAbilityManaCondition(filter))
+                        .ruleText("Add {U}{U}. Spend this mana only to activate abilities of artifact sources")
+                        .build()
+        );
     }
 
     private SteelswarmOperator(final SteelswarmOperator card) {
@@ -50,84 +65,5 @@ public final class SteelswarmOperator extends CardImpl {
     @Override
     public SteelswarmOperator copy() {
         return new SteelswarmOperator(this);
-    }
-}
-
-class SteelswarmOperatorSpellManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new SteelswarmOperatorSpellConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast an artifact spell";
-    }
-}
-
-class SteelswarmOperatorSpellConditionalMana extends ConditionalMana {
-
-    public SteelswarmOperatorSpellConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast an artifact spell";
-        addCondition(new SteelswarmOperatorSpellManaCondition());
-    }
-}
-
-class SteelswarmOperatorSpellManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject sourceObject = game.getObject(source);
-        return source instanceof SpellAbility
-                && !source.isActivated()
-                && sourceObject != null
-                && sourceObject.isArtifact(game);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        return apply(game, source);
-    }
-}
-
-class SteelswarmOperatorAbilitiesManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new SteelswarmOperatorAbilitiesConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to activate abilities of artifact sources";
-    }
-}
-
-class SteelswarmOperatorAbilitiesConditionalMana extends ConditionalMana {
-
-    public SteelswarmOperatorAbilitiesConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to activate abilities of artifact sources";
-        addCondition(new SteelswarmOperatorAbilitiesManaCondition());
-    }
-}
-
-class SteelswarmOperatorAbilitiesManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject sourceObject = game.getObject(source);
-        return source != null
-                && !source.isActivated()
-                && source.isActivatedAbility()
-                && sourceObject != null
-                && sourceObject.isArtifact(game);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        return apply(game, source);
     }
 }

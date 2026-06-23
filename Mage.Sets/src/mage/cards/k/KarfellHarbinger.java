@@ -1,23 +1,19 @@
 package mage.cards.k;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
-import mage.abilities.keyword.ForetellAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.ManaType;
 import mage.constants.SubType;
-import mage.game.Game;
+import mage.filter.Filter;
+import mage.filter.FilterTyped;
+import mage.filter.StaticTypedFilters;
+import mage.filter.predicate.typed.ability.type.ForetellAbilityPredicate;
 
 import java.util.UUID;
 
@@ -25,6 +21,9 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class KarfellHarbinger extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("Foretell Ability")
+            .add(ForetellAbilityPredicate.instance);
 
     public KarfellHarbinger(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}");
@@ -35,7 +34,15 @@ public final class KarfellHarbinger extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {T}: Add {U}. Spend this mana only to foretell a card from your hand or cast an instant or sorcery spell.
-        this.addAbility(new ConditionalColoredManaAbility(new Mana(ManaType.BLUE, 1), new KarfellHarbingerManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.BlueMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .condition(new FilteredAbilityManaCondition(filter))
+                .comparisonScope(Filter.ComparisonScope.Any)
+                .ruleText("Add {U}. Spend this mana only to foretell a card from your hand or cast an instant or sorcery spell.")
+                .build()
+        );
     }
 
     private KarfellHarbinger(final KarfellHarbinger card) {
@@ -45,44 +52,5 @@ public final class KarfellHarbinger extends CardImpl {
     @Override
     public KarfellHarbinger copy() {
         return new KarfellHarbinger(this);
-    }
-}
-
-class KarfellHarbingerManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new KarfellHarbingerConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to foretell a card from your hand or cast an instant or sorcery spell.";
-    }
-}
-
-class KarfellHarbingerConditionalMana extends ConditionalMana {
-
-    KarfellHarbingerConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to foretell a card from your hand or cast an instant or sorcery spell.";
-        addCondition(new KarfellHarbingerManaCondition());
-    }
-}
-
-class KarfellHarbingerManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (source instanceof SpellAbility && !source.isActivated()) {
-            MageObject object = game.getObject(source);
-            return object != null && object.isInstantOrSorcery(game);
-        }
-        return source instanceof ForetellAbility;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costsToPay) {
-        return apply(game, source);
     }
 }

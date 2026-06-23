@@ -1,28 +1,23 @@
 package mage.cards.g;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.costs.common.PayLifeCost;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
 import mage.abilities.keyword.DeathtouchAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.Duration;
-import mage.constants.SubType;
-import mage.constants.Zone;
+import mage.constants.*;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.permanent.AttackingPredicate;
-import mage.game.Game;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.target.common.TargetControlledPermanent;
 
 import java.util.UUID;
@@ -33,6 +28,11 @@ import java.util.UUID;
 public final class GnarlrootTrapper extends CardImpl {
 
     private static final FilterControlledPermanent filter = new FilterControlledPermanent("attacking ELf you control");
+    private static final FilterTyped filterSpell = new FilterTyped("Elf creature spell")
+            .addAll(
+                    SpellPredicate.instance,
+                    SubType.ELF.getPredicate()
+            );
 
     static {
         filter.add(AttackingPredicate.instance);
@@ -47,14 +47,21 @@ public final class GnarlrootTrapper extends CardImpl {
         this.toughness = new MageInt(1);
 
         // {T}, Pay 1 life: Add {G}. Spend this mana only to cast an Elf creature spell.
-        Ability ability = new ConditionalColoredManaAbility(new TapSourceCost(), Mana.GreenMana(1), new GnarlrootTrapperManaBuilder());
-        ability.addCost(new PayLifeCost(1));
-        this.addAbility(ability);
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .cost(new PayLifeCost(1))
+                .addStatic(Mana.GreenMana(1))
+                .condition(new FilteredSpellManaCondition(filterSpell))
+                .ruleText("{T}, Pay 1 life: Add {G}. Spend this mana only to cast an Elf creature spell")
+                .build()
+        );
 
         // {T}: Target attacking Elf you control gains deathtouch until end of turn.
-        Effect effect = new GainAbilityTargetEffect(DeathtouchAbility.getInstance(), Duration.EndOfTurn);
-        effect.setText("Target attacking Elf you control gains deathtouch until end of turn. <i>(Any amount of damage it deals to a creature is enough to destroy it.)</i>");
-        ability = new SimpleActivatedAbility(effect, new TapSourceCost());
+        Effect effect = new GenericContinuousEffect(Duration.EndOfTurn, Outcome.AddAbility)
+                .setAffected(ContinuousAffected.STATIC_OR_DYNAMIC)
+                .withGainedAbilities(DeathtouchAbility.getInstance())
+                .setText("Target attacking Elf you control gains deathtouch until end of turn. <i>(Any amount of damage it deals to a creature is enough to destroy it.)</i>");
+        Ability ability = new SimpleActivatedAbility(effect, new TapSourceCost());
         ability.addTarget(new TargetControlledPermanent(filter));
         this.addAbility(ability);
 
@@ -67,39 +74,5 @@ public final class GnarlrootTrapper extends CardImpl {
     @Override
     public GnarlrootTrapper copy() {
         return new GnarlrootTrapper(this);
-    }
-}
-
-class GnarlrootTrapperManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new GnarlrootTrapperConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast an Elf creature spell.";
-    }
-}
-
-class GnarlrootTrapperManaCondition extends CreatureCastManaCondition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (super.apply(game, source)) {
-            MageObject object = game.getObject(source);
-            return object != null && object.hasSubtype(SubType.ELF, game)
-                    && object.isCreature(game);
-        }
-        return false;
-    }
-}
-
-class GnarlrootTrapperConditionalMana extends ConditionalMana {
-
-    public GnarlrootTrapperConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(new GnarlrootTrapperManaCondition());
     }
 }

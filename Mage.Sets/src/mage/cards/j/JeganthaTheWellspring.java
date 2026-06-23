@@ -1,15 +1,14 @@
 package mage.cards.j;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.costs.mana.ManaCost;
+import mage.abilities.costs.mana.ManaCosts;
 import mage.abilities.keyword.CompanionAbility;
 import mage.abilities.keyword.CompanionCondition;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.conditional.ManaCondition;
 import mage.cards.Card;
 import mage.cards.CardImpl;
@@ -42,9 +41,13 @@ public final class JeganthaTheWellspring extends CardImpl {
         this.addAbility(new CompanionAbility(JeganthaTheWellspringCompanionCondition.instance));
 
         // {T}: Add {W}{U}{B}{R}{G}. This mana can't be spent to pay generic mana costs.
-        this.addAbility(new ConditionalColoredManaAbility(
-                new TapSourceCost(), new Mana(1, 1, 1, 1, 1, 0, 0, 0), new JeganthaManaBuilder()
-        ));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(1, 1, 1, 1, 1, 0, 0)
+                .condition(new JeganthaManaCondition())
+                .ruleText("Add {W}{U}{B}{R}{G}. This mana can't be spent to pay generic mana costs.")
+                .build()
+        );
     }
 
     private JeganthaTheWellspring(final JeganthaTheWellspring card) {
@@ -71,7 +74,7 @@ enum JeganthaTheWellspringCompanionCondition implements CompanionCondition {
     }
 
     private static boolean checkCard(Card card) {
-        Map<String, Integer> symbolMap = new HashMap();
+        Map<String, Integer> symbolMap = new HashMap<>();
         return card.getManaCostSymbols()
                 .stream()
                 .anyMatch(s -> symbolMap.compute(
@@ -80,33 +83,23 @@ enum JeganthaTheWellspringCompanionCondition implements CompanionCondition {
     }
 }
 
-class JeganthaManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new JeganthaConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "This mana can't be spent to pay generic mana costs";
-    }
-}
-
-class JeganthaConditionalMana extends ConditionalMana {
-
-    JeganthaConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "This mana can't be spent to pay generic mana costs";
-        addCondition(new JeganthaManaCondition());
-    }
-}
-
 class JeganthaManaCondition extends ManaCondition {
 
     @Override
     public boolean apply(Game game, Ability source, UUID originalId, Cost costsToPay) {
-        // TODO find a better method.  this one forces the user to pay off the generic mana before continuing.
-        return source.getManaCostsToPay().getUnpaid().getMana().getGeneric() == 0;
+        if (costsToPay instanceof ManaCosts) {
+            // allowed to contribute towards any overall costs which contain colored costs
+            return ((ManaCosts<?>)costsToPay).getUnpaid().getMana().countColored() > 0;
+        }
+        if (costsToPay instanceof ManaCost) {
+            // not allowed to pay for specific cost components consisting of generic mana
+            return ((ManaCost)costsToPay).getUnpaid().getMana().getGeneric() == 0;
+        }
+        return false;
+    }
+
+    @Override
+    public String getManaText() {
+        return "This mana can't be spent to pay generic mana costs.";
     }
 }

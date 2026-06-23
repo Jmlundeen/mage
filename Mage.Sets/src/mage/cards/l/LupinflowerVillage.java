@@ -8,15 +8,15 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.LookLibraryAndPickControllerEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.PutCards;
 import mage.constants.SubType;
 import mage.filter.FilterCard;
-import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.predicate.Predicates;
 
 import java.util.UUID;
@@ -44,9 +44,13 @@ public final class LupinflowerVillage extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add {W}. Spend this mana only to cast a creature spell.
-        this.addAbility(new ConditionalColoredManaAbility(
-                Mana.WhiteMana(1), new ConditionalSpellManaBuilder(StaticFilters.FILTER_SPELL_A_CREATURE)
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.WhiteMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText("Add {W}. Spend this mana only to cast a creature spell")
+                .build()
+        );
 
         // {1}{W}, {T}, Sacrifice Lupinflower Village: Look at the top six cards of your library. You may reveal a Bat, Bird, Mouse, or Rabbit card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.
         Ability ability = new SimpleActivatedAbility(new LookLibraryAndPickControllerEffect(

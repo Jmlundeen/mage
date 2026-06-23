@@ -1,16 +1,19 @@
 package mage.cards.t;
 
-import mage.Mana;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.ManaType;
 import mage.constants.SubType;
-import mage.filter.FilterSpell;
-import mage.filter.predicate.Predicates;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -18,14 +21,14 @@ import java.util.UUID;
  */
 public final class TournamentGrounds extends CardImpl {
 
-    private static final FilterSpell filter = new FilterSpell("a Knight or Equipment spell");
-
-    static {
-        filter.add(Predicates.or(
-                SubType.KNIGHT.getPredicate(),
-                SubType.EQUIPMENT.getPredicate()
-        ));
-    }
+    private static final FilterTyped filter = new FilterTyped("a Knight or Equipment spell")
+            .addAll(
+                    SpellPredicate.instance,
+                    LogicalPredicate.or(
+                            SubType.KNIGHT.getPredicate(),
+                            SubType.EQUIPMENT.getPredicate()
+                    )
+            );
 
     public TournamentGrounds(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");
@@ -34,9 +37,13 @@ public final class TournamentGrounds extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add {R}, {W}, or {B}. Spend this mana only to cast a Knight or Equipment spell.
-        this.addAbility(new ConditionalColoredManaAbility(Mana.RedMana(1), new ConditionalSpellManaBuilder(filter)));
-        this.addAbility(new ConditionalColoredManaAbility(Mana.WhiteMana(1), new ConditionalSpellManaBuilder(filter)));
-        this.addAbility(new ConditionalColoredManaAbility(Mana.BlackMana(1), new ConditionalSpellManaBuilder(filter)));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addChoice(Set.of(ManaType.RED, ManaType.WHITE, ManaType.BLACK), 1)
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add {R}, {W}, or {B}. Spend this mana only to cast a Knight or Equipment spell")
+                .build()
+        );
     }
 
     private TournamentGrounds(final TournamentGrounds card) {

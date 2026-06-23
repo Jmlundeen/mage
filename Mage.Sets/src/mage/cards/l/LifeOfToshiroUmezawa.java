@@ -1,20 +1,21 @@
 package mage.cards.l;
 
 import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.common.SagaAbility;
 import mage.abilities.costs.common.PayLifeCost;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.ExileSagaAndReturnTransformedEffect;
 import mage.abilities.effects.common.GainLifeEffect;
 import mage.abilities.effects.common.continuous.BoostTargetEffect;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.common.InstantOrSorcerySpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.CardType;
 import mage.constants.SagaChapter;
 import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
 import mage.target.common.TargetCreaturePermanent;
 
 import java.util.UUID;
@@ -58,9 +59,14 @@ public final class LifeOfToshiroUmezawa extends TransformingDoubleFacedCard {
         this.getRightHalfCard().setPT(2, 3);
 
         // {T}, Pay 1 life: Add {B}. Spend this mana only to cast an instant or sorcery spell.
-        Ability ability = new ConditionalColoredManaAbility(Mana.BlackMana(1), new InstantOrSorcerySpellManaBuilder());
-        ability.addCost(new PayLifeCost(1));
-        this.getRightHalfCard().addAbility(ability);
+        this.getRightHalfCard().addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .cost(new PayLifeCost(1))
+                .addStatic(Mana.BlackMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText("Add {B}. Spend this mana only to cast an instant or sorcery spell")
+                .build()
+        );
     }
 
     private LifeOfToshiroUmezawa(final LifeOfToshiroUmezawa card) {

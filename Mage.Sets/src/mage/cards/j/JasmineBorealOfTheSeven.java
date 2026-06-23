@@ -1,33 +1,35 @@
 package mage.cards.j;
 
 import mage.MageInt;
-import mage.Mana;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.combat.CantBeBlockedByCreaturesAllEffect;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.NoAbilityPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 
 import java.util.UUID;
 
 public final class JasmineBorealOfTheSeven extends CardImpl {
 
-    private static final FilterSpell spell_filter
-            = new FilterSpell("creature spells with no abilities");
+    private static final FilterTyped spell_filter = new FilterTyped("creature spells with no abilities")
+            .addAll(SpellPredicate.instance,
+                    mage.filter.predicate.typed.mageObject.ability.NoAbilityPredicate.instance,
+                    CardType.CREATURE.getPredicate()
+            );
     private static final FilterCreaturePermanent your_creatures_filter
             = new FilterCreaturePermanent("creatures you control with no abilities");
     private static final FilterCreaturePermanent with_abilities_filter
             = new FilterCreaturePermanent("creatures with abilities");
 
     static {
-        spell_filter.add(NoAbilityPredicate.instance);
-        spell_filter.add(CardType.CREATURE.getPredicate());
         your_creatures_filter.add(NoAbilityPredicate.instance);
         your_creatures_filter.add(TargetController.YOU.getControllerPredicate());
         with_abilities_filter.add(Predicates.not(NoAbilityPredicate.instance));
@@ -43,10 +45,13 @@ public final class JasmineBorealOfTheSeven extends CardImpl {
         this.toughness = new MageInt(4);
 
         // {T}: Add {G}{W}. Spend this mana only to cast creature spells with no abilities.
-        this.addAbility(new ConditionalColoredManaAbility(
-                new Mana(1, 0, 0, 0, 1, 0, 0, 0),
-                new ConditionalSpellManaBuilder(spell_filter)
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(1, 0, 0, 0, 1, 0, 0)
+                .condition(new FilteredSpellManaCondition(spell_filter))
+                .ruleText("Add {G}{W}. Spend this mana only to cast creature spells with no abilities")
+                .build()
+        );
 
         // Creatures you control with no abilities can’t be blocked by creatures with abilities.
         this.addAbility(new SimpleStaticAbility(new CantBeBlockedByCreaturesAllEffect(

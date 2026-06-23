@@ -1,23 +1,22 @@
 package mage.cards.t;
 
-import java.util.UUID;
-
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.MageObject;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.TurnFaceUpAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.constants.SubType;
+import mage.abilities.costs.Cost;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.keyword.VigilanceAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.ManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
+import mage.constants.SubType;
 import mage.game.Game;
 import mage.game.stack.Spell;
+
+import java.util.UUID;
 
 /**
  *
@@ -37,9 +36,13 @@ public final class TinStreetGossip extends CardImpl {
         this.addAbility(VigilanceAbility.getInstance());
 
         // {T}: Add {R}{G}. Spend this mana only to cast face-down spells or to turn creatures face up.
-        this.addAbility(new ConditionalColoredManaAbility(
-                new Mana(0, 0, 0, 1, 1, 0, 0, 0),
-                new TinStreetGossipManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(0, 0, 0, 1, 1, 0, 0)
+                .condition(new TinStreetGossipManaCondition())
+                .ruleText("Add {R}{G}. Spend this mana only to cast face-down spells or to turn creatures face up")
+                .build()
+        );
     }
 
     private TinStreetGossip(final TinStreetGossip card) {
@@ -52,35 +55,13 @@ public final class TinStreetGossip extends CardImpl {
     }
 }
 
-class TinStreetGossipManaBuilder extends ConditionalManaBuilder {
+class TinStreetGossipManaCondition extends ManaCondition {
 
     @Override
-    public ConditionalMana build(Object... options) {
-        return new TinStreetGossipConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast face-down spells or to turn creatures face up.";
-    }
-}
-
-class TinStreetGossipConditionalMana extends ConditionalMana {
-
-    TinStreetGossipConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to cast face-down spells or to turn creatures face up.";
-        addCondition(new TinStreetGossipManaCondition());
-    }
-}
-
-class TinStreetGossipManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
+    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
         MageObject object = game.getObject(source);
         if (object instanceof Spell) {
-            return ((Spell) object).isFaceDown();
+            return object.isFaceDown();
         }
         return source instanceof TurnFaceUpAbility;
     }

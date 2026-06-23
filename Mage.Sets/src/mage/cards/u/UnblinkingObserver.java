@@ -1,23 +1,20 @@
 package mage.cards.u;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.keyword.DisturbAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.ManaType;
 import mage.constants.SubType;
-import mage.game.Game;
+import mage.filter.Filter;
+import mage.filter.FilterTyped;
+import mage.filter.StaticTypedFilters;
+import mage.filter.predicate.typed.ability.IAbilityPredicate;
 
 import java.util.UUID;
 
@@ -25,6 +22,9 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class UnblinkingObserver extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("disturb ability")
+            .add((IAbilityPredicate) (osp, game) -> osp.getObject() instanceof DisturbAbility && !osp.getObject().isActivated());
 
     public UnblinkingObserver(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}");
@@ -34,9 +34,15 @@ public final class UnblinkingObserver extends CardImpl {
         this.toughness = new MageInt(1);
 
         // {T}: Add {U}. Spend this mana only to pay a disturb cost or cast an instant or sorcery spell.
-        this.addAbility(new ConditionalColoredManaAbility(
-                new Mana(ManaType.BLUE, 1), new UnblinkingObserverManaBuilder()
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.BlueMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .condition(new FilteredAbilityManaCondition(filter))
+                .comparisonScope(Filter.ComparisonScope.Any)
+                .ruleText("Add {U}. Spend this mana only to pay a disturb cost or cast an instant or sorcery spell")
+                .build()
+        );
     }
 
     private UnblinkingObserver(final UnblinkingObserver card) {
@@ -46,47 +52,5 @@ public final class UnblinkingObserver extends CardImpl {
     @Override
     public UnblinkingObserver copy() {
         return new UnblinkingObserver(this);
-    }
-}
-
-class UnblinkingObserverManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new UnblinkingObserverConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to pay a disturb cost or cast an instant or sorcery spell.";
-    }
-}
-
-class UnblinkingObserverConditionalMana extends ConditionalMana {
-
-    UnblinkingObserverConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "Spend this mana only to pay a disturb cost or cast an instant or sorcery spell.";
-        addCondition(new UnblinkingObserverManaCondition());
-    }
-}
-
-class UnblinkingObserverManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (source instanceof DisturbAbility && !source.isActivated()) {
-            return true;
-        }
-        if (source instanceof SpellAbility && !source.isActivated()) {
-            MageObject object = game.getObject(source);
-            return object != null && object.isInstantOrSorcery(game);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costsToPay) {
-        return apply(game, source);
     }
 }

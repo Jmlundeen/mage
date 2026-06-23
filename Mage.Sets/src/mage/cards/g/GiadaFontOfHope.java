@@ -3,21 +3,26 @@ package mage.cards.g;
 import mage.MageInt;
 import mage.Mana;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.VigilanceAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.ContinuousAffected;
+import mage.constants.SubType;
+import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
-import mage.filter.FilterSpell;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 
 import java.util.UUID;
 
@@ -25,12 +30,12 @@ import java.util.UUID;
  * @author woshikie
  */
 public final class GiadaFontOfHope extends CardImpl {
-    private static final FilterSpell ANGEL_SPELL_FILTER = new FilterSpell("an Angel spell");
+    private static final FilterTyped ANGEL_SPELL_FILTER = new FilterTyped("an Angel spell")
+            .addAll(SpellPredicate.instance, SubType.ANGEL.getPredicate());
     private static final FilterPermanent angelFilter = new FilterControlledCreaturePermanent(SubType.ANGEL, "other Angel you control");
     private static final DynamicValue angelCount = new PermanentsOnBattlefieldCount(new FilterControlledCreaturePermanent(SubType.ANGEL));
 
     static {
-        ANGEL_SPELL_FILTER.add(SubType.ANGEL.getPredicate());
         angelFilter.add(AnotherPredicate.instance);
     }
 
@@ -55,12 +60,12 @@ public final class GiadaFontOfHope extends CardImpl {
         ));
 
         // {T}: Add {W}. Spend this mana only to cast an Angel spell.
-        this.addAbility(
-                new ConditionalColoredManaAbility(
-                        Mana.WhiteMana(1),
-                        new ConditionalSpellManaBuilder(ANGEL_SPELL_FILTER)
-                )
-
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.WhiteMana(1))
+                .condition(new FilteredSpellManaCondition(ANGEL_SPELL_FILTER))
+                .ruleText("Add {W}. Spend this mana only to cast an Angel spell.")
+                .build()
         );
     }
 

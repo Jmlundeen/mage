@@ -1,13 +1,14 @@
 package mage.cards.o;
 
 import mage.MageInt;
-import mage.Mana;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.common.ActivatedAbilityManaBuilder;
+import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
 
 import java.util.UUID;
 
@@ -25,9 +26,13 @@ public final class OmenHawker extends CardImpl {
         this.toughness = new MageInt(1);
 
         // {T}: Add {C}{U}. Spend this many only to activate abilities.
-        this.addAbility(new ConditionalColoredManaAbility(
-                new Mana(0, 1, 0, 0, 0, 0, 0, 1), new ActivatedAbilityManaBuilder()
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(0, 1, 0, 0, 0, 1, 0)
+                .condition(new FilteredAbilityManaCondition(StaticTypedFilters.ACTIVATED_ABILITY))
+                .ruleText("Add {C}{U}. Spend this mana only to activate abilities")
+                .build()
+        );
     }
 
     private OmenHawker(final OmenHawker card) {

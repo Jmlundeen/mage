@@ -1,32 +1,28 @@
 package mage.cards.c;
 
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.Mana;
 import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
 import mage.abilities.common.ActivateAsSorceryActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.GenericManaCost;
 import mage.abilities.effects.common.AttachTargetToTargetEffect;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
 import mage.abilities.keyword.WardAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.cards.Card;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Duration;
+import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.filter.FilterPermanent;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
-import mage.filter.predicate.mageobject.CommanderPredicate;
-import mage.game.Game;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetControlledCreaturePermanent;
 
@@ -37,11 +33,17 @@ import java.util.UUID;
  */
 public final class CodsworthHandyHelper extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterControlledPermanent("commanders");
+    private static final FilterTyped commanderFilter = new FilterTyped("commander you control")
+            .add(mage.filter.predicate.typed.mageObject.object.CommanderPredicate.instance);
     private static final FilterControlledPermanent filter2 = new FilterControlledPermanent("Aura or Equipment you control");
+    private static final FilterTyped auraOrEquipmentFilter = new FilterTyped("Aura or Equipment spell")
+            .addAll(SpellPredicate.instance,
+                    LogicalPredicate.or(
+                    SubType.AURA.getPredicate(),
+                    SubType.EQUIPMENT.getPredicate()
+            ));
 
     static {
-        filter.add(CommanderPredicate.instance);
         filter2.add(Predicates.or(SubType.AURA.getPredicate(), SubType.EQUIPMENT.getPredicate()));
     }
 
@@ -54,15 +56,19 @@ public final class CodsworthHandyHelper extends CardImpl {
         this.toughness = new MageInt(3);
 
         // Commanders you control have ward {2}.
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
-                new WardAbility(new GenericManaCost(2)), Duration.WhileOnBattlefield, filter
-        )));
+        this.addAbility(new SimpleStaticAbility(new GenericContinuousEffect(Outcome.AddAbility, commanderFilter)
+                .withGainedAbilities(new WardAbility(new GenericManaCost(2)))
+                .setText("Commanders you control have ward {2}")
+        ));
 
         // {T}: Add {W}{W}. Spend this mana only to cast Aura and/or Equipment spells.
-        this.addAbility(new ConditionalColoredManaAbility(
-                new TapSourceCost(), Mana.WhiteMana(2),
-                new CodsworthHandyHelperManaBuilder()
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.WhiteMana(2))
+                .condition(new FilteredSpellManaCondition(auraOrEquipmentFilter))
+                .ruleText("Add {W}{W}. Spend this mana only to cast Aura and/or Equipment spells")
+                .build()
+        );
 
         // {T}: Attach target Aura or Equipment you control to target creature you control. Activate only as a sorcery.
         Ability ability = new ActivateAsSorceryActivatedAbility(new AttachTargetToTargetEffect(), new TapSourceCost());
@@ -78,49 +84,5 @@ public final class CodsworthHandyHelper extends CardImpl {
     @Override
     public CodsworthHandyHelper copy() {
         return new CodsworthHandyHelper(this);
-    }
-}
-
-class CodsworthHandyHelperManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new CodsworthHandyHelperConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast Aura and/or Equipment spells";
-    }
-}
-
-class CodsworthHandyHelperConditionalMana extends ConditionalMana {
-
-    public CodsworthHandyHelperConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(new CodsworthHandyHelperManaCondition());
-    }
-
-    private CodsworthHandyHelperConditionalMana(final CodsworthHandyHelperConditionalMana conditionalMana) {
-        super(conditionalMana);
-    }
-
-    @Override
-    public CodsworthHandyHelperConditionalMana copy() {
-        return new CodsworthHandyHelperConditionalMana(this);
-    }
-}
-
-class CodsworthHandyHelperManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (source instanceof SpellAbility) {
-            Card card = game.getCard(source.getSourceId());
-            return card != null && (
-                    card.hasSubtype(SubType.AURA, game) || card.hasSubtype(SubType.EQUIPMENT, game)
-            );
-        }
-        return false;
     }
 }

@@ -10,14 +10,14 @@ import mage.abilities.effects.keyword.SurveilEffect;
 import mage.abilities.hint.ConditionHint;
 import mage.abilities.hint.Hint;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.WatcherScope;
-import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.game.Game;
 import mage.game.events.EntersTheBattlefieldEvent;
 import mage.game.events.GameEvent;
@@ -40,9 +40,13 @@ public final class LilypadVillage extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T} Add {U}. Spend this mana only to cast a creature spell.
-        this.addAbility(new ConditionalColoredManaAbility(
-                Mana.BlueMana(1), new ConditionalSpellManaBuilder(StaticFilters.FILTER_SPELL_A_CREATURE)
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.BlueMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText("Add {U}. Spend this mana only to cast a creature spell")
+                .build()
+        );
 
         // {U}, {T}: Surveil 2. Activate only if a Bird, Frog, Otter, or Rat entered the battlefield under your control this turn.
         Ability ability = new ActivateIfConditionActivatedAbility(

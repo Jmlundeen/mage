@@ -1,8 +1,6 @@
 package mage.cards.k;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
@@ -17,17 +15,18 @@ import mage.abilities.effects.common.LookLibraryAndPickControllerEffect;
 import mage.abilities.effects.common.continuous.BoostSourceEffect;
 import mage.abilities.effects.common.continuous.GainAbilitySourceEffect;
 import mage.abilities.keyword.VigilanceAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
+import mage.abilities.mana.providers.ChosenCreatureTypeConditionProvider;
 import mage.cards.CardSetInfo;
 import mage.cards.ModalDoubleFacedCard;
 import mage.constants.*;
+import mage.filter.Filter;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.common.FilterCreaturePermanent;
-import mage.game.Game;
+import mage.filter.predicate.typed.ability.type.SpellAbilityPredicate;
 
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -37,6 +36,13 @@ public final class KolvoriGodOfKinship extends ModalDoubleFacedCard {
 
     private static final FilterCreaturePermanent filter = new FilterCreaturePermanent();
     private static final FilterCreatureCard filter2 = new FilterCreatureCard("a legendary creature card");
+    private static final FilterTyped spellAbilityFilter = new FilterTyped("spell ability")
+            .add(SpellAbilityPredicate.instance);
+    private static final FilterTyped legendaryFilter = new FilterTyped("legendary creature spell")
+            .addAll(
+                    CardType.CREATURE.getPredicate(),
+                    SuperType.LEGENDARY.getPredicate()
+            );
 
     static {
         filter.add(SuperType.LEGENDARY.getPredicate());
@@ -86,9 +92,15 @@ public final class KolvoriGodOfKinship extends ModalDoubleFacedCard {
         this.getRightHalfCard().addAbility(new AsEntersBattlefieldAbility(new ChooseCreatureTypeEffect(Outcome.Benefit)));
 
         // {T}: Add {G}. Spend this mana only to cast a creature spell of the chosen type or a legendary creature spell.
-        this.getRightHalfCard().addAbility(new ConditionalColoredManaAbility(
-                new TapSourceCost(), Mana.GreenMana(1), new TheRinghartCrestManaBuilder()
-        ));
+        this.getRightHalfCard().addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.GreenMana(1))
+                .runtimeCondition(new ChosenCreatureTypeConditionProvider(spellAbilityFilter))
+                .condition(new FilteredSpellManaCondition(legendaryFilter))
+                .comparisonScope(Filter.ComparisonScope.Any)
+                .ruleText("Add {G}. Spend this mana only to cast a creature spell of the chosen type or a legendary creature spell")
+                .build()
+        );
     }
 
     private KolvoriGodOfKinship(final KolvoriGodOfKinship card) {
@@ -98,74 +110,5 @@ public final class KolvoriGodOfKinship extends ModalDoubleFacedCard {
     @Override
     public KolvoriGodOfKinship copy() {
         return new KolvoriGodOfKinship(this);
-    }
-}
-
-class TheRinghartCrestManaBuilder extends ConditionalManaBuilder {
-
-    SubType creatureType;
-
-    @Override
-    public ConditionalManaBuilder setMana(Mana mana, Ability source, Game game) {
-        SubType subType = ChooseCreatureTypeEffect.getChosenCreatureType(source.getSourceId(), game);
-        if (subType != null) {
-            creatureType = subType;
-        }
-        return super.setMana(mana, source, game);
-    }
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new TheRinghartCrestConditionalMana(this.mana, creatureType);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a creature spell of the chosen type or a legendary creature spell";
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.creatureType);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-
-        return this.creatureType == ((TheRinghartCrestManaBuilder) obj).creatureType;
-    }
-}
-
-class TheRinghartCrestConditionalMana extends ConditionalMana {
-
-    public TheRinghartCrestConditionalMana(Mana mana, SubType creatureType) {
-        super(mana);
-        addCondition(new TheRinghartCrestManaCondition(creatureType));
-    }
-}
-
-class TheRinghartCrestManaCondition extends CreatureCastManaCondition {
-
-    SubType creatureType;
-
-    TheRinghartCrestManaCondition(SubType creatureType) {
-        this.creatureType = creatureType;
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (super.apply(game, source)) {
-            MageObject object = game.getObject(source);
-            if (object != null) {
-                if (object.isLegendary(game)) {
-                    return true;
-                }
-                return creatureType != null && object.hasSubtype(creatureType, game);
-            }
-        }
-        return false;
     }
 }

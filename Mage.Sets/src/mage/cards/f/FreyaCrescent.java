@@ -21,11 +21,9 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.filter.FilterSpell;
-import mage.game.Game;
-import mage.game.command.Commander;
-import mage.game.stack.Spell;
-import mage.game.stack.StackObject;
+import mage.filter.Filter;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.EquipAbilityPredicate;
 
 import java.util.UUID;
 

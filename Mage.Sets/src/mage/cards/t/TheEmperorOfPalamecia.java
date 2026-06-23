@@ -1,6 +1,5 @@
 package mage.cards.t;
 
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.AttacksTriggeredAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
@@ -15,21 +14,18 @@ import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.effects.common.counter.AddCountersSourceEffect;
 import mage.abilities.hint.Hint;
 import mage.abilities.hint.ValueHint;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.constants.TargetController;
+import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterCard;
-import mage.filter.FilterSpell;
 import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.predicate.Predicates;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -37,7 +33,6 @@ import java.util.UUID;
  */
 public final class TheEmperorOfPalamecia extends TransformingDoubleFacedCard {
 
-    private final ConditionalManaBuilder manaBuilder = new ConditionalSpellManaBuilder(new FilterSpell("a noncreature spell"));
     private static final Condition condition = new SourceHasCounterCondition(CounterType.P1P1, 3);
 
     private static final FilterCard filter = new FilterCard("noncreature, nonland cards in your graveyard");
@@ -61,8 +56,14 @@ public final class TheEmperorOfPalamecia extends TransformingDoubleFacedCard {
         this.getLeftHalfCard().setPT(2, 2);
 
         // {T}: Add {U} or {R}. Spend this mana only to cast a noncreature spell.
-        this.getLeftHalfCard().addAbility(new ConditionalColoredManaAbility(new TapSourceCost(), Mana.BlueMana(1), manaBuilder));
-        this.getLeftHalfCard().addAbility(new ConditionalColoredManaAbility(new TapSourceCost(), Mana.RedMana(1), manaBuilder));
+        this.getLeftHalfCard().addAbility(
+                ComposedManaAbilityBuilder.builder()
+                        .cost(new TapSourceCost())
+                        .addChoice(Set.of(ManaType.RED, ManaType.BLUE), 1)
+                        .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_NON_CREATURE_SPELL))
+                        .ruleText("Add {U} or {R}. Spend this mana only to cast a noncreature spell")
+                        .build()
+        );
 
         // Whenever you cast a noncreature spell, if at least four mana was spent to cast it, put a +1/+1 counter on The Emperor of Palamecia. Then if it has three or more +1/+1 counters on it, transform it.
         Ability ability = new SpellCastControllerTriggeredAbility(

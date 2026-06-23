@@ -9,15 +9,15 @@ import mage.abilities.effects.common.continuous.BoostTargetEffect;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
 import mage.abilities.keyword.HasteAbility;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.Duration;
 import mage.constants.SubType;
 import mage.filter.FilterPermanent;
-import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.target.TargetPermanent;
@@ -48,9 +48,13 @@ public final class RockfaceVillage extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add {R}. Spend this mana only to cast a creature spell.
-        this.addAbility(new ConditionalColoredManaAbility(
-                Mana.RedMana(1), new ConditionalSpellManaBuilder(StaticFilters.FILTER_SPELL_A_CREATURE)
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.RedMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText("Add {R}. Spend this mana only to cast a creature spell")
+                .build()
+        );
 
         // {R}, {T}: Target Lizard, Mouse, Otter, or Raccoon you control gets +1/+0 and gains haste until end of turn. Activate only as a sorcery.
         Ability ability = new ActivateAsSorceryActivatedAbility(new BoostTargetEffect(1, 0)

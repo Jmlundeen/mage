@@ -1,23 +1,18 @@
 package mage.cards.v;
 
-import mage.ConditionalMana;
 import mage.MageInt;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.condition.common.KickedCondition;
-import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.game.Game;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.Spell.object.KickedSpellPredicate;
 
 import java.util.UUID;
 
@@ -25,6 +20,17 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class VolsheTideturner extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("an instant or sorcery spell or a kicked spell")
+            .addAll(
+                    SpellPredicate.instance,
+                    LogicalPredicate.or(
+                        KickedSpellPredicate.instance,
+                        CardType.INSTANT.getPredicate(),
+                        CardType.SORCERY.getPredicate()
+                    )
+
+            );
 
     public VolsheTideturner(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}");
@@ -35,9 +41,13 @@ public final class VolsheTideturner extends CardImpl {
         this.toughness = new MageInt(3);
 
         // {T}: Add {U}. Spend this mana only to cast an instant or sorcery spell or a kicked spell.
-        this.addAbility(new ConditionalColoredManaAbility(
-                new TapSourceCost(), Mana.BlueMana(1), new VolsheTideturnerManaBuilder()
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.BlueMana(1))
+                .condition(new FilteredSpellManaCondition(filter))
+                .ruleText("Add {U}. Spend this mana only to cast an instant or sorcery spell or a kicked spell")
+                .build()
+        );
     }
 
     private VolsheTideturner(final VolsheTideturner card) {
@@ -47,46 +57,5 @@ public final class VolsheTideturner extends CardImpl {
     @Override
     public VolsheTideturner copy() {
         return new VolsheTideturner(this);
-    }
-}
-
-class VolsheTideturnerManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new VolsheTideturnerConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast an instant or sorcery spell or a kicked spell.";
-    }
-}
-
-class VolsheTideturnerConditionalMana extends ConditionalMana {
-
-    public VolsheTideturnerConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(new VolsheTideturnerCondition());
-    }
-}
-
-class VolsheTideturnerCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (!(source instanceof SpellAbility) && !source.isActivated()) {
-            return false;
-        }
-        if (KickedCondition.ONCE.apply(game, source)) {
-            return true;
-        }
-        MageObject object = game.getObject(source);
-        return object != null && object.isInstantOrSorcery(game);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costsToPay) {
-        return apply(game, source);
     }
 }

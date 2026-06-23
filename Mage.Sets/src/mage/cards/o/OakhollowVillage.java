@@ -7,15 +7,15 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.counter.AddCountersAllEffect;
 import mage.abilities.mana.ColorlessManaAbility;
-import mage.abilities.mana.ConditionalColoredManaAbility;
-import mage.abilities.mana.conditional.ConditionalSpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.FilterPermanent;
-import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.permanent.EnteredThisTurnPredicate;
@@ -48,9 +48,13 @@ public final class OakhollowVillage extends CardImpl {
         this.addAbility(new ColorlessManaAbility());
 
         // {T}: Add {G}. Spend this mana only to cast a creature spell.
-        this.addAbility(new ConditionalColoredManaAbility(
-                Mana.GreenMana(1), new ConditionalSpellManaBuilder(StaticFilters.FILTER_SPELL_A_CREATURE)
-        ));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.GreenMana(1))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText("Add {G}. Spend this mana only to cast a creature spell")
+                .build()
+        );
 
         // {G}, {T}: Put a +1/+1 counter on each Frog, Rabbit, Raccoon, or Squirrel you control that entered the battlefield this turn.
         Ability ability = new SimpleActivatedAbility(
