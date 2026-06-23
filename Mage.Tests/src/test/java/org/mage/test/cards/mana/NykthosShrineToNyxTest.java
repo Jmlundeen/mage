@@ -182,7 +182,6 @@ public class NykthosShrineToNyxTest extends CardTestPlayerBase {
         addCard(Zone.HAND, playerA, pObliterator); // just for something to cast for 4 black mana
 
         activateManaAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{2}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color.");
-        setChoice(playerA, "Black"); // should produce 4 black mana
 
         castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, pObliterator); // costs exactly 4 black mana should be castable
 

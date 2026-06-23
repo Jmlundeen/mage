@@ -6,15 +6,13 @@ import mage.abilities.common.CastSecondSpellTriggeredAbility;
 import mage.abilities.condition.common.NotMyTurnCondition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.keyword.InvestigateEffect;
-import mage.abilities.effects.mana.BasicManaEffect;
 import mage.abilities.keyword.VigilanceAbility;
-import mage.abilities.mana.ActivateIfConditionManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.constants.Zone;
 
 import java.util.UUID;
 
@@ -39,7 +37,13 @@ public final class LaviniaFoilToConspiracy extends CardImpl {
         this.addAbility(new CastSecondSpellTriggeredAbility(new InvestigateEffect()));
 
         // {T}: Add {C}{C}. Activate only during an opponent's turn.
-        this.addAbility(new LaviniaFoilToConspiracyAbility());
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(2))
+                .activationCondition(NotMyTurnCondition.instance)
+                .ruleText("add {C}{C}. Activate only during an opponent's turn")
+                .build()
+        );
     }
 
     private LaviniaFoilToConspiracy(final LaviniaFoilToConspiracy card) {
@@ -49,25 +53,5 @@ public final class LaviniaFoilToConspiracy extends CardImpl {
     @Override
     public LaviniaFoilToConspiracy copy() {
         return new LaviniaFoilToConspiracy(this);
-    }
-}
-
-class LaviniaFoilToConspiracyAbility extends ActivateIfConditionManaAbility {
-    LaviniaFoilToConspiracyAbility() {
-        super(Zone.BATTLEFIELD, new BasicManaEffect(Mana.ColorlessMana(2)), new TapSourceCost(), NotMyTurnCondition.instance);
-    }
-
-    private LaviniaFoilToConspiracyAbility(final LaviniaFoilToConspiracyAbility ability) {
-        super(ability);
-    }
-
-    @Override
-    public LaviniaFoilToConspiracyAbility copy() {
-        return new LaviniaFoilToConspiracyAbility(this);
-    }
-
-    @Override
-    public String getRule() {
-        return "{T}: Add {C}{C}. Activate only during an opponent's turn.";
     }
 }

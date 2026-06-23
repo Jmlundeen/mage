@@ -1,18 +1,15 @@
 package mage.cards.r;
 
-import mage.ConditionalMana;
 import mage.MageInt;
 import mage.Mana;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.mana.BasicManaEffect;
-import mage.abilities.mana.ActivatedManaAbilityImpl;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.conditional.XCostManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.constants.Zone;
 
 import java.util.UUID;
 
@@ -30,7 +27,13 @@ public final class RosheenMeanderer extends CardImpl {
         this.toughness = new MageInt(4);
 
         // {T}: Add {C}{C}{C}{C}. Spend this mana only on costs that contain {X}.
-        this.addAbility(new RosheenMeandererManaAbility());
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(4))
+                .condition(new XCostManaCondition())
+                .ruleText("Add {C}{C}{C}{C}. Spend this mana only on costs that contain {X}")
+                .build()
+        );
     }
 
     private RosheenMeanderer(final RosheenMeanderer card) {
@@ -40,40 +43,5 @@ public final class RosheenMeanderer extends CardImpl {
     @Override
     public RosheenMeanderer copy() {
         return new RosheenMeanderer(this);
-    }
-}
-
-class RosheenMeandererManaAbility extends ActivatedManaAbilityImpl {
-
-    RosheenMeandererManaAbility() {
-        super(Zone.BATTLEFIELD, new BasicManaEffect(new RosheenMeandererConditionalMana()), new TapSourceCost());
-        this.netMana.add(Mana.ColorlessMana(4));
-    }
-
-    private RosheenMeandererManaAbility(RosheenMeandererManaAbility ability) {
-        super(ability);
-    }
-
-    @Override
-    public RosheenMeandererManaAbility copy() {
-        return new RosheenMeandererManaAbility(this);
-    }
-}
-
-class RosheenMeandererConditionalMana extends ConditionalMana {
-
-    RosheenMeandererConditionalMana() {
-        super(Mana.ColorlessMana(4));
-        staticText = "Spend this mana only on costs that contain {X}";
-        addCondition(new XCostManaCondition());
-    }
-
-    private RosheenMeandererConditionalMana(final RosheenMeandererConditionalMana conditionalMana) {
-        super(conditionalMana);
-    }
-
-    @Override
-    public RosheenMeandererConditionalMana copy() {
-        return new RosheenMeandererConditionalMana(this);
     }
 }

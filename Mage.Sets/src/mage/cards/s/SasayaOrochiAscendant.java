@@ -10,7 +10,7 @@ import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.FlipSourceEffect;
 import mage.abilities.mana.ComposedManaAbilityBuilder;
-import mage.abilities.mana.value.ManaTypeProvider;
+import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.cards.CardSetInfo;
 import mage.cards.FlipCard;
 import mage.constants.*;
@@ -135,6 +135,9 @@ enum SasayasEssenceProducedManaTypes implements ManaTypeProvider {
 
     @Override
     public Set<ManaType> getManaTypes(Game game, Ability source, Effect effect) {
+        if (game == null) {
+            return EnumSet.noneOf(ManaType.class);
+        }
         Mana producedMana = (Mana) effect.getValue("mana");
         if (producedMana == null) {
             return EnumSet.noneOf(ManaType.class);

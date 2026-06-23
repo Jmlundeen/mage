@@ -1,28 +1,23 @@
 package mage.cards.b;
 
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.costs.common.TapSourceCost;
-import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
-import mage.abilities.effects.OneShotEffect;
 import mage.abilities.effects.common.AttachEffect;
-import mage.abilities.effects.common.continuous.GainAbilityAttachedEffect;
 import mage.abilities.effects.common.continuous.NextSpellCastHasAbilityEffect;
-import mage.abilities.effects.mana.AddManaOfAnyColorEffect;
-import mage.abilities.effects.mana.ManaEffect;
+import mage.abilities.effects.common.continuous.generic.ContinuousEffectBuilder;
 import mage.abilities.keyword.CascadeAbility;
 import mage.abilities.keyword.EnchantAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.providers.common.player.TargetPointerManaPlayerProvider;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
-import mage.game.Game;
-import mage.players.Player;
 import mage.target.TargetPermanent;
 import mage.target.TargetPlayer;
 
@@ -55,9 +50,19 @@ public final class BiggerOnTheInside extends CardImpl {
         this.addAbility(new EnchantAbility(auraTarget));
 
         // Enchanted permanent has "{T}: Target player adds two mana of any one color. The next spell they cast this turn has cascade."
-        Ability gainedAbility = new SimpleActivatedAbility(new BiggerOnTheInsideEffect(), new TapSourceCost());
+        Effect manaEffect = ComposedManaAbilityBuilder.builder()
+                .addAnyColor(2)
+                .playerProvider(TargetPointerManaPlayerProvider.instance)
+                .ruleText("Target player adds two mana of any one color")
+                .buildEffect();
+        Ability gainedAbility = new SimpleActivatedAbility(manaEffect, new TapSourceCost());
+        gainedAbility.addEffect(new NextSpellCastHasAbilityEffect(new CascadeAbility(), StaticFilters.FILTER_CARD, TargetController.SOURCE_TARGETS)
+                .setText("The next spell they cast this turn has cascade")
+        );
         gainedAbility.addTarget(new TargetPlayer());
-        Effect effect = new GainAbilityAttachedEffect(gainedAbility, AttachmentType.AURA, Duration.WhileOnBattlefield, null, "permanent");
+        Effect effect = new ContinuousEffectBuilder(Outcome.AddAbility, ContinuousAffected.ATTACHED_TO)
+                .withGainedAbilities(gainedAbility)
+                .setText("Enchanted permanent has {gainedAbilitiesQuotes}");
         this.addAbility(new SimpleStaticAbility(effect));
     }
 
@@ -68,39 +73,5 @@ public final class BiggerOnTheInside extends CardImpl {
     @Override
     public BiggerOnTheInside copy() {
         return new BiggerOnTheInside(this);
-    }
-}
-
-class BiggerOnTheInsideEffect extends OneShotEffect { //Not a mana ability since it targets
-
-    BiggerOnTheInsideEffect() {
-        super(Outcome.Benefit);
-        staticText = "Target player adds two mana of any one color. The next spell they cast this turn has cascade";
-    }
-
-    private BiggerOnTheInsideEffect(final BiggerOnTheInsideEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public BiggerOnTheInsideEffect copy() {
-        return new BiggerOnTheInsideEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(getTargetPointer().getFirst(game, source));
-        if (player == null) {
-            return false;
-        }
-        ContinuousEffect cascadeEffect = new NextSpellCastHasAbilityEffect(new CascadeAbility(), StaticFilters.FILTER_CARD, TargetController.SOURCE_TARGETS);
-        game.addEffect(cascadeEffect, source);
-
-        ManaEffect manaEffect = new AddManaOfAnyColorEffect(2);
-        Mana manaToAdd = manaEffect.produceMana(game, source);
-        if (manaToAdd != null && manaToAdd.count() > 0) {
-            player.getManaPool().addMana(manaToAdd, game, source);
-        }
-        return true;
     }
 }

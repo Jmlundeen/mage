@@ -1,23 +1,23 @@
 package mage.cards.c;
 
-import mage.Mana;
 import mage.ObjectColor;
-import mage.abilities.Ability;
 import mage.abilities.common.AsEntersBattlefieldAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.ChooseColorEffect;
 import mage.abilities.effects.common.continuous.BoostAllOfChosenColorEffect;
-import mage.abilities.effects.mana.ManaEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.TriggeredManaAbility;
+import mage.abilities.mana.providers.common.manaType.ChosenColorTypeProvider;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
+import mage.constants.CardType;
+import mage.constants.Duration;
+import mage.constants.Outcome;
+import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,7 +53,9 @@ class CagedSunTriggeredAbility extends TriggeredManaAbility {
     private static final String staticText = "Whenever a land's ability causes you to add one or more mana of the chosen color, add one additional mana of that color.";
 
     public CagedSunTriggeredAbility() {
-        super(Zone.BATTLEFIELD, new CagedSunEffect());
+        super(Zone.BATTLEFIELD, new ComposedManaAbilityBuilder()
+                .addEach(ChosenColorTypeProvider.instance, 1)
+                .buildEffect());
     }
 
     private CagedSunTriggeredAbility(final CagedSunTriggeredAbility ability) {
@@ -88,43 +90,3 @@ class CagedSunTriggeredAbility extends TriggeredManaAbility {
     }
 }
 
-class CagedSunEffect extends ManaEffect {
-
-    CagedSunEffect() {
-        super();
-    }
-
-    private CagedSunEffect(final CagedSunEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public List<Mana> getNetMana(Game game, Ability source) {
-        if (game != null && game.inCheckPlayableState()) {
-            ObjectColor color = (ObjectColor) game.getState().getValue(source.getSourceId() + "_color");
-            if (color != null) {
-                List<Mana> availableNetMana = new ArrayList<>();
-                availableNetMana.add(new Mana(ColoredManaSymbol.lookup(color.toString().charAt(0))));
-                return availableNetMana;
-            }
-        }
-        return super.getNetMana(game, source);
-    }
-
-    @Override
-    public Mana produceMana(Game game, Ability source) {
-        if (game != null) {
-            ObjectColor color = (ObjectColor) game.getState().getValue(source.getSourceId() + "_color");
-            if (color != null) {
-                return new Mana(ColoredManaSymbol.lookup(color.toString().charAt(0)));
-            }
-        }
-        return new Mana();
-    }
-
-    @Override
-    public CagedSunEffect copy() {
-        return new CagedSunEffect(this);
-    }
-
-}

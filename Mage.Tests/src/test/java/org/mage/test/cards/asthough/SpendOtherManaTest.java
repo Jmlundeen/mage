@@ -229,6 +229,9 @@ public class SpendOtherManaTest extends CardTestPlayerBase {
         // {T}: Add {C}{C}{C}{C}{C}.
         // {5}, {T}: Draw a card for each color among permanents you control.
         addCard(Zone.BATTLEFIELD, playerA, "Chromatic Orrery"); // Artifact {7}
+
+        checkPlayableAbility("Can Cast Adriana", 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Cast Adriana, Captain of the Guard", true);
+
         activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Exile a creature you control");
         setChoice(playerA, "Pillarfield Ox");
         setChoice(playerA, "Red");

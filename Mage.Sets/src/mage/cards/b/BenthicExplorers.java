@@ -1,23 +1,22 @@
 package mage.cards.b;
 
 import mage.MageInt;
-import mage.Mana;
 import mage.abilities.Abilities;
 import mage.abilities.Ability;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.common.UntapTargetCost;
-import mage.abilities.effects.mana.ManaEffect;
+import mage.abilities.effects.Effect;
 import mage.abilities.mana.ActivatedManaAbilityImpl;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.choices.Choice;
 import mage.constants.*;
 import mage.filter.FilterPermanent;
 import mage.filter.common.FilterLandPermanent;
 import mage.filter.predicate.permanent.TappedPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
-import mage.players.Player;
 import mage.target.TargetPermanent;
 
 import java.util.*;
@@ -43,9 +42,13 @@ public final class BenthicExplorers extends CardImpl {
         this.toughness = new MageInt(4);
 
         // {T}, Untap a tapped land an opponent controls: Add one mana of any type that land could produce.
-        Ability ability = new BenthicExplorersManaAbility();
-        ability.addCost(new UntapTargetCost(new TargetPermanent(filter)));
-        this.addAbility(ability);
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .cost(new TapSourceCost())
+                .cost(new UntapTargetCost(new TargetPermanent(filter)))
+                .addChoice(BenthicExplorersManaType.instance, 1)
+                .ruleText("Add one mana of any type that land could produce")
+                .build()
+        );
     }
 
     private BenthicExplorers(final BenthicExplorers card) {
@@ -58,105 +61,30 @@ public final class BenthicExplorers extends CardImpl {
     }
 }
 
-class BenthicExplorersManaAbility extends ActivatedManaAbilityImpl {
-
-    BenthicExplorersManaAbility() {
-        super(Zone.BATTLEFIELD, new BenthicExplorersManaEffect(), new TapSourceCost());
-    }
-
-    private BenthicExplorersManaAbility(BenthicExplorersManaAbility ability) {
-        super(ability);
-    }
+enum BenthicExplorersManaType implements ManaTypeProvider {
+    instance;
 
     @Override
-    public BenthicExplorersManaAbility copy() {
-        return new BenthicExplorersManaAbility(this);
-    }
-}
-
-class BenthicExplorersManaEffect extends ManaEffect {
-
-    BenthicExplorersManaEffect() {
-        staticText = "Add one mana of any type that land could produce";
-    }
-
-    private BenthicExplorersManaEffect(final BenthicExplorersManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public List<Mana> getNetMana(Game game, Ability source) {
+    public Set<ManaType> getManaTypes(Game game, Ability source, Effect effect) {
         if (game == null) {
-            return new ArrayList<>();
+            return Collections.emptySet();
         }
-        Set<ManaType> manaTypes = EnumSet.noneOf(ManaType.class);
-        for (UUID opponentId : game.getOpponents(source.getControllerId())) {
-            for (Permanent permanent : game.getBattlefield().getAllActivePermanents(opponentId)) {
-                if (permanent.isLand(game) && permanent.isTapped()) {
-                    for (ActivatedManaAbilityImpl ability : permanent.getAbilities(game).getActivatedManaAbilities(Zone.BATTLEFIELD)) {
-                        manaTypes.addAll(ability.getProducableManaTypes(game));
+        Set<ManaType> manaTypes = getUntappedManaTypes(game, source);
+        if (manaTypes.isEmpty()) {
+            for (UUID opponentId : game.getOpponents(source.getControllerId())) {
+                for (Permanent permanent : game.getBattlefield().getAllActivePermanents(opponentId)) {
+                    if (permanent.isLand(game) && permanent.isTapped()) {
+                        for (ActivatedManaAbilityImpl ability : permanent.getAbilities(game).getActivatedManaAbilities(Zone.BATTLEFIELD)) {
+                            manaTypes.addAll(ability.getProducableManaTypes(game));
+                        }
                     }
                 }
             }
         }
-        return ManaType.getManaListFromManaTypes(manaTypes, false);
+        return manaTypes;
     }
 
-    @Override
-    public Mana produceMana(Game game, Ability source) {
-        Mana mana = new Mana();
-        if (game == null) {
-            return mana;
-        }
-
-        Player player = game.getPlayer(source.getControllerId());
-        if (player == null) {
-            return mana;
-        }
-
-        Choice choice = ManaType.getChoiceOfManaTypes(getManaTypes(game, source), false);
-        if (choice.getChoices().isEmpty()) {
-            return mana;
-        }
-
-
-        if (choice.getChoices().size() == 1) {
-            choice.setChoice(choice.getChoices().iterator().next());
-        } else {
-            if (!player.choose(Outcome.PutManaInPool, choice, game)) {
-                return mana;
-            }
-        }
-
-        if (choice.getChoice() == null) {
-            return mana;
-        }
-
-        switch (choice.getChoice()) {
-            case "Black":
-                mana.setBlack(1);
-                break;
-            case "Blue":
-                mana.setBlue(1);
-                break;
-            case "Red":
-                mana.setRed(1);
-                break;
-            case "Green":
-                mana.setGreen(1);
-                break;
-            case "White":
-                mana.setWhite(1);
-                break;
-            case "Colorless":
-                mana.setColorless(1);
-                break;
-        }
-
-        return mana;
-    }
-
-    private Set<ManaType> getManaTypes(Game game, Ability source) {
+    private Set<ManaType> getUntappedManaTypes(Game game, Ability source) {
         Set<ManaType> types = EnumSet.noneOf(ManaType.class);
         if (game == null || game.getPhase() == null) {
             return types;
@@ -164,7 +92,10 @@ class BenthicExplorersManaEffect extends ManaEffect {
 
         List<UUID> untapped = (List<UUID>) game.getState()
                 .getValue("UntapTargetCost" + source.getSourceId().toString());
-        Permanent land = game.getPermanentOrLKIBattlefield(untapped.get(0));
+        if (untapped == null || untapped.isEmpty()) {
+            return types;
+        }
+        Permanent land = game.getPermanentOrLKIBattlefield(untapped.getFirst());
         if (land == null) {
             return types;
         }
@@ -176,10 +107,5 @@ class BenthicExplorersManaEffect extends ManaEffect {
             }
         }
         return types;
-    }
-
-    @Override
-    public BenthicExplorersManaEffect copy() {
-        return new BenthicExplorersManaEffect(this);
     }
 }

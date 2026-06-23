@@ -1,6 +1,5 @@
 package mage.cards.h;
 
-import mage.ConditionalMana;
 import mage.abilities.Ability;
 import mage.abilities.common.DealsCombatDamageToAPlayerTriggeredAbility;
 import mage.abilities.common.SimpleActivatedAbility;
@@ -8,14 +7,14 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
 import mage.abilities.keyword.TrampleAbility;
-import mage.abilities.mana.ConditionalAnyColorManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastConditionalMana;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ComparisonType;
 import mage.filter.FilterPermanent;
+import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.mageobject.PowerPredicate;
 import mage.target.TargetPermanent;
@@ -38,7 +37,13 @@ public final class HerdHeirloom extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{1}{G}");
 
         // {T}: Add one mana of any color. Spend this mana only to cast a creature spell.
-        this.addAbility(new ConditionalAnyColorManaAbility(1, new HerdHeirloomManaBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addAnyColor(1)
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.A_CREATURE_SPELL))
+                .ruleText("Add one mana of any color. Spend this mana only to cast a creature spell.")
+                .build()
+        );
 
         // {T}: Until end of turn, target creature you control with power 4 or greater gains trample and "Whenever this creature deals combat damage to a player, draw a card."
         Ability ability = new SimpleActivatedAbility(new GainAbilityTargetEffect(TrampleAbility.getInstance())
@@ -56,17 +61,5 @@ public final class HerdHeirloom extends CardImpl {
     @Override
     public HerdHeirloom copy() {
         return new HerdHeirloom(this);
-    }
-}
-
-class HerdHeirloomManaBuilder extends ConditionalManaBuilder {
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new CreatureCastConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a creature spell";
     }
 }

@@ -1,23 +1,18 @@
 package mage.cards.c;
 
 import mage.MageObject;
-import mage.Mana;
-import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.dynamicvalue.common.StaticValue;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.mana.ManaEffect;
-import mage.abilities.mana.SimpleManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.providers.ManaTypeProvider;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.choices.Choice;
-import mage.choices.ChoiceColor;
-import mage.constants.AbilityWord;
-import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.constants.Zone;
+import mage.constants.*;
 import mage.filter.FilterCard;
 import mage.filter.predicate.Predicates;
 import mage.game.Game;
@@ -28,8 +23,9 @@ import mage.target.TargetCard;
 import mage.util.CardUtil;
 import mage.util.GameLog;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -44,7 +40,12 @@ public final class ChromeMox extends CardImpl {
         this.addAbility(new EntersBattlefieldTriggeredAbility(new ChromeMoxEffect(), true).setAbilityWord(AbilityWord.IMPRINT));
 
         // {T}: Add one mana of any of the exiled card's colors.
-        this.addAbility(new SimpleManaAbility(Zone.BATTLEFIELD, new ChromeMoxManaEffect(), new TapSourceCost()));
+        this.addAbility(new ComposedManaAbilityBuilder()
+                .addDynamicChoice(StaticValue.get(1), ChromeMoxManaTypes.instance)
+                .cost(new TapSourceCost())
+                .ruleText("Add one mana of any of the exiled card's colors")
+                .build()
+        );
     }
 
     private ChromeMox(final ChromeMox card) {
@@ -111,120 +112,21 @@ class ChromeMoxEffect extends OneShotEffect {
 
 }
 
-class ChromeMoxManaEffect extends ManaEffect {
-
-    ChromeMoxManaEffect() {
-        super();
-        staticText = "Add one mana of any of the exiled card's colors";
-    }
-
-    private ChromeMoxManaEffect(final ChromeMoxManaEffect effect) {
-        super(effect);
-    }
+enum ChromeMoxManaTypes implements ManaTypeProvider {
+    instance;
 
     @Override
-    public ChromeMoxManaEffect copy() {
-        return new ChromeMoxManaEffect(this);
-    }
-
-    @Override
-    public List<Mana> getNetMana(Game game, Ability source) {
-        List<Mana> netMana = new ArrayList<>();
-        if (game != null) {
-            Permanent permanent = game.getPermanent(source.getSourceId());
-            if (permanent != null) {
-                List<UUID> imprinted = permanent.getImprinted();
-                if (imprinted != null && !imprinted.isEmpty()) {
-                    Card imprintedCard = game.getCard(imprinted.get(0));
-                    if (imprintedCard != null) {
-                        ObjectColor color = imprintedCard.getColor(game);
-                        if (color.isBlack()) {
-                            netMana.add(Mana.BlackMana(1));
-                        }
-                        if (color.isRed()) {
-                            netMana.add(Mana.RedMana(1));
-                        }
-                        if (color.isBlue()) {
-                            netMana.add(Mana.BlueMana(1));
-                        }
-                        if (color.isGreen()) {
-                            netMana.add(Mana.GreenMana(1));
-                        }
-                        if (color.isWhite()) {
-                            netMana.add(Mana.WhiteMana(1));
-                        }
-                    }
-                }
-            }
-        }
-        return netMana;
-    }
-
-    @Override
-    public Mana produceMana(Game game, Ability source) {
-        Mana mana = new Mana();
+    public Set<ManaType> getManaTypes(Game game, Ability source, Effect effect) {
         if (game == null) {
-            return mana;
+            return Collections.emptySet();
         }
         Permanent permanent = game.getPermanent(source.getSourceId());
-        Player player = game.getPlayer(source.getControllerId());
-        if (permanent != null && player != null) {
-            List<UUID> imprinted = permanent.getImprinted();
-            if (imprinted != null && !imprinted.isEmpty()) {
-                Card imprintedCard = game.getCard(imprinted.get(0));
-                if (imprintedCard != null) {
-                    Choice choice = new ChoiceColor(true);
-                    choice.getChoices().clear();
-                    choice.setMessage("Pick a mana color");
-                    ObjectColor color = imprintedCard.getColor(game);
-                    if (color.isBlack()) {
-                        choice.getChoices().add("Black");
-                    }
-                    if (color.isRed()) {
-                        choice.getChoices().add("Red");
-                    }
-                    if (color.isBlue()) {
-                        choice.getChoices().add("Blue");
-                    }
-                    if (color.isGreen()) {
-                        choice.getChoices().add("Green");
-                    }
-                    if (color.isWhite()) {
-                        choice.getChoices().add("White");
-                    }
-                    if (!choice.getChoices().isEmpty()) {
-
-                        if (choice.getChoices().size() == 1) {
-                            choice.setChoice(choice.getChoices().iterator().next());
-                        } else {
-                            if (!player.choose(Outcome.PutManaInPool, choice, game)) {
-                                return mana;
-                            }
-                        }
-                        switch (choice.getChoice()) {
-                            case "Black":
-                                mana.add(Mana.BlackMana(1));
-                                break;
-                            case "Blue":
-                                mana.add(Mana.BlueMana(1));
-                                break;
-                            case "Red":
-                                mana.add(Mana.RedMana(1));
-                                break;
-                            case "Green":
-                                mana.add(Mana.GreenMana(1));
-                                break;
-                            case "White":
-                                mana.add(Mana.WhiteMana(1));
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
+        if (permanent == null || permanent.getImprinted().isEmpty()) {
+            return EnumSet.noneOf(ManaType.class);
         }
-        return mana;
+        Card imprintedCard = game.getCard(permanent.getImprinted().getFirst());
+        return imprintedCard == null
+                ? EnumSet.noneOf(ManaType.class)
+                : ManaType.getManaTypesFromObjectColor(imprintedCard.getColor(game));
     }
-
 }

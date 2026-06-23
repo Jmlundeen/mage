@@ -1,28 +1,24 @@
 package mage.cards.f;
 
-import mage.ConditionalMana;
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.costs.Cost;
 import mage.abilities.costs.common.ExileTargetCost;
-import mage.abilities.effects.mana.ManaEffect;
-import mage.abilities.mana.SimpleManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.CreatureCastConditionalMana;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.effects.Effect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.CreatureCastManaCondition;
 import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.choices.ChoiceColor;
 import mage.constants.CardType;
-import mage.constants.Outcome;
+import mage.constants.ManaType;
 import mage.filter.StaticFilters;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.target.common.TargetControlledPermanent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -34,10 +30,13 @@ public final class FoodChain extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ENCHANTMENT}, "{2}{G}");
 
         // Exile a creature you control: Add X mana of any one color, where X is the exiled creature's converted mana cost plus one. Spend this mana only to cast creature spells.
-        this.addAbility(new SimpleManaAbility(
-                new FoodChainManaEffect(),
-                new ExileTargetCost(new TargetControlledPermanent(StaticFilters.FILTER_CONTROLLED_A_CREATURE))
-        ));
+        Ability ability = new ComposedManaAbilityBuilder()
+                .cost(new ExileTargetCost(new TargetControlledPermanent(StaticFilters.FILTER_CONTROLLED_A_CREATURE)))
+                .addDynamicChoice(FoodChainDynamicValue.instance, Set.of(ManaType.BLACK, ManaType.BLUE, ManaType.RED, ManaType.GREEN, ManaType.WHITE))
+                .condition(new CreatureCastManaCondition())
+                .ruleText("Add X mana of any one color, where X is the exiled creature's mana value plus one. Spend this mana only to cast creature spells")
+                .build();
+        this.addAbility(ability);
     }
 
     private FoodChain(final FoodChain card) {
@@ -50,81 +49,43 @@ public final class FoodChain extends CardImpl {
     }
 }
 
-class FoodChainManaBuilder extends ConditionalManaBuilder {
+enum FoodChainDynamicValue implements DynamicValue {
+    instance;
 
     @Override
-    public ConditionalMana build(Object... options) {
-        return new CreatureCastConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast creature spells";
-    }
-}
-
-class FoodChainManaEffect extends ManaEffect {
-
-    ConditionalManaBuilder manaBuilder = new FoodChainManaBuilder();
-
-    FoodChainManaEffect() {
-        this.staticText = "Add X mana of any one color, where X is 1 plus the exiled creature's mana value. Spend this mana only to cast creature spells";
-    }
-
-    private FoodChainManaEffect(final FoodChainManaEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public FoodChainManaEffect copy() {
-        return new FoodChainManaEffect(this);
-    }
-
-    @Override
-    public List<Mana> getNetMana(Game game, Ability source) {
-        List<Mana> netMana = new ArrayList<>();
-        if (game != null) {
-            int cmc = -1;
-            for (Permanent permanent : game.getBattlefield().getAllActivePermanents(source.getControllerId())) {
-                if (permanent.isCreature(game)) {
-                    cmc = Math.max(cmc, permanent.getManaCost().manaValue());
-                }
-            }
-            if (cmc != -1) {
-                netMana.add(manaBuilder.setMana(Mana.BlackMana(cmc + 1), source, game).build());
-                netMana.add(manaBuilder.setMana(Mana.BlueMana(cmc + 1), source, game).build());
-                netMana.add(manaBuilder.setMana(Mana.RedMana(cmc + 1), source, game).build());
-                netMana.add(manaBuilder.setMana(Mana.GreenMana(cmc + 1), source, game).build());
-                netMana.add(manaBuilder.setMana(Mana.WhiteMana(cmc + 1), source, game).build());
-            }
-        }
-        return netMana;
-    }
-
-    @Override
-    public Mana produceMana(Game game, Ability source) {
-        Mana mana = new Mana();
-        if (game == null) {
-            return mana;
-        }
-        Player controller = game.getPlayer(source.getControllerId());
+    public int calculate(Game game, Ability sourceAbility, Effect effect) {
+        Player controller = game.getPlayer(sourceAbility.getControllerId());
         if (controller != null) {
             int manaCostExiled = 0;
-            for (Cost cost : source.getCosts()) {
+            for (Cost cost : sourceAbility.getCosts()) {
                 if (cost.isPaid() && cost instanceof ExileTargetCost) {
                     for (Card card : ((ExileTargetCost) cost).getPermanents()) {
                         manaCostExiled += card.getManaValue();
                     }
                 }
             }
-            ChoiceColor choice = new ChoiceColor();
-            if (!controller.choose(Outcome.PutManaInPool, choice, game)) {
-                return mana;
+            if (manaCostExiled == 0) {
+                int cmc = -1;
+                for (Permanent permanent : game.getBattlefield().getAllActivePermanents(controller.getId())) {
+                    if (permanent.isCreature(game)) {
+                        cmc = Math.max(cmc, permanent.getManaCost().manaValue());
+                    }
+                }
+                return cmc + 1;
+            } else {
+                return manaCostExiled + 1;
             }
-            Mana chosen = choice.getMana(manaCostExiled + 1);
-            return manaBuilder.setMana(chosen, source, game).build();
         }
-        return mana;
+        return 0;
     }
 
+    @Override
+    public DynamicValue copy() {
+        return instance;
+    }
+
+    @Override
+    public String getMessage() {
+        return "X";
+    }
 }
