@@ -1,15 +1,9 @@
 package mage.cards.b;
 
-import mage.ConditionalMana;
-import mage.MageObject;
-import mage.Mana;
-import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTappedAbility;
-import mage.abilities.condition.Condition;
 import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.mana.ColorlessManaAbility;
 import mage.abilities.mana.ComposedManaAbilityBuilder;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
 import mage.abilities.mana.conditional.FilteredAbilityManaCondition;
 import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
@@ -19,7 +13,6 @@ import mage.constants.SubType;
 import mage.filter.Filter;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
-import mage.game.Game;
 
 import java.util.UUID;
 
@@ -69,39 +62,3 @@ public final class BaseCamp extends CardImpl {
     }
 }
 
-class BaseCampManaBuilder extends ConditionalManaBuilder {
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        return new BaseCampConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "Spend this mana only to cast a Cleric, Rogue, Warrior, or Wizard spell " +
-                "or to activate an ability of a Cleric, Rogue, Warrior, or Wizard";
-    }
-}
-
-class BaseCampConditionalMana extends ConditionalMana {
-
-    public BaseCampConditionalMana(Mana mana) {
-        super(mana);
-        addCondition(BaseCampCondition.instance);
-    }
-}
-
-enum BaseCampCondition implements Condition {
-    instance;
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        MageObject object = game.getObject(source);
-        return object != null && (
-                object.hasSubtype(SubType.CLERIC, game)
-                        || object.hasSubtype(SubType.ROGUE, game)
-                        || object.hasSubtype(SubType.WARRIOR, game)
-                        || object.hasSubtype(SubType.WIZARD, game)
-        );
-    }
-}
