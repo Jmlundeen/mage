@@ -8,11 +8,13 @@ import mage.abilities.dynamicvalue.common.GetXValue;
 import mage.abilities.effects.common.CounterUnlessPaysEffect;
 import mage.abilities.effects.common.DamageTargetEffect;
 import mage.abilities.effects.mana.AddConditionalManaEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
 import mage.abilities.mana.SimpleManaAbility;
-import mage.abilities.mana.builder.common.InstantOrSorcerySpellManaBuilder;
 import mage.abilities.mana.builder.common.SimpleActivatedAbilityManaBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
+import mage.filter.StaticTypedFilters;
 import mage.target.TargetSpell;
 import mage.target.common.TargetAnyTarget;
 import org.junit.Test;
@@ -163,9 +165,12 @@ public class ManaPoolTest extends CardTestPlayerBase {
 
     @Test
     public void test_ConditionalMana_OneXSpell() {
-        addCustomCardWithAbility("add 10", playerA, new SimpleActivatedAbility(Zone.ALL,
-                new AddConditionalManaEffect(Mana.RedMana(10), new InstantOrSorcerySpellManaBuilder()),
-                new ManaCostsImpl<>("")));
+        addCustomCardWithAbility("add 10", playerA, ComposedManaAbilityBuilder.builder()
+                .addStatic(Mana.RedMana(10))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText(String.format("Add %s. Spend this mana only to cast instant or sorcery spells.", "{R}".repeat(10)))
+                .zone(Zone.ALL)
+                .build());
         addCard(Zone.HAND, playerA, "Volcanic Geyser"); // {X}{R}{R}
 
         // make mana
@@ -188,9 +193,12 @@ public class ManaPoolTest extends CardTestPlayerBase {
 
     @Test
     public void test_ConditionalMana_MultipleXSpell() {
-        addCustomCardWithAbility("add 10", playerA, new SimpleActivatedAbility(Zone.ALL,
-                new AddConditionalManaEffect(Mana.RedMana(10), new InstantOrSorcerySpellManaBuilder()),
-                new ManaCostsImpl<>("")));
+        addCustomCardWithAbility("add 10", playerA, ComposedManaAbilityBuilder.builder()
+                .addStatic(Mana.RedMana(10))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText(String.format("Add %s. Spend this mana only to cast instant or sorcery spells.", "{R}".repeat(10)))
+                .zone(Zone.ALL)
+                .build());
         addCard(Zone.HAND, playerA, "Volcanic Geyser", 2); // {X}{R}{R}
 
         // make mana

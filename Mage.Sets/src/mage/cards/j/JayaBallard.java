@@ -4,13 +4,14 @@ import mage.Mana;
 import mage.abilities.LoyaltyAbility;
 import mage.abilities.effects.common.GetEmblemEffect;
 import mage.abilities.effects.common.discard.DiscardAndDrawThatManyEffect;
-import mage.abilities.effects.mana.AddConditionalManaEffect;
-import mage.abilities.mana.builder.common.InstantOrSorcerySpellManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
+import mage.filter.StaticTypedFilters;
 import mage.game.command.emblems.JayaBallardEmblem;
 import mage.watchers.common.CastFromGraveyardWatcher;
 
@@ -29,9 +30,12 @@ public final class JayaBallard extends CardImpl {
         this.setStartingLoyalty(5);
 
         // +1: Add {R}{R}{R}. Spend this mana only to cast instant or sorcery spells.
-        this.addAbility(new LoyaltyAbility(new AddConditionalManaEffect(
-                Mana.RedMana(3), new InstantOrSorcerySpellManaBuilder()
-        ), 1));
+        this.addAbility(new LoyaltyAbility(ComposedManaAbilityBuilder.builder()
+                .addStatic(Mana.RedMana(3))
+                .condition(new FilteredSpellManaCondition(StaticTypedFilters.AN_INSTANT_OR_SORCERY_SPELL))
+                .ruleText("Add {R}{R}{R}. Spend this mana only to cast instant or sorcery spells")
+                .buildEffect()
+                , 1));
 
         // +1: Discard up to three cards, then draw that many cards.
         this.addAbility(new LoyaltyAbility(new DiscardAndDrawThatManyEffect(3), 1));
