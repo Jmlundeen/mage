@@ -1,7 +1,6 @@
 package org.mage.test.serverside.base.impl;
 
 import mage.MageObject;
-import mage.Mana;
 import mage.ObjectColor;
 import mage.abilities.Ability;
 import mage.abilities.effects.ContinuousEffect;
@@ -1085,7 +1084,7 @@ public abstract class CardTestPlayerAPIImpl extends MageTestPlayerBase implement
                 + ", cardName=" + cardName, found);
 
         Assert.assertEquals(amount, found.getAbilities(currentGame).stream()
-                .filter(a -> searchedAbility.isAssignableFrom(a.getClass())).collect(Collectors.toList()).size());
+                .filter(a -> searchedAbility.isAssignableFrom(a.getClass())).toList().size());
     }
 
     /**
@@ -1496,22 +1495,22 @@ public abstract class CardTestPlayerAPIImpl extends MageTestPlayerBase implement
         ManaPool manaPool = currentGame.getPlayer(player.getId()).getManaPool();
         switch (color) {
             case COLORLESS:
-                Assert.assertEquals(amount, manaPool.getColorless() + manaPool.getConditionalMana().stream().mapToInt(Mana::getColorless).sum());
+                Assert.assertEquals(amount, manaPool.getColorless());
                 break;
             case RED:
-                Assert.assertEquals(amount, manaPool.getRed() + manaPool.getConditionalMana().stream().mapToInt(Mana::getRed).sum());
+                Assert.assertEquals(amount, manaPool.getRed());
                 break;
             case BLUE:
-                Assert.assertEquals(amount, manaPool.getBlue() + manaPool.getConditionalMana().stream().mapToInt(Mana::getBlue).sum());
+                Assert.assertEquals(amount, manaPool.getBlue());
                 break;
             case WHITE:
-                Assert.assertEquals(amount, manaPool.getWhite() + manaPool.getConditionalMana().stream().mapToInt(Mana::getWhite).sum());
+                Assert.assertEquals(amount, manaPool.getWhite());
                 break;
             case GREEN:
-                Assert.assertEquals(amount, manaPool.getGreen() + manaPool.getConditionalMana().stream().mapToInt(Mana::getGreen).sum());
+                Assert.assertEquals(amount, manaPool.getGreen());
                 break;
             case BLACK:
-                Assert.assertEquals(amount, manaPool.getBlack() + manaPool.getConditionalMana().stream().mapToInt(Mana::getBlack).sum());
+                Assert.assertEquals(amount, manaPool.getBlack());
                 break;
         }
     }
