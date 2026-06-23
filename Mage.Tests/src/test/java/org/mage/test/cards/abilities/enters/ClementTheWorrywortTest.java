@@ -1,10 +1,9 @@
 package org.mage.test.cards.abilities.enters;
 
-import org.junit.Test;
-import org.mage.test.serverside.base.CardTestPlayerBase;
-
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
+import org.junit.Test;
+import org.mage.test.serverside.base.CardTestPlayerBase;
 
 /**
  *
@@ -57,6 +56,7 @@ public class ClementTheWorrywortTest extends CardTestPlayerBase{
 
       castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Haze Frog");
       setChoice(playerA, "Whenever"); // order triggers
+      setChoice(playerA, "Blue");
       addTarget(playerA, frog);
 
       setStrictChooseMode(true);
