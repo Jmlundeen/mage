@@ -1,31 +1,30 @@
 package mage.cards.j;
 
-import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.common.SimpleActivatedAbility;
-import mage.abilities.costs.VariableCost;
 import mage.abilities.costs.common.RemoveVariableCountersTargetCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.dynamicvalue.common.cost.VariableCostValue;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.common.TransformSourceEffect;
 import mage.abilities.effects.keyword.AdaptEffect;
 import mage.abilities.keyword.FlyingAbility;
 import mage.abilities.keyword.LivingMetalAbility;
 import mage.abilities.keyword.MoreThanMeetsTheEyeAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
+import mage.abilities.mana.conditional.InvertedManaCondition;
+import mage.abilities.mana.providers.common.player.TargetPointerManaPlayerProvider;
 import mage.cards.CardSetInfo;
 import mage.cards.TransformingDoubleFacedCard;
 import mage.constants.CardType;
-import mage.constants.Outcome;
+import mage.constants.ManaType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.counters.CounterType;
 import mage.filter.StaticFilters;
-import mage.game.Game;
-import mage.game.permanent.token.PowerstoneToken;
-import mage.players.Player;
+import mage.filter.StaticTypedFilters;
 import mage.target.TargetPlayer;
-import mage.util.CardUtil;
 
 import java.util.UUID;
 
@@ -50,8 +49,14 @@ public final class JetfireIngeniousScientist extends TransformingDoubleFacedCard
         this.getLeftHalfCard().addAbility(FlyingAbility.getInstance());
 
         // Remove one or more +1/+1 counters from among artifacts you control: Target player adds that much {C}. This mana can't be spent to cast nonartifact spells. Convert Jetfire.
+        Effect manaEffect = ComposedManaAbilityBuilder.builder()
+                .addDynamic(VariableCostValue.instance, ManaType.COLORLESS)
+                .playerProvider(TargetPointerManaPlayerProvider.instance)
+                .condition(new InvertedManaCondition(new FilteredSpellManaCondition(StaticTypedFilters.A_NON_ARTIFACT_SPELL)))
+                .ruleText("target player adds that much {C}. This mana can't be spent to cast a nonartifact spell. Convert {this}.")
+                .buildEffect();
         Ability ability = new SimpleActivatedAbility(
-                new JetfireIngeniousScientistEffect(),
+                manaEffect,
                 new RemoveVariableCountersTargetCost(
                         StaticFilters.FILTER_CONTROLLED_PERMANENT_ARTIFACTS,
                         CounterType.P1P1, "one or more", 1
@@ -90,34 +95,3 @@ public final class JetfireIngeniousScientist extends TransformingDoubleFacedCard
     }
 }
 
-class JetfireIngeniousScientistEffect extends OneShotEffect {
-
-    JetfireIngeniousScientistEffect() {
-        super(Outcome.Benefit);
-        staticText = "target player adds that much {C}. This mana can't be spent to cast nonartifact spells";
-    }
-
-    private JetfireIngeniousScientistEffect(final JetfireIngeniousScientistEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public JetfireIngeniousScientistEffect copy() {
-        return new JetfireIngeniousScientistEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player player = game.getPlayer(getTargetPointer().getFirst(game, source));
-        int countersRemoved = CardUtil.castStream(
-                source.getCosts().stream(), VariableCost.class
-        ).mapToInt(VariableCost::getAmount).sum();
-        if (player == null || countersRemoved < 1) {
-            return false;
-        }
-        ConditionalManaBuilder manaBuilder = PowerstoneToken.makeBuilder();
-        Mana mana = manaBuilder.setMana(Mana.ColorlessMana(countersRemoved), source, game).build();
-        player.getManaPool().addMana(mana, game, source);
-        return true;
-    }
-}

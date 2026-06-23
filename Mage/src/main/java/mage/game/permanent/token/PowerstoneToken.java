@@ -1,20 +1,13 @@
 package mage.game.permanent.token;
 
-import mage.ConditionalMana;
-import mage.MageObject;
 import mage.Mana;
-import mage.abilities.Ability;
-import mage.abilities.SpellAbility;
-import mage.abilities.condition.Condition;
-import mage.abilities.costs.Cost;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
-import mage.abilities.mana.builder.ConditionalManaBuilder;
-import mage.abilities.mana.conditional.ManaCondition;
+import mage.abilities.costs.common.TapSourceCost;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
+import mage.abilities.mana.conditional.InvertedManaCondition;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.game.Game;
-
-import java.util.UUID;
+import mage.filter.StaticTypedFilters;
 
 /**
  * @author TheElk801
@@ -27,7 +20,13 @@ public final class PowerstoneToken extends TokenImpl {
         subtype.add(SubType.POWERSTONE);
 
         // {T}: Add {C}. This mana can't be spent to cast a nonartifact spell.
-        this.addAbility(new ConditionalColorlessManaAbility(1, makeBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new InvertedManaCondition(new FilteredSpellManaCondition(StaticTypedFilters.A_NON_ARTIFACT_SPELL)))
+                .ruleText("Add {C}. This mana can't be spent to cast a nonartifact spell.")
+                .build()
+        );
     }
 
     private PowerstoneToken(final PowerstoneToken token) {
@@ -38,50 +37,4 @@ public final class PowerstoneToken extends TokenImpl {
         return new PowerstoneToken(this);
     }
 
-    public static PowerstoneTokenManaBuilder makeBuilder() {
-        return new PowerstoneTokenManaBuilder();
-    }
-}
-
-class PowerstoneTokenManaBuilder extends ConditionalManaBuilder {
-
-    public PowerstoneTokenManaBuilder() {
-    }
-
-    @Override
-    public ConditionalMana build(Object... options) {
-        this.mana.setFlag(true); // indicates that the mana is from second ability
-        return new PowerstoneTokenConditionalMana(this.mana);
-    }
-
-    @Override
-    public String getRule() {
-        return "This mana can't be spent to cast a nonartifact spell.";
-    }
-}
-
-class PowerstoneTokenConditionalMana extends ConditionalMana {
-
-    PowerstoneTokenConditionalMana(Mana mana) {
-        super(mana);
-        staticText = "This mana can't be spent to cast a nonartifact spell.";
-        addCondition(new PowerstoneTokenManaCondition());
-    }
-}
-
-class PowerstoneTokenManaCondition extends ManaCondition implements Condition {
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        if (!(source instanceof SpellAbility) || source.isActivated()) {
-            return true;
-        }
-        MageObject object = game.getObject(source);
-        return object != null && object.isArtifact(game);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source, UUID originalId, Cost costToPay) {
-        return apply(game, source);
-    }
 }

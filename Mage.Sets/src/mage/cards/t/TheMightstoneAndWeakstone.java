@@ -1,20 +1,24 @@
 package mage.cards.t;
 
+import mage.Mana;
 import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
 import mage.abilities.effects.common.InfoEffect;
 import mage.abilities.effects.common.continuous.BoostTargetEffect;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
+import mage.abilities.mana.conditional.InvertedManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.constants.Zone;
-import mage.game.permanent.token.PowerstoneToken;
+import mage.filter.StaticTypedFilters;
 import mage.target.common.TargetCreaturePermanent;
 
 import java.util.UUID;
@@ -41,7 +45,13 @@ public final class TheMightstoneAndWeakstone extends CardImpl {
         this.addAbility(ability);
 
         // {T}: Add {C}{C}. This mana can't be spent to cast nonartifact spells.
-        this.addAbility(new ConditionalColorlessManaAbility(2, PowerstoneToken.makeBuilder()));
+        this.addAbility(ComposedManaAbilityBuilder.builder()
+                        .cost(new TapSourceCost())
+                        .addStatic(Mana.ColorlessMana(2))
+                        .condition(new InvertedManaCondition(new FilteredSpellManaCondition(StaticTypedFilters.A_NON_ARTIFACT_SPELL)))
+                        .ruleText("Add {C}{C}. This mana can't be spent to cast a nonartifact spell.")
+                        .build()
+        );
 
         // (Melds with Urza, Lord Protector)
         this.addAbility(new SimpleStaticAbility(

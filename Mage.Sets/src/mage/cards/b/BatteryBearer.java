@@ -1,21 +1,22 @@
 package mage.cards.b;
 
 import mage.MageInt;
+import mage.Mana;
+import mage.abilities.Ability;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.common.SpellCastControllerTriggeredAbility;
+import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.effects.common.DrawCardSourceControllerEffect;
-import mage.abilities.effects.common.continuous.GainAbilityControlledEffect;
-import mage.abilities.mana.ConditionalColorlessManaAbility;
+import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
+import mage.abilities.mana.ComposedManaAbilityBuilder;
+import mage.abilities.mana.conditional.FilteredSpellManaCondition;
+import mage.abilities.mana.conditional.InvertedManaCondition;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.ComparisonType;
-import mage.constants.Duration;
-import mage.constants.SubType;
+import mage.constants.*;
 import mage.filter.FilterSpell;
-import mage.filter.StaticFilters;
+import mage.filter.StaticTypedFilters;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
-import mage.game.permanent.token.PowerstoneToken;
 
 import java.util.UUID;
 
@@ -41,10 +42,16 @@ public final class BatteryBearer extends CardImpl {
         this.toughness = new MageInt(4);
 
         // Creatures you control have "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell."
-        this.addAbility(new SimpleStaticAbility(new GainAbilityControlledEffect(
-                new ConditionalColorlessManaAbility(1, PowerstoneToken.makeBuilder()),
-                Duration.WhileOnBattlefield, StaticFilters.FILTER_PERMANENT_CREATURES
-        )));
+        Ability manaAbility = ComposedManaAbilityBuilder.builder()
+                .cost(new TapSourceCost())
+                .addStatic(Mana.ColorlessMana(1))
+                .condition(new InvertedManaCondition(new FilteredSpellManaCondition(StaticTypedFilters.A_NON_ARTIFACT_SPELL)))
+                .ruleText("Add {C}. This mana can't be spent to cast a nonartifact spell.")
+                .build();
+        this.addAbility(new SimpleStaticAbility(new GenericContinuousEffect(Duration.WhileOnBattlefield, Outcome.AddAbility, StaticTypedFilters.CREATURE_YOU_CONTROL, Zone.BATTLEFIELD)
+                .withGainedAbilities(manaAbility)
+                .setText("Creatures you control have \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\"")
+        ));
 
         // Whenever you cast an artifact spell with mana value 6 or greater, draw a card.
         this.addAbility(new SpellCastControllerTriggeredAbility(
