@@ -8,7 +8,7 @@ import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.continuous.GainAbilityTargetEffect;
 import mage.abilities.effects.common.continuous.replacement.EntersWithCountersEffect;
 import mage.abilities.keyword.HexproofAbility;
-import mage.abilities.mana.BasicManaAbility;
+import mage.abilities.mana.ActivatedManaAbilityImpl;
 import mage.abilities.mana.GreenManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -40,7 +40,7 @@ public final class JadeOrbOfDragonkind extends CardImpl {
         super(ownerId, setInfo, new CardType[] { CardType.ARTIFACT }, "{2}{G}");
 
         // {T}: Add {G}. When you spend this mana to cast a Dragon creature spell, it enters with an additional +1/+1 counter on it and gains hexproof until your next turn.
-        BasicManaAbility ability = new GreenManaAbility();
+        ActivatedManaAbilityImpl ability = new GreenManaAbility();
         Effect additionalCounterEffect = new EntersWithCountersEffect(Duration.EndOfTurn, ContinuousAffected.STATIC_OR_DYNAMIC, CounterType.P1P1.createInstance())
                 .withEventCondition((event, source, game, effect) -> {
                     if (!(source instanceof ManaSpentDelayedTriggeredAbility)) {
@@ -60,7 +60,6 @@ public final class JadeOrbOfDragonkind extends CardImpl {
         ManaSpentDelayedTriggeredAbility manaSpentAbility = new ManaSpentDelayedTriggeredAbility(additionalCounterEffect, filter);
         manaSpentAbility.addEffect(new JadeOrbGainHexproofEffect());
         ability.addEffect(new CreateDelayedTriggeredAbilityEffect(manaSpentAbility));
-        ability.setUndoPossible(false);
         this.addAbility(ability);
     }
 

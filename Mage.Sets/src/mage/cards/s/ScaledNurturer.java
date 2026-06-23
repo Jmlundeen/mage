@@ -4,7 +4,7 @@ import mage.MageInt;
 import mage.abilities.common.delayed.ManaSpentDelayedTriggeredAbility;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.GainLifeEffect;
-import mage.abilities.mana.BasicManaAbility;
+import mage.abilities.mana.ActivatedManaAbilityImpl;
 import mage.abilities.mana.GreenManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -35,11 +35,10 @@ public final class ScaledNurturer extends CardImpl {
         this.toughness = new MageInt(2);
 
         // {T}: Add {G}. When you spend this mana to cast a Dragon creature spell, you gain 2 life.
-        BasicManaAbility ability = new GreenManaAbility();
+        ActivatedManaAbilityImpl ability = new GreenManaAbility();
         ability.addEffect(new CreateDelayedTriggeredAbilityEffect(
                 new ManaSpentDelayedTriggeredAbility(new GainLifeEffect(2), filter)
         ));
-        ability.setUndoPossible(false);
         this.addAbility(ability);
     }
 

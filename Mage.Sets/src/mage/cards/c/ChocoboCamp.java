@@ -9,7 +9,7 @@ import mage.abilities.costs.common.TapSourceCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.common.CreateTokenEffect;
-import mage.abilities.mana.BasicManaAbility;
+import mage.abilities.mana.ActivatedManaAbilityImpl;
 import mage.abilities.mana.GreenManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -40,9 +40,8 @@ public final class ChocoboCamp extends CardImpl {
                 .addHint(YouControlALegendaryCreatureCondition.getHint()));
 
         // {T}: Add {G}. When you next cast a Bird creature spell this turn, it enters with an additional +1/+1 counter on it.
-        BasicManaAbility manaAbility = new GreenManaAbility();
+        ActivatedManaAbilityImpl manaAbility = new GreenManaAbility();
         manaAbility.addEffect(new CreateDelayedTriggeredAbilityEffect(new AddCounterNextSpellDelayedTriggeredAbility(filter)));
-        manaAbility.setUndoPossible(false);
         this.addAbility(manaAbility);
 
         // {2}{G}{G}, {T}: Create a 2/2 green Bird creature token with "Whenever a land you control enters, this token gets +1/+0 until end of turn."

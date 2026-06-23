@@ -3,7 +3,7 @@ package mage.cards.l;
 import mage.abilities.common.delayed.ManaSpentDelayedTriggeredAbility;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
 import mage.abilities.effects.keyword.ScryEffect;
-import mage.abilities.mana.BasicManaAbility;
+import mage.abilities.mana.ActivatedManaAbilityImpl;
 import mage.abilities.mana.BlueManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -29,7 +29,7 @@ public final class LapisOrbOfDragonkind extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{2}{U}");
 
         // {T}: Add {U}. When you spend this mana to cast a Dragon creature spell, scry 2.
-        BasicManaAbility ability = new BlueManaAbility();
+        ActivatedManaAbilityImpl ability = new BlueManaAbility();
         ability.addEffect(new CreateDelayedTriggeredAbilityEffect(
                 new ManaSpentDelayedTriggeredAbility(new ScryEffect(2), filter)
         ));

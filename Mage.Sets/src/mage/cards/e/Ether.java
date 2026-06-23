@@ -3,7 +3,7 @@ package mage.cards.e;
 import mage.abilities.common.delayed.CopyNextSpellDelayedTriggeredAbility;
 import mage.abilities.costs.common.ExileSourceCost;
 import mage.abilities.effects.common.CreateDelayedTriggeredAbilityEffect;
-import mage.abilities.mana.BasicManaAbility;
+import mage.abilities.mana.ActivatedManaAbilityImpl;
 import mage.abilities.mana.BlueManaAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
@@ -20,7 +20,7 @@ public final class Ether extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{3}{U}");
 
         // {T}, Exile this artifact: Add {U}. When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.
-        BasicManaAbility ability = new BlueManaAbility();
+        ActivatedManaAbilityImpl ability = new BlueManaAbility();
         ability.addCost(new ExileSourceCost());
         ability.addEffect(new CreateDelayedTriggeredAbilityEffect(new CopyNextSpellDelayedTriggeredAbility()));
         ability.setUndoPossible(false); // exiles itself and creates a delayed trigger so undo should be disabled

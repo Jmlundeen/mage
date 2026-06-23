@@ -7,6 +7,8 @@ import mage.counters.CounterType;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * {@link mage.cards.j.JadeOrbOfDragonkind Jade Orb of Dragonkind}
  * {2}{G}
@@ -115,5 +117,28 @@ public class JadeOrbOfDragonkindTest extends CardTestPlayerBase {
     assertTapped(jadeOrb, true);
     assertCounterCount(mowu, CounterType.P1P1, 2);
     assertAbility(playerA, mowu, HexproofAbility.getInstance(), true);
+  }
+
+  @Test
+  public void testRollback() {
+    addCard(Zone.HAND, playerA, "Ancient Bronze Dragon");
+    addCard(Zone.BATTLEFIELD, playerA, "Forest", 1);
+    addCard(Zone.BATTLEFIELD, playerA, "Mountain", 5);
+    addCard(Zone.BATTLEFIELD, playerA, jadeOrb);
+
+    activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{T}: Add {G}. When");
+    runCode("test undo with delayed trigger from mana", 1, PhaseStep.PRECOMBAT_MAIN, playerA, (info, player, game) -> {
+      game.undo(playerA.getId());
+      assertEquals("Undo didn't remove delayed trigger", 0, game.getState().getDelayed().size());
+    });
+    castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Ancient Bronze Dragon");
+
+    setStrictChooseMode(true);
+    setStopAt(1, PhaseStep.BEGIN_COMBAT);
+    execute();
+
+    assertPermanentCount(playerA, 8);
+    assertTapped(jadeOrb, true);
+    assertCounterCount("Ancient Bronze Dragon", CounterType.P1P1, 1);
   }
 }

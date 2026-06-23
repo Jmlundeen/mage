@@ -98,7 +98,7 @@ class ThranPortalAddSubtypeEnteringEffect extends OneShotEffect {
 
 class ThranPortalManaAbilityContinuousEffect extends ContinuousEffectImpl {
 
-    private static final Map<SubType, BasicManaAbility> abilityMap = new HashMap<SubType, BasicManaAbility>() {{
+    private static final Map<SubType, ActivatedManaAbilityImpl> abilityMap = new HashMap<>() {{
         put(SubType.PLAINS, new WhiteManaAbility());
         put(SubType.ISLAND, new BlueManaAbility());
         put(SubType.SWAMP, new BlackManaAbility());
