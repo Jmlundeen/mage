@@ -1,14 +1,10 @@
 package org.mage.test.utils;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
 import mage.abilities.Ability;
 import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.costs.mana.ManaCostsImpl;
-import mage.abilities.mana.BasicManaAbility;
-import mage.abilities.mana.BlackManaAbility;
 import mage.abilities.mana.ActivatedManaAbilityImpl;
+import mage.abilities.mana.BlackManaAbility;
 import mage.abilities.mana.RedManaAbility;
 import mage.abilities.mana.WhiteManaAbility;
 import mage.cards.Card;
@@ -17,6 +13,10 @@ import mage.util.ManaUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author noxx
@@ -46,8 +46,8 @@ public class ManaUtilTest extends CardTestPlayerBase {
         testManaToPayVsLand("{W}{W}{R}{B}{U}",    "Swamp",          1, BlackManaAbility.class);
         testManaToPayVsLand("{W}{W}{R}{B}{U}",    "Plains",         1, WhiteManaAbility.class);
 
-        testManaToPayVsLand("{1}{R}",   "Cavern of Souls", 2, 2); // can't auto choose to pay
-        testManaToPayVsLand("{2}",      "Cavern of Souls", 2, 2); // can't auto choose to pay
+        testManaToPayVsLand("{1}{R}",   "Ally Encampment", 2, 2); // can't auto choose without verifying conditional mana
+        testManaToPayVsLand("{2}",      "Ally Encampment", 2, 2); // can't auto choose to pay
 
         testManaToPayVsLand("{2}", "Eldrazi Temple", 2, 2); // can't auto choose to pay
 
@@ -60,6 +60,9 @@ public class ManaUtilTest extends CardTestPlayerBase {
 
         testManaToPayVsLand("{R}",      "Glimmervoid", 1, 1);
         testManaToPayVsLand("{R}{1}",   "Glimmervoid", 1, 1);
+
+        testManaToPayVsLand("{U}",      "Waterveil Cavern", 3, 1); // only blue ability matches unpaid color
+        testManaToPayVsLand("{B}",      "Waterveil Cavern", 3, 1); // only black ability matches unpaid color
 
         // we can't auto choose here:
         // let say we auto choose {R}, then we have to use it to pay for {R} not {W/R} (as {W/R} is more generic cost)
@@ -112,7 +115,7 @@ public class ManaUtilTest extends CardTestPlayerBase {
         Map<UUID, ActivatedManaAbilityImpl> useableAbilities = getManaAbilities(card);
         Assert.assertEquals(expected1, useableAbilities.size());
 
-        useableAbilities = ManaUtil.tryToAutoPay(unpaid, (LinkedHashMap<UUID, ActivatedManaAbilityImpl>) useableAbilities);
+        useableAbilities = ManaUtil.tryToAutoPay(unpaid, useableAbilities);
         Assert.assertEquals(expected2, useableAbilities.size());
     }
 
@@ -132,7 +135,7 @@ public class ManaUtilTest extends CardTestPlayerBase {
      * @param expected1         The amount of mana abilities the land should have.
      * @param expectedChosen    The mana ability expected to be chosen.
      */
-    private void testManaToPayVsLand(String manaToPay, String landName, int expected1, Class<? extends BasicManaAbility> expectedChosen) {
+    private void testManaToPayVsLand(String manaToPay, String landName, int expected1, Class<? extends ActivatedManaAbilityImpl> expectedChosen) {
         ManaCost unpaid = new ManaCostsImpl<>(manaToPay);
         Card card = CardRepository.instance.findCard(landName).createCard();
         Assert.assertNotNull(card);
@@ -140,7 +143,7 @@ public class ManaUtilTest extends CardTestPlayerBase {
         Map<UUID, ActivatedManaAbilityImpl> useableAbilities = getManaAbilities(card);
         Assert.assertEquals(expected1, useableAbilities.size());
 
-        useableAbilities = ManaUtil.tryToAutoPay(unpaid, (LinkedHashMap<UUID, ActivatedManaAbilityImpl>) useableAbilities);
+        useableAbilities = ManaUtil.tryToAutoPay(unpaid, useableAbilities);
         Assert.assertEquals(1, useableAbilities.size());
         ActivatedManaAbilityImpl ability = useableAbilities.values().iterator().next();
         Assert.assertTrue("Wrong mana ability has been chosen", expectedChosen.isInstance(ability));

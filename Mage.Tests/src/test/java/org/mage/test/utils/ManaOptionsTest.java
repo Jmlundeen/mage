@@ -707,4 +707,63 @@ public class ManaOptionsTest extends CardTestPlayerBase {
         assertCannotPay("{G}".repeat(n + (n * 5) + 1), manaOptions, currentGame);
         logger.info("Cascading Cataracts test completed in " + (System.currentTimeMillis() - startTime) + " ms");
     }
+
+    @Test
+    public void testDeathriteShaman() {
+        /**
+         * {@link mage.cards.d.DeathriteShaman Deathrite Shaman}
+         * <br>
+         * {B/G}
+         * <br>
+         * Creature -- Elf Shaman
+         * <br>
+         * {T}: Exile target land card from a graveyard. Add one mana of any color.
+         {B}, {T}: Exile target instant or sorcery card from a graveyard. Each opponent loses 2 life.
+         {G}, {T}: Exile target creature card from a graveyard. You gain 2 life.
+         * <br>
+         * 1/2
+         */
+        final String deathriteShaman = "Deathrite Shaman";
+
+        addCard(Zone.BATTLEFIELD, playerA, deathriteShaman);
+        addCard(Zone.GRAVEYARD, playerA, "Forest");
+
+        setStopAt(1, PhaseStep.UPKEEP);
+        execute();
+
+        ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
+        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
+        assertTrue("Expected to be able to produce {W}", manaOptions.canProduce("{W}"));
+        assertTrue("Expected to be able to produce {U}", manaOptions.canProduce("{U}"));
+        assertTrue("Expected to be able to produce {B}", manaOptions.canProduce("{B}"));
+        assertTrue("Expected to be able to produce {R}", manaOptions.canProduce("{R}"));
+        assertTrue("Expected to be able to produce {G}", manaOptions.canProduce("{G}"));
+    }
+
+    @Test
+    public void testCrucibleOfTheSpiritDragon() {
+        /**
+         * {@link mage.cards.c.CrucibleOfTheSpiritDragon Crucible of the Spirit Dragon}
+         * <br>
+         *
+         * <br>
+         * Land
+         * <br>
+         * {T}: Add {C}.
+         {1}, {T}: Put a storage counter on this land.
+         {T}, Remove X storage counters from this land: Add X mana in any combination of colors. Spend this mana only to cast Dragon spells or activate abilities of Dragons.
+         */
+        final String crucibleOfTheSpiritDragon = "Crucible of the Spirit Dragon";
+
+        addCard(Zone.BATTLEFIELD, playerA, crucibleOfTheSpiritDragon);
+        addCounters(1, PhaseStep.UPKEEP, playerA, crucibleOfTheSpiritDragon, CounterType.STORAGE, 3);
+
+        setStopAt(1, PhaseStep.UPKEEP);
+        execute();
+
+        ManaOptions manaOptions = playerA.getAvailableManaTest(currentGame);
+        Assert.assertEquals("mana variations don't fit", 1, manaOptions.size());
+        assertTrue("Expected to be able to produce {C}", manaOptions.canProduce("{C}"));
+        assertTrue("Expected to be able to produce {C}{C}{C}", manaOptions.canProduce("{C}{C}{C}"));
+    }
 }
