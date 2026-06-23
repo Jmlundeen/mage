@@ -5,7 +5,7 @@ import mage.constants.SuperType;
 import mage.constants.TargetController;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
-import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.filter.predicate.typed.card.CardPredicate;
 import mage.filter.predicate.typed.mageObject.color.MultiColoredPredicate;
 
