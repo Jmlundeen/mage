@@ -16,7 +16,7 @@ import mage.constants.Outcome;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterArtifactCard;
-import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.filter.predicate.typed.card.CardPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;

@@ -7,9 +7,9 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
-import mage.constants.TargetController;
 import mage.constants.Zone;
-import mage.filter.StaticFilters;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 
 import java.util.UUID;
 
@@ -17,6 +17,10 @@ import java.util.UUID;
  * @author BetaSteward_at_googlemail.com
  */
 public final class NecroticOoze extends CardImpl {
+
+    private static final FilterTyped filter = new FilterTyped("activated abilities of a creature card")
+            .add(ActivatedAbilityPredicate.instance)
+            .add(CardType.CREATURE.getPredicate());
 
     public NecroticOoze(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{2}{B}{B}");
@@ -27,10 +31,9 @@ public final class NecroticOoze extends CardImpl {
 
         // As long as Necrotic Ooze is on the battlefield, it has all 
         // activated abilities of all creature cards in all graveyards
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "As long as {this} is on the battlefield, it has all activated abilities of all creature cards in all graveyards")
-                .fromCardsInZones(StaticFilters.FILTER_CARD_CREATURE, Zone.GRAVEYARD)
-                .setCardWithAbilityController(TargetController.EACH_PLAYER)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.GRAVEYARD)
+                .setText("As long as {this} is on the battlefield, it has all activated abilities of all creature cards in all graveyards")
         ));
     }
 

@@ -11,11 +11,11 @@ import mage.cards.Card;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.FilterAbility;
 import mage.filter.FilterPermanent;
+import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreatureOrPlaneswalkerPermanent;
-import mage.filter.predicate.ability.LoyaltyAbilityPredicate;
-import mage.filter.predicate.mageobject.AnotherPredicate;
+import mage.filter.predicate.typed.ability.type.LoyaltyAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.object.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
@@ -32,14 +32,12 @@ import java.util.*;
  */
 public final class NicolBolasDragonGod extends CardImpl {
 
-    private static final FilterAbility abilityFilter = new FilterAbility("the loyalty abilities of {this}");
-    private static final FilterPermanent permanentFilter = new FilterPermanent("each other planeswalker on the battlefield");
-
-    static {
-        abilityFilter.add(LoyaltyAbilityPredicate.instance);
-        permanentFilter.add(AnotherPredicate.instance);
-        permanentFilter.add(CardType.PLANESWALKER.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("loyalty abilities of other planeswalkers")
+            .addAll(
+                    AnotherPredicate.instance,
+                    CardType.PLANESWALKER.getPredicate()
+            )
+            .add(LoyaltyAbilityPredicate.instance);
 
     public NicolBolasDragonGod(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.PLANESWALKER}, "{U}{B}{B}{B}{R}");
@@ -49,10 +47,9 @@ public final class NicolBolasDragonGod extends CardImpl {
         this.setStartingLoyalty(4);
 
         // Nicol Bolas, Dragon-God has all loyalty abilities of all other planeswalkers on the battlefield.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(abilityFilter,
-                "{this} has all loyalty abilities of all other planeswalkers on the battlefield.")
-                .fromPermanents(permanentFilter)
-                .setCardWithAbilityController(TargetController.EACH_PLAYER)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.BATTLEFIELD)
+                .setText("{this} has all loyalty abilities of all other planeswalkers on the battlefield.")
         ));
 
         // +1: You draw a card. Each opponent exiles a card from their hand or a permanent they control.

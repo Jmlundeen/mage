@@ -15,8 +15,10 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.counters.CounterType;
-import mage.filter.FilterCard;
+import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.card.CardPredicate;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
@@ -28,11 +30,12 @@ import java.util.UUID;
  */
 public final class RexCyberHound extends CardImpl {
 
-    private static final FilterCard filter = new FilterCard();
-
-    static {
-        filter.add(CounterType.BRAIN.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("activated ability of a card with brain counters")
+            .addAll(
+                    CardPredicate.instance,
+                    CounterType.BRAIN.getPredicate()
+            )
+            .add(ActivatedAbilityPredicate.instance);
 
     public RexCyberHound(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{1}{W}{U}");
@@ -55,9 +58,8 @@ public final class RexCyberHound extends CardImpl {
         this.addAbility(ability);
 
         // Rex has all activated abilities of all cards in exile with brain counters on them.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of all cards in exile with brain counters on them")
-                .fromCardsInZones(filter, Zone.EXILED)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.EXILED)
         ));
     }
 

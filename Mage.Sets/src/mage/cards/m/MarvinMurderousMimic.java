@@ -5,13 +5,10 @@ import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitiesOfEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.filter.FilterPermanent;
-import mage.filter.StaticFilters;
-import mage.filter.common.FilterCreaturePermanent;
-import mage.filter.predicate.mageobject.SameNameAsSourcePredicate;
+import mage.constants.*;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.object.SameNameAsSourcePredicate;
 
 import java.util.UUID;
 
@@ -20,11 +17,13 @@ import java.util.UUID;
  */
 public final class MarvinMurderousMimic extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterCreaturePermanent("creatures you control that don't have the same name as this creature");
+    private static final FilterTyped filter = new FilterTyped("activated abilities of creatures you control that don't have the same name as this creature")
+            .addAll(
+                    TargetController.YOU.getControllerPredicate(),
+                    SameNameAsSourcePredicate.instance
+            )
+            .add(ActivatedAbilityPredicate.instance);
 
-    static {
-        filter.add(SameNameAsSourcePredicate.NOT);
-    }
     public MarvinMurderousMimic(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{2}");
 
@@ -34,9 +33,9 @@ public final class MarvinMurderousMimic extends CardImpl {
         this.toughness = new MageInt(2);
 
         // Marvin, Murderous Mimic has all activated abilities of creatures you control that don't have the same name as this creature.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of creatures you control that don't have the same name as this creature")
-                .fromPermanents(filter)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.BATTLEFIELD)
+                .setText("{this} has all activated abilities of creatures you control that don't have the same name as this creature")
         ));
     }
 

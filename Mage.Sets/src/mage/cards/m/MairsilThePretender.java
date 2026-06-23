@@ -15,7 +15,7 @@ import mage.counters.CounterType;
 import mage.filter.FilterCard;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.Predicates;
-import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.filter.predicate.typed.card.CardPredicate;
 import mage.game.Game;
 import mage.players.Player;

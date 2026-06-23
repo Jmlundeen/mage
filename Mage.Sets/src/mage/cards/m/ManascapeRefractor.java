@@ -9,8 +9,8 @@ import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitie
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
-import mage.filter.StaticFilters;
-import mage.filter.common.FilterLandPermanent;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.game.Game;
 import mage.players.ManaPoolItem;
 import mage.util.CardUtil;
@@ -22,6 +22,10 @@ import java.util.UUID;
  */
 public final class ManascapeRefractor extends CardImpl {
 
+    static final FilterTyped filter = new FilterTyped("activated ability of a land on the battlefield")
+            .add(CardType.LAND.getPredicate())
+            .add(ActivatedAbilityPredicate.instance);
+
     public ManascapeRefractor(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT}, "{3}");
 
@@ -29,10 +33,9 @@ public final class ManascapeRefractor extends CardImpl {
         this.addAbility(new EntersBattlefieldTappedAbility());
 
         // Manascape Refractor has all activated abilities of all lands on the battlefield.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of all lands on the battlefield.")
-                .fromPermanents(new FilterLandPermanent())
-                .setCardWithAbilityController(TargetController.EACH_PLAYER)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.BATTLEFIELD)
+                .setText("{this} has all activated abilities of all lands on the battlefield.")
         ));
 
         // You may spend mana as though it were mana of any color to pay the activation costs of Manascape Refractor's abilities.

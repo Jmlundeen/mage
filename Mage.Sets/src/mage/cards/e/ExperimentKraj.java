@@ -13,11 +13,11 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.SuperType;
-import mage.constants.TargetController;
+import mage.constants.Zone;
 import mage.counters.CounterType;
-import mage.filter.StaticFilters;
-import mage.filter.common.FilterCreaturePermanent;
-import mage.filter.predicate.mageobject.AnotherPredicate;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.object.AnotherPredicate;
 import mage.target.common.TargetCreaturePermanent;
 
 import java.util.UUID;
@@ -27,12 +27,14 @@ import java.util.UUID;
  */
 public final class ExperimentKraj extends CardImpl {
 
-    private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("each other creature with a +1/+1 counter on it");
+    private static final FilterTyped filter = new FilterTyped("activated abilities of each other creature with a +1/+1 counter on it")
+            .addAll(
+                    CardType.CREATURE.getPredicate(),
+                    CounterType.P1P1.getPredicate(),
+                    AnotherPredicate.instance
+            )
+            .add(ActivatedAbilityPredicate.instance);
 
-    static {
-        filter.add(CounterType.P1P1.getPredicate());
-        filter.add(AnotherPredicate.instance);
-    }
 
     public ExperimentKraj(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{2}{G}{G}{U}{U}");
@@ -44,10 +46,9 @@ public final class ExperimentKraj extends CardImpl {
         this.toughness = new MageInt(6);
 
         // Experiment Kraj has all activated abilities of each other creature with a +1/+1 counter on it.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of each other creature with a +1/+1 counter on it")
-                .fromPermanents(filter)
-                .fromCardsControlledBy(TargetController.EACH_PLAYER)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.BATTLEFIELD)
+                .setText("{this} has all activated abilities of each other creature with a +1/+1 counter on it")
         ));
 
         // {tap}: Put a +1/+1 counter on target creature.

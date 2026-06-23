@@ -12,7 +12,10 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterPermanent;
-import mage.filter.StaticFilters;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.ManaAbilityPredicate;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -26,12 +29,15 @@ import java.util.UUID;
  */
 public final class SharkeyTyrantOfTheShire extends CardImpl {
 
-    private static final FilterPermanent filter = new FilterPermanent("lands your opponents control");
-
-    static {
-        filter.add(CardType.LAND.getPredicate());
-        filter.add(TargetController.OPPONENT.getControllerPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("non-mana activated abilities of a land your opponents control")
+            .addAll(
+                    TargetController.OPPONENT.getControllerPredicate(),
+                    CardType.LAND.getPredicate()
+            )
+            .addAll(
+                    LogicalPredicate.not(ManaAbilityPredicate.instance),
+                    ActivatedAbilityPredicate.instance
+            );
 
     public SharkeyTyrantOfTheShire(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{2}{U}{B}");
@@ -43,12 +49,12 @@ public final class SharkeyTyrantOfTheShire extends CardImpl {
         this.toughness = new MageInt(4);
 
         // Activated abilities of lands your opponents control can't be activated unless they're mana abilities.
-        this.addAbility(new SimpleStaticAbility(new SharkeyTyrantOfTheShireReplacementEffect(filter)));
+        this.addAbility(new SimpleStaticAbility(new SharkeyTyrantOfTheShireReplacementEffect()));
 
         // Sharkey, Tyrant of the Shire has all activated abilities of lands your opponents control except mana abilities.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of lands your opponents control except mana abilities.")
-                .fromPermanents(filter)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.BATTLEFIELD)
+                .setText("{this} has all activated abilities of lands your opponents control except mana abilities.")
         ));
 
         // Mana of any type can be spent to activate Sharkey's abilities.
@@ -67,17 +73,20 @@ public final class SharkeyTyrantOfTheShire extends CardImpl {
 
 class SharkeyTyrantOfTheShireReplacementEffect extends ReplacementEffectImpl {
 
-    private FilterPermanent filter;
+    private static final FilterPermanent filter = new FilterPermanent("lands your opponents control");
 
-    SharkeyTyrantOfTheShireReplacementEffect(FilterPermanent filter) {
+    static {
+        filter.add(CardType.LAND.getPredicate());
+        filter.add(TargetController.OPPONENT.getControllerPredicate());
+    }
+
+    SharkeyTyrantOfTheShireReplacementEffect() {
         super(Duration.WhileOnBattlefield, Outcome.Detriment);
-        this.filter = filter;
         staticText = "Activated abilities of lands your opponents control can't be activated unless they're mana abilities";
     }
 
     private SharkeyTyrantOfTheShireReplacementEffect(final SharkeyTyrantOfTheShireReplacementEffect effect) {
         super(effect);
-        this.filter = effect.filter;
     }
 
     @Override

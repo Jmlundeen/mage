@@ -1,10 +1,13 @@
 package org.mage.test.cards.single.avr;
 
-import mage.abilities.common.SimpleActivatedAbility;
+import mage.abilities.Abilities;
+import mage.abilities.ActivatedAbility;
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
+
+import static org.junit.Assert.assertEquals;
 
 public class DarkImpostorTest extends CardTestPlayerBase {
 
@@ -48,6 +51,7 @@ public class DarkImpostorTest extends CardTestPlayerBase {
         setStopAt(1, PhaseStep.END_TURN);
         execute();
 
-        assertAbilityCount(playerA, darkImpostor, SimpleActivatedAbility.class, 4); // own ability + 3 other from deathrite
+        Abilities<ActivatedAbility> abilities = getPermanent(darkImpostor).getAbilities(currentGame).getActivatedAbilities(Zone.BATTLEFIELD);
+        assertEquals(4, abilities.size()); // own ability + 3 other from deathrite
     }
 }

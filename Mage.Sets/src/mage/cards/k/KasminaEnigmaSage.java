@@ -16,7 +16,7 @@ import mage.filter.FilterCard;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterInstantOrSorceryCard;
 import mage.filter.predicate.mageobject.SharesColorPredicate;
-import mage.filter.predicate.typed.ability.LoyaltyAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.LoyaltyAbilityPredicate;
 import mage.filter.predicate.typed.mageObject.object.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;

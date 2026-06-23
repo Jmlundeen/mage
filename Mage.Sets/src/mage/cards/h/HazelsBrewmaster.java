@@ -12,7 +12,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
-import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.game.permanent.token.FoodToken;
 import mage.target.common.TargetCardInGraveyard;
 

@@ -14,7 +14,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterLandCard;
-import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.target.common.TargetCardInYourGraveyard;
 
 import java.util.UUID;

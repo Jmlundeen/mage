@@ -6,11 +6,9 @@ import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitie
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.filter.StaticFilters;
-import mage.filter.common.FilterControlledCreaturePermanent;
+import mage.constants.*;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 
 import java.util.UUID;
 
@@ -19,11 +17,12 @@ import java.util.UUID;
  */
 public final class RobaranMercenaries extends CardImpl {
 
-    private static final FilterControlledCreaturePermanent filter = new FilterControlledCreaturePermanent();
-
-    static {
-        filter.add(SuperType.LEGENDARY.getPredicate());
-    }
+    private static final FilterTyped filter = new FilterTyped("activated ability of a legendary creature you control")
+            .addAll(
+                    SuperType.LEGENDARY.getPredicate(),
+                    TargetController.YOU.getControllerPredicate()
+            )
+            .add(ActivatedAbilityPredicate.instance);
 
     public RobaranMercenaries(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{3}{W}");
@@ -37,9 +36,9 @@ public final class RobaranMercenaries extends CardImpl {
         this.addAbility(VigilanceAbility.getInstance());
 
         // Robaran Mercenaries has all activated abilties of all legendary creatures you control.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "{this} has all activated abilities of all legendary creatures you control")
-                .fromPermanents(filter)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.BATTLEFIELD)
+                .setText("{this} has all activated abilities of all legendary creatures you control")
         ));
     }
 

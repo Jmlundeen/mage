@@ -6,7 +6,7 @@ import mage.abilities.effects.common.continuous.generic.GenericContinuousEffect;
 import mage.cards.Card;
 import mage.constants.*;
 import mage.filter.FilterTyped;
-import mage.filter.predicate.typed.ability.AbilityPredicate;
+import mage.filter.predicate.typed.ability.type.AbilityPredicate;
 import mage.game.ExileZone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;

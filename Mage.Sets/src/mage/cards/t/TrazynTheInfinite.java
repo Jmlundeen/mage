@@ -6,11 +6,9 @@ import mage.abilities.effects.common.continuous.layers.L6_Abilities.GainAbilitie
 import mage.abilities.keyword.DeathtouchAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.CardType;
-import mage.constants.SubType;
-import mage.constants.SuperType;
-import mage.constants.Zone;
-import mage.filter.StaticFilters;
+import mage.constants.*;
+import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 
 import java.util.UUID;
 
@@ -18,6 +16,13 @@ import java.util.UUID;
  * @author TheElk801
  */
 public final class TrazynTheInfinite extends CardImpl {
+
+    static final FilterTyped filter = new FilterTyped("activated abilities of an artifact card")
+            .addAll(
+                    CardType.ARTIFACT.getPredicate(),
+                    TargetController.YOU.getOwnerPredicate()
+            )
+            .add(ActivatedAbilityPredicate.instance);
 
     public TrazynTheInfinite(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.ARTIFACT, CardType.CREATURE}, "{4}{B}{B}");
@@ -31,9 +36,9 @@ public final class TrazynTheInfinite extends CardImpl {
         this.addAbility(DeathtouchAbility.getInstance());
 
         // Prismatic Gallery -- As long as Trazyn the Infinite is on the battlefield, it has all activated abilities of all artifact cards in your graveyard.
-        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect(StaticFilters.FILTER_ACTIVATED_ABILITY,
-                "As long as Trazyn the Infinite is on the battlefield, it has all activated abilities of all artifact cards in your graveyard")
-                .fromCardsInZones(StaticFilters.FILTER_CARD_ARTIFACT, Zone.GRAVEYARD)
+        this.addAbility(new SimpleStaticAbility(new GainAbilitiesOfEffect()
+                .setAbilityFilter(filter, Zone.GRAVEYARD)
+                .setText("As long as {this} is on the battlefield, it has all activated abilities of all artifact cards in your graveyard")
         ).withFlavorWord("Prismatic Gallery"));
     }
 

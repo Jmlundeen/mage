@@ -12,7 +12,7 @@ import mage.constants.CardType;
 import mage.filter.FilterPermanent;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.Predicates;
-import mage.filter.predicate.typed.ability.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.filter.predicate.typed.card.CardPredicate;
 import mage.target.TargetPermanent;
 
