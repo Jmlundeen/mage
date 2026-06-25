@@ -20,6 +20,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.game.permanent.token.BloodToken;
 import mage.util.CardUtil;
@@ -33,7 +34,7 @@ import java.util.UUID;
 public final class VoldarenEstate extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("Vampire")
-            .add(SubType.VAMPIRE.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.VAMPIRE.getPredicate()));
 
     public VoldarenEstate(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");

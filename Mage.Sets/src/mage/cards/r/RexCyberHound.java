@@ -19,6 +19,7 @@ import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.filter.predicate.typed.card.CardPredicate;
+import mage.filter.predicate.typed.card.ICardPredicate;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.common.TargetCardInGraveyard;
@@ -33,7 +34,7 @@ public final class RexCyberHound extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("activated ability of a card with brain counters")
             .addAll(
                     CardPredicate.instance,
-                    CounterType.BRAIN.getPredicate()
+                    ICardPredicate.getOSPPredicate(CounterType.BRAIN.getPredicate())
             )
             .add(ActivatedAbilityPredicate.instance);
 

@@ -8,6 +8,7 @@ import mage.constants.SuperType;
 import mage.constants.TargetController;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -17,11 +18,11 @@ import java.util.UUID;
 public final class MoxAmber extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("legendary creatures and planeswalkers you control")
-            .add(SuperType.LEGENDARY.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()))
             .add(TargetController.YOU.getControllerPredicate())
             .add(LogicalPredicate.or(
-                    CardType.CREATURE.getPredicate(),
-                    CardType.PLANESWALKER.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(CardType.PLANESWALKER.getPredicate())
             ));
 
     public MoxAmber(UUID ownerId, CardSetInfo setInfo) {

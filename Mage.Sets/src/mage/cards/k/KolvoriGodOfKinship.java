@@ -26,6 +26,7 @@ import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreatureCard;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.typed.ability.type.SpellAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -40,13 +41,13 @@ public final class KolvoriGodOfKinship extends ModalDoubleFacedCard {
             .add(SpellAbilityPredicate.instance);
     private static final FilterTyped legendaryFilter = new FilterTyped("legendary creature spell")
             .addAll(
-                    CardType.CREATURE.getPredicate(),
-                    SuperType.LEGENDARY.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate())
             );
 
     static {
-        filter.add(SuperType.LEGENDARY.getPredicate());
-        filter2.add(SuperType.LEGENDARY.getPredicate());
+        filter.add(IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()));
+        filter2.add(IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()));
     }
 
     private static final PermanentsOnTheBattlefieldCondition condition

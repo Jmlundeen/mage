@@ -16,6 +16,7 @@ import mage.constants.PutCards;
 import mage.constants.SubType;
 import mage.filter.FilterCard;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public final class OrbOfDragonkind extends CardImpl {
     private static final FilterTyped manaFilter = new FilterTyped("Dragon spells or abilities of Dragons");
 
     static {
-        filter.add(SubType.DRAGON.getPredicate());
+        filter.add(IMageObjectPredicate.getOSPPredicate(SubType.DRAGON.getPredicate()));
     }
 
     public OrbOfDragonkind(UUID ownerId, CardSetInfo setInfo) {

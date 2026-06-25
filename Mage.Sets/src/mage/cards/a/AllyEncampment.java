@@ -16,6 +16,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetControlledPermanent;
 
 import java.util.UUID;
@@ -27,7 +28,7 @@ import java.util.UUID;
 public final class AllyEncampment extends CardImpl {
 
     private static final FilterTyped filterSpell = new FilterTyped("an Ally spell")
-            .addAll(SpellPredicate.instance, SubType.ALLY.getPredicate());
+            .addAll(SpellPredicate.instance, IMageObjectPredicate.getOSPPredicate(SubType.ALLY.getPredicate()));
     private static final FilterControlledPermanent filterPermanent = new FilterControlledPermanent(SubType.ALLY, "Ally you control");
 
     public AllyEncampment(UUID ownerId, CardSetInfo setInfo) {

@@ -14,6 +14,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.permanent.token.TrooperToken;
 
 import java.util.UUID;
@@ -25,7 +26,7 @@ import java.util.UUID;
 public final class KaminoCloningFacility extends CardImpl {
 
     private static final FilterTyped FILTER = new FilterTyped("a Trooper spell")
-            .add(SubType.TROOPER.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.TROOPER.getPredicate()));
 
 
     public KaminoCloningFacility(UUID ownerId, CardSetInfo setInfo) {

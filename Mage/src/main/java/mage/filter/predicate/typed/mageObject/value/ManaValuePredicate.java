@@ -6,10 +6,9 @@ import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.constants.ComparisonType;
 import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.typed.TypedIntComparePredicate;
-import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 
-public class ManaValuePredicate implements IMageObjectPredicate, TypedIntComparePredicate<MageObject> {
+public class ManaValuePredicate implements TypedIntComparePredicate<MageObject> {
 
     private final ComparisonType comparisonType;
     private final DynamicValue value;
@@ -42,5 +41,10 @@ public class ManaValuePredicate implements IMageObjectPredicate, TypedIntCompare
     @Override
     public String toString() {
         return "ManaValue" + comparisonType + value.getMessage();
+    }
+
+    @Override
+    public Class<MageObject> getObjectClass() {
+        return MageObject.class;
     }
 }

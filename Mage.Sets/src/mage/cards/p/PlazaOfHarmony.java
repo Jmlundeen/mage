@@ -12,6 +12,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.constants.TargetController;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ import java.util.UUID;
 public final class PlazaOfHarmony extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("a Gate you control")
-            .add(SubType.GATE.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.GATE.getPredicate()))
             .add(TargetController.YOU.getControllerPredicate());
 
     public PlazaOfHarmony(UUID ownerId, CardSetInfo setInfo) {

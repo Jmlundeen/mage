@@ -14,6 +14,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.permanent.token.AllyToken;
 
 import java.util.UUID;
@@ -24,7 +25,7 @@ import java.util.UUID;
 public final class JasmineDragonTeaShop extends CardImpl {
 
     static final FilterTyped filter = new FilterTyped("ally")
-            .add(SubType.ALLY.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.ALLY.getPredicate()));
 
     public JasmineDragonTeaShop(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");

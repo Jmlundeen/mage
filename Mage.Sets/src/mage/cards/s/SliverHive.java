@@ -17,6 +17,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.permanent.token.SliverToken;
 
 import java.util.UUID;
@@ -29,7 +30,7 @@ public final class SliverHive extends CardImpl {
     private static final FilterTyped filterSpell = new FilterTyped("a Sliver spell")
             .addAll(
                     SpellPredicate.instance,
-                    SubType.SLIVER.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.SLIVER.getPredicate())
             );
 
     private static final Condition condition = new PermanentsOnTheBattlefieldCondition(

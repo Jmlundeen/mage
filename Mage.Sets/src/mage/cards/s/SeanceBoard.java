@@ -17,6 +17,7 @@ import mage.constants.TargetController;
 import mage.counters.CounterType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -27,10 +28,10 @@ public final class SeanceBoard extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("instant, sorcery, Demon, and Spirit spells")
             .add(LogicalPredicate.or(
-                    CardType.INSTANT.getPredicate(),
-                    CardType.SORCERY.getPredicate(),
-                    SubType.DEMON.getPredicate(),
-                    SubType.SPIRIT.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(CardType.INSTANT.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(CardType.SORCERY.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SubType.DEMON.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SubType.SPIRIT.getPredicate())
             ));
 
     public SeanceBoard(UUID ownerId, CardSetInfo setInfo) {

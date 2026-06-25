@@ -9,6 +9,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 /**
  * @author TheElk801
@@ -16,7 +17,7 @@ import mage.filter.predicate.typed.Spell.SpellPredicate;
 public final class CommodoreGuffToken extends TokenImpl {
 
     private static final FilterTyped filter = new FilterTyped("a planeswalker spell")
-            .addAll(SpellPredicate.instance, CardType.PLANESWALKER.getPredicate());
+            .addAll(SpellPredicate.instance, IMageObjectPredicate.getOSPPredicate(CardType.PLANESWALKER.getPredicate()));
 
     public CommodoreGuffToken() {
         super("Wizard Token", "1/1 red Wizard creature token with \"{T}: Add {R}. Spend this mana only to cast a planeswalker spell.\"");

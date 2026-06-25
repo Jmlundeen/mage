@@ -11,6 +11,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ import java.util.UUID;
 public final class HermiticHerbalist extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("Lesson spells")
-            .addAll(SpellPredicate.instance, SubType.LESSON.getPredicate());
+            .addAll(SpellPredicate.instance, IMageObjectPredicate.getOSPPredicate(SubType.LESSON.getPredicate()));
 
     public HermiticHerbalist(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{G}{U}");

@@ -20,6 +20,7 @@ import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.mageobject.ColorPredicate;
 import mage.filter.predicate.permanent.TappedPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.TargetPermanent;
 
 import java.util.Set;
@@ -31,7 +32,7 @@ import java.util.UUID;
 public final class GrandArchitect extends CardImpl {
 
     private static final FilterTyped boostFilter = new FilterTyped("blue creatures")
-            .addAll(CardType.CREATURE.getPredicate(),
+            .addAll(IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
                     mage.filter.predicate.typed.mageObject.color.ColorPredicate.BLUE
             );
     private static final FilterControlledPermanent tapFilter = new FilterControlledCreaturePermanent("untapped blue creature you control");

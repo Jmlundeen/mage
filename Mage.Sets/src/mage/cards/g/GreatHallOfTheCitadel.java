@@ -10,6 +10,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SuperType;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ import java.util.UUID;
 public final class GreatHallOfTheCitadel extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("a legendary spell")
-            .add(SuperType.LEGENDARY.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()));
 
     public GreatHallOfTheCitadel(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");

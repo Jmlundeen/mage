@@ -12,6 +12,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public final class AutomatedArtificer extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("artifact spell or activated ability")
             .addAll(
-                    CardType.ARTIFACT.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(CardType.ARTIFACT.getPredicate()),
                     SpellPredicate.instance
             )
             .add(ActivatedAbilityPredicate.instance);

@@ -9,6 +9,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -17,11 +18,8 @@ import java.util.UUID;
  */
 public final class IxallisLorekeeper extends CardImpl {
 
-    static final FilterTyped filter = new FilterTyped("dinosaur");
-
-    static {
-        filter.add(SubType.DINOSAUR.getPredicate());
-    }
+    static final FilterTyped filter = new FilterTyped("dinosaur")
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.DINOSAUR.getPredicate()));
 
     public IxallisLorekeeper(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{G}");

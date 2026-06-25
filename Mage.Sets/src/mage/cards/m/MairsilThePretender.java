@@ -17,6 +17,7 @@ import mage.filter.FilterTyped;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.filter.predicate.typed.card.CardPredicate;
+import mage.filter.predicate.typed.card.ICardPredicate;
 import mage.game.Game;
 import mage.players.Player;
 import mage.target.Target;
@@ -34,7 +35,7 @@ public final class MairsilThePretender extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("activated abilities of cards you own in exile with cage counters on them")
             .addAll(
                     CardPredicate.instance,
-                    CounterType.CAGE.getPredicate()
+                    ICardPredicate.getOSPPredicate(CounterType.CAGE.getPredicate())
             )
             .add(ActivatedAbilityPredicate.instance);
 

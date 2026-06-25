@@ -24,6 +24,7 @@ import mage.filter.FilterTyped;
 import mage.filter.predicate.Predicate;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.target.common.TargetCardInYourGraveyard;
 
@@ -38,7 +39,7 @@ public final class HavenOfTheSpiritDragon extends CardImpl {
     private static final FilterCard filter = new FilterCard("Dragon creature card or Ugin planeswalker card from your graveyard");
     private static final FilterTyped manaFilter = new FilterTyped("Dragon")
             .addAll(
-                    SubType.DRAGON.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(SubType.DRAGON.getPredicate()),
                     SpellPredicate.instance
             );
 

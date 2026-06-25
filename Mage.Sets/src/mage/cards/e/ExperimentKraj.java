@@ -17,6 +17,8 @@ import mage.constants.Zone;
 import mage.counters.CounterType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.card.ICardPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.filter.predicate.typed.mageObject.object.AnotherPredicate;
 import mage.target.common.TargetCreaturePermanent;
 
@@ -29,8 +31,8 @@ public final class ExperimentKraj extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("activated abilities of each other creature with a +1/+1 counter on it")
             .addAll(
-                    CardType.CREATURE.getPredicate(),
-                    CounterType.P1P1.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
+                    ICardPredicate.getOSPPredicate(CounterType.P1P1.getPredicate()),
                     AnotherPredicate.instance
             )
             .add(ActivatedAbilityPredicate.instance);

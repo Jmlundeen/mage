@@ -13,6 +13,7 @@ import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -23,8 +24,8 @@ public final class GallifreyCouncilChamber extends CardImpl {
 
     static final FilterTyped filter = new FilterTyped("time lord or alien")
             .add(LogicalPredicate.or(
-                    SubType.TIME_LORD.getPredicate(),
-                    SubType.ALIEN.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.TIME_LORD.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SubType.ALIEN.getPredicate())
             ));
 
     public GallifreyCouncilChamber(UUID ownerId, CardSetInfo setInfo) {

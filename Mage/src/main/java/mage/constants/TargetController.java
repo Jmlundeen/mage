@@ -2,7 +2,6 @@ package mage.constants;
 
 import mage.cards.Card;
 import mage.filter.predicate.ObjectSourcePlayer;
-import mage.filter.predicate.ObjectSourcePlayerPredicate;
 import mage.filter.predicate.TypedPredicate;
 import mage.game.Controllable;
 import mage.game.Game;
@@ -54,7 +53,7 @@ public enum TargetController {
         return controllerPredicate;
     }
 
-    public static class OwnerPredicate implements ObjectSourcePlayerPredicate<Card>, TypedPredicate<ObjectSourcePlayer<Card>> {
+    public static class OwnerPredicate implements TypedPredicate<Card> {
 
         private final TargetController targetOwner;
 
@@ -100,7 +99,7 @@ public enum TargetController {
         }
     }
 
-    public static class PlayerPredicate implements ObjectSourcePlayerPredicate<Player>, TypedPredicate<ObjectSourcePlayer<Player>> {
+    public static class PlayerPredicate implements TypedPredicate<Player> {
 
         private final TargetController targetPlayer;
 
@@ -141,7 +140,7 @@ public enum TargetController {
         }
     }
 
-    public static class ControllerPredicate implements ObjectSourcePlayerPredicate<Controllable>, TypedPredicate<ObjectSourcePlayer<Controllable>> {
+    public static class ControllerPredicate implements TypedPredicate<Controllable> {
 
         private final TargetController controller;
 

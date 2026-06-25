@@ -15,6 +15,7 @@ import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.mageobject.PowerPredicate;
 import mage.filter.predicate.mageobject.ToughnessPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.TargetPermanent;
 
 import java.util.UUID;
@@ -27,8 +28,8 @@ public final class TheSeedcore extends CardImpl {
     private static final FilterCreaturePermanent filter = new FilterCreaturePermanent("1/1 creature");
     private static final FilterTyped manaFilter = new FilterTyped("Phyrexian creature spell")
             .addAll(
-                    SubType.PHYREXIAN.getPredicate(),
-                    CardType.CREATURE.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.PHYREXIAN.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate())
             );
 
     static {

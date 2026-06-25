@@ -15,6 +15,7 @@ import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetCreaturePermanent;
 
 import java.util.UUID;
@@ -25,7 +26,7 @@ import java.util.UUID;
 public final class DarkImpostor extends CardImpl {
 
     private static final FilterTyped abilityFilter = new FilterTyped("activated abilities of all creature cards")
-            .add(CardType.CREATURE.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()))
             .add(ActivatedAbilityPredicate.instance);
 
     public DarkImpostor(UUID ownerId, CardSetInfo setInfo) {

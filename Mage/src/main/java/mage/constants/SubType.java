@@ -1,9 +1,7 @@
 package mage.constants;
 
 import mage.MageObject;
-import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.Predicate;
-import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 
 import java.util.*;
@@ -557,7 +555,7 @@ public enum SubType {
     YODA("Yoda", SubTypeSet.PlaneswalkerType, true),  // Star Wars,
     ZARIEL("Zariel", SubTypeSet.PlaneswalkerType);
 
-    public static class SubTypePredicate implements Predicate<MageObject>, IMageObjectPredicate {
+    public static class SubTypePredicate implements Predicate<MageObject> {
 
         private final SubType subtype;
 
@@ -573,11 +571,6 @@ public enum SubType {
         @Override
         public String toString() {
             return "Subtype(" + subtype + ')'; // warning, do not change until refactor code like predicate.toString().equals
-        }
-
-        @Override
-        public boolean apply(ObjectSourcePlayer<MageObject> input, Game game) {
-            return apply(input.getObject(), game);
         }
     }
 

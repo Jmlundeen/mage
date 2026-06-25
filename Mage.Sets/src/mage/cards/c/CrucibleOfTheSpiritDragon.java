@@ -18,6 +18,7 @@ import mage.constants.ManaType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ import java.util.UUID;
 public final class CrucibleOfTheSpiritDragon extends CardImpl {
 
     static final FilterTyped filter = new FilterTyped("dragon")
-            .add(SubType.DRAGON.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.DRAGON.getPredicate()));
 
     public CrucibleOfTheSpiritDragon(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");

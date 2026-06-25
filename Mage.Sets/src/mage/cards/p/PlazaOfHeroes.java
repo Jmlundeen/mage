@@ -22,6 +22,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.TargetPermanent;
 
 import java.util.UUID;
@@ -34,9 +35,9 @@ public final class PlazaOfHeroes extends CardImpl {
     private static final FilterPermanent legendaryCreatureFilter = new FilterCreaturePermanent("legendary creature");
     private static final FilterTyped legendaryPermFilter = new FilterTyped("legendary permanents you control")
             .add(TargetController.YOU.getControllerPredicate())
-            .add(SuperType.LEGENDARY.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()));
     private static final FilterTyped spellFilter = new FilterTyped("legendary spell")
-            .addAll(SpellPredicate.instance, SuperType.LEGENDARY.getPredicate());
+            .addAll(SpellPredicate.instance, IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()));
 
     static {
         legendaryCreatureFilter.add(SuperType.LEGENDARY.getPredicate());

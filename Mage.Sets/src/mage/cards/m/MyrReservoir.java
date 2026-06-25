@@ -14,6 +14,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterCard;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetCardInYourGraveyard;
 
 import java.util.UUID;
@@ -25,10 +26,10 @@ public final class MyrReservoir extends CardImpl {
 
     private static final FilterCard myrCardFilter = new FilterCard("Myr card from your graveyard");
     private static final FilterTyped myrObjectFilter = new FilterTyped("Myr")
-            .add(SubType.MYR.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.MYR.getPredicate()));
 
     static {
-        myrCardFilter.add(SubType.MYR.getPredicate());
+        myrCardFilter.add(IMageObjectPredicate.getOSPPredicate(SubType.MYR.getPredicate()));
     }
 
     public MyrReservoir(UUID ownerId, CardSetInfo setInfo) {

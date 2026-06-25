@@ -15,6 +15,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreatureOrPlaneswalkerPermanent;
 import mage.filter.predicate.typed.ability.type.LoyaltyAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.filter.predicate.typed.mageObject.object.AnotherPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -35,7 +36,7 @@ public final class NicolBolasDragonGod extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("loyalty abilities of other planeswalkers")
             .addAll(
                     AnotherPredicate.instance,
-                    CardType.PLANESWALKER.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(CardType.PLANESWALKER.getPredicate())
             )
             .add(LoyaltyAbilityPredicate.instance);
 

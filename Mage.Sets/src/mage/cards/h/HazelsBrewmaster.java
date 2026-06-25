@@ -13,6 +13,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.permanent.token.FoodToken;
 import mage.target.common.TargetCardInGraveyard;
 
@@ -25,11 +26,11 @@ public final class HazelsBrewmaster extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("Foods you control")
             .addAll(
-                    SubType.FOOD.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(SubType.FOOD.getPredicate()),
                     TargetController.YOU.getControllerPredicate()
             );
     private static final FilterTyped abilityFilter = new FilterTyped("activated abilities of all creature cards")
-            .add(CardType.CREATURE.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()))
             .add(ActivatedAbilityPredicate.instance);
 
     public HazelsBrewmaster(UUID ownerId, CardSetInfo setInfo) {

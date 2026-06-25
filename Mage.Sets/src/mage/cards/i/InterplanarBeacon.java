@@ -14,6 +14,7 @@ import mage.constants.CardType;
 import mage.filter.FilterSpell;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -26,10 +27,10 @@ public final class InterplanarBeacon extends CardImpl {
     private static final FilterTyped manaFilter = new FilterTyped("a planeswalker spell")
             .addAll(
                     SpellPredicate.instance,
-                    CardType.PLANESWALKER.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(CardType.PLANESWALKER.getPredicate())
             );
     static {
-        filter.add(CardType.PLANESWALKER.getPredicate());
+        filter.add(IMageObjectPredicate.getOSPPredicate(CardType.PLANESWALKER.getPredicate()));
     }
 
     public InterplanarBeacon(UUID ownerId, CardSetInfo setInfo) {

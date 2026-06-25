@@ -23,6 +23,7 @@ import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.mageobject.AnotherPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ import java.util.UUID;
  */
 public final class GiadaFontOfHope extends CardImpl {
     private static final FilterTyped ANGEL_SPELL_FILTER = new FilterTyped("an Angel spell")
-            .addAll(SpellPredicate.instance, SubType.ANGEL.getPredicate());
+            .addAll(SpellPredicate.instance, IMageObjectPredicate.getOSPPredicate(SubType.ANGEL.getPredicate()));
     private static final FilterPermanent angelFilter = new FilterControlledCreaturePermanent(SubType.ANGEL, "other Angel you control");
     private static final DynamicValue angelCount = new PermanentsOnBattlefieldCount(new FilterControlledCreaturePermanent(SubType.ANGEL));
 

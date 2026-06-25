@@ -19,6 +19,7 @@ import mage.constants.SuperType;
 import mage.filter.Filter;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.EquipAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ import java.util.UUID;
 public final class FreyaCrescent extends CardImpl {
 
     static final FilterTyped spellFilter = new FilterTyped("Equipment spell")
-            .add(SubType.EQUIPMENT.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.EQUIPMENT.getPredicate()));
     static final FilterTyped equipAbilityFilter = new FilterTyped("equip ability")
             .add(EquipAbilityPredicate.instance);
 

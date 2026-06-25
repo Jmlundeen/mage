@@ -14,6 +14,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.stack.Spell;
@@ -30,7 +31,7 @@ import java.util.UUID;
 public final class DelightedHalfling extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("a legendary spell")
-            .add(SuperType.LEGENDARY.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()));
 
     public DelightedHalfling(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{G}");

@@ -1,13 +1,12 @@
 package mage.filter.predicate.typed.ability;
 
 import mage.abilities.Ability;
-import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.TypedPredicate;
 
-public interface IAbilityPredicate extends TypedPredicate<ObjectSourcePlayer<Ability>> {
+public interface IAbilityPredicate extends TypedPredicate<Ability> {
 
     @Override
-    default Class<?> getObjectClass() {
+    default Class<Ability> getObjectClass() {
         return Ability.class;
     }
 }

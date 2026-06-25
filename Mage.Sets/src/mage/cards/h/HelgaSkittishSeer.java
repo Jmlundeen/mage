@@ -19,6 +19,7 @@ import mage.filter.FilterTyped;
 import mage.filter.common.FilterCreatureSpell;
 import mage.filter.predicate.mageobject.ManaValuePredicate;
 import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.filter.predicate.typed.mageObject.cost.VariableManaCostPredicate;
 
 import java.util.Set;
@@ -29,7 +30,7 @@ public class HelgaSkittishSeer extends CardImpl {
     private static final FilterSpell filter = new FilterCreatureSpell("a creature spell with mana value 4 or greater");
     private static final FilterTyped filterWithX = new FilterTyped("a creature spell with mana value 4 or greater or a creature spell with {X} in its mana cost")
             .addAll(
-                    CardType.CREATURE.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
                     LogicalPredicate.or(
                             new mage.filter.predicate.typed.mageObject.value.ManaValuePredicate(ComparisonType.OR_GREATER, 4),
                             VariableManaCostPredicate.instance

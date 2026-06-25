@@ -12,6 +12,7 @@ import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.ability.IAbilityPredicate;
 import mage.filter.predicate.typed.card.ICardPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Controllable;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
@@ -107,7 +108,7 @@ public class FilterTypedTest {
         when(mockCreaturePermanent.isControlledBy(playerId)).thenReturn(true);
 
         FilterTyped filter = new FilterTyped("creature you control")
-                .addAll(CardType.CREATURE.getPredicate(), TargetController.YOU.getControllerPredicate());
+                .addAll(IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()), TargetController.YOU.getControllerPredicate());
 
         assertFalse(filter.match(mockCreatureCard, playerId, null, null));
         assertTrue(filter.match(new ObjectSourcePlayer<>(mockCreaturePermanent, playerId, null), mockGame));
@@ -150,7 +151,7 @@ public class FilterTypedTest {
 
         assertTrue(filter.match(ownedCard, playerId, null, mockGame));
         assertFalse(filter.match(otherCard, playerId, null, mockGame));
-        assertTrue(TargetController.YOU.getOwnerPredicate().tryApply(new ObjectSourcePlayer<>(mockActivatedAbility, playerId, null), mockGame));
+        assertFalse(TargetController.YOU.getOwnerPredicate().canApply(new ObjectSourcePlayer<>(mockActivatedAbility, playerId, null)));
     }
 
     @Test
@@ -166,7 +167,7 @@ public class FilterTypedTest {
 
         assertTrue(filter.match(new ObjectSourcePlayer<>(you, playerId, null), mockGame));
         assertFalse(filter.match(new ObjectSourcePlayer<>(otherPlayer, playerId, null), mockGame));
-        assertTrue(TargetController.YOU.getPlayerPredicate().tryApply(new ObjectSourcePlayer<>(mockCreatureCard, playerId, null), mockGame));
+        assertFalse(TargetController.YOU.getPlayerPredicate().canApply(new ObjectSourcePlayer<>(mockCreatureCard, playerId, null)));
     }
 
     @Test
@@ -182,6 +183,6 @@ public class FilterTypedTest {
 
         assertTrue(filter.match(new ObjectSourcePlayer<>(controlled, playerId, null), mockGame));
         assertFalse(filter.match(new ObjectSourcePlayer<>(notControlled, playerId, null), mockGame));
-        assertTrue(TargetController.YOU.getControllerPredicate().tryApply(new ObjectSourcePlayer<>(mockCreatureCard, playerId, null), mockGame));
+        assertFalse(TargetController.YOU.getControllerPredicate().canApply(new ObjectSourcePlayer<>(mockCreatureCard, playerId, null)));
     }
 }

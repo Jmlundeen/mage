@@ -16,6 +16,7 @@ import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
 import mage.filter.predicate.typed.ability.type.ManaAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.game.events.GameEvent;
 import mage.game.permanent.Permanent;
@@ -32,7 +33,7 @@ public final class SharkeyTyrantOfTheShire extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("non-mana activated abilities of a land your opponents control")
             .addAll(
                     TargetController.OPPONENT.getControllerPredicate(),
-                    CardType.LAND.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(CardType.LAND.getPredicate())
             )
             .addAll(
                     LogicalPredicate.not(ManaAbilityPredicate.instance),

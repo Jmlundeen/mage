@@ -14,6 +14,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.ManaPoolItem;
@@ -28,7 +29,7 @@ public final class DranaAndLinvala extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("activated abilities of creatures your opponents control")
             .addAll(
-                    CardType.CREATURE.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
                     TargetController.OPPONENT.getControllerPredicate()
             )
             .add(ActivatedAbilityPredicate.instance);

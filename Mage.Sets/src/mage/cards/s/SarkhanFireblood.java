@@ -14,6 +14,7 @@ import mage.constants.SubType;
 import mage.constants.SuperType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.permanent.token.DragonToken2;
 
 import java.util.UUID;
@@ -27,7 +28,7 @@ public final class SarkhanFireblood extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("Dragon spells")
             .addAll(
                     SpellPredicate.instance,
-                    SubType.DRAGON.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.DRAGON.getPredicate())
             );
 
     public SarkhanFireblood(UUID ownerId, CardSetInfo setInfo) {

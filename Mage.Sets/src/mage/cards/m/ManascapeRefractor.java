@@ -11,6 +11,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.players.ManaPoolItem;
 import mage.util.CardUtil;
@@ -23,7 +24,7 @@ import java.util.UUID;
 public final class ManascapeRefractor extends CardImpl {
 
     static final FilterTyped filter = new FilterTyped("activated ability of a land on the battlefield")
-            .add(CardType.LAND.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.LAND.getPredicate()))
             .add(ActivatedAbilityPredicate.instance);
 
     public ManascapeRefractor(UUID ownerId, CardSetInfo setInfo) {

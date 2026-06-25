@@ -10,6 +10,7 @@ import mage.constants.SubType;
 import mage.constants.Zone;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public final class NecroticOoze extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("activated abilities of a creature card")
             .add(ActivatedAbilityPredicate.instance)
-            .add(CardType.CREATURE.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()));
 
     public NecroticOoze(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{2}{B}{B}");

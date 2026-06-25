@@ -16,6 +16,7 @@ import mage.constants.*;
 import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
 import mage.filter.StaticTypedFilters;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.filter.predicate.typed.mageObject.color.ColorPredicate;
 import mage.game.Game;
 import mage.players.Player;
@@ -48,7 +49,7 @@ class ChaosMoonEffect extends OneShotEffect {
 
     private static final FilterTyped filter = new FilterTyped("red creatures")
             .addAll(
-                    CardType.CREATURE.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
                     ColorPredicate.RED
             );
 

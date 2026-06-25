@@ -18,6 +18,7 @@ import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.permanent.AttackingPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetControlledPermanent;
 
 import java.util.UUID;
@@ -31,7 +32,7 @@ public final class GnarlrootTrapper extends CardImpl {
     private static final FilterTyped filterSpell = new FilterTyped("Elf creature spell")
             .addAll(
                     SpellPredicate.instance,
-                    SubType.ELF.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.ELF.getPredicate())
             );
 
     static {

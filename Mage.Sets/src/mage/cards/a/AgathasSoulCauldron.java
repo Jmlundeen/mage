@@ -17,6 +17,8 @@ import mage.constants.*;
 import mage.counters.CounterType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.card.ICardPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.game.MoveCardsParameters;
 import mage.game.permanent.Permanent;
@@ -35,12 +37,12 @@ public final class AgathasSoulCauldron extends CardImpl {
 
     private static final FilterTyped controlledCreatureFilter = new FilterTyped("creatures you control with +1/+1 counters on them")
             .addAll(
-                    CardType.CREATURE.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()),
                     TargetController.YOU.getControllerPredicate(),
-                    CounterType.P1P1.getPredicate()
+                    ICardPredicate.getOSPPredicate(CounterType.P1P1.getPredicate())
             );
     private static final FilterTyped abilityFilter = new FilterTyped("activated abilities of all creature cards")
-            .add(CardType.CREATURE.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()))
             .add(ActivatedAbilityPredicate.instance);
 
     public AgathasSoulCauldron(UUID ownerId, CardSetInfo setInfo) {

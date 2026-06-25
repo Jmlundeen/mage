@@ -16,6 +16,7 @@ import mage.counters.CounterType;
 import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetCardInYourGraveyard;
 
 import java.util.UUID;
@@ -27,7 +28,7 @@ public final class PatchworkCrawler extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("activated abilities of a creature card")
             .add(ActivatedAbilityPredicate.instance)
-            .add(CardType.CREATURE.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate()));
 
     public PatchworkCrawler(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.CREATURE}, "{1}{U}");

@@ -20,6 +20,7 @@ import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterControlledCreaturePermanent;
 import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.ObjectSourcePlayerPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.target.TargetPermanent;
@@ -36,7 +37,7 @@ public final class ClementTheWorrywort extends CardImpl {
     private static final FilterPermanent filter = new FilterControlledCreaturePermanent("creature you control with lesser mana value");
     private static final FilterTyped frogFilter = new FilterTyped("Frogs you control")
             .addAll(
-                SubType.FROG.getPredicate(),
+                IMageObjectPredicate.getOSPPredicate(SubType.FROG.getPredicate()),
                 TargetController.YOU.getControllerPredicate()
             );
 

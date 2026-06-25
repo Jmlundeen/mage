@@ -12,6 +12,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -22,8 +23,8 @@ public final class Nexos extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("basic land")
             .addAll(
-                    SuperType.BASIC.getPredicate(),
-                    CardType.LAND.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SuperType.BASIC.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(CardType.LAND.getPredicate())
             );
 
     public Nexos(UUID ownerId, CardSetInfo setInfo) {

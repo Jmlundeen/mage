@@ -14,6 +14,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -26,8 +27,8 @@ public final class WhiteLotusHideout extends CardImpl {
             .addAll(
                     SpellPredicate.instance,
                     LogicalPredicate.or(
-                            SubType.LESSON.getPredicate(),
-                            SubType.SHRINE.getPredicate()
+                            IMageObjectPredicate.getOSPPredicate(SubType.LESSON.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.SHRINE.getPredicate())
                     )
             );
 

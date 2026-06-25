@@ -13,6 +13,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ public final class IntrepidStablemaster extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("Mount or Vehicle spells")
             .addAll(SpellPredicate.instance,
-                    LogicalPredicate.or(SubType.MOUNT.getPredicate(), SubType.VEHICLE.getPredicate())
+                    LogicalPredicate.or(IMageObjectPredicate.getOSPPredicate(SubType.MOUNT.getPredicate()), IMageObjectPredicate.getOSPPredicate(SubType.VEHICLE.getPredicate()))
             );
 
     public IntrepidStablemaster(UUID ownerId, CardSetInfo setInfo) {

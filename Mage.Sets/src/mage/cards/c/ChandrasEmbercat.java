@@ -12,6 +12,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -23,10 +24,10 @@ public final class ChandrasEmbercat extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("an Elemental spell or a Chandra planeswalker spell")
             .add(SpellPredicate.instance)
             .add(LogicalPredicate.or(
-                    SubType.ELEMENTAL.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(SubType.ELEMENTAL.getPredicate()),
                     LogicalPredicate.and(
-                            CardType.PLANESWALKER.getPredicate(),
-                            SubType.CHANDRA.getPredicate()
+                            IMageObjectPredicate.getOSPPredicate(CardType.PLANESWALKER.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.CHANDRA.getPredicate())
                     )
             ));
 

@@ -9,6 +9,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.Map;
 import java.util.UUID;
@@ -28,11 +29,11 @@ public final class RealityTwist extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("land with a basic land type")
             .add(
                     LogicalPredicate.or(
-                            SubType.PLAINS.getPredicate(),
-                            SubType.ISLAND.getPredicate(),
-                            SubType.SWAMP.getPredicate(),
-                            SubType.MOUNTAIN.getPredicate(),
-                            SubType.FOREST.getPredicate()
+                            IMageObjectPredicate.getOSPPredicate(SubType.PLAINS.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.ISLAND.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.SWAMP.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.MOUNTAIN.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.FOREST.getPredicate())
                     )
             );
 

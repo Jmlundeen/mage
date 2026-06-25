@@ -19,6 +19,7 @@ import mage.constants.Zone;
 import mage.filter.FilterCard;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.players.Player;
 
@@ -30,7 +31,7 @@ import java.util.UUID;
 public final class BucolicRanch extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("a Mount spell")
-            .addAll(SpellPredicate.instance, SubType.MOUNT.getPredicate());
+            .addAll(SpellPredicate.instance, IMageObjectPredicate.getOSPPredicate(SubType.MOUNT.getPredicate()));
 
     public BucolicRanch(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.LAND}, "");

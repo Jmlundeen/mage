@@ -5,7 +5,7 @@ import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.TypedPredicate;
 import mage.game.Game;
 
-public interface TypedIntComparePredicate<T> extends TypedPredicate<ObjectSourcePlayer<T>> {
+public interface TypedIntComparePredicate<T> extends TypedPredicate<T> {
 
     ComparisonType getComparisonType();
 

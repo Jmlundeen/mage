@@ -12,6 +12,7 @@ import mage.constants.SubType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.Set;
 import java.util.UUID;
@@ -25,8 +26,8 @@ public final class TournamentGrounds extends CardImpl {
             .addAll(
                     SpellPredicate.instance,
                     LogicalPredicate.or(
-                            SubType.KNIGHT.getPredicate(),
-                            SubType.EQUIPMENT.getPredicate()
+                            IMageObjectPredicate.getOSPPredicate(SubType.KNIGHT.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.EQUIPMENT.getPredicate())
                     )
             );
 

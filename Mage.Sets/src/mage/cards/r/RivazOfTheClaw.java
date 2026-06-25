@@ -18,6 +18,7 @@ import mage.filter.common.FilterCreatureCard;
 import mage.filter.common.FilterCreatureSpell;
 import mage.filter.predicate.card.CastFromZonePredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -29,8 +30,8 @@ public final class RivazOfTheClaw extends CardImpl {
     private static final FilterTyped manaAbilityFilter = new FilterTyped("Dragon creature spells")
             .addAll(
                     SpellPredicate.instance,
-                    SubType.DRAGON.getPredicate(),
-                    CardType.CREATURE.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.DRAGON.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate())
             );
     private static final FilterCreatureCard staticAbilityFilter = new FilterCreatureCard("a Dragon creature spell");
     private static final FilterCreatureSpell spellCastFilter = new FilterCreatureSpell("a Dragon creature spell from your graveyard");

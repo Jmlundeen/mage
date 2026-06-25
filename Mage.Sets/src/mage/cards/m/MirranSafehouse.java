@@ -8,6 +8,7 @@ import mage.constants.CardType;
 import mage.constants.Zone;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 public final class MirranSafehouse extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("activated ability of a land card")
-            .add(CardType.LAND.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.LAND.getPredicate()))
             .add(ActivatedAbilityPredicate.instance);
 
     public MirranSafehouse(UUID ownerId, CardSetInfo setInfo) {

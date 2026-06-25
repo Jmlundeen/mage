@@ -14,6 +14,7 @@ import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -25,9 +26,9 @@ public final class MasterOfDarkRites extends CardImpl {
             .addAll(
                     SpellPredicate.instance,
                     LogicalPredicate.or(
-                    SubType.VAMPIRE.getPredicate(),
-                    SubType.CLERIC.getPredicate(),
-                    SubType.DEMON.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.VAMPIRE.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SubType.CLERIC.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SubType.DEMON.getPredicate())
             ));
 
     public MasterOfDarkRites(UUID ownerId, CardSetInfo setInfo) {

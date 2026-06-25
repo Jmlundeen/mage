@@ -10,6 +10,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ import java.util.UUID;
 public final class Smokebraider extends CardImpl {
 
     static final FilterTyped filter = new FilterTyped("elemental")
-            .add(SubType.ELEMENTAL.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.ELEMENTAL.getPredicate()));
 
     public Smokebraider(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.CREATURE},"{1}{R}");

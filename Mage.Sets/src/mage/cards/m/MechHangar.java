@@ -18,6 +18,7 @@ import mage.filter.FilterPermanent;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.TargetPermanent;
 
 import java.util.UUID;
@@ -32,8 +33,8 @@ public final class MechHangar extends CardImpl {
             .addAll(
                     SpellPredicate.instance,
                     LogicalPredicate.or(
-                    SubType.VEHICLE.getPredicate(),
-                    SubType.PILOT.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.VEHICLE.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SubType.PILOT.getPredicate())
             ));
 
     public MechHangar(UUID ownerId, CardSetInfo setInfo) {

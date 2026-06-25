@@ -11,6 +11,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.filter.predicate.typed.mageObject.color.ColorlessPredicate;
 
 import java.util.UUID;
@@ -23,7 +24,7 @@ public final class EldraziTemple extends CardImpl {
 
     static final FilterTyped filter = new FilterTyped("colorless eldrazi")
             .addAll(
-                    SubType.ELDRAZI.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(SubType.ELDRAZI.getPredicate()),
                     ColorlessPredicate.instance
             );
 

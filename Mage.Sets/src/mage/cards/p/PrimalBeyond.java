@@ -14,6 +14,7 @@ import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.filter.FilterCard;
 import mage.filter.FilterTyped;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetCardInHand;
 
 import java.util.UUID;
@@ -26,10 +27,10 @@ public final class PrimalBeyond extends CardImpl {
 
     private static final FilterCard filter = new FilterCard("an Elemental card from your hand");
     static final FilterTyped filterElementalObject = new FilterTyped("elemental")
-            .add(SubType.ELEMENTAL.getPredicate());
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.ELEMENTAL.getPredicate()));
 
     static {
-        filter.add(SubType.ELEMENTAL.getPredicate());
+        filter.add(IMageObjectPredicate.getOSPPredicate(SubType.ELEMENTAL.getPredicate()));
     }
 
     public PrimalBeyond(UUID ownerId, CardSetInfo setInfo) {

@@ -13,6 +13,7 @@ import mage.constants.CardType;
 import mage.constants.SuperType;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public final class UntaidakeTheCloudKeeper extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("legendary spell")
             .addAll(SpellPredicate.instance,
-                    SuperType.LEGENDARY.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate())
             );
 
     public UntaidakeTheCloudKeeper(UUID ownerId, CardSetInfo setInfo) {

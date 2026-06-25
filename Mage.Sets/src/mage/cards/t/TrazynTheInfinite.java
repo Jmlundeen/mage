@@ -9,6 +9,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public final class TrazynTheInfinite extends CardImpl {
 
     static final FilterTyped filter = new FilterTyped("activated abilities of an artifact card")
             .addAll(
-                    CardType.ARTIFACT.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(CardType.ARTIFACT.getPredicate()),
                     TargetController.YOU.getOwnerPredicate()
             )
             .add(ActivatedAbilityPredicate.instance);

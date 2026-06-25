@@ -17,6 +17,7 @@ import mage.constants.Zone;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.permanent.TappedPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.game.Game;
 import mage.players.Player;
 import mage.util.ObjectQuery;
@@ -62,7 +63,7 @@ enum BirchloreRangersMaxValue implements DynamicValue {
     instance;
 
     private final FilterTyped filter = new FilterTyped("untapped Elf you control")
-            .addAll(SubType.ELF.getPredicate(),
+            .addAll(IMageObjectPredicate.getOSPPredicate(SubType.ELF.getPredicate()),
                     mage.filter.predicate.typed.permanent.status.TappedPredicate.UNTAPPED,
                     TargetController.YOU.getControllerPredicate()
             );

@@ -13,6 +13,7 @@ import mage.filter.Filter;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.ability.SpellHasAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ public class BrotherhoodHeadquarters extends CardImpl {
 
     private static final FilterTyped spellFilter = new FilterTyped("an Assassin spell, activated ability of an Assassin, or a spell that has freerunning")
             .add(LogicalPredicate.or(
-                    SubType.ASSASSIN.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(SubType.ASSASSIN.getPredicate()),
                     new SpellHasAbilityPredicate(FreerunningAbility.class)
             ));
 

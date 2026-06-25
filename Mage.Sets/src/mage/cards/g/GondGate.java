@@ -12,6 +12,7 @@ import mage.constants.TargetController;
 import mage.filter.FilterPermanent;
 import mage.filter.FilterTyped;
 import mage.filter.common.FilterControlledPermanent;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public final class GondGate extends CardImpl {
 
     private static final FilterPermanent filter = new FilterControlledPermanent(SubType.GATE, "Gates you control");
     private static final FilterTyped filter2 = new FilterTyped("a Gate you control")
-            .add(SubType.GATE.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(SubType.GATE.getPredicate()))
             .add(TargetController.YOU.getControllerPredicate());
 
     public GondGate(UUID ownerId, CardSetInfo setInfo) {

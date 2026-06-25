@@ -15,6 +15,7 @@ import mage.filter.FilterTyped;
 import mage.filter.StaticTypedFilters;
 import mage.filter.common.FilterLandCard;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetCardInYourGraveyard;
 
 import java.util.UUID;
@@ -27,7 +28,7 @@ public final class StewardOfTheHarvest extends CardImpl {
 
     private static final FilterLandCard filter = new FilterLandCard("land cards from your graveyard");
     private static final FilterTyped abilityFilter = new FilterTyped("activated abilities of a land")
-            .add(CardType.LAND.getPredicate())
+            .add(IMageObjectPredicate.getOSPPredicate(CardType.LAND.getPredicate()))
             .add(ActivatedAbilityPredicate.instance);
 
     public StewardOfTheHarvest(UUID ownerId, CardSetInfo setInfo) {

@@ -23,6 +23,7 @@ import mage.filter.common.FilterControlledPermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.TargetPermanent;
 import mage.target.common.TargetControlledCreaturePermanent;
 
@@ -39,8 +40,8 @@ public final class CodsworthHandyHelper extends CardImpl {
     private static final FilterTyped auraOrEquipmentFilter = new FilterTyped("Aura or Equipment spell")
             .addAll(SpellPredicate.instance,
                     LogicalPredicate.or(
-                    SubType.AURA.getPredicate(),
-                    SubType.EQUIPMENT.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(SubType.AURA.getPredicate()),
+                    IMageObjectPredicate.getOSPPredicate(SubType.EQUIPMENT.getPredicate())
             ));
 
     static {

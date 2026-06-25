@@ -17,6 +17,7 @@ import mage.filter.FilterCard;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 import mage.target.common.TargetCardInLibrary;
 
 import java.util.UUID;
@@ -29,8 +30,8 @@ public final class MaelstromOfTheSpiritDragon extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("a Dragon spell or an Omen spell")
             .addAll(SpellPredicate.instance,
                     LogicalPredicate.or(
-                            SubType.DRAGON.getPredicate(),
-                            SubType.OMEN.getPredicate()
+                            IMageObjectPredicate.getOSPPredicate(SubType.DRAGON.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.OMEN.getPredicate())
                     )
             );
     private static final FilterCard filter2 = new FilterCard("a Dragon card");

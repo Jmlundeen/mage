@@ -13,6 +13,7 @@ import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
 import mage.filter.predicate.typed.Spell.object.KickedSpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -26,8 +27,8 @@ public final class VolsheTideturner extends CardImpl {
                     SpellPredicate.instance,
                     LogicalPredicate.or(
                         KickedSpellPredicate.instance,
-                        CardType.INSTANT.getPredicate(),
-                        CardType.SORCERY.getPredicate()
+                        IMageObjectPredicate.getOSPPredicate(CardType.INSTANT.getPredicate()),
+                        IMageObjectPredicate.getOSPPredicate(CardType.SORCERY.getPredicate())
                     )
 
             );

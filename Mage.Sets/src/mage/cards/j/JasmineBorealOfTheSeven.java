@@ -14,6 +14,7 @@ import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicates;
 import mage.filter.predicate.mageobject.NoAbilityPredicate;
 import mage.filter.predicate.typed.Spell.SpellPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public final class JasmineBorealOfTheSeven extends CardImpl {
     private static final FilterTyped spell_filter = new FilterTyped("creature spells with no abilities")
             .addAll(SpellPredicate.instance,
                     mage.filter.predicate.typed.mageObject.ability.NoAbilityPredicate.instance,
-                    CardType.CREATURE.getPredicate()
+                    IMageObjectPredicate.getOSPPredicate(CardType.CREATURE.getPredicate())
             );
     private static final FilterCreaturePermanent your_creatures_filter
             = new FilterCreaturePermanent("creatures you control with no abilities");

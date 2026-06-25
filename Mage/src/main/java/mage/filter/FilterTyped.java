@@ -4,6 +4,7 @@ import mage.MageObject;
 import mage.abilities.Ability;
 import mage.cards.Card;
 import mage.filter.predicate.ObjectSourcePlayer;
+import mage.filter.predicate.Predicate;
 import mage.filter.predicate.TypedPredicate;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.game.Game;
@@ -11,13 +12,12 @@ import mage.game.permanent.Permanent;
 import mage.game.stack.Spell;
 import mage.game.stack.StackObject;
 import mage.players.Player;
-import mage.util.Copyable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class FilterTyped implements Copyable<FilterTyped> {
+public class FilterTyped implements Filter<ObjectSourcePlayer<?>> {
 
     private final List<TypedPredicate<?>> predicates = new ArrayList<>();
     private String message;
@@ -77,6 +77,7 @@ public class FilterTyped implements Copyable<FilterTyped> {
         return match(new ObjectSourcePlayer<>(player, controllerId, source), game);
     }
 
+    @SuppressWarnings("unchecked")
     public boolean match(ObjectSourcePlayer<?> input, Game game) {
         if (predicates.isEmpty()) {
             return true;
@@ -88,11 +89,30 @@ public class FilterTyped implements Copyable<FilterTyped> {
                 continue;
             }
             applied = true;
-            if (!predicate.tryApply(input, game)) {
+            if (!((TypedPredicate) predicate).apply(input, game)) {
                 return false;
             }
         }
         return applied;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Filter<ObjectSourcePlayer<?>> add(Predicate<? super ObjectSourcePlayer<?>> predicate) {
+        if (predicate instanceof TypedPredicate) {
+            this.predicates.add((TypedPredicate) predicate);
+        }
+        return this;
+    }
+
+    @Override
+    public boolean checkObjectClass(Object object) {
+        for (TypedPredicate<?> predicate : predicates) {
+            if (predicate.getObjectClass().isInstance(object)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getMessage() {
@@ -104,14 +124,29 @@ public class FilterTyped implements Copyable<FilterTyped> {
         return message;
     }
 
-    public FilterTyped setMessage(String message) {
+    public void setMessage(String message) {
         this.message = message;
-        return this;
     }
 
     @Override
     public FilterTyped copy() {
         return new FilterTyped(this);
+    }
+
+    @Override
+    public boolean isLockedFilter() {
+        return false;
+    }
+
+    @Override
+    public void setLockedFilter(boolean lockedFilter) {
+
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Predicate<? super ObjectSourcePlayer<?>>> getPredicates() {
+        return (List<Predicate<? super ObjectSourcePlayer<?>>>) (List<?>) predicates;
     }
 
     protected FilterTyped setLocked(boolean locked) {

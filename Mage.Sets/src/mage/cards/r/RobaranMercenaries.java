@@ -9,6 +9,7 @@ import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.ability.type.ActivatedAbilityPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public final class RobaranMercenaries extends CardImpl {
 
     private static final FilterTyped filter = new FilterTyped("activated ability of a legendary creature you control")
             .addAll(
-                    SuperType.LEGENDARY.getPredicate(),
+                    IMageObjectPredicate.getOSPPredicate(SuperType.LEGENDARY.getPredicate()),
                     TargetController.YOU.getControllerPredicate()
             )
             .add(ActivatedAbilityPredicate.instance);

@@ -13,6 +13,7 @@ import mage.constants.SubType;
 import mage.filter.Filter;
 import mage.filter.FilterTyped;
 import mage.filter.predicate.typed.LogicalPredicate;
+import mage.filter.predicate.typed.mageObject.IMageObjectPredicate;
 
 import java.util.UUID;
 
@@ -24,10 +25,10 @@ public final class BaseCamp extends CardImpl {
     private static final FilterTyped filter = new FilterTyped("a Cleric, Rogue, Warrior, or Wizard")
             .add(
                     LogicalPredicate.or(
-                            SubType.CLERIC.getPredicate(),
-                            SubType.ROGUE.getPredicate(),
-                            SubType.WARRIOR.getPredicate(),
-                            SubType.WIZARD.getPredicate()
+                            IMageObjectPredicate.getOSPPredicate(SubType.CLERIC.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.ROGUE.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.WARRIOR.getPredicate()),
+                            IMageObjectPredicate.getOSPPredicate(SubType.WIZARD.getPredicate())
                     )
             );
 
