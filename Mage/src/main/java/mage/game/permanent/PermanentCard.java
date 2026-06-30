@@ -299,15 +299,19 @@ public class PermanentCard extends PermanentImpl {
         // However, its mana value is calculated using the mana cost of its front face.
         // If a permanent is copying the back face of a nonmodal double-faced permanent
         // (even if the object representing that copy is itself a double-faced permanent), the mana value of that permanent is 0. See rule 202.3b.
-        if (isCopy() && copyFrom instanceof DoubleFacedCardHalf && ((DoubleFacedCardHalf<?>) copyFrom).isBackSide()) {
-            return copyFrom instanceof ModalDoubleFacedCardHalf ? super.getManaValue() : 0;
+        //712.8g. While the two cards of a meld pair are on the battlefield as a melded permanent, the object represented by those cards has only the characteristics
+        // of the combined back face, and its mana value is the sum of the mana values of its front faces. If a permanent is copying a melded permanent,
+        // the mana value of the copy is 0.
+        boolean isModal = isCopy() ? copyFrom instanceof ModalDoubleFacedCardHalf : getCard() instanceof ModalDoubleFacedCardHalf;
+        boolean isMeldTransform = getCard() instanceof MeldCardHalf && ((MeldCardHalf) getCard()).isBackSide();
+        if (isCopy() && isTransformed() && !isModal) {
+            return 0;
         }
-        if (isTransformed() || getCard() instanceof MeldCardHalf && ((MeldCardHalf) getCard()).isBackSide()) {
-            Card refCard = getCard();
-            if (refCard instanceof MeldCardHalf) {
-                return refCard.getMainCard().getManaValue() + meldedWith.getManaValue();
-            }
-            return getCard().getManaValue();
+        if (isMeldTransform) {
+            return getCard().getMainCard().getManaValue() + meldedWith.getManaValue();
+        }
+        if (isTransformed() && !isModal) {
+            return getCard().getMainCard().getManaValue();
         }
         if (faceDown) { // game not neccessary
             return getManaCost().manaValue();

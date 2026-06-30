@@ -1035,6 +1035,18 @@ public class TransformTest extends CardTestPlayerBase {
         assertGraveyardCount(playerB, "Just the Wind", 1);
         assertPermanentCount(playerA, "Hanweir Militia Captain", 1);
         assertPowerToughness(playerA, "Hanweir Militia Captain", 2, 2);
+    }
 
+    @Test
+    public void test_transformed_manavalue() {
+        setStrictChooseMode(true);
+        addCard(Zone.BATTLEFIELD, playerA, hookHauntDrifter);
+
+        setStopAt(1, PhaseStep.UNTAP);
+        execute();
+
+        Permanent permanent = getPermanent(hookHauntDrifter, playerA);
+        Assert.assertNotNull(permanent);
+        Assert.assertEquals(2, permanent.getManaValue());
     }
 }

@@ -87,14 +87,22 @@ public class CopyTokenFunction {
             }
 
             // must use real card side, e.g. half from MDFC (not main)
-            Card sourceObj = sourcePermanent.getCard();
+            Card mainCard;
+            Card backCard;
             target.setCopySourceCard(sourcePermanent);
+            if (sourcePermanent.isTransformed()) {
+                mainCard = sourcePermanent.getCard();
+                backCard = sourcePermanent;
+            } else {
+                mainCard = sourcePermanent;
+                backCard = sourcePermanent.isTransformable() ? sourcePermanent.getSecondCardFace() : null;
+            }
             // main side
-            copyToToken(target, sourcePermanent, game);
+            copyToToken(target, mainCard, game);
             // second side
-            if (sourcePermanent.isTransformable()) {
-                copyToToken(target.getBackFace(), sourcePermanent.getSecondCardFace(), game);
-                CardUtil.copySetAndCardNumber(target.getBackFace(), sourcePermanent.getSecondCardFace());
+            if (backCard != null) {
+                copyToToken(target.getBackFace(), backCard, game);
+                CardUtil.copySetAndCardNumber(target.getBackFace(), backCard);
             }
 
             // apply prototyped status

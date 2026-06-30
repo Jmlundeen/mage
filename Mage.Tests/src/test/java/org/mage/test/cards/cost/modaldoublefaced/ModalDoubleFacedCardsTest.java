@@ -8,6 +8,7 @@ import mage.constants.CardType;
 import mage.constants.PhaseStep;
 import mage.constants.SubType;
 import mage.constants.Zone;
+import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentCard;
 import mage.game.permanent.PermanentToken;
 import mage.util.CardUtil;
@@ -1321,5 +1322,18 @@ public class ModalDoubleFacedCardsTest extends CardTestPlayerBase {
 
         assertTappedCount("Snow-Covered Forest", true, 1);
         assertLife(playerB, 20 - 3);
+    }
+
+    @Test
+    public void test_transformed_manavalue() {
+        setStrictChooseMode(true);
+        addCard(Zone.BATTLEFIELD, playerA, "The Prismatic Bridge");
+
+        setStopAt(1, PhaseStep.UNTAP);
+        execute();
+
+        Permanent permanent = getPermanent("The Prismatic Bridge", playerA);
+        Assert.assertNotNull(permanent);
+        Assert.assertEquals(5, permanent.getManaValue());
     }
 }
