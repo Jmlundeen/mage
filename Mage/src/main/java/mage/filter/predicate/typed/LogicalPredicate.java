@@ -22,21 +22,6 @@ public final class LogicalPredicate implements TypedPredicate<Object> {
     private LogicalPredicate(Operator operator, List<TypedPredicate<?>> predicates) {
         this.operator = operator;
         this.predicates = List.copyOf(predicates);
-        checkTypeCompatibility();
-    }
-
-    private void checkTypeCompatibility() {
-        if (predicates.size() < 2) {
-            return;
-        }
-        Class<?> base = predicates.getFirst().getObjectClass();
-        for (int i = 1; i < predicates.size(); i++) {
-            Class<?> current = predicates.get(i).getObjectClass();
-            if (base != current && !base.isAssignableFrom(current) && !current.isAssignableFrom(base)) {
-                logger.warn("LogicalPredicate: incompatible predicate types " + base.getSimpleName()
-                        + " and " + current.getSimpleName() + " — runtime fallback");
-            }
-        }
     }
 
     public static LogicalPredicate and(TypedPredicate<?>... predicates) {
