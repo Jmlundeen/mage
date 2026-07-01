@@ -1,8 +1,8 @@
 package mage.cards.k;
 
 import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
-import mage.abilities.effects.common.CounterTargetEffect;
 import mage.abilities.effects.common.SeekCardEffect;
+import mage.abilities.effects.common.countered.CounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
@@ -29,7 +29,10 @@ public final class KindredDenial extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{2}{U}{U}");
 
         // Counter target spell. Seek a card with the same mana value as that spell.
-        this.getSpellAbility().addEffect(new CounterTargetEffect().setRememberCounteredManaValue(true));
+        this.getSpellAbility().addEffect(new CounterEffect()
+                .setText("counter target spell")
+                .setRememberManaValue(true)
+        );
         this.getSpellAbility().addEffect(new SeekCardEffect(filter));
         this.getSpellAbility().addTarget(new TargetSpell());
     }

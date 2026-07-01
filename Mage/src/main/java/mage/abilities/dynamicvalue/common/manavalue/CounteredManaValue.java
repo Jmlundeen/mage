@@ -5,13 +5,17 @@ import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.effects.Effect;
 import mage.game.Game;
 
+/**
+ * @author jmlundeen
+ */
 public enum CounteredManaValue implements DynamicValue {
     instance;
 
     @Override
     public int calculate(Game game, Ability sourceAbility, Effect effect) {
-        return sourceAbility.getEffects().getFirst().getValue("counteredManaValue") instanceof Integer
-                ? (Integer) sourceAbility.getEffects().getFirst().getValue("counteredManaValue")
+        String key = sourceAbility.getSourceId() + "_counteredManaValue";
+        return sourceAbility.getEffects().getFirst().getValue(key) instanceof Integer
+                ? (Integer) sourceAbility.getEffects().getFirst().getValue(key)
                 : 0;
     }
 

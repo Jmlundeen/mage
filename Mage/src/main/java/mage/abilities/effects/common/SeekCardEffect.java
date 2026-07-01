@@ -3,7 +3,7 @@ package mage.abilities.effects.common;
 import mage.abilities.Ability;
 import mage.abilities.effects.OneShotEffect;
 import mage.constants.Outcome;
-import mage.filter.FilterCard;
+import mage.filter.FilterTyped;
 import mage.game.Game;
 import mage.players.Player;
 
@@ -11,15 +11,16 @@ import mage.players.Player;
  * @author karapuzz14
  */
 public class SeekCardEffect extends OneShotEffect {
-    private final FilterCard filter;
+
+    private final FilterTyped filter;
 
     /**
      * @param filter for selecting a card
      */
-    public SeekCardEffect(FilterCard filter) {
+    public SeekCardEffect(FilterTyped filter) {
         super(Outcome.Benefit);
         this.filter = filter;
-        this.staticText = "seek a " + filter.getMessage();
+        this.staticText = "seek " + filter.getMessage();
     }
 
     private SeekCardEffect(final SeekCardEffect effect) {

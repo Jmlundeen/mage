@@ -1,20 +1,20 @@
 package mage.cards.r;
 
-import mage.abilities.Ability;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
+import mage.abilities.effects.common.cast.PlayEffect;
+import mage.abilities.effects.common.countered.CounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.ComparisonType;
-import mage.constants.Outcome;
-import mage.filter.FilterCard;
-import mage.filter.predicate.mageobject.ManaValuePredicate;
-import mage.game.Game;
-import mage.game.stack.Spell;
-import mage.players.Player;
-import mage.target.TargetSpell;
-import mage.util.CardUtil;
+import mage.constants.Zone;
+import mage.filter.FilterTyped;
+import mage.filter.StaticTypedFilters;
+import mage.filter.predicate.typed.card.CardPredicate;
+import mage.filter.predicate.typed.mageObject.value.ManaValuePredicate;
+import mage.target.TargetGeneric;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -22,12 +22,22 @@ import java.util.UUID;
  */
 public final class Reinterpret extends CardImpl {
 
+    private static final FilterTyped filter = new FilterTyped("card with equal or lesser value than countered spell")
+            .addAll(
+                    CardPredicate.instance,
+                    new ManaValuePredicate(ComparisonType.OR_LESS, CounteredManaValue.instance)
+            );
+
     public Reinterpret(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{2}{U}{R}");
 
         // Counter target spell. You may cast a spell with an equal or lesser mana value from your hand without paying its mana cost.
-        this.getSpellAbility().addEffect(new ReinterpretEffect());
-        this.getSpellAbility().addTarget(new TargetSpell());
+        this.getSpellAbility().addEffect(new CounterEffect()
+                .setText("counter target spell")
+                .setRememberManaValue(true)
+        );
+        this.getSpellAbility().addEffect(new PlayEffect(filter, Set.of(Zone.HAND)));
+        this.getSpellAbility().addTarget(new TargetGeneric(StaticTypedFilters.SPELL));
     }
 
     private Reinterpret(final Reinterpret card) {
@@ -37,40 +47,5 @@ public final class Reinterpret extends CardImpl {
     @Override
     public Reinterpret copy() {
         return new Reinterpret(this);
-    }
-}
-
-class ReinterpretEffect extends OneShotEffect {
-
-    ReinterpretEffect() {
-        super(Outcome.Benefit);
-        staticText = "counter target spell. You may cast a spell with an " +
-                "equal or lesser mana value from your hand without paying its mana cost";
-    }
-
-    private ReinterpretEffect(final ReinterpretEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public ReinterpretEffect copy() {
-        return new ReinterpretEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Spell spell = game.getSpell(source.getFirstTarget());
-        Player controller = game.getPlayer(source.getControllerId());
-        if (spell == null || controller == null) {
-            return false;
-        }
-        int manaValue = spell.getManaValue();
-        game.getStack().counter(spell.getId(), source, game);;
-        FilterCard filter = new FilterCard();
-        filter.add(new ManaValuePredicate(
-                ComparisonType.FEWER_THAN, manaValue + 1
-        ));
-        CardUtil.castSpellWithAttributesForFree(controller, source, game, controller.getHand(), filter);
-        return true;
     }
 }

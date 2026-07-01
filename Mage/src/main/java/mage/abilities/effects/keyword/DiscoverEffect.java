@@ -1,6 +1,8 @@
 package mage.abilities.effects.keyword;
 
 import mage.abilities.Ability;
+import mage.abilities.dynamicvalue.DynamicValue;
+import mage.abilities.dynamicvalue.common.StaticValue;
 import mage.abilities.effects.OneShotEffect;
 import mage.cards.Card;
 import mage.cards.Cards;
@@ -21,13 +23,17 @@ import mage.util.CardUtil;
  */
 public class DiscoverEffect extends OneShotEffect {
 
-    private final int amount;
+    private final DynamicValue amount;
 
     public DiscoverEffect(int amount) {
         this(amount, true);
     }
 
     public DiscoverEffect(int amount, boolean withReminderText) {
+        this(StaticValue.get(amount), withReminderText);
+    }
+
+    public DiscoverEffect(DynamicValue amount, boolean withReminderText) {
         super(Outcome.Benefit);
         this.amount = amount;
         staticText = "discover " + amount
@@ -54,7 +60,7 @@ public class DiscoverEffect extends OneShotEffect {
             return false;
         }
 
-        doDiscover(player, amount, game, source);
+        doDiscover(player, amount.calculate(game, source, this), game, source);
         return true;
     }
 

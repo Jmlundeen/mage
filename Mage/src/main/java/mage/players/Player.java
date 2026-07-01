@@ -20,6 +20,7 @@ import mage.designations.Designation;
 import mage.designations.DesignationType;
 import mage.filter.FilterCard;
 import mage.filter.FilterMana;
+import mage.filter.FilterTyped;
 import mage.game.*;
 import mage.game.draft.Draft;
 import mage.game.events.GameEvent;
@@ -420,6 +421,15 @@ public interface Player extends MageItem, Copyable<Player> {
     int drawCards(int num, Ability source, Game game);
 
     /**
+     * Draw cards and pass a list to reference which cards were drawn. If you call it in replace events then use method with event param instead (for appliedEffects)
+     *
+     * @param num    cards to draw
+     * @param source can be null for game default draws (non effects, example: start of the turn)
+     * @return number of cards drawn, including as a result of replacement effects
+     */
+    int drawCards(int num, Ability source, Game game, Cards cardsDrawn);
+
+    /**
      * Draw cards with applied effects, for replaceEvent
      *
      * @param num    cards to draw
@@ -428,6 +438,17 @@ public interface Player extends MageItem, Copyable<Player> {
      * @return number of cards drawn, including as a result of replacement effects
      */
     int drawCards(int num, Ability source, Game game, GameEvent event);
+
+    /**
+     * Main draw cards logic
+     *
+     * @param num    cards to draw
+     * @param source can be null for game default draws (non effects, example: start of the turn)
+     * @param event  original draw event in replacement code
+     * @param cardsDrawn list to save cards that were drawn, can be null
+     * @return number of cards drawn, including as a result of replacement effects
+     */
+    int drawCards(int num, Ability source, Game game, GameEvent event, Cards cardsDrawn);
 
     boolean cast(SpellAbility ability, Game game, boolean noMana, ApprovingObject approvingObject);
 
@@ -473,8 +494,14 @@ public interface Player extends MageItem, Copyable<Player> {
      * Gets a random card which matches the given filter and puts it into its owner's hand
      * Doesn't reveal the card
      */
+    @Deprecated
     boolean seekCard(FilterCard filter, Ability source, Game game);
 
+    /**
+     * Gets a random card which matches the given filter and puts it into its owner's hand
+     * Doesn't reveal the card
+     */
+    boolean seekCard(FilterTyped filter, Ability source, Game game);
     /**
      * Reveals all players' libraries. Useful for abilities like Jace, Architect
      * of Thought's -8 that have effects that require information from all

@@ -1,17 +1,17 @@
 package mage.cards.e;
 
-import java.util.UUID;
-
-import mage.abilities.Ability;
-import mage.abilities.effects.OneShotEffect;
-import mage.abilities.effects.common.counter.GetEnergyCountersControllerEffect;
+import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
+import mage.abilities.effects.common.counter.AddCountersEffect;
+import mage.abilities.effects.common.countered.CounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.game.Game;
-import mage.game.stack.Spell;
-import mage.target.TargetSpell;
+import mage.constants.TargetController;
+import mage.counters.CounterType;
+import mage.filter.StaticTypedFilters;
+import mage.target.TargetGeneric;
+
+import java.util.UUID;
 
 /**
  * @author Cguy7777
@@ -22,8 +22,13 @@ public final class Electrosiphon extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{U}{U}{R}");
 
         // Counter target spell. You get an amount of {E} equal to its mana value.
-        this.getSpellAbility().addTarget(new TargetSpell());
-        this.getSpellAbility().addEffect(new ElectrosiphonEffect());
+        this.getSpellAbility().addTarget(new TargetGeneric(StaticTypedFilters.SPELL));
+        this.getSpellAbility().addEffect(new CounterEffect()
+                .setText("counter target spell")
+                .setRememberManaValue(true)
+        );
+        this.getSpellAbility().addEffect(new AddCountersEffect(CounterType.ENERGY, CounteredManaValue.instance, TargetController.YOU)
+                .setText("You get an amount of {E} <i>(energy counters)</i> equal to its mana value"));
     }
 
     private Electrosiphon(final Electrosiphon card) {
@@ -33,34 +38,5 @@ public final class Electrosiphon extends CardImpl {
     @Override
     public Electrosiphon copy() {
         return new Electrosiphon(this);
-    }
-}
-
-class ElectrosiphonEffect extends OneShotEffect {
-
-    ElectrosiphonEffect() {
-        super(Outcome.Detriment);
-        this.staticText = "Counter target spell. You get an amount of {E} <i>(energy counters)</i> equal to its mana value";
-    }
-
-    private ElectrosiphonEffect(final ElectrosiphonEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
-        if (spell == null) {
-            return false;
-        }
-
-        game.getStack().counter(spell.getId(), source, game);
-        new GetEnergyCountersControllerEffect(spell.getManaValue()).apply(game, source);
-        return true;
-    }
-
-    @Override
-    public ElectrosiphonEffect copy() {
-        return new ElectrosiphonEffect(this);
     }
 }

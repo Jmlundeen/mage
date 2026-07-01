@@ -1,18 +1,18 @@
 
 package mage.cards.m;
 
-import java.util.UUID;
-import mage.abilities.Ability;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
 import mage.abilities.effects.common.CreateTokenEffect;
+import mage.abilities.effects.common.countered.CounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.game.Game;
+import mage.filter.StaticTypedFilters;
 import mage.game.permanent.token.OozeToken;
-import mage.game.stack.StackObject;
-import mage.target.TargetSpell;
+import mage.target.TargetGeneric;
+
+import java.util.Collections;
+import java.util.UUID;
 
 /**
  *
@@ -24,8 +24,16 @@ public final class MysticGenesis extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{2}{G}{U}{U}");
 
         // Counter target spell. Create an X/X green Ooze creature token, where X is that spell's converted mana cost.
-        this.getSpellAbility().addTarget(new TargetSpell());
-        this.getSpellAbility().addEffect(new MysticGenesisEffect());
+        this.getSpellAbility().addEffect(new CounterEffect()
+                .setText("counter target spell")
+                .setRememberManaValue(true)
+        );
+        this.getSpellAbility().addEffect(new CreateTokenEffect((game, source, effect) -> {
+                    int value = CounteredManaValue.instance.calculate(game, source, effect);
+                    return Collections.singletonList(new OozeToken(value, value));
+                })
+                .setText("Create an X/X green Ooze creature token, where X is that spell's mana value"));
+        this.getSpellAbility().addTarget(new TargetGeneric(StaticTypedFilters.SPELL));
 
     }
 
@@ -36,32 +44,5 @@ public final class MysticGenesis extends CardImpl {
     @Override
     public MysticGenesis copy() {
         return new MysticGenesis(this);
-    }
-}
-
-class MysticGenesisEffect extends OneShotEffect {
-
-    MysticGenesisEffect() {
-        super(Outcome.Detriment);
-        staticText = "Counter target spell. Create an X/X green Ooze creature token, where X is that spell's mana value";
-    }
-
-    private MysticGenesisEffect(final MysticGenesisEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public MysticGenesisEffect copy() {
-        return new MysticGenesisEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        StackObject stackObject = game.getStack().getStackObject(getTargetPointer().getFirst(game, source));
-        if (stackObject != null) {
-            game.getStack().counter(source.getFirstTarget(), source, game);
-            return new CreateTokenEffect(new OozeToken(stackObject.getManaValue(), stackObject.getManaValue())).apply(game, source);
-        }
-        return false;
     }
 }

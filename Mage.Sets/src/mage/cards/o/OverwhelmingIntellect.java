@@ -1,18 +1,17 @@
 
 package mage.cards.o;
 
-import java.util.UUID;
-import mage.abilities.Ability;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
+import mage.abilities.effects.common.countered.CounterEffect;
+import mage.abilities.effects.common.draw.DrawCardEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.filter.common.FilterCreatureSpell;
-import mage.game.Game;
-import mage.game.stack.Spell;
-import mage.players.Player;
-import mage.target.TargetSpell;
+import mage.filter.FilterTyped;
+import mage.filter.StaticTypedFilters;
+import mage.target.TargetGeneric;
+
+import java.util.UUID;
 
 /**
  *
@@ -23,9 +22,16 @@ public final class OverwhelmingIntellect extends CardImpl {
     public OverwhelmingIntellect(UUID ownerId, CardSetInfo setInfo) {
         super(ownerId,setInfo,new CardType[]{CardType.INSTANT},"{4}{U}{U}");
 
-        // Counter target creature spell. Draw cards equal to that spell's converted mana cost.
-        this.getSpellAbility().addTarget(new TargetSpell(new FilterCreatureSpell()));
-        this.getSpellAbility().addEffect(new OverwhelmingIntellectEffect());
+        // Counter target creature spell. Draw cards equal to that spell's mana value.
+        FilterTyped filter = StaticTypedFilters.A_CREATURE_SPELL.copy();
+        filter.setMessage("creature spell");
+        this.getSpellAbility().addTarget(new TargetGeneric(filter));
+        this.getSpellAbility().addEffect(new CounterEffect()
+                .setText("counter target creature spell")
+                .setRememberManaValue(true)
+        );
+        this.getSpellAbility().addEffect(new DrawCardEffect(CounteredManaValue.instance)
+                .setText("Draw cards equal to that spell's mana value"));
 
     }
 
@@ -36,34 +42,5 @@ public final class OverwhelmingIntellect extends CardImpl {
     @Override
     public OverwhelmingIntellect copy() {
         return new OverwhelmingIntellect(this);
-    }
-}
-
-class OverwhelmingIntellectEffect extends OneShotEffect {
-
-    OverwhelmingIntellectEffect() {
-        super(Outcome.Detriment);
-        staticText = "Counter target creature spell. Draw cards equal to that spell's mana value";
-    }
-
-    private OverwhelmingIntellectEffect(final OverwhelmingIntellectEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public OverwhelmingIntellectEffect copy() {
-        return new OverwhelmingIntellectEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Player controller = game.getPlayer(source.getControllerId());
-        Spell spell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
-        if (controller != null && spell != null) {
-            game.getStack().counter(source.getFirstTarget(), source, game);
-            controller.drawCards(spell.getManaValue(), source, game);
-            return true;
-        }
-        return false;
     }
 }

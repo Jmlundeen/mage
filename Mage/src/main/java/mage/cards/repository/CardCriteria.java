@@ -20,6 +20,7 @@ public class CardCriteria {
 
     private String nameContains;
     private String name;
+    private final List<String> names;
     private String cardNumber;
     private String rules;
     private final List<String> setCodes;
@@ -47,6 +48,7 @@ public class CardCriteria {
     private int maxCardNumber;
 
     public CardCriteria() {
+        this.names = new ArrayList<>();
         this.setCodes = new ArrayList<>();
         this.ignoreSetCodes = new ArrayList<>();
         this.rarities = new ArrayList<>();
@@ -114,6 +116,11 @@ public class CardCriteria {
 
     public CardCriteria name(String name) {
         this.name = name;
+        return this;
+    }
+
+    public CardCriteria names(String... names) {
+        this.names.addAll(Arrays.asList(names));
         return this;
     }
 
@@ -223,6 +230,15 @@ public class CardCriteria {
         if (name != null) {
             where.eq("name", new SelectArg(name)).or()
                     .eq("secondSideName", new SelectArg(name));
+            clausesCount++;
+        }
+
+        for (String name : names) {
+            where.eq("name", new SelectArg(name)).or()
+                    .eq("secondSideName", new SelectArg(name));
+        }
+        if (!names.isEmpty()) {
+            where.or(names.size());
             clausesCount++;
         }
 

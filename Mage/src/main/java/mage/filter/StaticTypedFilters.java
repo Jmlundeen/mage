@@ -17,6 +17,10 @@ public class StaticTypedFilters {
         // prevent instantiation
     }
 
+    public static final FilterTyped CARD = new FilterTyped("card")
+            .add(CardPredicate.instance)
+            .setLocked(true);
+
     public static final FilterTyped A_LAND = new FilterTyped("a land")
             .add(IMageObjectPredicate.getOSPPredicate(CardType.LAND.getPredicate()))
             .setLocked(true);
@@ -128,6 +132,10 @@ public class StaticTypedFilters {
                     LogicalPredicate.not(IMageObjectPredicate.getOSPPredicate(CardType.ARTIFACT.getPredicate())))
             .setLocked(true);
 
+    public static final FilterTyped SPELL = new FilterTyped("spell")
+            .add(SpellPredicate.instance)
+            .setLocked(true);
+
     public static final FilterTyped A_SPELL = new FilterTyped("a spell")
             .add(SpellPredicate.instance)
             .setLocked(true);
@@ -141,5 +149,17 @@ public class StaticTypedFilters {
 
     public static final FilterTyped ACTIVATED_ABILITY = new FilterTyped("an activated ability")
             .add(ActivatedAbilityPredicate.instance)
+            .setLocked(true);
+
+    public static final FilterTyped PLAYER = new FilterTyped("player")
+            .add(TargetController.ANY.getPlayerPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped YOU = new FilterTyped("you")
+            .add(TargetController.YOU.getPlayerPredicate())
+            .setLocked(true);
+
+    public static final FilterTyped OPPONENT = new FilterTyped("opponent")
+            .add(TargetController.OPPONENT.getPlayerPredicate())
             .setLocked(true);
 }

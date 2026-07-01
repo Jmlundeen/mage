@@ -27,6 +27,11 @@ import java.util.stream.Collectors;
  */
 public class CreateTokenEffect extends OneShotEffect {
 
+    @FunctionalInterface
+    public interface MakeTokenFunction {
+        List<Token> apply(Game game, Ability source, Effect effect);
+    }
+
     private final List<Token> tokens = new ArrayList<>();
     private final DynamicValue amount;
     private final boolean tapped;
@@ -36,6 +41,11 @@ public class CreateTokenEffect extends OneShotEffect {
     private List<UUID> lastAddedTokenIds = new ArrayList<>();
     private CounterType counterType;
     private DynamicValue numberOfCounters;
+    private MakeTokenFunction makeTokenFunction;
+
+    public CreateTokenEffect(MakeTokenFunction makeTokenFunction) {
+        this(null, StaticValue.get(1), false, false, makeTokenFunction);
+    }
 
     public CreateTokenEffect(Token token) {
         this(token, StaticValue.get(1));
@@ -46,7 +56,7 @@ public class CreateTokenEffect extends OneShotEffect {
     }
 
     public CreateTokenEffect(Token token, DynamicValue amount) {
-        this(token, amount, false, false);
+        this(token, amount, false, false, null);
     }
 
     public CreateTokenEffect(Token token, int amount, boolean tapped) {
@@ -54,15 +64,22 @@ public class CreateTokenEffect extends OneShotEffect {
     }
 
     public CreateTokenEffect(Token token, int amount, boolean tapped, boolean attacking) {
-        this(token, StaticValue.get(amount), tapped, attacking);
+        this(token, StaticValue.get(amount), tapped, attacking, null);
     }
 
     public CreateTokenEffect(Token token, DynamicValue amount, boolean tapped, boolean attacking) {
+        this(token, amount, tapped, attacking, null);
+    }
+
+    public CreateTokenEffect(Token token, DynamicValue amount, boolean tapped, boolean attacking, MakeTokenFunction makeTokenFunction) {
         super(Outcome.PutCreatureInPlay);
-        if (token == null) {
+        if (token == null && makeTokenFunction == null) {
             throw new IllegalArgumentException("Wrong code usage. Token provided to CreateTokenEffect must not be null.");
         }
-        this.tokens.add(token);
+        if (token != null) {
+            this.tokens.add(token);
+        }
+        this.makeTokenFunction = makeTokenFunction;
         this.amount = amount.copy();
         this.tapped = tapped;
         this.attacking = attacking;
@@ -82,6 +99,7 @@ public class CreateTokenEffect extends OneShotEffect {
         this.numberOfCounters = effect.numberOfCounters;
         this.additionalRules = effect.additionalRules;
         this.oldPhrasing = effect.oldPhrasing;
+        this.makeTokenFunction = effect.makeTokenFunction;
     }
 
     public CreateTokenEffect entersWithCounters(CounterType counterType, DynamicValue numberOfCounters) {
@@ -96,6 +114,11 @@ public class CreateTokenEffect extends OneShotEffect {
         return this;
     }
 
+    public CreateTokenEffect withMakeTokenFunction(MakeTokenFunction makeTokenFunction) {
+        this.makeTokenFunction = makeTokenFunction;
+        return this;
+    }
+
     @Override
     public CreateTokenEffect copy() {
         return new CreateTokenEffect(this);
@@ -104,8 +127,12 @@ public class CreateTokenEffect extends OneShotEffect {
     @Override
     public boolean apply(Game game, Ability source) {
         int value = amount.calculate(game, source, this);
-        tokens.get(0).putOntoBattlefield(value, game, source, source.getControllerId(), tapped, attacking, null, null, true, tokens);
-        this.lastAddedTokenIds = tokens.get(0).getLastAddedTokenIds();
+        List<Token> tokens = new ArrayList<>(this.tokens);
+        if (makeTokenFunction != null) {
+            tokens.addAll(makeTokenFunction.apply(game, source, this));
+        }
+        tokens.getFirst().putOntoBattlefield(value, game, source, source.getControllerId(), tapped, attacking, null, null, true, tokens);
+        this.lastAddedTokenIds = tokens.getFirst().getLastAddedTokenIds();
         // TODO: Workaround to add counters to all created tokens, necessary for correct interactions with cards like Chatterfang, Squirrel General and Ochre Jelly / Printlifter Ooze. See #10786
         if (counterType != null) {
             for (UUID tokenId : lastAddedTokenIds) {

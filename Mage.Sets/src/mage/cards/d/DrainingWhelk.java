@@ -4,8 +4,9 @@ package mage.cards.d;
 import mage.MageInt;
 import mage.abilities.Ability;
 import mage.abilities.common.EntersBattlefieldTriggeredAbility;
-import mage.abilities.effects.common.CounterTargetEffect;
-import mage.abilities.effects.common.counter.AddCountersSourceEffect;
+import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
+import mage.abilities.effects.common.counter.AddCountersEffect;
+import mage.abilities.effects.common.countered.CounterEffect;
 import mage.abilities.keyword.FlashAbility;
 import mage.abilities.keyword.FlyingAbility;
 import mage.cards.CardImpl;
@@ -13,9 +14,8 @@ import mage.cards.CardSetInfo;
 import mage.constants.CardType;
 import mage.constants.SubType;
 import mage.counters.CounterType;
-import mage.game.Game;
-import mage.game.stack.Spell;
-import mage.target.TargetSpell;
+import mage.filter.StaticTypedFilters;
+import mage.target.TargetGeneric;
 
 import java.util.UUID;
 
@@ -39,8 +39,13 @@ public final class DrainingWhelk extends CardImpl {
         this.addAbility(FlyingAbility.getInstance());
         
         // When Draining Whelk enters the battlefield, counter target spell. Put X +1/+1 counters on Draining Whelk, where X is that spell's converted mana cost.
-        Ability ability = new EntersBattlefieldTriggeredAbility(new DrainingWhelkEffect());
-        ability.addTarget(new TargetSpell());
+        Ability ability = new EntersBattlefieldTriggeredAbility(new CounterEffect()
+                .setText("counter target spell")
+                .setRememberManaValue(true)
+        );
+        ability.addEffect(new AddCountersEffect(CounterType.P1P1, CounteredManaValue.instance)
+                .setText("Put X +1/+1 counters on {this}, where X is that spell's converted mana cost"));
+        ability.addTarget(new TargetGeneric(StaticTypedFilters.SPELL));
         this.addAbility(ability);
     }
 
@@ -51,34 +56,5 @@ public final class DrainingWhelk extends CardImpl {
     @Override
     public DrainingWhelk copy() {
         return new DrainingWhelk(this);
-    }
-}
-
-class DrainingWhelkEffect extends CounterTargetEffect {
-    
-    DrainingWhelkEffect() {
-        super();
-        staticText = "counter target spell. Put X +1/+1 counters on {this}, where X is that spell's mana value";
-    }
-    
-    private DrainingWhelkEffect(final DrainingWhelkEffect effect) {
-        super(effect);
-    }
-    
-    @Override
-    public DrainingWhelkEffect copy() {
-        return new DrainingWhelkEffect(this);
-    }
-    
-    @Override
-    public boolean apply(Game game, Ability source) {
-        Spell targetSpell = game.getStack().getSpell(getTargetPointer().getFirst(game, source));
-        if (targetSpell != null) {
-            int spellCMC = targetSpell.getManaValue();
-            super.apply(game, source);
-            new AddCountersSourceEffect(CounterType.P1P1.createInstance(spellCMC)).apply(game, source);
-            return true;
-        }
-        return false;
     }
 }

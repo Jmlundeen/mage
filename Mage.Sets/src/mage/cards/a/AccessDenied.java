@@ -1,15 +1,14 @@
 package mage.cards.a;
 
-import mage.abilities.Ability;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
+import mage.abilities.effects.common.CreateTokenEffect;
+import mage.abilities.effects.common.countered.CounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.game.Game;
+import mage.filter.StaticTypedFilters;
 import mage.game.permanent.token.ThopterColorlessToken;
-import mage.game.stack.StackObject;
-import mage.target.TargetSpell;
+import mage.target.TargetGeneric;
 
 import java.util.UUID;
 
@@ -22,8 +21,14 @@ public final class AccessDenied extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{3}{U}{U}");
 
         // Counter target spell. Create X 1/1 colorless Thopter artifact creature tokens with flying, where X is that spell's mana value.
-        this.getSpellAbility().addEffect(new AccessDeniedEffect());
-        this.getSpellAbility().addTarget(new TargetSpell());
+        this.getSpellAbility().addEffect(new CounterEffect()
+                .setText("counter target spell")
+                .setRememberManaValue(true)
+        );
+        this.getSpellAbility().addEffect(new CreateTokenEffect(new ThopterColorlessToken(), CounteredManaValue.instance)
+                .setText("create X 1/1 colorless Thopter artifact creature tokens with flying, where X is that spell's mana value")
+        );
+        this.getSpellAbility().addTarget(new TargetGeneric(StaticTypedFilters.SPELL));
     }
 
     private AccessDenied(final AccessDenied card) {
@@ -33,33 +38,5 @@ public final class AccessDenied extends CardImpl {
     @Override
     public AccessDenied copy() {
         return new AccessDenied(this);
-    }
-}
-
-class AccessDeniedEffect extends OneShotEffect {
-
-    AccessDeniedEffect() {
-        super(Outcome.Benefit);
-        staticText = "counter target spell. Create X 1/1 colorless Thopter " +
-                "artifact creature tokens with flying, where X is that spell's mana value";
-    }
-
-    private AccessDeniedEffect(final AccessDeniedEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public AccessDeniedEffect copy() {
-        return new AccessDeniedEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        StackObject stackObject = game.getStack().getStackObject(getTargetPointer().getFirst(game, source));
-        if (stackObject != null) {
-            game.getStack().counter(source.getFirstTarget(), source, game);
-            return new ThopterColorlessToken().putOntoBattlefield(stackObject.getManaValue(), game, source);
-        }
-        return false;
     }
 }

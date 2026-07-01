@@ -1,17 +1,11 @@
 package mage.filter;
 
-import mage.MageObject;
 import mage.abilities.Ability;
-import mage.cards.Card;
 import mage.filter.predicate.ObjectSourcePlayer;
 import mage.filter.predicate.Predicate;
 import mage.filter.predicate.TypedPredicate;
 import mage.filter.predicate.typed.LogicalPredicate;
 import mage.game.Game;
-import mage.game.permanent.Permanent;
-import mage.game.stack.Spell;
-import mage.game.stack.StackObject;
-import mage.players.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,32 +43,8 @@ public class FilterTyped implements Filter<ObjectSourcePlayer<?>> {
         return add(LogicalPredicate.or(predicates));
     }
 
-    public boolean match(Card card, UUID controllerId, Ability source, Game game) {
-        return match(new ObjectSourcePlayer<>(card, controllerId, source), game);
-    }
-
-    public boolean match(Ability ability, UUID controllerId, Ability source, Game game) {
-        return match(new ObjectSourcePlayer<>(ability, controllerId, source), game);
-    }
-
-    public boolean match(MageObject object, UUID controllerId, Ability source, Game game) {
+    public <T> boolean match(T object, UUID controllerId, Ability source, Game game) {
         return match(new ObjectSourcePlayer<>(object, controllerId, source), game);
-    }
-
-    public boolean match(Spell spell, UUID controllerId, Ability source, Game game) {
-        return match(new ObjectSourcePlayer<>(spell, controllerId, source), game);
-    }
-
-    public boolean match(Permanent permanent, UUID controllerId, Ability source, Game game) {
-        return match(new ObjectSourcePlayer<>(permanent, controllerId, source), game);
-    }
-
-    public boolean match(StackObject stackObject, UUID controllerId, Ability source, Game game) {
-        return match(new ObjectSourcePlayer<>(stackObject, controllerId, source), game);
-    }
-
-    public boolean match(Player player, UUID controllerId, Ability source, Game game) {
-        return match(new ObjectSourcePlayer<>(player, controllerId, source), game);
     }
 
     @SuppressWarnings("unchecked")
@@ -109,6 +79,15 @@ public class FilterTyped implements Filter<ObjectSourcePlayer<?>> {
     public boolean checkObjectClass(Object object) {
         for (TypedPredicate<?> predicate : predicates) {
             if (predicate.getObjectClass().isInstance(object)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean canApplyToClass(Class<?> clazz) {
+        for (TypedPredicate<?> predicate : predicates) {
+            if (predicate.getObjectClass().isAssignableFrom(clazz)) {
                 return true;
             }
         }

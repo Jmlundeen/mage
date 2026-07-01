@@ -2371,6 +2371,67 @@ public class TestPlayer implements Player {
 
             Set<Zone> targetCardZonesChecked = new HashSet<>(); // control miss implementation
 
+            // generic target
+            if (target instanceof TargetGeneric targetGeneric) {
+                for (String targetDefinition : targets.stream().limit(takeMaxTargetsPerChoose).toList()) {
+                    // players
+                    if (targetDefinition.startsWith("targetPlayer=")) {
+                        checkTargetDefinitionMarksSupport(target, targetDefinition, "=");
+                        String playerName = targetDefinition.substring(targetDefinition.indexOf("targetPlayer=") + 13);
+                        for (Player player : game.getPlayers().values()) {
+                            if (player.getName().equals(playerName)
+                                    && target.canTarget(abilityControllerId, player.getId(), source, game)
+                                    && !target.contains(player.getId())) {
+                                target.addTarget(player.getId(), source, game);
+                                targetsRemoveCurrent(targetDefinition, game, "on choose target - generic player");
+                                return true;
+                            }
+                        }
+                        continue;
+                    }
+                    // card
+                    checkTargetDefinitionMarksSupport(target, targetDefinition, "^[]");
+                    String[] targetList = targetDefinition.split("\\^");
+                    boolean targetFound = false;
+                    for (String targetName : targetList) {
+                        targetFound = false; // must have all valid targets from list
+                        boolean originOnly = false;
+                        boolean copyOnly = false;
+                        if (targetName.endsWith("]")) {
+                            if (targetName.endsWith("[no copy]")) {
+                                originOnly = true;
+                                targetName = targetName.substring(0, targetName.length() - 9);
+                            }
+                            if (targetName.endsWith("[only copy]")) {
+                                copyOnly = true;
+                                targetName = targetName.substring(0, targetName.length() - 11);
+                            }
+                        }
+                        for (UUID id : targetGeneric.possibleTargets(abilityControllerId, source, game)) {
+                            MageObject object = game.getObject(id);
+                            if (object == null) {
+                                continue;
+                            }
+                            if (!hasObjectTargetNameOrAlias(object, targetName) && !(object.getName() + '-' + object.getExpansionSetCode()).equals(targetName)) {
+                                continue;
+                            }
+                            if (object instanceof Card card) {
+                                if (card.isCopy() && originOnly || !card.isCopy() && copyOnly) {
+                                    continue;
+                                }
+                                target.addTarget(card.getId(), source, game);
+                                targetFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (targetFound) {
+                        targetsRemoveCurrent(targetDefinition, game, "on choose target - generic");
+                        return true;
+                    }
+                }
+            }
+
             // player
             if (target.getOriginalTarget() instanceof TargetPlayer
                     || target.getOriginalTarget() instanceof TargetPermanentOrPlayer) {
@@ -3020,8 +3081,18 @@ public class TestPlayer implements Player {
     }
 
     @Override
+    public int drawCards(int num, Ability source, Game game, Cards cardsDrawn) {
+        return computerPlayer.drawCards(num, source, game, cardsDrawn);
+    }
+
+    @Override
     public int drawCards(int num, Ability source, Game game, GameEvent event) {
         return computerPlayer.drawCards(num, source, game, event);
+    }
+
+    @Override
+    public int drawCards(int num, Ability source, Game game, GameEvent event, Cards cardsDrawn) {
+        return computerPlayer.drawCards(num, source, game, event, cardsDrawn);
     }
 
     @Override
@@ -3631,6 +3702,11 @@ public class TestPlayer implements Player {
 
     @Override
     public boolean seekCard(FilterCard filter, Ability source, Game game) {
+        return computerPlayer.seekCard(filter, source, game);
+    }
+
+    @Override
+    public boolean seekCard(FilterTyped filter, Ability source, Game game) {
         return computerPlayer.seekCard(filter, source, game);
     }
 

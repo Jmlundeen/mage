@@ -31,6 +31,7 @@ import mage.designations.DesignationType;
 import mage.designations.Speed;
 import mage.filter.FilterCard;
 import mage.filter.FilterMana;
+import mage.filter.FilterTyped;
 import mage.filter.StaticFilters;
 import mage.filter.common.FilterControlledPermanent;
 import mage.filter.common.FilterCreatureForCombat;
@@ -59,6 +60,7 @@ import mage.target.common.TargetControlledCreaturePermanent;
 import mage.target.common.TargetDiscard;
 import mage.util.CardUtil;
 import mage.util.GameLog;
+import mage.util.ObjectQuery;
 import mage.util.RandomUtil;
 import org.apache.log4j.Logger;
 
@@ -752,7 +754,18 @@ public abstract class PlayerImpl implements Player, Serializable {
 
     @Override
     public int drawCards(int num, Ability source, Game game) {
-        return drawCards(num, source, game, null);
+        return drawCards(num, source, game, null, null);
+    }
+
+    @Override
+    public int drawCards(int num, Ability source, Game game, Cards cardsDrawn) {
+        return drawCards(num, source, game, null, cardsDrawn);
+    }
+
+
+    @Override
+    public int drawCards(int num, Ability source, Game game, GameEvent event) {
+        return drawCards(num, source, game, event, null);
     }
 
     /*
@@ -765,7 +778,7 @@ public abstract class PlayerImpl implements Player, Serializable {
      * replacement effect.
      */
     @Override
-    public int drawCards(int num, Ability source, Game game, GameEvent event) {
+    public int drawCards(int num, Ability source, Game game, GameEvent event, Cards cardsDrawn) {
         if (num == 0) {
             return 0;
         }
@@ -792,6 +805,9 @@ public abstract class PlayerImpl implements Player, Serializable {
                 }
                 game.fireEvent(new DrewCardEvent(card.getId(), getId(), source, event));
                 numDrawn++;
+                if (cardsDrawn != null) {
+                    cardsDrawn.add(card);
+                }
             }
         }
         if ((!isTopCardRevealed() || isDrawsFromBottom()) && numDrawn > 0) {
@@ -2962,6 +2978,18 @@ public abstract class PlayerImpl implements Player, Serializable {
                 .stream()
                 .filter(card -> filter.match(card, getId(), source, game))
                 .collect(Collectors.toSet());
+        Card card = RandomUtil.randomFromCollection(cards);
+        if (card == null) {
+            return false;
+        }
+        game.informPlayers(this.getLogName() + " seeks a card from their library");
+        this.moveCards(card, Zone.HAND, source, game);
+        return true;
+    }
+
+    @Override
+    public boolean seekCard(FilterTyped filter, Ability source, Game game) {
+        List<Card> cards = ObjectQuery.queryCards(game, this, source, Set.of(Zone.LIBRARY), filter);
         Card card = RandomUtil.randomFromCollection(cards);
         if (card == null) {
             return false;

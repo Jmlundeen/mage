@@ -1,14 +1,12 @@
 package mage.cards.s;
 
-import mage.abilities.Ability;
-import mage.abilities.effects.OneShotEffect;
+import mage.abilities.dynamicvalue.common.manavalue.CounteredManaValue;
+import mage.abilities.effects.common.CreateTokenEffect;
+import mage.abilities.effects.common.countered.CounterEffect;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.CardType;
-import mage.constants.Outcome;
-import mage.game.Game;
 import mage.game.permanent.token.TreasureToken;
-import mage.game.stack.StackObject;
 import mage.target.TargetSpell;
 
 import java.util.UUID;
@@ -22,8 +20,13 @@ public final class SpellSwindle extends CardImpl {
         super(ownerId, setInfo, new CardType[]{CardType.INSTANT}, "{3}{U}{U}");
 
         // Counter target spell. Create X colorless Treasure artifact tokens, where X is that spell's converted mana cost. They have "T, Sacrifice this artifact: Add one mana of any color."
+        this.getSpellAbility().addEffect(new CounterEffect()
+                .setText("counter target spell")
+                .setRememberManaValue(true)
+        );
+        this.getSpellAbility().addEffect(new CreateTokenEffect(new TreasureToken(), CounteredManaValue.instance)
+                .setText("Create X Treasure tokens, where X is that spell's mana value"));
         this.getSpellAbility().addTarget(new TargetSpell());
-        this.getSpellAbility().addEffect(new SpellSwindleEffect());
     }
 
     private SpellSwindle(final SpellSwindle card) {
@@ -33,32 +36,5 @@ public final class SpellSwindle extends CardImpl {
     @Override
     public SpellSwindle copy() {
         return new SpellSwindle(this);
-    }
-}
-
-class SpellSwindleEffect extends OneShotEffect {
-
-    SpellSwindleEffect() {
-        super(Outcome.Detriment);
-        staticText = "Counter target spell. Create X Treasure tokens, where X is that spell's mana value.";
-    }
-
-    private SpellSwindleEffect(final SpellSwindleEffect effect) {
-        super(effect);
-    }
-
-    @Override
-    public SpellSwindleEffect copy() {
-        return new SpellSwindleEffect(this);
-    }
-
-    @Override
-    public boolean apply(Game game, Ability source) {
-        StackObject stackObject = game.getStack().getStackObject(getTargetPointer().getFirst(game, source));
-        if (stackObject != null) {
-            game.getStack().counter(source.getFirstTarget(), source, game);
-            return new TreasureToken().putOntoBattlefield(stackObject.getManaValue(), game, source);
-        }
-        return false;
     }
 }

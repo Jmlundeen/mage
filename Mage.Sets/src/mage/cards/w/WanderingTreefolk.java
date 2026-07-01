@@ -11,8 +11,11 @@ import mage.abilities.hint.common.DomainHint;
 import mage.abilities.keyword.VigilanceAbility;
 import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
-import mage.constants.*;
-import mage.filter.StaticFilters;
+import mage.constants.AbilityWord;
+import mage.constants.CardType;
+import mage.constants.SubType;
+import mage.filter.StaticTypedFilters;
+
 import java.util.UUID;
 
 /**
@@ -33,7 +36,7 @@ public final class WanderingTreefolk extends CardImpl {
 
         // Domain -- {7}{G}: Seek a creature card. This ability costs {1} less to activate for each basic land type among lands you control.
         Ability ability = new SimpleActivatedAbility(
-                new SeekCardEffect(StaticFilters.FILTER_CARD_CREATURE),
+                new SeekCardEffect(StaticTypedFilters.A_CREATURE_CARD),
                 new ManaCostsImpl<>("{7}{G}")
         );
 
